@@ -213,7 +213,10 @@
 		
 		
         /*** BOTS ***/
-		botEscapeMessage=function(src, message,channel) {
+		botEscapeMessage = function(src, message, channel) {
+		if(typeof Config == 'undefined')
+		return;
+		
 		var color = Config.Bot.botcolor;
 		var name = Config.Bot.bot;
 		if(typeof channel != "undefined") {
@@ -224,7 +227,10 @@
 		}
 		}
 
-		botMessage=function(src, message,channel) {
+		botMessage = function(src, message, channel) {
+		if(typeof Config == 'undefined')
+		return;
+		
 		var color = Config.Bot.botcolor;
 		var name = Config.Bot.bot;
 		if(typeof channel != "undefined") {
@@ -235,7 +241,10 @@
 		}
 		}
 
-		botEscapeAll=function(message,channel) {
+		botEscapeAll = function(message, channel) {
+		if(typeof Config == 'undefined')
+		return;
+		
 		var color = Config.Bot.botcolor;
 		var name = Config.Bot.bot;
 		if(typeof channel != "undefined") {
@@ -246,7 +255,10 @@
 		}
 		}
 
-		botAll=function(message,channel) {
+		botAll = function(message, channel) {
+		if(typeof Config == 'undefined')
+		return;
+		
 		var color = Config.Bot.botcolor;
 		var name = Config.Bot.bot;
 		if(typeof channel != "undefined") {
@@ -347,7 +359,6 @@
 		this.floodCount = 0;
 		this.caps = 0;
 		this.lastFuture = 0;
-		this.changeTeams = 0;
 
 		if(typeof DataHash == "undefined") {
 		print("Runtime Error: DataHash undefined.");
@@ -2477,7 +2488,6 @@
 		cache.sic('MaxMessageLength',500);
 		cache.sic('TourDisplay',1);
 		cache.sic("FutureLimit", 15);
-		cache.sic("TeamChanges", 4);
 		
 		cache.sic("allowedit",false);
 		cache.sic("allowicon",false);
@@ -2602,7 +2612,6 @@
 		maxPlayersOnline=cache.get("MaxPlayersOnline");
 		display = cache.get('TourDisplay');
 		FutureLimit = cache.get("FutureLimit");
-		TeamChanges = cache.get("TeamChanges");
 
 		if(cache.sics > 0) {
 		cache.savec();
@@ -4733,18 +4742,6 @@
 		return str.replace(/([\.\\\+\*\?\[\^\]\$\(\)])/g, '');
 		}
 
-
-		delete sys.dbAuths; // get back old functionality if script reload.
-		sys.dbAuths = function () {
-		var dbAuth = sys.dbAuths(), ret = [];
-
-		dbAuth.forEach(function(n) {
-		ret.push(n.name());
-		});
-		
-		return ret;
-		}
-
 		idsOfIP = function(ip) {
 		var players = sys.playerIds(), y, ipArr = [];
 		for(y in players) {
@@ -5840,9 +5837,6 @@
 
 		if(typeof DataHash.spammers == "undefined") {
 		DataHash.spammers = {};
-		}
-		if(typeof DataHash.teamSpammers == "undefined") {
-		DataHash.teamSpammers = {};
 		}
 
 		Clantag = {};
@@ -7799,7 +7793,6 @@
 		t.register("Maximum Message Length is "+String(MaxMessageLength).bold()+".");
 		t.register("Tournament Display Mode is "+display+".");
 		t.register("The Future Limit is per "+FutureLimit+" seconds.");
-		t.register("The Team Change limit per minute is "+TeamChanges+".<br/>");
 
 		t.register("The Bot Name is "+Config.Bot.bot.bold().fontcolor(Config.Bot.botcolor)+"</i>.");
 		t.register("The Server Chat Name is "+Config.Server.Name.bold().fontcolor(Config.Server.Color)+"</i>.");
@@ -7897,12 +7890,13 @@
 		,
 
 		authlist: function () {
-		if(sys.dbAuths().length == 0) {
+		var authList = sys.dbAuths();
+		if(authList.length == 0) {
 		botMessage(src,"Sorry, no authority at the moment!",chan);
 		return;
 		}
 
-		var authlist = sys.dbAuths().sort();
+		var authlist = authList.sort();
 		var t = new Templater('Server Authority');
 
 		if(sys.auth(src) > 2) {
@@ -7912,6 +7906,8 @@
 
 		for (var x in authlist) {
 		var auth = authlist[x], id = sys.id(auth);
+		if(DataHash.names[auth] != undefined)
+		auth = DataHash.names[auth];
 		if (sys.dbAuth(auth) > 3) {
 		var temp = "";
 		if(DataHash.tempauth[auth] != undefined)
@@ -8063,7 +8059,7 @@
 		tt.render(src,chan);
 		}
 		,
-
+		
 		/* -- User Commands: Small Lists */
 		autoidles: function () {
 		var s = Object.keys(DataHash.idles);
@@ -8858,6 +8854,40 @@
 		botAll(sys.name(src)+" unjoined the "+Clantag.full.bold()+" clan!",0);
 		sys.changeName(src,without);
 		}
+		}
+		
+		/* Server Requests */
+		// The Battle Tower
+		if(servername.contains("The Battle Tower")) {
+		userCommands["d"] = function () {
+		// Server Request.
+		if(!servername.contains("The Battle Tower"))
+		return;
+		
+		var srcname = sys.name(src);
+		var death=[];
+		death[0]="<font color='green'><b>" + srcname + " was mauled by a wild Tyranitar!</b></font>";
+		death[1]="<font color='purple'><b>" + srcname + " attacked a Wobbufett!</b></font>";
+		death[2]="<font color='black'><b>" + srcname + " died from a broken heart...</b></font>";
+		death[3]="<font color='gold'><b>" + srcname + " was zapped by Thundurus's Thunderbolt!</b></font>";
+		death[4]="<font color='brown'><b>" + srcname + " met Conkeldurr in a dark alley.</b></font>";
+		death[5]="<font color='purple'><b>" + srcname + " held onto a Drifloon and floated away.</b></font>";
+		death[6]="<font color='blue'><b>" + srcname + " was shot by [HD]Marshtomp because they suck.</b></font>";
+		death[7]="<font color='#413839'><b>" + srcname + " got kicked in the head by </font></b><b><font color=green>kupochus</b></font>.";
+		death[8]="<font color='#151B54'><b>" + srcname + " got caught and eaten by Mako!</font></b>.";
+		death[9]="<font color=orange><b>" + srcname + " got their body digitized into megapixels by [HXG] Tech</font></b>.";
+		death[10]="<font color=grey><b>Noir showed " + srcname + " his stabs</font></b>.";
+		death[11]="<font color=red><b> " + srcname + " got beat up by SlowBro</font></b>.";
+		death[12]="font color=maroon><b>" + srcname + " was entoxicated by </font> <font color=hotpink>Titan's awesome power </font></b>.";
+		death[13]="<font color='blue'><b>" + srcname + " got stapled by </b></font><font color='red'><b>Deputy Red's</b></font><font color='blue'><b> Stapler</b></font>";
+        death[14]="<font color=darkblue><b>"+ srcname +" floated away...</b></font>";
+		death[15]="<font color=blueviolet><b>"+ srcname +" got killed by the triple 6 crew</b></font>";
+		var c = Math.floor(death.length*Math.random())
+		botAll(death[c], 0);
+		sys.callQuickly("sys.kick(" + src + ");", 200);
+        }
+		
+		userCommands["death"] = userCommands["d"];
 		}
 
 		/* -- Channel Commands: Start */
@@ -12940,32 +12970,6 @@
 		myUser.lowername = lc;
 		myUser.megauser = DataHash.megausers.hasOwnProperty(lc);
 		myUser.voice = DataHash.voices.hasOwnProperty(lc);
-		
-		// SP Client Blocker.
-		var js = myUser.changeTeams;
-		var ip = myUser.ip;
-		js++;
-		if(js == TeamChanges) {
-		if(typeof DataHash.teamSpammers[ip] == 'undefined')
-		DataHash.teamSpammers[ip] = 0;
-		DataHash.teamSpammers[ip]++;
-		if(DataHash.teamSpammers < 3) {
-		botMessage(src, "Stop changing your teams so fastly!");
-		botAll("Warning: "+sys.name(src)+" ip "+ip+" changes teams fast.", watch);
-		kick(src);
-		}
-		else {
-		botAll("This ain't planet of the apes!", 0);
-		botAll("SkarmPiss Client with IP "+ip+" banned.", watch);
-		ban(sys.name(src));
-		delete DataHash.teamSpammers[ip]; // Save memory.
-		return;
-		}
-		sys.callLater('DataHash.teamSpammers['+ip+']--; if(DataHash.teamSpammers['+ip+'] >= 0) delete DataHash.teamSpammers['+ip+'];', 60*60);
-		return;
-		}
-		
-		sys.callLater('if(JSESSION.users('+src+') != undefined) JSESSION.users('+src+').changeTeams--;', 60);
 		
 		// The rest.
 		var getColor = script.namecolor(src);
