@@ -7684,9 +7684,9 @@
 
 		t.register("<b><font size=4 color=forestgreen>Characters:</b></font> Estimated "+ScriptLength_Full);
 		t.register("<b><font size=4 color=darkblue>Lines:</b></font> "+ScriptLength_Lines+"<br/>");
-		t.register("<font color=green><b>Script:</b></font> © TheUnknownOne: <a href='http://pastebin.com/raw.php?i=JxBxLdQt'>http://pastebin.com/raw.php?i=JxBxLdQt</a></font>");
+		t.register("<font color=green><b>Script:</b></font> © TheUnknownOne: <a href='https://raw.github.com/TheUnknownOne/PO-Server-Tools/blob/master/scripts.js'>https://raw.github.com/TheUnknownOne/PO-Server-Tools/blob/master/scripts.js</a></font>");
 		// t.register("<small><font color=blue><b>Auto Update Script:</b></font> © TheUnknownOne: <a href='http://pastebin.com/raw.php?i=x9xSx0t8'>http://pastebin.com/raw.php?i=x9xSx0t8</a></font></small>");
-		t.register("<font color=blue><b>Script Installer:</b></font> © TheUnknownOne: <a href='http://pastebin.com/raw.php?i=f4HNtphA'>http://pastebin.com/raw.php?i=f4HNtphA</a><br/>");
+		//t.register("<font color=blue><b>Script Installer:</b></font> © TheUnknownOne: <a href='http://pastebin.com/raw.php?i=f4HNtphA'>http://pastebin.com/raw.php?i=f4HNtphA</a><br/>");
 
 		t.register("<b>Script Registered Date:</b></font> "+cache.get("Script_Registered"));
 		t.register("<b>Script Last Loaded Date:</b></font> "+cache.get("Script_LastLoad"));
