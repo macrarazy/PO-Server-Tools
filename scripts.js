@@ -141,7 +141,7 @@
 	   \*========================================*/
 	
 		ScriptVerData = ["2.0.50", "Release Candidate 2"];
-		NOTIFY_UNIQUE_ID = "Notify::randomPlayer (Notify::Fix, 1)";
+		NOTIFY_UNIQUE_ID = "Notify::pushFix";
 		// Do not change NOTIFY_UNIQUE_ID if you don't know what it does! (don't guess :x)
 		
 		
@@ -1368,6 +1368,10 @@
 		if(this.tourmode == 2)
 		this.remaining++;
 
+
+		var name = sys.id(commandData) != undefined ? sys.name(sys.id(commandData)) : commandData;
+		this.buildHash(name);
+		
 		if(display == 1) {
 		this.border();
 		this.white();
@@ -1393,9 +1397,6 @@
 		+ "</tr>"
 		+ "</table>",this.id);
 		}
-
-		var name = sys.id(commandData) != undefined ? sys.name(sys.id(commandData)) : commandData;
-		this.buildHash(name);
 
 		if (this.tourmode == 1 && this.tourSpots() == 0) {
 		this.tourmode = 2;
@@ -2298,6 +2299,7 @@
 		JSESSION.registerGlobal(POGlobal);
 		JSESSION.refill();
 
+		if(typeof TourChanger == 'undefined') {
 		TourChanger = function () {
 		this.tourChange = false;
 		this.uniqueID = NOTIFY_UNIQUE_ID;
@@ -2318,12 +2320,14 @@
 		for(x in tours) {
 		if(typeof tours[x].tour != "undefined") {
 		tours[x].tour = new Tours(tours[x].id);
+		botAll("Tournament was updated!", tours[x].id);
 		}
 		}
 		
 		this.tourChange = true;
 		}
 	    }
+		}
 		
 		if(typeof NotifyTourChange == 'undefined') {
 		NotifyTourChange = new TourChanger();
@@ -2533,6 +2537,9 @@
 		"spam": "randomspam",
 		"bans": "banlist",
 		"mutes": "mutelist",
+		"m": "mute",
+		"tb": "tempban",
+		"rb": "rangeban",
 		"tempbans": "tempbanlist",
 		"rangebans": "rangebanlist",
 		"say": "talk",
@@ -5554,8 +5561,45 @@
 		}
 		,
 
-		pruneload : function () {
-		prune_bans = function() {
+		pruneload: function () {
+		prune_tempauth = function () {
+		var a = DataHash.tempauth;
+		var hashauth;
+		var CURR_TIME = sys.time()*1;
+		var curr_inst;
+		var made_change = false;
+       
+	    for(hashauth in a) {
+		curr_inst = a[hashauth];
+		if(CURR_TIME >= curr_inst.time) {
+		if(sys.dbAuth(curr_inst.name) > curr_inst.role) {
+		delete a[hashauth];
+		return;
+		}
+
+		var changeAuth = 0;
+		if(curr_inst.oldauth != undefined) {
+		changeAuth = curr_inst.oldauth;
+		}
+
+		botAll(curr_inst.name+" is no longer "+authToString(curr_inst.role)+".",0);
+
+		var id = sys.id(curr_inst.name);
+		if(id != undefined) {
+		sys.changeAuth(id,changeAuth);
+		}
+
+		sys.changeDbAuth(curr_inst.name,changeAuth);
+		made_change = true;
+		delete a[hashauth];
+		}
+		}
+		
+		if(made_change)
+		cache.write("tempauths",JSON.stringify(a));
+		}
+		
+		prune_bans = function () {
 		var tb = DataHash.tempbans, hashban, TIME_NOW = sys.time()*1, hasDeleted = false;
 		for(hashban in tb) {
 		if(TIME_NOW >= tb[hashban].time) {
@@ -6315,34 +6359,16 @@
 		}
 
 		mafia.tickDown();
-		var a = DataHash.tempauth;
-		var hashauth;
-
-		for(hashauth in a) {
-		if(sys.time() >= a[hashauth].time) {
-
-		if(sys.dbAuth(a[hashauth].name) > a[hashauth].role) {
-		delete a[hashauth];
-		return;
+		
+		if(typeof pruneTACounter == 'undefined')
+		pruneTACounter = 0;
+		
+		pruneTACounter++;
+		if(pruneTACounter >= 15) { // Do this every 15 seconds.
+		prune_tempauth();
+		pruneTACounter = 0;
 		}
-
-		var changeAuth = 0;
-		if(a[hashauth].oldauth != undefined) {
-		changeAuth = a[hashauth].oldauth;
-		}
-
-		botAll(a[hashauth].name+" is no longer "+authToString(a[hashauth].role)+".",0);
-
-		var id = sys.id(a[hashauth].name);
-		if(id != undefined) {
-		sys.changeAuth(id,changeAuth);
-		}
-
-		sys.changeDbAuth(a[hashauth].name,changeAuth);
-		delete a[hashauth];
-		cache.write("tempauths",JSON.stringify(a));
-		}
-		}
+		
 		}
 		,
 
@@ -11711,35 +11737,27 @@
 
 		var y, min = parseInt(commandData);
 		var sal = spam_array.length, sul = spam_user.length, scl = spam_color.length;
-		var random_spam, random_color, random_user;
+		var random_spam='', random_color='', random_user='';
 
 		if(isNaN(min)||min > 75) {
 		min = 30; }
 
 		for(y = 0; y < min; y++) {
-		random_spam = spam_array[Math.round(sal*Math.random())];
-		random_color = spam_color[Math.round(scl*Math.random())];
-		random_user = spam_user[Math.round(sul*Math.random())];
-
-		// var debugString = "spam: "+random_spam+", color: "+random_color+", user: "+random_user+".";
+		random_spam = spam_array[Math.floor(sal*Math.random())];
+		random_color = spam_color[Math.floor(scl*Math.random())];
+		random_user = spam_user[Math.floor(sul*Math.random())];
 
 		if(random_spam.replace(/Fatal Script Error\:/, "") != random_spam) {
 		random_color = spam_script_color;
 		random_user = spam_script;
 		}
-		// else
-		// debugString += " bypassed Fatal Script Error: replace.";
-
 		if(random_spam.replace(/was banned by/, "") != random_spam) {
 		sys.sendHtmlAll("<font color=DarkOrange><timestamp/><b>"+random_spam+"</b></font>", 0);
 		sys.sendHtmlAll("<font color=DarkOrange><timestamp/><b>Reason:</b></font> Existance.", 0);
 		continue;
 		}
-		// else
-		// debugString += " bypassed was banned by replace.";
 
 		sys.sendHtmlAll("<font color="+random_color+"><timestamp/><b>"+random_user+":</b></font> " + random_spam,0);
-		// sys.sendAll(debugString);
 		}
 
 		}
