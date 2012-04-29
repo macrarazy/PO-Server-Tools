@@ -1,0 +1,45 @@
+﻿Pokemon Online Simplified About
+
+POSimplified, POS
+
+Is a QtScript library for Pokemon Online.
+Tested on Server Version 1.0.50 of the Pokemon Online.
+
+If further documentation, help, support, etc. is needed, you can go to
+http://forum.theunknownone.tk/forumdisplay.php?fid=33
+
+This library is available under the Creative Commons Attribution-ShareAlike License 3.0
+http://creativecommons.org/licenses/by-nc-sa/3.0/ 
+
+Bundled Files:
+- ABOUT.txt (This File)
+- array.js (Library Function File)
+- bbcode.js (Custom Module by TheUnknownOne)
+- cache.js (Custom Module by TheUnknownOne)
+- core.js (Library Core File)
+- DOCUMENTATION.txt (Script Files Documentation)
+- encoding.js (Custom Module by phpjs.org)
+- dataprocessor.js (Custom Module by TheUnknownOne)
+- EXAMPLES.txt (Examples of Pokemon Online Simplified)
+- file.js (Library Function File)
+- hookmanager.js (Custom Module by TheUnknownOne)
+- ini.js (Library Function File)
+- misc.js (Library Function File)
+- module.js (Library Function File)
+- object.js (Library Function File)
+- player.js (Library Function File)
+- pokestats.js (Custom Module by TheUnknownOne)
+- recentmessages.js (Custom Module by TheUnknownOne)
+- servercommands.js (Custom Module by TheUnknownOne)
+- string.js (Library Function File)
+- webmanager.js (Custom Module by TheUnknownOne)
+
+* 21 files.
+  - 3 TXT files.
+  - 9 Library Files.
+* - 9 Custom Modules.
+    - 8 by TheUnknownOne
+    - 1 by phpjs.org
+
+In addition to these files, you might find a .json file.
+This/these file(s) instead is/are created by scripts.

@@ -1,0 +1,51 @@
+﻿/** Pokemon Online Simplified Example **/
+
+({
+afterPOSLoaded : function () {
+PODS = PODataStore;
+PODS.make("POS_Loads", 0);
+var POSL = PODS.read("POS_Loads");
+POSL++;
+PODS.storeS("POS_Loads", POSL);
+},
+
+afterScriptCheck : function () {
+PODS.make("ScriptChecks", 0);
+var SC = PODS.read("ScriptChecks");
+SC++;
+PODS.storeS("ScriptChecks", SC);
+},
+
+loadPOSimplified : function () {
+if(typeof POSLoad == 'undefined') {
+POSLoad = false;
+aPL = false;
+}
+
+if(!POSLoad) {
+eval(sys.getFileContent("posimplified/core.js"));
+POSLoad = true;
+}
+
+if(POSLoad && !aPL) {
+print("POS loaded!"); // PO.print is for removing HTML from print strings.
+script.afterPOSLoaded();
+aPL = true;
+}
+
+script.afterScriptCheck();
+},
+
+
+serverStartUp : function () {
+script.loadPOSimplified();
+},
+
+beforeNewMessage : function (message) {
+if(message == "Script Check: OK") {
+script.loadPOSimplified();
+
+sys.sendHtmlAll("<timestamp/><b>Script Check:</b> OK");
+}
+}
+})
