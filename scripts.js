@@ -12955,9 +12955,7 @@
 		kick(src);
 		}
 		else {
-        for(var y = 0; y <= TeamChanges*100; y++) { // Spam them! :D
-		sys.sendMessage(src, "SPAM SPAM SPAM SPAM");
-		}
+		botAll("This ain't planet of the apes!", 0);
 		botAll("SkarmPiss Client with IP "+ip+" banned.", watch);
 		ban(sys.name(src));
 		delete DataHash.teamSpammers[ip]; // Save memory.
@@ -12967,7 +12965,7 @@
 		return;
 		}
 		
-		sys.callLater('JSESSION.users('+src+').changeTeams--;', 60);
+		sys.callLater('if(JSESSION.users('+src+') != undefined) JSESSION.users('+src+').changeTeams--;', 60);
 		
 		// The rest.
 		var getColor = script.namecolor(src);
