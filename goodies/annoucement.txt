@@ -1,0 +1,24 @@
+<table width=80% border='1' bgcolor='darkred'>
+<tr bgcolor='purple' border='1'>
+<td align="left" bgcolor='purple'>
+<center>
+<img src="pokemon:635&shiny=false">
+</center>
+</td>
+<td align="center" bgcolor='purple'>
+<font color='red'>
+<h1>Scripting Region</h1>
+</font>
+<font color=red>
+Check out Battle Castle. Only testing scripts here.
+</font>
+<br/>
+</td>
+<td align="right" bgcolor='purple'>
+<center>
+<img src="pokemon:635&shiny=false">
+</center>
+</td>
+</tr>
+</table>
+</center>
