@@ -7188,24 +7188,24 @@
 		iconcommands: function () {
 		var ct = new Command_Templater('Rank Icon Commands',true);
 		ct.span("Rank Icon "+UserName+" Commands");
-		ct.register("icons", "Displays all Rank Icon Names.");
+		ct.register("icons", "Displays all Rank Icon names.");
 		ct.register("iconinfo", "Displays full information about Rank Icons.");
 		ct.register("changeicon", ["{p Icon}"], "Changes your Icon. If Icon is remove, removes your Icon.");
 
 		if(!noPermission(src,1)) {
 		ct.span("Rank Icon "+ModName+" Commands");
-		ct.register("loadicons",["{p URL}"],"Loads Rank Icons from the Web.");
+		ct.register("loadicons",["{p URL}"],"Loads Rank Icons from the web.");
 		}
 		if(!noPermission(src,2)) {
 		ct.span("Rank Icon "+AdminName+" Commands");
-		ct.register("mainicon", ["{p Name}"], "Makes a Rank Icons List the Main. (Current Rank Icons List is "+Icons.name+")");
+		ct.register("mainicon", ["{p Name}"], "Makes a Rank Icons list the main. (Current Rank Icons list is "+Icons.name+")");
 		}
 		ct.register(style.footer);
 		ct.render(src,chan);
 		}
 		,
 
-		triviacommands : function () {
+		triviacommands: function () {
 		var ct = new Command_Templater('Trivia Commands',true);
 		ct.span("Trivia "+UserName+" Commands");
 
@@ -7237,11 +7237,11 @@
 		messagecommands: function () {
 		var ct = new Command_Templater('Messaging Commands',true);
 		ct.span("Messaging "+UserName+" Commands");
-		ct.register("me", ["{p Message}"], "Sends a message to everyone with *** infront while using BBCode.");
+		ct.register("me", ["{p Message}"], "Sends a message to everyone with *** prefix while using BBCode.");
 
 		if (!noPermission(src,1)) {
 		ct.span("Messaging "+ModName+" Commands");
-        ct.register("htmlme", ["{p Message}"], "Sends a message to everyone with *** infront while using HTML.");
+        ct.register("htmlme", ["{p Message}"], "Sends a message to everyone with *** prefix while using HTML.");
 		ct.register("sendall", ["{p Message}"], "Sends a message to everyone.");
 		ct.register("wall", ["{p Message}"], "Announces something.");
 		ct.register("htmlwall", ["{p Message}"], "Announces something with HTML.");
@@ -7513,18 +7513,18 @@
 
 		scriptinfo: function () {
 		var user = Object.keys(userCommands).sort();
-		user.join(",  ");
+		user.join(", ");
 		var tour = Object.keys(tourCommands).sort();
-		tour.join(",  ");
+		tour.join(", ");
 		var channel = Object.keys(channelCommands).sort();
-		channel.join(",  ");
+		channel.join(", ");
 		var mod = Object.keys(modCommands).sort();
-		mod.join(",  ");
+		mod.join(", ");
 		var admin = Object.keys(adminCommands).sort();
 		admin.splice(admin.indexOf("spam"),1);
-		admin.join(",  ");
+		admin.join(", ");
 		var owner = Object.keys(ownerCommands).sort();
-		owner.join(",  ");
+		owner.join(", ");
 
 		var tourlength = Object.keys(tourCommands).length;
 		var userlength = Object.keys(userCommands).length;
@@ -8137,8 +8137,8 @@
 		
 		poUser.lastFuture = t+FutureLimit
 		var Message = cut(mcmd, 1, ':');
-		sys.callLater("script.beforeChatMessage("+src+", '"+Message+"', "+chan+");", mcmd[0]);
-		botMessage(src, "Your message was send "+getTimeString(mcmd[0])+" into the future!", chan);
+		sys.callLater("script.beforeChatMessage("+src+", '"+String(Message)+"', "+chan+");", parseInt(mcmd[0]));
+		botMessage(src, "Your message was sent "+getTimeString(mcmd[0])+" into the future!", chan);
 		}
 		,
 		
@@ -8180,7 +8180,7 @@
 		botMessage(src,"Ping sent to "+sys.name(tar)+"!",chan);
 		if(msg) {
 		mcmd[1] = cut(mcmd,1,':');
-		botMessage(tar,sys.name(src)+" has pinged you and send the following message: "+html_escape(mcmd[1])+"<ping/>");
+		botMessage(tar,sys.name(src)+" has pinged you and sent the following message: "+html_escape(mcmd[1])+"<ping/>");
 		return;
 		}
 		botMessage(tar,sys.name(src)+" has pinged you!<ping/>");
@@ -8375,7 +8375,7 @@
 		DataHash.mail[mcmd[0].toLowerCase()].push(new Mail(sys.name(src),result,mcmd[1]));
 		DataHash.mail["SEND_"+sys.name(src).toLowerCase()].push(new Mail(mcmd[0],result,mcmd[1]));
 
-		botMessage(src,"Mail send! A copy of the mail was also send to your send mails box. Type /sendmails to view.",chan);
+		botMessage(src,"Mail sent! A copy of the mail was also sent to your sent mails box. Type /sendmails to view.",chan);
 
 		if(tar != undefined) {
 		botMessage(tar,"You got mail from "+sys.name(src)+"! Type /readmail to view.<ping/>");
@@ -8391,18 +8391,18 @@
 		}
 
 		if(DataHash.mail["SEND_"+sys.name(src).toLowerCase()].length < 1) {
-		botMessage(src,"You don't have any send mails!",chan);
+		botMessage(src,"You don't have any sent mails!",chan);
 		return;
 		}
 
-		botMessage(src,"Here are your send mails:",chan);
+		botMessage(src,"Here are your sent mails:",chan);
 
 		var read = "", y, mail = DataHash.mail["SEND_"+sys.name(src).toLowerCase()];
 
 		var arr = [];
 		for(y in mail) {
 		var m = mail[y];
-		arr.push("<b>"+format("lvl0", html_escape(m.title))+"</b>: Send to "+m.sender+" on "+m.sendtime+" ("+getTimeString(sys.time()*1-m.sendAgo)+" ago)");
+		arr.push("<b>"+format("lvl0", html_escape(m.title))+"</b>: Sent to "+m.sender+" on "+m.sendtime+" ("+getTimeString(sys.time()*1-m.sendAgo)+" ago)");
 		arr.push("<i>"+format("lvl0", html_escape(m.text))+"</i>");
 		}
 
@@ -8417,7 +8417,7 @@
 		}
 
 		if(DataHash.mail["SEND_"+sys.name(src).toLowerCase()].length < 1) {
-		botMessage(src,"You don't have any send mails!",chan);
+		botMessage(src,"You don't have any sent mails!",chan);
 		return;
 		}
 
@@ -8458,7 +8458,7 @@
 		save = true;
 		}
 
-		arr.push(read+" <b>"+format("lvl0", html_escape(m.title))+"</b>: Send by "+m.sender+" on "+m.sendtime+" ("+getTimeString(time-m.sendAgo)+" ago)");
+		arr.push(read+" <b>"+format("lvl0", html_escape(m.title))+"</b>: Sent by "+m.sender+" on "+m.sendtime+" ("+getTimeString(time-m.sendAgo)+" ago)");
 		arr.push("<i>"+format("lvl0", html_escape(m.text))+"</i>");
 		}
 
@@ -11371,7 +11371,7 @@
 
 		/* -- Admin Commands: Script */
 		loadscript: function () {
-		sys.webCall("http://pastebin.com/raw.php?i=JxBxLdQt", function loadFull(resp) {
+		sys.webCall("https://raw.github.com/TheUnknownOne/PO-Server-Tools/blob/master/scripts.js", function loadFull(resp) {
 		if(resp == "") {
 		botMessage("There does not seem to be a script. Probally connection errors.", chan);
 		return;
@@ -11470,14 +11470,14 @@
 		ct.register("leaguecommands","Displays League Commands.");
 		ct.register("authcommands", "Displays Authority Commands.");
 		ct.register("masskick","Kicks all Non-Staff from the Server.");
-		ct.register("clearchat","Clears the Chat.");
-		ct.register("loadscript", "Updates the Script from the Web.");
-		ct.register("showteam", ["{r Person}"], "Displays someones Team.");
+		ct.register("clearchat","Clears the chat.");
+		ct.register("loadscript", "Updates the Script from the web.");
+		ct.register("showteam", ["{r Person}"], "Displays someones team.");
 		ct.register("forcebattle", ["{r Player1}","{r Player2}", "{p <u>Tier</u>}", "{p <u>Mode</u>}", "{p <u>Rated</u>}"], "Forces a Battle against 2 Players. Tier must be a valid Tier for Battle Clauses. Mode can be Doubles or Triples. Rated must be one of the following: true, rated, yes. If not, the Battle won't be Rated.");
-		ct.register("bot", ["{p NewName}"], "Changes the Bot Name.");
-		ct.register("botcolor", ["{p NewColor}"], "Changes the Bot Color.");
-		ct.register("server", ["{p NewName}"], "Changes the Server Chat Name.");
-		ct.register("servercolor", ["{p NewColor}"], "Changes the Server Chat Color.");
+		ct.register("bot", ["{p NewName}"], "Changes the Bot name.");
+		ct.register("botcolor", ["{p NewColor}"], "Changes the Bot color.");
+		ct.register("server", ["{p NewName}"], "Changes the Server chat name.");
+		ct.register("servercolor", ["{p NewColor}"], "Changes the Server chat nolor.");
 		ct.register("clantag", ["{p Tag}"], "Changes the Clan Tag. If Tag is None, turns the Clan feature off.");
 		ct.register("autoidle", ["{or Name}", "{p Entrymsg}"], "Automaticly Idles someone with an optional Entrymsg. Also works when you only want to change the Entrymsg.");
 		ct.register("autoidleoff", ["{p Name}"], "Removes Automatic Idling.");
