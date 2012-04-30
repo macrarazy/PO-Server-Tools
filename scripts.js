@@ -141,8 +141,9 @@
 	   \*========================================*/
 	
 		ScriptVerData = ["2.0.50", "Release Candidate 2"];
-		NOTIFY_UNIQUE_ID = "Notify::pushFix";
-		// Do not change NOTIFY_UNIQUE_ID if you don't know what it does! (don't guess :x)
+		NOTIFY_UNIQUE_ID = "Notify::tourFix2";
+		ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
+        // Do not change NOTIFY_UNIQUE_ID if you don't know what it does! (don't guess :x)
 		
 		
 		try {
@@ -7684,7 +7685,7 @@
 
 		t.register("<b><font size=4 color=forestgreen>Characters:</b></font> Estimated "+ScriptLength_Full);
 		t.register("<b><font size=4 color=darkblue>Lines:</b></font> "+ScriptLength_Lines+"<br/>");
-		t.register("<font color=green><b>Script:</b></font> © TheUnknownOne: <a href='https://raw.github.com/TheUnknownOne/PO-Server-Tools/blob/master/scripts.js'>https://raw.github.com/TheUnknownOne/PO-Server-Tools/blob/master/scripts.js</a></font>");
+		t.register("<font color=green><b>Script:</b></font> © TheUnknownOne: <a href='"+ScriptURL+"'>"+ScriptURL+"</a></font>");
 		// t.register("<small><font color=blue><b>Auto Update Script:</b></font> © TheUnknownOne: <a href='http://pastebin.com/raw.php?i=x9xSx0t8'>http://pastebin.com/raw.php?i=x9xSx0t8</a></font></small>");
 		//t.register("<font color=blue><b>Script Installer:</b></font> © TheUnknownOne: <a href='http://pastebin.com/raw.php?i=f4HNtphA'>http://pastebin.com/raw.php?i=f4HNtphA</a><br/>");
 
@@ -8878,7 +8879,7 @@
 		death[9]="<font color=orange><b>" + srcname + " got their body digitized into megapixels by [HXG] Tech</font></b>.";
 		death[10]="<font color=grey><b>Noir showed " + srcname + " his stabs</font></b>.";
 		death[11]="<font color=red><b> " + srcname + " got beat up by SlowBro</font></b>.";
-		death[12]="font color=maroon><b>" + srcname + " was entoxicated by </font> <font color=hotpink>Titan's awesome power </font></b>.";
+		death[12]="<font color=maroon><b>" + srcname + " was entoxicated by </font> <font color=hotpink>Titan's awesome power </font></b>.";
 		death[13]="<font color='blue'><b>" + srcname + " got stapled by </b></font><font color='red'><b>Deputy Red's</b></font><font color='blue'><b> Stapler</b></font>";
         death[14]="<font color=darkblue><b>"+ srcname +" floated away...</b></font>";
 		death[15]="<font color=blueviolet><b>"+ srcname +" got killed by the triple 6 crew</b></font>";
@@ -8967,7 +8968,7 @@
 
 		/* -- Channel Templates: Normal */
 		ctourauthlist: function () {
-		if(Object.keys(poChan.tourAuth).length == 0) {
+		if(Object.keys(poChan.tourAuth).length === 0) {
 		botMessage(src,"No "+sLetter(ChanTour1)+" at the moment!",chan);
 		return;
 		}
@@ -8978,7 +8979,7 @@
 		t.register("");
 
 		for(x in authlist) {
-		if(sys.id(x) == undefined) {
+		if(sys.id(x) === undefined) {
 		t.register(AuthIMG(x)+" <b> " + x + " </b><font color=red><small>Offline</small></font> <i> Last Online:</i> " + sys.dbLastOn(x));
 		}
 
@@ -10344,7 +10345,7 @@
 		if(banpart != "no")
 		var tban = banpart+", "+(hash_ban !== 0 ? "for "+getTimeString(hash_ban.time-t) : "forever");
 
-		if(online == 'yes') {
+		if(online === 'yes') {
 		var ccc = sys.channelsOfPlayer(tar), i, carr = [];
 		for(i in ccc) {
 		carr.push(ChannelLink(sys.channel(chan))); }
@@ -10366,7 +10367,7 @@
 
 		banlist:function(){
 		var list=sys.banList().sort();
-		if(list.length == 0) {
+		if(list.length === 0) {
 		botMessage(src,"No banned players.",chan);
 		return;
 		}
@@ -10394,7 +10395,7 @@
 		var v = DataHash.voices;
 		var n = mcmd[0];
 		
-		if(dbIp == undefined||n=="") {
+		if(dbIp === undefined||n==="") {
 		botMessage(src, "No such player!", chan);
 		return;
 		}
@@ -10428,7 +10429,7 @@
 		
 		/* -- Mod Commands: Me -- */
 		htmlme: function () {
-		if(commandData=="") {
+		if(commandData==="") {
 		return; }
 		sys.sendHtmlAll("<font color=" + getColor + "><timestamp/><i>*** <b>" + sys.name(src) + "</b> " + commandData + "</i>",chan);
 		}
@@ -10437,11 +10438,11 @@
 		/* -- Mod Commands: Impersonation -- */
 		unimp: function () {
 		var poTarget = JSESSION.users(tar);
-		if(tar==undefined){
+		if(tar===undefined){
 		botMessage(src,'Error: Target isnt online or doesnt exist.',chan);
 		return;
 		}
-		if(poTarget.impersonation == undefined||poTarget.impersonation == ''){
+		if(poTarget.impersonation === undefined||poTarget.impersonation === ''){
 		botMessage(src, 'Error: Target has no impersonation.',chan);
 		return;
 		}
@@ -10558,7 +10559,7 @@
 		muteall = true;
 		botAll(sys.name(src)+" silenced the chat"+timeStr);
 
-		if(timeStr == "!")
+		if(timeStr === "!")
 		return;
 
 		timeOut = function() {
@@ -10645,7 +10646,7 @@
 		var Count = {};
 		for(var y in Poll.votes) {
 		var vote = Poll.votes[y];
-		if(Count[Poll.options[vote]] == undefined) {
+		if(Count[Poll.options[vote]] === undefined) {
 		Count[Poll.options[vote]] = 1;
 		continue;
 		}
@@ -10666,7 +10667,7 @@
 
 		/* -- Mod Commands: Command Status -- */
 		enable: function () {
-		if(cmdData == "me") {
+		if(cmdData === "me") {
 		if (!CommandsEnabled.me) {
 		botAll('/me was turned on!',0);
 		CommandsEnabled.me = true;
@@ -10676,7 +10677,7 @@
 		botMessage(src, '/me is already on.',chan);
 		return;
 		}
-		else if(cmdData == "roulette") {
+		else if(cmdData === "roulette") {
 		if (!CommandsEnabled.roulette) {
 		botAll('/roulette was turned on!',0);
 		CommandsEnabled.roulette = true;
@@ -10686,7 +10687,7 @@
 		botMessage(src, '/roulette is already on.',chan);
 		return;
 		}
-		else if(cmdData == 'catch') {
+		else if(cmdData === 'catch') {
 		if (!CommandsEnabled._catch_) {
 		botAll('/catch was turned on!',0);
 		CommandsEnabled._catch_ = true;
@@ -10696,7 +10697,7 @@
 		botMessage(src, '/catch is already on.',chan);
 		return;
 		}
-		else if(cmdData == "attack") {
+		else if(cmdData === "attack") {
 		if (!CommandsEnabled.attack) {
 		botAll('/attack was turned on!',0);
 		CommandsEnabled.attack = true;
@@ -10709,7 +10710,7 @@
 		,
 
 		disable: function () {
-		if(cmdData == "me") {
+		if(cmdData === "me") {
 		if (CommandsEnabled.me) {
 		botAll('/me was turned off!',0);
 		CommandsEnabled.me = false;
@@ -10719,7 +10720,7 @@
 		botMessage(src, '/me is already off.',chan);
 		return;
 		}
-		else if(cmdData == "roulette") {
+		else if(cmdData === "roulette") {
 		if (CommandsEnabled.roulette) {
 		botAll('/roulette was turned off!',0);
 		CommandsEnabled.roulette = false;
@@ -10729,7 +10730,7 @@
 		botMessage(src, '/roulette is already off.',chan);
 		return;
 		}
-		else if(cmdData == 'catch') {
+		else if(cmdData === 'catch') {
 		if (CommandsEnabled._catch_) {
 		botAll('/catch was turned off!',0);
 		CommandsEnabled._catch_ = false;
@@ -10739,7 +10740,7 @@
 		botMessage(src, '/catch is already off.',chan);
 		return;
 		}
-		else if(cmdData == "attack") {
+		else if(cmdData === "attack") {
 		if (CommandsEnabled.attack) {
 		botAll('/attack was turned off!',0);
 		CommandsEnabled.attack = false;
@@ -10759,7 +10760,7 @@
 
 		/* -- Mod Commands: Warning -- */
 		warn: function () {
-		if(tar == undefined || mcmd[1] == undefined) {
+		if(tar === undefined || mcmd[1] === undefined) {
 		botMessage(src,'Specify a target and reason.',chan);
 		return;
 		}
@@ -10778,7 +10779,7 @@
 
 		/* -- Mod Commands: MOTD -- */
 		changemotd: function () {
-		if(cmdData == "default") {
+		if(cmdData === "default") {
 		if(!motd) {
 		botMessage(src,"The MOTD is already set to default.",chan);
 		return;
@@ -10816,11 +10817,11 @@
 		return;
 		}
 
-		if (tarid == undefined) {
+		if (tarid === undefined) {
 		botMessage(src, 'He/She isnt on or doesnt exist.',chan);
 		return;
 		}
-		if(tarid == src||sys.ip(tarid) == ip) {
+		if(tarid === src||sys.ip(tarid) === ip) {
 		botMessage(src,"Can't kick yourself!",chan);
 		return;
 		}
@@ -10865,7 +10866,7 @@
 		return;
 		}
 		var alias = sys.aliases(commandData);
-		if(alias == "") {
+		if(alias === "") {
 		botMessage(src,"This IP is not registered.",chan);
 		return;
 		}
@@ -10933,7 +10934,7 @@
 		,
 		/* -- Admin Commands: Spam */
 		spam: function () {
-		if (mcmd[1] == undefined||tar == undefined) {
+		if (mcmd[1] === undefined||tar === undefined) {
 		botMessage(src,"The command " + command + " doesnt exist.",chan);
 		return;
 		}
@@ -10964,7 +10965,7 @@
 		supermuteall = true;
 		botAll(sys.name(src)+" super-silenced the chat"+timeStr);
 
-		if(timeStr == "!")
+		if(timeStr === "!")
 		return;
 
 		timeOut = function() {
@@ -11010,7 +11011,7 @@
 
 		var s = styleManager.styles;
 		for(var y in s) {
-		if(y.toLowerCase() == cmdData) {
+		if(y.toLowerCase() === cmdData) {
 		commandData = y;
 		}
 		}
@@ -11019,7 +11020,7 @@
 		styleManager.mainOff(src,style.name,true);
 		}
 
-		if(cmdData == "default") {
+		if(cmdData === "default") {
 		styleManager.mainOff(src,style.name);
 		return;
 		}
@@ -11037,7 +11038,7 @@
 
 		var s = iconManager.icons;
 		for(var y in s) {
-		if(y.toLowerCase() == cmdData) {
+		if(y.toLowerCase() === cmdData) {
 		commandData = y;
 		}
 		}
@@ -11046,7 +11047,7 @@
 		iconManager.mainOff(src,Icons.name,true);
 		}
 
-		if(cmdData == "default") {
+		if(cmdData === "default") {
 		iconManager.mainOff(src,Icons.name);
 		return;
 		}
@@ -11094,7 +11095,7 @@
 		botMessage(src, "You cant make over 16 gym leaders.",chan);
 		return;
 		}
-		if(sys.dbIp(mcmd[1]) == undefined){
+		if(sys.dbIp(mcmd[1]) === undefined){
 		botMessage(src,'That person doesnt exist in the db.',chan);
 		return;
 		}
@@ -11110,7 +11111,7 @@
 		botMessage(src, "You cant make over 4 elite members.",chan);
 		return;
 		}
-		if(sys.dbIp(mcmd[1]) == undefined){
+		if(sys.dbIp(mcmd[1]) === undefined){
 		botMessage(src,'That person doesnt exist in the db.',chan);
 		return;
 		}
@@ -11121,7 +11122,7 @@
 		,
 
 		changechampion: function () {
-		if(dbIp == undefined){
+		if(dbIp === undefined){
 		botMessage(src,'That person doesnt exist in the db.',chan);
 		return;
 		}
@@ -11133,7 +11134,7 @@
 
 		/* -- Admin Commands: Ban */
 		ban:function () {
-		if(sys.dbIp(mcmd[0]) == undefined) {
+		if(sys.dbIp(mcmd[0]) === undefined) {
 		botMessage(src, "No player exists by this name!",chan);
 		return;
 		}
@@ -11143,13 +11144,13 @@
 		}
 		var banlist=sys.banList();
 		for(var a in banlist) {
-		if(sys.dbIp(mcmd[0]) == sys.dbIp(banlist[a])) {
+		if(sys.dbIp(mcmd[0]) === sys.dbIp(banlist[a])) {
 		botMessage(src, "He/she's already banned!",chan);
 		return;
 		}
 		}
 		var srcname = sys.name(src);
-		var name = tar == undefined ? mcmd[0] : sys.name(tar)
+		var name = tar === undefined ? mcmd[0] : sys.name(tar)
 
 		sys.sendHtmlAll("<timestamp/><font color=darkorange><b>"+name+" was banned from the server by "+srcname+"!</b></font>",0);
 
@@ -11163,13 +11164,13 @@
 		,
 
 		unban: function () {
-		if(sys.dbIp(mcmd[0]) == undefined) {
+		if(sys.dbIp(mcmd[0]) === undefined) {
 		botMessage(src, "No player exists by this name!",chan);
 		return;
 		}
 		var banlist=sys.banList()
 		for(a in banlist) {
-		if(sys.dbIp(mcmd[0]) == sys.dbIp(banlist[a])) {
+		if(sys.dbIp(mcmd[0]) === sys.dbIp(banlist[a])) {
 
 		sys.unban(mcmd[0]);
 		sys.sendHtmlAll('<timestamp/><b><font color=darkorange>' + mcmd[0] + ' was unbanned from the server by ' + sys.name(src) + '!</font></b>',0);
@@ -11199,7 +11200,7 @@
 
 		/* -- Admin Commands: Team */
 		showteam: function () {
-		if (tar == undefined) {
+		if (tar === undefined) {
 		botMessage(src, "That person seems to be offline or does not exist.",chan);
 		return;
 		}
@@ -11215,7 +11216,7 @@
 
 		/* -- Admin Commands: Customization */
 		bot:function() {
-		if(commandData == undefined) {
+		if(commandData === undefined) {
 		botMessage(src,"Specify a name for the bot!",chan);
 		return;
 		}
@@ -11231,7 +11232,7 @@
 
 		/* -- Admin Commands: Auto Idle -- */
 		autoidle:function() {
-		if(dbIp == undefined) {
+		if(dbIp === undefined) {
 		botMessage(src,"Unknown User.",chan);
 		return;
 		}
@@ -11242,7 +11243,7 @@
 		var only_msg_change = false;
 
 		if(typeof DataHash.idles[mcmd[0]] != "undefined") {
-		if(DataHash.idles[mcmd[0]].entry == mcmd[1]) {
+		if(DataHash.idles[mcmd[0]].entry === mcmd[1]) {
 		botMessage(src,"This person already has Auto-Idle. And Since you didn't change the Entry Message, the Command was halted.",chan);
 		return;
 		} else {
@@ -11274,7 +11275,7 @@
 		var name = mcmd[0];
 		mcmd[0] = mcmd[0].toLowerCase();
 
-		if(typeof DataHash.idles[mcmd[0]] == "undefined") {
+		if(typeof DataHash.idles[mcmd[0]] === "undefined") {
 		botMessage(src,"This Person does not have Auto-Idle.",chan);
 		return;
 		}
@@ -11290,7 +11291,7 @@
 		,
 
 		botcolor:function() {
-		if(commandData == undefined) {
+		if(commandData === undefined) {
 		botMessage(src,"Specify a name for the bot color!",chan);
 		return;
 		}
@@ -11305,7 +11306,7 @@
 		,
 
 		server:function() {
-		if(commandData == undefined) {
+		if(commandData === undefined) {
 		botMessage(src,"Specify a name for the server chat name!",chan);
 		return;
 		}
@@ -11320,7 +11321,7 @@
 		,
 
 		servercolor:function() {
-		if(commandData == undefined) {
+		if(commandData === undefined) {
 		botMessage(src,"Specify a name for the server chat color!",chan);
 		return;
 		}
@@ -11335,7 +11336,7 @@
 		,
 
 		talk:function() {
-		if(commandData == "") {
+		if(commandData === "") {
 		botMessage(src,"Specify a message.",chan);
 		return;
 		}
@@ -11349,7 +11350,7 @@
 		botMessage(src,"Specify a tag.",chan);
 		return;
 		}
-		if(commandData == Config.ClanTag) {
+		if(commandData === Config.ClanTag) {
 		botMessage(src,"This is already the clan tag.",chan);
 		return;
 		}
@@ -11371,8 +11372,8 @@
 
 		/* -- Admin Commands: Script */
 		loadscript: function () {
-		sys.webCall("https://raw.github.com/TheUnknownOne/PO-Server-Tools/blob/master/scripts.js", function loadFull(resp) {
-		if(resp == "") {
+		sys.webCall(ScriptURL, function loadFull(resp) {
+		if(resp === "") {
 		botMessage("There does not seem to be a script. Probally connection errors.", chan);
 		return;
 		}
@@ -11408,7 +11409,7 @@
 		var tierlist = sys.getTierList();
 
 		for(x in tierlist) {
-		if(mcmd[2].toLowerCase() == tierlist[x].toLowerCase()) {
+		if(mcmd[2].toLowerCase() === tierlist[x].toLowerCase()) {
 		found = true;
 		clauses = sys.getClauses(mcmd[2]);
 		break;
@@ -11424,12 +11425,12 @@
 		var pl1 = sys.name(player1);
 		var pl2 = sys.name(player2);
 
-		if(player1 == undefined||player2 == undefined) {
+		if(player1 === undefined||player2 === undefined) {
 		botMessage(src,"Those players don't exist!",chan);
 		return;
 		}
 
-		if(player1==player2) {
+		if(player1===player2) {
 		botMessage(src,"Can't force battles between the same player!",chan);
 		return;
 		}
@@ -11488,11 +11489,11 @@
 
 		/* -- Admin Authing Commands */
 		adminCommands[removespaces(UserName).toLowerCase()] = function() {
-		if (dbIp == undefined) {
+		if (dbIp === undefined) {
 		botMessage(src, "That player doesnt exist");
 		return;
 		}
-		if(dbAuth == 0) {
+		if(dbAuth === 0) {
 		botMessage(src,"That player already is "+UserName+"!",chan);
 		return;
 		}
@@ -11516,11 +11517,11 @@
 		}
 
 		adminCommands[removespaces(ModName).toLowerCase()] = function() {
-		if (dbIp == undefined) {
+		if (dbIp === undefined) {
 		botMessage(src, "That player doesnt exist",chan);
 		return;
 		}
-		if(dbAuth == 1) {
+		if(dbAuth === 1) {
 		botMessage(src,"That player already is "+ModName+"!",chan);
 		return;
 		}
@@ -11551,17 +11552,17 @@
 		}
 
 		adminCommands[removespaces(Tour0).toLowerCase()] = function() {
-		if(mcmd[0] == '') {
+		if(mcmd[0] === '') {
 		botMessage(src,"Specify a name!",chan);
 		return;
 		}
 		var tari = JSESSION.users(tar);
-		if (dbIp == undefined) {
+		if (dbIp === undefined) {
 		botMessage(src, "That player doesnt exist",chan);
 		return;
 		}
 		var h = mcmd[0].toLowerCase();
-		if(DataHash.megausers[h] == undefined) {
+		if(DataHash.megausers[h] === undefined) {
 		botMessage(src,"That person is already "+Tour0+"!",chan);
 		return;
 		}
@@ -11579,12 +11580,12 @@
 
 		adminCommands[removespaces(Tour1).toLowerCase()] = function() {
 		mcmd = [cmdData,commandData];
-		if(mcmd[0] == '') {
+		if(mcmd[0] === '') {
 		botMessage(src,"Specify a name!",chan);
 		return;
 		}
 		var tari = JSESSION.users(tar);
-		if (dbIp == undefined) {
+		if (dbIp === undefined) {
 		botMessage(src, "That player doesnt exist",chan);
 		return;
 		}
@@ -11679,7 +11680,7 @@
 		/* -- Owner Commands: Table Templates */
 		listbans:function() {
 		var range = DataHash.bannedAbilities;
-		if(Object.keys(range) == 0) {
+		if(Object.keys(range) === 0) {
 		botMessage(src,'Sorry, there are currently no banned abilities.',chan);
 		return;
 		}
@@ -11743,11 +11744,11 @@
 		var x, pl = sys.playerIds(), cur, curn;
 		var randomUser = function () {
 		var ret = Math.round(pl.length*Math.random());
-		if(ret == 0)
+		if(ret === 0)
 		ret = Config.Server.Name;
 		else {
 		ret = sys.name(ret);
-		if(ret == undefined)
+		if(ret === undefined)
 		ret = randomUser();
 		}
 		return ret;
@@ -11796,19 +11797,19 @@
 		/* -- Owner Commands: JSESSION */
 		recreate: function () {
 		var m = mcmd[0].toLowerCase(), type = "", has = "has";
-		if(m == "global") {
+		if(m === "global") {
 		JSESSION.GlobalData = {};
 		type = "Global";
 		}
-		else if(m == "user" || m == "users") {
+		else if(m === "user" || m === "users") {
 		JSESSION.UserData = {};
 		type = "User";
 		}
-		else if(m == "channel" || m == "channels") {
+		else if(m === "channel" || m === "channels") {
 		JSESSION.ChannelData = {};
 		type = "Channel"
 		}
-		else if(m == "tour" || m == "tours") {
+		else if(m === "tour" || m === "tours") {
 		var x, z = JSESSION.ChannelData;
 		for(x in z) {
 		if(z[x].toursEnabled && z[x].tour != undefined) {
@@ -11838,11 +11839,11 @@
 		,
 		
 		identifyscript: function () {
-		if(mcmd[0] == undefined) {
+		if(mcmd[0] === undefined) {
 		botMessage(src, "Specify a name!", chan);
 		return;
 		}
-		if(JSESSION.ScriptID == mcmd[0]) {
+		if(JSESSION.ScriptID === mcmd[0]) {
 		botMessage(src, "Identical Script ID.", chan);
 		return;
 		}
@@ -11858,14 +11859,14 @@
 		botMessage(src, "Use /rankicon on or /rankicon off",chan);
 		return;
 		}
-		if(cmdData == "on"&&!allowicon) {
+		if(cmdData === "on"&&!allowicon) {
 		botEscapeAll('Rank Icons has been turned on by '+sys.name(src)+'!',0);
 		allowicon = true;
 		cache.write("allowicon",true);
 		return;
 		}
 
-		if(cmdData == "off"&&allowicon) {
+		if(cmdData === "off"&&allowicon) {
 		botEscapeAll('Rank Icons has been turned off by '+sys.name(src)+'!',0);
 		allowicon = false;
 		cache.write("allowicon",false);
@@ -11883,7 +11884,7 @@
 		return;
 		}
 		
-		if(FutureLimit == pi) {
+		if(FutureLimit === pi) {
 		botMessage(src, "The limit is already "+pi+"!", chan);
 		return; 
 		}
@@ -11904,7 +11905,7 @@
 		botMessage(src, "Use /autoedit on or /autoedit off",chan);
 		return;
 		}
-		if(cmdData == "on") {
+		if(cmdData === "on") {
 		if(allowedit) {
 		botMessage(src, "Auto Editing is already on!", chan);
 		return;
@@ -11915,7 +11916,7 @@
 		return;
 		}
 
-		if(cmdData == "off") {
+		if(cmdData === "off") {
 		if(allowedit) {
 		botMessage(src, "Auto Editing is already off!", chan);
 		return;
@@ -11936,7 +11937,7 @@
 		botMessage(src,'Sorry, but that isn\'t a number.',chan);
 		return;
 		}
-		if(MaxMessageLength == commandData) {
+		if(MaxMessageLength === commandData) {
 		botMessage(src,"The Message Limit is already "+commandData,chan);
 		return;
 		}
@@ -11953,7 +11954,7 @@
 		,
 
 		changeannouncement: function () {
-		if(commandData == "") {
+		if(commandData === "") {
 		commandData = "<"; }
 		sys.changeAnnouncement(commandData);
 		}
@@ -11971,11 +11972,11 @@
 		URL = commandData;
 		}
 		sys.webCall(URL,function synctiers(resp) {
-		if(resp == "") {
+		if(resp === "") {
 		botMessage(src,"Error: No Content on page or not existing.",chan);
 		return;
 		}
-		if(sys.getFileContent('tiers.xml') == resp) {
+		if(sys.getFileContent('tiers.xml') === resp) {
 		botMessage(src,'Seems like the tiers are the same as that websites tiers.',chan);
 		return;
 		}
@@ -12015,7 +12016,7 @@
 
 		/* -- Owner Commands: Password */
 		clearpass: function () {
-		if(dbIp == undefined) {
+		if(dbIp === undefined) {
 		botMessage(src, "Sorry, that person doesnt exist.",chan);
 		return;
 		}
@@ -12051,7 +12052,7 @@
 		/* -- Owner Commands: Rangeban */
 		rangeban: function () {
 		var ip = mcmd[0].split('.').join("");
-		if(isNaN(ip) || ip == undefined) {
+		if(isNaN(ip) || ip === undefined) {
 		botMessage(src,"Invalid IP.",chan);
 		return;
 		}
@@ -12089,7 +12090,7 @@
 		var time = 0;
 		if(!isNaN(mcmd[1]*60*60)) {
 		var time = sys.time()*1+mcmd[1]*60*60; }
-		if(time == 0) {
+		if(time === 0) {
 		var timestr = 'forever';
 		}
 		else {
@@ -12103,7 +12104,7 @@
 
 		for(q in p) {
 		var b = p[q];
-		if(sys.ip(b).substring(0,l) == mcmd[0]) {
+		if(sys.ip(b).substring(0,l) === mcmd[0]) {
 		sys.kick(b);
 		}
 		}
@@ -12143,7 +12144,7 @@
 
 		catch(err){
 		sys.appendToFile('Evals.txt','Unsuccesfull evaluated code: '+code+' \r\n');
-		var err=FormatError("", err) == "." ? err : FormatError("", err);
+		var err=FormatError("", err) === "." ? err : FormatError("", err);
 		botAll(err, scriptchannel);
 		}
 		
@@ -12171,7 +12172,7 @@
 
 		catch(err){
 		sys.appendToFile('Evals.txt','Unsuccesfull evaluated code using runtime: '+code+' \r\n');
-        var err=FormatError("", err) == "." ? err : FormatError("", err);
+        var err=FormatError("", err) === "." ? err : FormatError("", err);
 		botAll(err, scriptchannel);
 		}
 		}
@@ -12219,79 +12220,79 @@
 		return;
 		}
 
-		if(mcmd[0].toLowerCase() == "ctour") {
+		if(mcmd[0].toLowerCase() === "ctour") {
 		if(mcmd[1] != "1"&&mcmd[1] != "0") {
 		botMessage(src,"Choose auth number 0 or 1 for authtype ctour",chan);
 		return;
 		}
 		sys.sendHtmlAll("<timestamp/><b><font color=darkviolet>Auth type CTour's auth level "+mcmd[1]+" name has been changed to "+mcmd[2]+" by "+sys.name(src)+"!</b></font>",0);
-		if(mcmd[1] == "0") {
+		if(mcmd[1] === "0") {
 		ChanTour0 = mcmd[2];
 		}
-		else if(mcmd[1] == "1") {
+		else if(mcmd[1] === "1") {
 		ChanTour1 = mcmd[2];
 		}
 		cache.write("ChanTour"+mcmd[1]+"Name",mcmd[2]);
 		return;
 		}
 
-		if(mcmd[0].toLowerCase() == "tournament") {
+		if(mcmd[0].toLowerCase() === "tournament") {
 		if(mcmd[1] != "1"&&mcmd[1] != "0") {
 		botMessage(src,"Choose select auth number 0 or 1 for authtype tournament",chan);
 		return;
 		}
 		sys.sendHtmlAll("<timestamp/><b><font color=darkviolet>Auth type Tournament's auth level "+mcmd[1]+" name has been changed to "+mcmd[2]+" by "+sys.name(src)+"!</b></font>",0);
-		if(mcmd[1] == "0") {
+		if(mcmd[1] === "0") {
 		Tour0 = mcmd[2];
 		}
-		else if(mcmd[1] == "1") {
+		else if(mcmd[1] === "1") {
 		Tour1 = mcmd[2];
 		}
 		cache.write("TourLevel"+mcmd[1]+"Name",mcmd[2]);
 		return;
 		}
 
-		if(mcmd[0].toLowerCase() == "server") {
+		if(mcmd[0].toLowerCase() === "server") {
 		if(mcmd[1] != "1"&&mcmd[1] != "0"&&mcmd[1] != "2"&&mcmd[1] != "3"&&mcmd[1] != "4") {
 		botMessage(src,"Choose auth number 0, 1, 2, 3 or 4 for authtype server",chan);
 		return;
 		}
 		sys.sendHtmlAll("<timestamp/><b><font color=darkviolet>Auth type Server's auth level "+mcmd[1]+" name has been changed to "+mcmd[2]+" by "+sys.name(src)+"!</b></font>",0);
-		if(mcmd[1] == "0") {
+		if(mcmd[1] === "0") {
 		UserName = mcmd[2];
 		}
-		else if(mcmd[1] == "1") {
+		else if(mcmd[1] === "1") {
 		ModName = mcmd[2];
 		}
-		else if(mcmd[1] == "2") {
+		else if(mcmd[1] === "2") {
 		AdminName = mcmd[2];
 		}
-		else if(mcmd[1] == "3") {
+		else if(mcmd[1] === "3") {
 		OwnerName = mcmd[2];
 		}
-		else if(mcmd[1] == "4") {
+		else if(mcmd[1] === "4") {
 		InvisName = mcmd[2];
 		}
 		cache.write("AuthLevel"+mcmd[1]+"Name",mcmd[2]);
 		return;
 		}
 
-		if(mcmd[0].toLowerCase() == "channel") {
+		if(mcmd[0].toLowerCase() === "channel") {
 		if(mcmd[1] != "1"&&mcmd[1] != "0"&&mcmd[1] != "2"&&mcmd[1] != "3") {
 		botMessage(src,"Choose auth number 0, 1, 2 or 3 for authtype channel",chan);
 		return;
 		}
 		sys.sendHtmlAll("<timestamp/><b><font color=darkviolet>Auth type Channel's auth level "+mcmd[1]+" name has been changed to "+mcmd[2]+" by "+sys.name(src)+"!</b></font>",0);
-		if(mcmd[1] == "0") {
+		if(mcmd[1] === "0") {
 		ChanUser = mcmd[2];
 		}
-		else if(mcmd[1] == "1") {
+		else if(mcmd[1] === "1") {
 		ChanMod = mcmd[2];
 		}
-		else if(mcmd[1] == "2") {
+		else if(mcmd[1] === "2") {
 		ChanAdmin = mcmd[2];
 		}
-		else if(mcmd[1] == "3") {
+		else if(mcmd[1] === "3") {
 		ChanOwner = mcmd[2];
 		}
 		cache.write("ChanLevel"+mcmd[1]+"Name",mcmd[2]);
@@ -12301,7 +12302,7 @@
 
 		/* -- Owner Commands: Player */
 		deleteplayer: function () {
-		if (dbIp == undefined) {
+		if (dbIp === undefined) {
 		botMessage(src, "That player doesnt exist",chan);
 		return;
 		}
@@ -12346,7 +12347,7 @@
 		megamuteall = true;
 		botAll(sys.name(src)+" mega-silenced the chat"+timeStr);
 
-		if(timeStr == "!")
+		if(timeStr === "!")
 		return;
 
 		timeOut = function() {
@@ -12365,7 +12366,7 @@
 		resetladder:function() {
 		var tiers = sys.getTierList(), get = false, y, name;
 		for(y in tiers) {
-		if(tiers[y].toLowerCase() == commandData.toLowerCase()) {
+		if(tiers[y].toLowerCase() === commandData.toLowerCase()) {
 		get = true; name = tiers[y];
 		break;
 		}
@@ -12392,7 +12393,7 @@
 
 		/* -- Owner Commands: Pointers */
 		pointercommand:function() {
-		if(mcmd[0]==""||mcmd[1]==""||mcmd[1]==undefined) {
+		if(mcmd[0]===""||mcmd[1]===""||mcmd[1]===undefined) {
 		botMessage(src,"Specify a command.",chan);
 		return;
 		}
@@ -12431,7 +12432,7 @@
 		return;
 		}
 		if(d in PointerCommands) {
-		if(PointerCommands[d] == y) {
+		if(PointerCommands[d] === y) {
 		botMessage(src,"Pointer is already defined with that command!",chan);
 		return;
 		}
@@ -12445,7 +12446,7 @@
 
 		delpointercommand:function() {
 		var d = removespaces(cmdData);
-		if(d == "") {
+		if(d === "") {
 		botMessage(src,"Specify a Pointer Command.",chan);
 		return;
 		}
@@ -12461,14 +12462,14 @@
 
 		/* -- Owner Commands: Ban */
 		banfrom:function() {
-		if(mcmd[0]==undefined||mcmd[1]==undefined||mcmd[2]==undefined) {
+		if(mcmd[0]===undefined||mcmd[1]===undefined||mcmd[2]===undefined) {
 		botMessage(src,"Usage /banfrom tier:poke:ability",chan);
 		return;
 		}
 
 		var tiers = sys.getTierList(), get = false, y, name;
 		for(y in tiers) {
-		if(tiers[y].toLowerCase() == mcmd[0].toLowerCase()) {
+		if(tiers[y].toLowerCase() === mcmd[0].toLowerCase()) {
 		get = true; name = tiers[y].toLowerCase();
 		break;
 		}
@@ -12480,7 +12481,7 @@
 		}
 
 		var num = sys.pokeNum(mcmd[1]);
-		if(num == undefined) {
+		if(num === undefined) {
 		botEscapeMessage(src,"The pokemon "+mcmd[1]+" doesn't exist!",chan);
 		return;
 		}
@@ -12491,17 +12492,17 @@
 		abilityarr.push(sys.ability(sys.pokeAbility(num,y,5)).toLowerCase());
 		}
 
-		if(abilityarr.indexOf(mcmd[2].toLowerCase()) == -1) {
+		if(abilityarr.indexOf(mcmd[2].toLowerCase()) === -1) {
 		botEscapeMessage(src,"The Ability "+mcmd[2]+" for pokemon "+mcmd[1]+" doesn't exist!",chan);
 		return;
 		}
 		var bans = DataHash.bannedAbilities;
-		if(bans[name] == undefined) {
+		if(bans[name] === undefined) {
 		bans[name] = {};
 		}
 
 		var pN = sys.pokemon(num).toLowerCase();
-		if(bans[name][pN] == undefined) {
+		if(bans[name][pN] === undefined) {
 		bans[name][pN] = [];
 		}
 
@@ -12517,14 +12518,14 @@
 		}
 		,
 		unbanfrom:function() {
-		if(mcmd[0]==undefined||mcmd[1]==undefined||mcmd[2]==undefined) {
+		if(mcmd[0]===undefined||mcmd[1]===undefined||mcmd[2]===undefined) {
 		botMessage(src,"Usage /unbanfrom tier:poke:ability",chan);
 		return;
 		}
 
 		var tiers = sys.getTierList(), get = false, y, name;
 		for(y in tiers) {
-		if(tiers[y].toLowerCase() == mcmd[0].toLowerCase()) {
+		if(tiers[y].toLowerCase() === mcmd[0].toLowerCase()) {
 		get = true; name = tiers[y].toLowerCase();
 		break;
 		}
@@ -12536,7 +12537,7 @@
 		}
 
 		var num = sys.pokeNum(mcmd[1]);
-		if(num == undefined) {
+		if(num === undefined) {
 		botEscapeMessage(src,"The pokemon "+mcmd[1]+" doesn't exist!",chan);
 		return;
 		}
@@ -12547,28 +12548,28 @@
 		abilityarr.push(sys.ability(sys.pokeAbility(num,y,5)).toLowerCase());
 		}
 
-		if(abilityarr.indexOf(mcmd[2].toLowerCase()) == -1) {
+		if(abilityarr.indexOf(mcmd[2].toLowerCase()) === -1) {
 		botEscapeMessage(src,"The Ability "+mcmd[2]+" for pokemon "+mcmd[1]+" doesn't exist!",chan);
 		return;
 		}
 		var bans = DataHash.bannedAbilities;
-		if(typeof bans[name] == 'undefined') {
+		if(typeof bans[name] === 'undefined') {
 		botMessage(src,"That Tier has no Ability Bans.",chan);
 		return;
 		}
 
 		var pN = sys.pokemon(num).toLowerCase();
-		if(typeof bans[name][pN] == 'undefined') {
+		if(typeof bans[name][pN] === 'undefined') {
 		botMessage(src,"That Pokemon has no Ability Bans.",chan);
 		return;
 		}
 
-		if(bans[name][pN].indexOf(mcmd[2].toLowerCase()) == -1) {
+		if(bans[name][pN].indexOf(mcmd[2].toLowerCase()) === -1) {
 		botMessage(src,"The ability "+mcmd[2]+" isn't banned on "+mcmd[1]+" in tier "+mcmd[0],chan);
 		return;
 		}
 
-		if(bans[name][pN].length == 1) {
+		if(bans[name][pN].length === 1) {
 		delete bans[name][pN]; }
 		else {
 		bans[name][pN].splice(mcmd[2].toLowerCase(),1); }
@@ -12621,11 +12622,11 @@
 
 		/* -- Owner Commands: Authing */
 		ownerCommands[removespaces(AdminName).toLowerCase()] = function() {
-		if (dbIp == undefined) {
+		if (dbIp === undefined) {
 		botMessage(src, "That player doesnt exist.",chan);
 		return;
 		}
-		if(dbAuth == 2) {
+		if(dbAuth === 2) {
 		botMessage(src,"That player already is "+AdminName+"!",chan);
 		return;
 		}
@@ -12653,11 +12654,11 @@
 		}
 
 		ownerCommands[removespaces(OwnerName).toLowerCase()] = function() {
-		if (dbIp == undefined) {
+		if (dbIp === undefined) {
 		botMessage(src, "That player doesnt exist.",chan);
 		return;
 		}
-		if(dbAuth == 3) {
+		if(dbAuth === 3) {
 		botMessage(src,"That player already is "+OwnerName+"!",chan);
 		return;
 		}
@@ -12685,7 +12686,7 @@
 		}
 
 		ownerCommands[removespaces(InvisName).toLowerCase()] = function() {
-		if (sys.dbIp(commandData) == undefined) {
+		if (sys.dbIp(commandData) === undefined) {
 		botMessage(src, "That player doesnt exist.",chan);
 		return;
 		}
@@ -12818,7 +12819,7 @@
 
 		var ch = Config.HighPermission;
 
-		if(ch[sys.name(src)] !== undefined&&ch[sys.name(src)][0] == sys.auth(src)) {
+		if(ch[sys.name(src)] !== undefined&&ch[sys.name(src)][0] === sys.auth(src)) {
 		op = ch[sys.name(src)][1];
 		}
 
@@ -12834,7 +12835,7 @@
 		}
 		sys.sendHtmlAll("<timestamp/><b>["+ChannelLink(sys.channel(chan))+"]Message</b> -- <font color="+getColor+"><b>"+sys.name(src)+":</b></font> "+ html_escape(message), watch);
 
-		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
+		if (channel === mafiachan && mafia.ticks > 0 && mafia.state!="blank" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
 		sys.stopEvent();
 		sys.sendMessage(src, "±Game: You're not playing, so shush! Go in another channel to talk!", mafiachan);
 		return;
@@ -12864,7 +12865,7 @@
 		if(sys.auth(src) >= 1 && sys.auth(src) <= 3) {
 		var l = allowicon === true ? rankico : '+<i>';
 		var f = allowicon === true ? format(src, html_escape(message)) : html_escape(message);
-		if(chan == watch) {
+		if(chan === watch) {
 		sys.sendHtmlAll("<font color="+nc+" face='"+fnt+"'><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></i></font> <font face='"+fnt+"'>" + f+"</font>");
 		}
 		else {
@@ -12876,7 +12877,7 @@
 		if(sys.auth(src) >= 1 && sys.auth(src) <= 3){
 		var l = allowicon === true ? rankico : '+<i>';
 		var f = allowicon === true ? format(src, html_escape(message)) : html_escape(message);
-		if(chan == watch) {
+		if(chan === watch) {
 		sys.sendHtmlAll("<font color="+nc+" face='"+fnt+"'><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></i></font> <font face='"+fnt+"'> "+f+"</font>");
 		}
 		else {
@@ -12889,7 +12890,7 @@
 		if(sys.auth(src) >= 1 && sys.auth(src) <= 3){
 		var l = allowicon === true ? rankico : '+<i>';
 		var f = allowicon === true ? format(src, html_escape(message)) : html_escape(message);
-		if(chan == watch) {
+		if(chan === watch) {
 		sys.sendHtmlAll("<font color="+nc+"><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></i></font> "+f);
 		}
 		else {
@@ -12981,7 +12982,7 @@
 
 		script.hostAuth(src);
 
-		if(script.testName(src) == true) {
+		if(script.testName(src) === true) {
 		kick(src);
 		return;
 		}
@@ -12990,14 +12991,14 @@
 
 		for(x in chid) {
 		var chan = JSESSION.channels(chid[x]);
-		if(typeof(chan.chanAuth[srcname]) == 'undefined') {
-		if(sys.auth(src) == 0)
+		if(typeof(chan.chanAuth[srcname]) === 'undefined') {
+		if(sys.auth(src) === 0)
 		chan.chanAuth[srcname] = 0;
 
-		if(sys.auth(src) == 1)
+		if(sys.auth(src) === 1)
 		chan.chanAuth[srcname] = 1;
 
-		if(sys.auth(src) == 2)
+		if(sys.auth(src) === 2)
 		chan.chanAuth[srcname] = 2;
 
 		if(sys.auth(src) > 2||chan.creator === sys.name(src)&&chan.creator !== '~Unknown~')
@@ -13039,7 +13040,7 @@
 		}
 		}
 		try {
-		if (sys.gen(src) == 2) {
+		if (sys.gen(src) === 2) {
 		pokes:
 		for (var i = 0; i <= 6; i++)
 		for (var j = 0; j < bannedGSCSleep.length; ++j)
@@ -13086,10 +13087,10 @@
 		var winnerName = sys.name(winner).toLowerCase();
 		var loserName = sys.name(loser).toLowerCase();
 		var money = DataHash.money;
-		if(typeof money[loserName] == "undefined") {
+		if(typeof money[loserName] === "undefined") {
 		money[loserName]=0;
 		}
-		if(typeof money[winnerName] == "undefined") {
+		if(typeof money[winnerName] === "undefined") {
 		money[winnerName] = 0;
 		}
 		money[winnerName] += winMoney;
@@ -13126,7 +13127,7 @@
 
 		poUser.lastChallenge = sys.time()*1;
 
-		if((sys.tier(src)=="Challenge Cup"&&sys.tier(dest)=="Challenge Cup"||sys.tier(src)=="1v1 Challenge Cup"&&sys.tier(dest)=="1v1 Challenge Cup")&&(clauses%32<16)){
+		if((sys.tier(src)==="Challenge Cup"&&sys.tier(dest)==="Challenge Cup"||sys.tier(src)==="1v1 Challenge Cup"&&sys.tier(dest)==="1v1 Challenge Cup")&&(clauses%32<16)){
 		botMessage(src,"Challenge Cup must be enabled in the challenge window for a CC battle");
 		sys.stopEvent();
 		return;
@@ -13147,7 +13148,7 @@
 		script.eventMovesCheck(dest);
 		script.customAbilityBans(dest,true);
 		script.customAbilityBans(src,true);
-		if(sys.tier(src)==sys.tier(dest)){
+		if(sys.tier(src)===sys.tier(dest)){
 		var tier=sys.tier(src);
 		script.dreamWorldAbilitiesCheck(src,true);
 		script.dreamWorldAbilitiesCheck(dest,true);
@@ -13192,7 +13193,7 @@
 		script.eventMovesCheck(dest);
 		script.customAbilityBans(dest,true);
 		script.customAbilityBans(src,true);
-		if(sys.tier(src)==sys.tier(dest)){
+		if(sys.tier(src)===sys.tier(dest)){
 		var tier=sys.tier(src);
 		script.dreamWorldAbilitiesCheck(src,true);
 		script.dreamWorldAbilitiesCheck(dest,true);
@@ -13220,7 +13221,7 @@
 		thecolour=colour;
 		}
 		}
-		if(thecolour==''){
+		if(thecolour===''){
 		botMessage(src,"Bug! "+poke+" doesnt have a colour in checkMonocolour :(");
 		sys.changeTier(src,"Challenge Cup");
 		sys.stopEvent()
@@ -13228,7 +13229,7 @@
 		}
 		for(var i=1;i<6;++i){
 		var poke=sys.pokemon(sys.teamPoke(src,i));
-		if(colours[thecolour].indexOf(poke)==-1){
+		if(colours[thecolour].indexOf(poke)===-1){
 		botMessage(src,poke+" doesnt have the colour: "+thecolour);
 		sys.changeTier(src,"Challenge Cup");
 		sys.stopEvent()
@@ -13240,7 +13241,7 @@
 		,
 		shanaiAbilityCheck : function(src, se) {
 		var tier = sys.tier(src);
-		if (["Shanai Cup", "Shanai Cup 1.5", "Shanai Cup STAT", "Original Shanai Cup TEST"].indexOf(tier) == -1) {
+		if (["Shanai Cup", "Shanai Cup 1.5", "Shanai Cup STAT", "Original Shanai Cup TEST"].indexOf(tier) === -1) {
 		return;
 		}
 		var bannedAbilities = {
@@ -13298,7 +13299,7 @@
 		}
 		,
 		littleCupCheck : function(src, se) {
-		if (["Wifi LC", "Wifi LC Ubers","Wifi LC UU"].indexOf(sys.tier(src)) == -1) {
+		if (["Wifi LC", "Wifi LC Ubers","Wifi LC UU"].indexOf(sys.tier(src)) === -1) {
 		return;
 		}
 		for (var i = 0; i < 6; i++) {
@@ -13308,7 +13309,7 @@
 		botMessage(src, "" + sys.pokemon(x) + " is not allowed with a Dream World ability in this tier. Change it in the teambuilder.");
 		}
 
-		if (sys.tier(src) == "Wifi LC" && sys.hasLegalTeamForTier(src, "DW LC") || sys.tier(src) == "Wifi LC Ubers" && sys.hasLegalTeamForTier(src, "DW OU")) {
+		if (sys.tier(src) === "Wifi LC" && sys.hasLegalTeamForTier(src, "DW LC") || sys.tier(src) === "Wifi LC Ubers" && sys.hasLegalTeamForTier(src, "DW OU")) {
 		sys.changeTier(src, "DW LC");
 		}else {
 		if (se)
@@ -13338,7 +13339,7 @@
 		else
 		botMessage(src, "" + sys.pokemon(x) + " has to be Male and have no egg moves with its Dream World ability in  " + sys.tier(src) + " tier. Change it in the teambuilder.");
 		}
-		if (sys.tier(src) == "Wifi OU" && sys.hasLegalTeamForTier(src, "DW OU")) {
+		if (sys.tier(src) === "Wifi OU" && sys.hasLegalTeamForTier(src, "DW OU")) {
 		sys.changeTier(src, "DW OU");
 		} else if (sys.tier(src) == "Wifi OU" && sys.hasLegalTeamForTier(src, "DW Ubers")) {
 		sys.changeTier(src, "DW Ubers");
@@ -13348,15 +13349,15 @@
 		else if (sys.tier(src) == "DW 1v1" && sys.hasLegalTeamForTier(src, "DW OU")) {
 		sys.changeTier(src, "DW OU");
 		}
-		else if (sys.tier(src) == "DW 1v1" && sys.hasLegalTeamForTier(src, "DW Ubers")) {
+		else if (sys.tier(src) === "DW 1v1" && sys.hasLegalTeamForTier(src, "DW Ubers")) {
 		sys.changeTier(src, "DW Ubers");
 		}
-		else if (sys.tier(src) == "Wifi UU" && sys.hasLegalTeamForTier(src, "DW UU")) {
+		else if (sys.tier(src) === "Wifi UU" && sys.hasLegalTeamForTier(src, "DW UU")) {
 		sys.changeTier(src, "DW UU");
-		} else if (sys.tier(src) == "Wifi LU" && sys.hasLegalTeamForTier(src, "DW LU")) {
+		} else if (sys.tier(src) === "Wifi LU" && sys.hasLegalTeamForTier(src, "DW LU")) {
 		sys.changeTier(src, "DW LU");
 		}
-		else if (sys.tier(src) == "Wifi LC" && sys.hasLegalTeamForTier(src, "Wifi LC") || sys.tier(src) == "Wifi LC Ubers" && sys.hasLegalTeamForTier(src, "Wifi LC Ubers")) {
+		else if (sys.tier(src) === "Wifi LC" && sys.hasLegalTeamForTier(src, "Wifi LC") || sys.tier(src) === "Wifi LC Ubers" && sys.hasLegalTeamForTier(src, "Wifi LC Ubers")) {
 		sys.changeTier(src, "DW LC");
 		}else {
 		if (se)
@@ -13371,14 +13372,14 @@
 		,
 
 		inconsistentCheck : function(src, se) {
-		if (["DW OU", "DW UU", "DW LU", "Wifi OU", "Wifi UU", "Wifi LU", "Wifi LC", "DW LC", "Wifi Ubers", "DW Ubers", "Clear Skies", "Monotype", "Monocolour", "Smogon OU", "Smogon UU", "Smogon RU", "Wifi NU"].indexOf(sys.tier(src)) == -1) {
+		if (["DW OU", "DW UU", "DW LU", "Wifi OU", "Wifi UU", "Wifi LU", "Wifi LC", "DW LC", "Wifi Ubers", "DW Ubers", "Clear Skies", "Monotype", "Monocolour", "Smogon OU", "Smogon UU", "Smogon RU", "Wifi NU"].indexOf(sys.tier(src)) === -1) {
 		return;
 		}
 		var moody = sys.abilityNum("Moody");
 		for (var i = 0; i < 6; i++) {
 		var x = sys.teamPoke(src, i);
 
-		if (x != 0 && sys.teamPokeAbility(src, i) == moody) {
+		if (x != 0 && sys.teamPokeAbility(src, i) === moody) {
 		botMessage(src, "" + sys.pokemon(x) + " is not allowed with Moody in this tier. Change it in the teambuilder.");
 		sys.changeTier(src, "Challenge Cup");
 		if (se)
