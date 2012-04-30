@@ -1,0 +1,10 @@
+How to use qlineargradient:
+<div style="background-color: qlineargradient(cx: float(0-1), cy: float(0-1), stop: float(unlimited) color (repeatable))">
+
+How to use qradialgradient:
+same as above, but also supports fx, fy and radius(unlimited)
+
+Mess around with them until you have wished result.
+
+Questions: Just ask.
+Requests: Maybe.
