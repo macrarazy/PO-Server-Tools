@@ -1,0 +1,810 @@
+{
+    "name": "FF13",
+    "author": "TheUnknownOne",
+    "sides": [
+        {
+            "side": "heroes",
+            "translation": "Heroes"
+        },
+        {
+            "side": "psicom",
+            "translation": "PSICOM"
+        },
+        {
+            "side": "cieth",
+            "translation": "Cie'th"
+        },
+        {
+            "side": "baddies",
+            "translation": "Barthandelus"
+        },
+        {
+            "side": "robot",
+            "translation": "Miltarized Units"
+        },
+        {
+            "side": "pulse",
+            "translation": "Pulse Automata"
+        },
+        {
+            "side": "feral",
+            "translation": "Feral Creatures"
+        },
+		
+        {
+            "side": "fun",
+            "translation": "Targeting Beacon"
+        },
+        {
+            "side": "village",
+            "translation": "The Idiots of teh game :P"
+        }
+    ],
+    "roles": [
+        {
+            "role": "light1",
+            "translation": "Lightning",
+            "side": "heroes",
+            "help": "Type /Kill [name] to kill someone durning the night! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 17
+                    }
+                }
+            }
+        },
+        {
+            "role": "light2",
+            "translation": "Lightning",
+            "side": "heroes",
+            "help": "Type /Kill [name] to kill someone durning the night! Type /Disable [name] to prevent there action! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 6
+                    },
+                    "disable": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 2,
+                        "command": "distract"
+                    }
+                }
+            }
+        },
+        {
+            "role": "light3",
+            "translation": "Lightning",
+            "side": "heroes",
+            "help": "Type /Kill [name] to kill someone durning the night! Type /kill [name] durning the day to kill! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 4
+                    }
+                },
+                "standby": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "msg": "You can kill now using /kill [name] :",
+                        "killmsg": "Lightning revealed! Using some epic moves, ~Target~ has died!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "sash1",
+            "translation": "Sazh",
+            "side": "heroes",
+            "help": "Your vote counts as 2! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "vote": 2
+            }
+        },
+        {
+            "role": "sash2",
+            "translation": "Sazh",
+            "side": "heroes",
+            "help": "Type /Kill [name] to kill someone durning the day! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "standby": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "msg": "You can kill now using /kill [name] :",
+                        "killmsg": "Sash has used teh epic gunz! BAM BAM, and ~Target~ has died!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "sash3",
+            "translation": "Sazh",
+            "side": "heroes",
+            "help": "Type /Kill [name] to kill someone durning the day! Your vote counts as 2! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "vote": 2,
+                "standby": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "msg": "You can kill now using /kill [name] :",
+                        "killmsg": "Sash has used teh epic gunz! BAM BAM, and ~Target~ has died!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "snow1",
+            "translation": "Snow",
+            "side": "heroes",
+            "help": "Type /Protect [name] to protect someone durning the night! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "night": {
+                    "protect": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 1
+                    }
+                }
+            }
+        },
+        {
+            "role": "snow2",
+            "translation": "Snow",
+            "side": "heroes",
+            "help": "Type /Protect [name] to protect someone durning the night! Your vote counts as 2! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "protect": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 1
+                    }
+                },
+                "vote": 2
+            }
+        },
+        {
+            "role": "snow3",
+            "translation": "Snow",
+            "side": "heroes",
+            "help": "Type /Protect [name] to protect someone durning the night! You can protect twice! You cannot be nightkilled! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "protect": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 1,
+                        "limit": 2
+                    }
+                },
+                "kill": {
+                    "mode": "ignore"
+                }
+            }
+        },
+        {
+            "role": "vanille1",
+            "translation": "Vanille",
+            "side": "heroes",
+            "help": "Type /Inspect [name] to inspect someone durning the night! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "night": {
+                    "inspect": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 28
+                    }
+                }
+            }
+        },
+        {
+            "role": "vanille2",
+            "translation": "Vanille",
+            "side": "heroes",
+            "help": "Type /Kill [name] to kill someone durning the night! Type /Inspect [name] to inspect someone! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 12
+                    },
+                    "inspect": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 30
+                    }
+                }
+            }
+        },
+        {
+            "role": "vanille3",
+            "translation": "Vanille",
+            "side": "heroes",
+            "help": "Type /Inspect [name] to protect someone durning the night! You can inspect twice! Type /Kill [name] to kill durning the night! Your sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "inspect": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 27,
+                        "limit": 2
+                    }
+                }
+            }
+        },
+        {
+            "role": "hope1",
+            "translation": "Hope",
+            "side": "heroes",
+            "help": "You can find out a killer! You are sided with the heroes. Lead them to victory!",
+            "actions": {
+                "hax": {
+                    "kill": {
+                        "revealTeam": 0.5,
+                        "revealPlayer": 0.25
+                    }
+                }
+            }
+        },
+        {
+            "role": "hope2",
+            "translation": "Hope",
+            "side": "heroes",
+            "help": "You can find out a killer! Use /Inspect [Name] to inspect someone durning the night! You are sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "hax": {
+                    "kill": {
+                        "revealTeam": 0.5,
+                        "revealPlayer": 0.25
+                    }
+                },
+                "night": {
+                    "inspect": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 30
+                    }
+                }
+            }
+        },
+        {
+            "role": "hope3",
+            "translation": "Hope",
+            "side": "heroes",
+            "help": "You can find out a killer! Use /Kill [Name] to kill someone durning the night! You are sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "hax": {
+                    "kill": {
+                        "revealTeam": 0.5,
+                        "revealPlayer": 0.25
+                    }
+                },
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 24
+                    }
+                }
+            }
+        },
+        {
+            "role": "fang1",
+            "translation": "Fang",
+            "side": "heroes",
+            "help": "You can kill using /Kill [name] durning the night! You are sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 24
+                    }
+                }
+            }
+        },
+        {
+            "role": "fang2",
+            "translation": "Fang",
+            "side": "heroes",
+            "help": "Use /Kill [Name] to kill someone durning the night! Use /Protect [Name] to protect someone durning the night!You are sided with the heroes. Lead them to victory!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 24
+                    },
+                    "protect": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 4
+                    }
+                }
+            }
+        },
+        {
+            "role": "enforcer",
+            "translation": "PSICOM Enforcer",
+            "side": "psicom",
+            "help": "Time to get those heroes.... You however have no special commands.",
+            "actions": {
+            }
+        },
+        {
+            "role": "tracker",
+            "translation": "PSICOM Tracker",
+            "side": "psicom",
+            "help": "Time to get those heroes.... Kill them using /Kill [name] in the night!",
+            "actions": {
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 20
+                    }
+                }
+            }
+        },
+        {
+            "role": "exe",
+            "translation": "PSICOM Executioner",
+            "side": "psicom",
+            "help": "Time to get those heroes.... Kill them using /Kill [name] in the day! Your vote counts as 2 aswell.",
+            "actions": {
+                "startup": "team-reveal",
+                "standby": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "msg": "You can kill now using /kill [name] :",
+                        "killmsg": "The PSICOM Executioner has quickly slashed ~Target~!"
+                    }
+                },
+                "vote": 2
+            }
+        },
+        {
+            "role": "hunt",
+            "translation": "PSICOM Huntress",
+            "side": "psicom",
+            "help": "Time to get those heroes.... Type /Daze [name] to disable there move!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "daze": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 2
+                    }
+                }
+            }
+        },
+        {
+            "role": "scav",
+            "translation": "PSICOM Scavenger",
+            "side": "psicom",
+            "help": "Time to get those heroes.... Kill them using /Kill [name] in the night!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 10
+                    }
+                }
+            }
+        },
+        {
+            "role": "bomb",
+            "translation": "PSICOM Bombadier",
+            "side": "psicom",
+            "help": "Time to get those heroes.... Kill them using /Kill [name] in the day!",
+            "actions": {
+                "startup": "team-reveal",
+                "standby": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "msg": "You can kill now using /kill [name] :",
+                        "killmsg": "A PSICOM Bombadier has launched a rocket at ~Target~!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "ghast",
+            "translation": "Ghast",
+            "side": "cieth",
+            "help": "Rrrrrrr.... Type /Kill [name] to kill durning the night...",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 23
+                    }
+                }
+            }
+        },
+        {
+            "role": "taxim",
+            "translation": "Taxim",
+            "side": "cieth",
+            "help": "Rrrrrrr.... Type /Kill [name] to kill durning the day...",
+            "actions": {
+                "startup": "team-reveal",
+                "standby": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "msg": "You can kill now using /kill [name] :",
+                        "killmsg": "A Taxim Appeard! It has used firaga on ~Target~!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "attacus",
+            "translation": "Attacus",
+            "side": "cieth",
+            "help": "Rrrrrrr.... Type /Kill [name] to kill durning the day...... Becuz u are awesome, you can kill twice AND! Your vote counts as 2!",
+            "actions": {
+                "startup": "team-reveal",
+				"vote":2,
+                "standby": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "msg": "You can kill now using /kill [name] :",
+                        "killmsg": "Attacus has taken his sword and slashed ~Target~!",
+						"limit":2
+                    }
+                }
+            }
+        },
+        {
+            "role": "seeker",
+            "translation": "Seeker",
+            "side": "cieth",
+            "help": "Rrrrrrr.... Type /Kill [name] to kill durning the night...",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 18
+                    }
+                }
+            }
+        },
+        {
+            "role": "wight",
+            "translation": "Wight",
+            "side": "cieth",
+            "help": "Rrrr... You cannot be nightkilled....",
+            "actions": {
+                "startup": "team-reveal",
+                "kill": {
+                    "mode": "ignore"
+                }
+            }
+        },
+        {
+            "role": "barth1",
+            "translation": "Barthandelus",
+            "side": "baddies",
+            "help": "Type /Kill [name] to kill someone durning the night! You can nightkill twice! Type /kill [name] durning the day to kill! Your on your own... however, your op so you can win :3",
+            "actions": {
+                "night": {
+                    "kill": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 30,
+                        "limit": 2
+                    }
+                },
+                "standby": {
+                    "kill": {
+                        "target": "AnyButSelf",
+                        "msg": "You can kill now using /kill [name] :",
+                        "killmsg": "Barthandelus in tha house! Too bad ~Target~ got lazor'd!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "barth2",
+            "translation": "Barthandelus",
+            "side": "baddies",
+            "help": "Type /Kill [name] to kill someone durning the night! You can nightkill 3 times! Your vote counts as -1, use this to safe yourself! Your sided with orphan!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 25,
+                        "limit": 3
+                    }
+                },
+                "vote": -1
+            }
+        },
+        {
+            "role": "orphan",
+            "translation": "Orphan",
+            "side": "baddies",
+            "help": "Type /Kill [name] to kill someone durning the night!  Type /Protect [name] to protect yourself, barth, or somebody else :p. Your vote counts as -1, use this to safe yourself! Your sided with barthandelus!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 26
+                    },
+                    "protect": {
+                        "target": "Any",
+                        "common": "Self",
+                        "priority": 1
+                    }
+                },
+                "vote": -1
+            }
+        },
+        {
+            "role": "watchdrone",
+            "translation": "Deckdrone",
+            "side": "robot",
+            "help": "You cant do anything special :P You are sided with the Militarized Units however...",
+            "actions": {
+                "startup": "team-reveal"
+            }
+        },
+        {
+            "role": "reaper",
+            "translation": "Midlight Reaper",
+            "side": "robot",
+            "help": "Type /Kill [name] to kill someone durning the night! Do it twice! Try to beat the rest :P",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 15,
+                        "limit": 2
+                    }
+                }
+            }
+        },
+        {
+            "role": "striker",
+            "translation": "Kalavinka Striker",
+            "side": "robot",
+            "help": "Type /Kill [name] to kill someone durning the night!  Try to beat the rest :P",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 4
+                    }
+                }
+            }
+        },
+        {
+            "role": "hoplite",
+            "translation": "Hoplite",
+            "side": "pulse",
+            "help": "And there was peace... Try to help your pulse friends... And sorry about the 'you cant do crap' part.",
+            "actions": {
+                "startup": "team-reveal"
+            }
+        },
+        {
+            "role": "box",
+            "translation": "Boxed Phalanx",
+            "side": "pulse",
+            "help": "And there was peace... Try to help your pulse friends... You can protect using /Protect [Name].",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "protect": {
+                        "target": "AnyButRole",
+                        "common": "Self",
+                        "priority": 2
+                    }
+                }
+            }
+        },
+        {
+            "role": "pulsework",
+            "translation": "Pulsework Centurion",
+            "side": "pulse",
+            "help": "And there was peace... Try to help your pulse friends... You can kill using /Kill [Name].",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 16
+                    }
+                }
+            }
+        },
+        {
+            "role": "longgui",
+            "translation": "Long Gui",
+            "side": "feral",
+            "help": "Type /Kill [name] to kill someone durning the night! You kill any killers.! Make the Feral Creatures win!",
+            "actions": {
+                "startup": "team-reveal",
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 30
+                    }
+                },
+                "kill": {
+                    "mode": "killattacker"
+                }
+            }
+        },
+        {
+            "role": "hero",
+            "translation": "Borgbear Hero",
+            "side": "feral",
+            "help": "Type /Kill [name] to kill someone durning the day! You get hax on kill. Make the Feral Creatures win!",
+            "actions": {
+                "startup": "team-reveal",
+                "standby": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "msg": "You can kill now using /kill [name] :",
+                        "killmsg": "The Borgbear Hero took out ~Target~!"
+                    }
+                },
+                "hax": {
+                    "kill": {
+                        "revealTeam": 0.36,
+                        "revealPlayer": 0.2999
+                    }
+                }
+            }
+        },
+        {
+            "role": "munch",
+            "translation": "Munchkin",
+            "side": "feral",
+            "help": "On to victory! Your sided with the feral creatures!",
+            "actions": {
+                "startup": "team-reveal"
+            }
+        },
+		
+        {
+            "role": "becon",
+            "translation": "Targeting Beacon",
+            "side": "fun",
+            "help": "Hey ummmm you know everything that is going to happen pretty much, team up with some other side...",
+            "actions": {
+                "hax": {
+                    "kill": {
+                        "revealTeam": 0.99,
+                        "revealPlayer": 0.99
+                    },
+					
+                    "distract": {
+                        "revealTeam": 0.99,
+                        "revealPlayer": 0.99
+                    },
+					
+                    "protect": {
+                        "revealTeam": 0.99,
+                        "revealPlayer": 0.99
+                    },
+					
+                    "inspect": {
+                        "revealTeam": 0.99,
+                        "revealPlayer": 0.99
+                    }
+				}
+				}
+				}
+    ],
+    "roles1": [
+        "light1",
+        "sash1",
+        "snow1",
+        "tracker",
+        "tracker",
+        "hope1",
+        "enforcer",
+        "vanille1",
+        "wight",
+        "ghast",
+        "ghast",
+        "wight",
+        "exe"
+    ],
+    "roles2": [
+        "light2",
+        "hope2",
+        "sash2",
+        "fang1",
+        "vanille2",
+        "snow2",
+        "scav",
+        "bomb",
+        "hunt",
+        "reaper",
+        "watchdrone",
+        "striker",
+        "bomb",
+        "watchdrone",
+        "watchdrone",
+        "scav",
+        "striker",
+        "barth1",
+        "hunt",
+        "watchdrone",
+        "bomb"
+    ],
+    "roles3": [
+        "hope3",
+        "vanille3",
+        "light3",
+        "sash3",
+        "fang2",
+        "snow3",
+        "hoplite",
+        "hero",
+        "barth2",
+        "orphan",
+        "hoplite",
+        "box",
+        "pulsework",
+        "pulsework",
+        "seeker",
+        "taxim",
+        "munch",
+        "munch",
+        "attacus",
+        "taxim",
+        "becon",
+        "longgui",
+        "hoplite",
+        "munch",
+        "taxim",
+        "munch",
+        "pulsework",
+        "seeker"
+    ],
+    "villageCantLoseRoles": [],
+	"killmsg": "±Loss: ~Player~ (~Role~) has fallen!",
+    "killusermsg": "±KillMessage: Too bad, try again :)"
+}
