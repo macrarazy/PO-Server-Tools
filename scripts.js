@@ -1,4 +1,4 @@
-		/*===========================================================*\
+﻿		/*===========================================================*\
 		|| #               -Script Information-                    # ||
 		|| ######################################################### ||
 		|| #                                                       # ||
@@ -135,28 +135,29 @@
 		|| - As the first argument...                                ||
 		\*===========================================================*/
 
-	   /*========================================*\
-	   |  ~ Thanks to the following testers: ~    |
-	   |  * kupo (The Battle Tower)               |
-	   \*========================================*/
-	
+		/*========================================*\
+		|  ~ Thanks to the following testers: ~    |
+		|  * kupo (The Battle Tower)               |
+		\*========================================*/
+
 		ScriptVerData = ["2.0.50", "Release Candidate 2"];
 		NOTIFY_UNIQUE_ID = "Notify::tourFix2";
 		ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
+		CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
         // Do not change NOTIFY_UNIQUE_ID if you don't know what it does! (don't guess :x)
-		
-		
+
+
 		try {
 		delete RECOVERY_BACKUP;
 		} catch (e) {}
-		
+
 		RECOVERY_BACKUP = {};
-		
+
 		if(typeof script != "undefined") {
 		for(var x in script)
 		RECOVERY_BACKUP[x] = script[x];
 		}
-		
+
 		var ConfigLoad = function() {
 		ConfigSaves = ["%%-Config-%%","==Config=="];
 
@@ -204,20 +205,20 @@
 		data = "";
 		this.additionalData = data;
 		}
-		
+
 		VERSION.prototype.toString = function () {
 		return this.version+" "+this.additionalData;
 		}
-		
-		
+
+
 		ScriptVersion = new VERSION(ScriptVerData[0], ScriptVerData[1]);
-		
-		
-        /*** BOTS ***/
+
+
+		/*** BOTS ***/
 		botEscapeMessage = function(src, message, channel) {
 		if(typeof Config == 'undefined')
 		return;
-		
+
 		var color = Config.Bot.botcolor;
 		var name = Config.Bot.bot;
 		if(typeof channel != "undefined") {
@@ -231,7 +232,7 @@
 		botMessage = function(src, message, channel) {
 		if(typeof Config == 'undefined')
 		return;
-		
+
 		var color = Config.Bot.botcolor;
 		var name = Config.Bot.bot;
 		if(typeof channel != "undefined") {
@@ -245,7 +246,7 @@
 		botEscapeAll = function(message, channel) {
 		if(typeof Config == 'undefined')
 		return;
-		
+
 		var color = Config.Bot.botcolor;
 		var name = Config.Bot.bot;
 		if(typeof channel != "undefined") {
@@ -259,7 +260,7 @@
 		botAll = function(message, channel) {
 		if(typeof Config == 'undefined')
 		return;
-		
+
 		var color = Config.Bot.botcolor;
 		var name = Config.Bot.bot;
 		if(typeof channel != "undefined") {
@@ -273,42 +274,42 @@
 		FormatError = function (mess, e) {
 		if(typeof mess != "string")
 		mess = "";
-		
+
 		if(mess != "" && mess[mess.length-1] != "." && mess[mess.length-1] != "!"
 		&& mess[mess.length-1] != "?" && mess[mess.length-1] != ":")
 		mess += ".";
-		
+
 		if(typeof e.format !== 'undefined') {
 		return mess+" Custom Error: "+e
 		}
-		
+
 		var lineData = e.lineNumber == 1 ? "" : " on line "+e.lineNumber;
-        var name = e.name;
+		var name = e.name;
 		var msg = e.message;
-		
+
 		var str = name+lineData+": "+msg;
 		var lastChar = msg[msg.length-1];
 		str += lastChar == "." ? "" : ".";
-		
+
 		return mess+" "+str;
 		}
-		
+
 		ChannelLink = function (channel) {
 		if(sys.channelId(channel) == undefined)
 		return "";
-		
+
 		return "<a href='po:join/"+channel+"'>#"+channel+"</a>";
 		}
-		
+
 		ChannelNames = function () {
 		var channelIds = sys.channelIds(), channelNames = [];
 		for(var x in channelIds) {
 		channelNames.push(sys.channel(channelIds[x]));
 		}
-		
+
 		return channelNames;
 		}
-		
+
 		addChannelLinks = function (line2) {
 		var channelNames = ChannelNames();
 
@@ -337,9 +338,9 @@
 		}
 		return line;
 		}
-		
+
 		var capsMessage = function(mess) {
-		return /[A-Z]/.test(mess);
+		return /[QWERTYUIOPASDFGHJKLZXCVBNM]/.test(mess);
 		}
 
 		var normalLetter = function(l) {
@@ -360,6 +361,8 @@
 		this.floodCount = 0;
 		this.caps = 0;
 		this.lastFuture = 0;
+		this.lastActionChan = -1;
+		this.channelAccess = true;
 
 		if(typeof DataHash == "undefined") {
 		print("Runtime Error: DataHash undefined.");
@@ -369,7 +372,7 @@
 		this.voice = false;
 		return;
 		}
-		
+
 		if(DataHash.mutes !== undefined) {
 		var d = DataHash.mutes;
 		this.muted = d.hasOwnProperty(this.ip);
@@ -388,12 +391,12 @@
 		this.icon = undefined;
 		}
 		}
-		
+
 		if(DataHash.voices !== undefined) {
 		var i = DataHash.voices;
 		this.voice = i.hasOwnProperty(this.lowername);
-  		}
-		
+		}
+
 		}
 
 		POUser.prototype.toString = function () {
@@ -418,30 +421,27 @@
 		}
 
 		POUser.prototype.capsMute = function(message) {
-		if(sys.auth(this.id) > 0) {
-		return false;
-		}
 		if(typeof hpAuth != 'undefined' &&
 		hpAuth(this.id) > 0)
+		return false;
+		
+		if(typeof AutoMute != 'undefined' &&
+		!AutoMute)
 		return false;
 
 
 		for(var z in message) {
-        if(capsMessage(message[z])) {
+		if(capsMessage(message[z])) {
 		this.caps+=1;
 		}
-        else {
+		else {
 		this.caps-=1;
 		}
-        if(this.caps < 0) {
+		if(this.caps < 0) {
 		this.caps = 0;
 		}
-        }
-
-		if(this.caps >= 50 && this.caps <= 69) {
-		botMessage(this.id, "You are nearing your caps mute.");
 		}
-		
+
 		if(this.caps >= 70) {
 		sys.sendHtmlAll("<timestamp/><b>Caps Mute Message</b> -- <font color="+script.namecolor(this.id)+"><b>"+this.name+":</b></font> "+ html_escape(message), watch);
 		botAll(this.name+" was muted for 5 minutes for spamming caps!",0);
@@ -605,125 +605,6 @@
 
 		function POGlobal(id) { }
 
-		/* Not done yet, regexps fail. 
-		_SyntaxHighlighter = function () {
-		
-		// onReplace
-		var commentBlock = function ($1) {
-		if(this.inComment)
-		return $1;
-		this.inComment = true;
-		return "<font color=green"+$1+"</font>";
-		}
-		
-		var commentLine = function ($1) {
-		if(this.inComment)
-		return $1;
-		this.inComment = true;
-		return "<font color=lightblue>"+$1+"</font>";
-		}
-		
-		this.commentBlock = [/\/\* (.*?)\*\//gm, commentBlock];
-		this.commentLine = [/\/\/ (.*?)/g, commentLine];
-		this.string1 = [/\"(.*?)\"/g, "purple"];
-		this.string2 = [/\'(.*?)\'/g, "purple"];
-		
-		this.hash = [/\{(.*?)\}/g, "orange"];
-		this.keyWords = [
-		"in", "function", "prototype", "var", "this", "do", 
-		"for", "return", "void", "while", "with", "case", 
-		"default", "switch", "try", "catch", "finally", "new",
-		"true", "false"];
-		
-		this.keyWords.sort(
-		function(first, second) {
-		if(first.length >= second)
-		return first;
-		else
-		return second;
-		});
-		
-		this.keyword = ["darkblue", true, true, false];
-		this.functionStart = [/(.*?)\./, "darkred"];
-		this.number = [/[0-9]/g, "red"];
-		
-		this.operators = ["+", "|","&", "*", "%", "-", "=", "/"];
-		this.operator = ["grey", false, false, true];
-		}
-		
-		_SyntaxHighlighter.prototype.highlight = function (code) {
-		var c = code;
-		
-		c = c.replace(this.commentBlock[0], 
-		"<font color="+this.commentBlock[1]+">$1</font>");
-		c = c.replace(this.commentLine[0], 
-		"<font color="+this.commentLine[1]+">$1</font>");
-		
-		if(this.inComment)
-		return c;
-		
-		c = c.replace(this.string1[0], 
-		"<font color="+this.string1[1]+">$1</font>");
-		c = c.replace(this.string2[0], 
-		"<font color="+this.string2[1]+">$1</font>");
-		c = c.replace(this.hash[0], 
-		"<font color="+this.hash[1]+">$1</font>");
-		c = c.replace(this.number[0], 
-		"<font color="+this.number[1]+">$1</font>");
-		c = c.replace(this.functionStart[0], 
-		"<font color="+this.functionStart[1]+">$1</font>");
-		
-		// Keywords and operators
-		var k = this.keyWords, o = this.operators;
-		var km = this.keyword, om = this.operator, z;
-		
-		var captureFormatting = function (arr) {
-		var isItalic = false, isUnderline = false, isBold = false, stra = "";
-
-		stra += "<font color="+arr[0]+">";
-		
-		if(arr[1]) {
-		stra += "<i>";
-		isItalic = true;
-		}
-		
-		if(arr[2]) {
-		stra += "<u>";
-		isUnderline = true;
-		}
-		
-		if(arr[3]) {
-		stra += "<b>";
-		isBold = true;
-		}
-		
-		stra += "[CODE]";
-		if(isBold) stra += "</b>";
-        if(isUnderline) stra += "</u>";
-		if(isItalic) stra += "</i>";
-        stra += "</font>";
-		
-		return stra;
-		}
-		
-		var kmF = captureFormatting(km);
-		var omF = captureFormatting(om);
-		
-		for(z in k) {
-		c = c.replace(k[z], kmF.replace("[CODE]", k[z]));
-		}
-		
-		for(z in o) {
-		c = c.replace(o[z], omF.replace("[CODE]", o[z]));
-		}
-		
-		return c;
-		}
-		
-		
-		EvalHighlighter = new _SyntaxHighlighter();
-		*/
-		
 		_JSESSION = function () {
 		this.UserData = {};
 		this.ChannelData = {};
@@ -755,11 +636,11 @@
 		}
 
 		_JSESSION.prototype.refill = function () {
-        var x, users = sys.playerIds(), channels = sys.channelIds();
+		var x, users = sys.playerIds(), channels = sys.channelIds();
 		if(this.UsesUser) {
 		for(x in users) {
 		if(this.users(users[x]) == undefined)
-        this.createUser(users[x]);
+		this.createUser(users[x]);
 		}
 		}
 
@@ -774,30 +655,30 @@
 		_JSESSION.prototype.users = function (id) {
 		if(!this.UsesUser)
 		return undefined;
-		
+
 		if(typeof this.UserData[id] == 'undefined')
 		return undefined;
-		
+
 		return this.UserData[id];
 		}
 
 		_JSESSION.prototype.channels = function (id) {
 		if(!this.UsesChannel)
 		return undefined;
-		
+
 		if(typeof this.ChannelData[id] == 'undefined')
 		return undefined;
-		
+
 		return this.ChannelData[id];
 		}
 
 		_JSESSION.prototype.global = function () {
 		if(!this.UsesGlobal)
 		return undefined;
-		
+
 		if(typeof this.GlobalData == 'undefined')
 		return undefined;
-		
+
 		return this.GlobalData;
 		}
 
@@ -843,7 +724,7 @@
 
 		if(sys.channel(id) == undefined)
 		return false;
-		
+
 		this.ChannelData[id] = new this.ChannelFunc(id);
 		return true;
 		}
@@ -908,7 +789,7 @@
 		// Otherwise will reset user/channel data every script load.
 		JSESSION = new _JSESSION();
 		}
-		
+
 		cut = function(array, entry, join) {
 		if(!join) join = "";
 		return array.splice(entry).join(join);
@@ -961,7 +842,7 @@
 		return "Tag Team Single Elimination";
 		else if(test === 5)
 		return "Tag Team Double Elimination";
-		else if(test === 6) 
+		else if(test === 6)
 		return "Tag Team Triple Elimination";
 		else
 		return "Unknown Mode";
@@ -1097,22 +978,21 @@
 		this.remaining--;
 		}
 
-		if(this.players[name2].couplesid != -1 && this.tourmode == 2 && this.startedBattles.indexOf(name2) > -1)  {
 		this.tourBattleEnd(this.tourOpponent(name2), name2, true);
 		botEscapeAll(sys.name(src) + " left the tournament!", 0);
-		}
+
 		delete this.players[name2];
 
-		if (this.roundplayers == 0){
+		if (objLength(this.couples) == 0){
 		this.roundPairing();
 		}
 
 		if(!this.tagteam_tour() || this.tourmode != 2)
 		return;
-		
+
 		var loser = "";
 		var winners = [];
-		
+
 		if(this.playersOfTeam(this.Blue) == 0) {
 		loser = "Team Blue";
 		winners = this.namesOfTeam(this.Red);
@@ -1121,10 +1001,10 @@
 		loser = "Team Red";
 		winners = this.namesOfTeam(this.Blue);
 		}
-		
+
 		if(loser == "")
 		return;
-		
+
 		if(display == 1) {
 		this.border();
 		this.white();
@@ -1147,7 +1027,7 @@
 		+ "</tr>"
 		+ "</table>",this.id);
 		}
-		
+
 		return;
 		}
 
@@ -1219,7 +1099,7 @@
 		botMessage(src, "You may not use the dq command.",this.id);
 		return;
 		}
-		
+
 		if (this.tourmode == 0) {
 		botMessage(src, "Wait until the tournament has started.",this.id);
 		return;
@@ -1254,17 +1134,17 @@
 		+ "</table>",this.id);
 		}
 
-		if(this.players[name2].couplesid != -1 && this.startedBattles.indexOf(name2) > -1) {
+		// if(this.players[name2].couplesid != -1 && this.startedBattles.indexOf(name2) > -1) {
 		this.tourBattleEnd(this.tourOpponent(name2), name2, true);
-		}
+		// }
 		delete this.players[name2];
-		
+
 		if(!this.tagteam_tour() || this.tourmode != 2)
 		return;
-		
+
 		var loser = "";
 		var winners = [];
-		
+
 		if(this.playersOfTeam(this.Blue) == 0) {
 		loser = "Team Blue";
 		winners = this.namesOfTeam(this.Red);
@@ -1273,10 +1153,10 @@
 		loser = "Team Red";
 		winners = this.namesOfTeam(this.Blue);
 		}
-		
+
 		if(loser == "")
 		return;
-		
+
 		if(display == 1) {
 		this.border();
 		this.white();
@@ -1299,19 +1179,19 @@
 		+ "</tr>"
 		+ "</table>",this.id);
 		}
-		
+
 		return;
 		}
-        
+
 		Tours.prototype.command_switch = function (src, commandData) {
 		var poUser = JSESSION.users(src);
 		if (JSESSION.channels(this.id).tourAuth[sys.name(src).toLowerCase()] == undefined&&sys.auth(src) < 1&&!poUser.megauser&&!JSESSION.channels(this.id).isChanMod(src)) {
 		botMessage(src, "You may not use the switch command.",this.id);
 		return;
 		}
-		
+
 		var parts = commandData.split(':');
-		if(!this.isInTourney(parts[0]) 
+		if(!this.isInTourney(parts[0])
 		|| sys.id(parts[1]) == undefined) {
 		botMessage(src, "The players need to exist!", this.id);
 		return;
@@ -1320,12 +1200,12 @@
 		botMessage(src, "You can't switch a battling player!", this.id);
 		return;
 		}
-		
+
 		var obj = this.players[parts[0].toLowerCase()];
 		this.players[parts[1]] = obj;
 		this.players[parts[1]].name = sys.name(sys.id(parts[1]));
 		delete this.players[parts[0].toLowerCase()];
-		
+
 		if(display == 1) {
 		this.border();
 		this.white();
@@ -1352,7 +1232,7 @@
 		+ "</table>",this.id);
 		}
 		}
-		
+
 		Tours.prototype.command_push = function (src,commandData) {
 		var poUser = JSESSION.users(src);
 		if (JSESSION.channels(this.id).tourAuth[sys.name(src).toLowerCase()] == undefined&&sys.auth(src) < 1&&!poUser.megauser&&!JSESSION.channels(this.id).isChanMod(src)) {
@@ -1363,12 +1243,12 @@
 		botMessage(src, "Wait until the tournament has started.",this.id);
 		return;
 		}
-		
+
 		if(this.tourmode == 2 && this.tagteam_tour()) {
 		botMessage(src, "You cannot add players to a running tag team tour!", this.id);
 		return;
 		}
-		
+
 		if (this.isInTourney(commandData.toLowerCase())) {
 		botMessage(src, commandData + " is already in the tournament.",this.id);
 		return;
@@ -1383,7 +1263,7 @@
 
 		var name = sys.id(commandData) != undefined ? sys.name(sys.id(commandData)) : commandData;
 		this.buildHash(name);
-		
+
 		if(display == 1) {
 		this.border();
 		this.white();
@@ -1415,11 +1295,11 @@
 		this.roundnumber = 0;
 		this.roundPairing();
 		}
-		
+
 		return;
 		}
-		
-		
+
+
 		Tours.prototype.command_cancelbattle = function (src,commandData) {
 		var poUser = JSESSION.users(src);
 		if (JSESSION.channels(this.id).tourAuth[sys.name(src).toLowerCase()] == undefined&&sys.auth(src) < 1&&!poUser.megauser&&!JSESSION.channels(this.id).isChanMod(src)) {
@@ -1489,9 +1369,9 @@
 		if(this.identify(cp) == "Unknown Mode") {
 		cp = 1; /* set to Single Elimination */
 		}
-		
+
 		this.battlemode = cp;
-		
+
 		if(!this.tagteam_tour()) {
 		if (isNaN(this.tournumber) || this.tournumber <= 2){
 		botMessage(src, "You must specify a tournament size of 3 or more.",this.id);
@@ -1499,18 +1379,18 @@
 		}
 		}
 		else {
-        if (isNaN(this.tournumber) || this.tournumber <= 3){
+		if (isNaN(this.tournumber) || this.tournumber <= 3){
 		botMessage(src, "You must specify a tournament size of 4 or more.",this.id);
 		return;
 		}
-		
+
 		var half = this.tournumber/2;
 		if(Math.floor(half) != half) {
 		botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12]", this.id)
 		return;
 		}
 		}
-		
+
 		var tier = sys.getTierList();
 		var found = false;
 
@@ -1578,7 +1458,7 @@
 
 		Tours.prototype.command_changespots = function (src,commandData) {
 		var poUser = JSESSION.users(src);
-        if (JSESSION.channels(this.id).tourAuth[sys.name(src).toLowerCase()] == undefined&&sys.auth(src) < 1&&!poUser.megauser&&!JSESSION.channels(this.id).isChanMod(src)) {
+		if (JSESSION.channels(this.id).tourAuth[sys.name(src).toLowerCase()] == undefined&&sys.auth(src) < 1&&!poUser.megauser&&!JSESSION.channels(this.id).isChanMod(src)) {
 		botMessage(src, "You may not use the changespots command.",this.id);
 		return;
 		}
@@ -1600,7 +1480,7 @@
 		botMessage(src, "You must specify a size of 4 or more.",this.id);
 		return;
 		}
-		
+
 		var half = count/2;
 		if(Math.floor(half) != half) {
 		botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12]", this.id)
@@ -1608,7 +1488,7 @@
 		}
 		}
 
-        if (count < objLength(this.players)) {
+		if (count < objLength(this.players)) {
 		botMessage(src, "There are more than that people registered.",this.id);
 		return;
 		}
@@ -1636,13 +1516,13 @@
 		+ "</tr>"
 		+ "</table>",this.id);
 		}
-		
+
 		if (this.tourSpots() == 0) {
 		this.tourmode = 2;
 		this.roundnumber = 0;
 		this.roundPairing();
 		}
-		
+
 		}
 
 		Tours.prototype.command_endtour = function (src,commandData) {
@@ -1676,7 +1556,7 @@
 		}
 		return;
 		}
-		
+
 		botMessage(src, "You are unable to end the Tournament because it is not currently running.",this.id);
 		}
 
@@ -1701,7 +1581,7 @@
 		this.players = {};
 		this.roundplayers = 0;
 		}
-		
+
 		Tours.prototype.cleanRoundVariables = function () {
 		this.losers = [];
 		this.ongoingBattles = [];
@@ -1718,7 +1598,7 @@
 		else
 		now++;
 		}
-		
+
 		return '';
 		}
 
@@ -1733,7 +1613,7 @@
 		var loser = "";
 		var winners = [];
 		var loseteam = -1;
-		
+
 		if(this.playersOfTeam(b) == 0) {
 		loser = "Team Blue";
 		winners = this.namesOfTeam(r);
@@ -1744,17 +1624,17 @@
 		winners = this.namesOfTeam(b);
 		loseteam = r;
 		}
-		
+
 		return {'winners': winners, 'loser': loser, 'losingteam': loseteam};
 		}
-		
+
 		Tours.prototype.roundPairing = function () {
 		if(this.roundnumber == 0 && this.tagteam_tour())
 		this.buildTeams();
-		
-		this.roundnumber += 1;
+
+		this.roundnumber++;
 		this.cleanRoundVariables();
-		
+
 		if (objLength(this.players) == 1) {
 		var winner = this.first(this.players).name;
 		botAll("The winner of the "+this.tourtier+" Tournament is " + winner + "!", this.id);
@@ -1783,7 +1663,7 @@
 		cache.write("money",JSON.stringify(DataHash.money));
 
 		if(nameId != undefined) {
-		botMessage(nameId,"You won "+randNum+" money!",this.id);
+		botMessage(nameId,"You won "+randNum+" battle points!",this.id);
 		}
 		}
 
@@ -1814,7 +1694,7 @@
 		if(sys.dbIp(name) == undefined) {
 		continue;
 		}
-		
+
 		var nameId = sys.id(name);
 		var money = DataHash.money;
 		if(money[name] == undefined) {
@@ -1825,16 +1705,16 @@
 		cache.write("money",JSON.stringify(DataHash.money));
 
 		if(nameId != undefined) {
-		botMessage(nameId,"You won "+randNum+" money!",this.id);
+		botMessage(nameId,"You won "+randNum+" battle points!",this.id);
 		}
 		}
-        }
-		
+		}
+
 		this.clearVariables();
 		return;
 		}
 		}
-		
+
 		this.finals = objLength(this.players) == 2;
 		if (!this.finals) {
 		this.border();
@@ -1852,48 +1732,51 @@
 		var i = 0;
 		var tempplayers = {}, x, p = this.players;
 		var x1, name1, n1tl, x2, name2, n2tl;
-		
+
 		for(x in p)
 		tempplayers[x] = p[x];
-		
+
 		var a;
-		
-		var team = "<b><font color=blue>[Team Blue]</font></b>", 
+
+		var team = "<b><font color=blue>[Team Blue]</font></b>",
 		team2 = "<b><font color=red>[Team Red]</font></b>";
-		
+
 		if(!this.tagteam_tour()) {
 		team = "", team2 = "";
 		}
-		
+
 		for(a in p) {
+		if(objLength(tempplayers) == 1) { // only 1 player...
+		break;
+		}
 		if(!this.tagteam_tour()) {
 		x1 = this.randomPlayer(tempplayers);
-		if(isEmpty(x1))
-		break;
+		// if(isEmpty(x1)||x1=="")
+		// break;
 		name1 = this.playerName(tempplayers, x1);
 		n1tl = name1.toLowerCase();
 		delete tempplayers[n1tl];
 		x2 = this.randomPlayer(tempplayers);
-		if(isEmpty(x2))
-		break;
+		// if(isEmpty(x2)||x2=="")
+		// break;
 		name2 = this.playerName(tempplayers, x2);
 		n2tl = name2.toLowerCase();
 		delete tempplayers[n2tl];
 		} else {
-	    x1 = this.randomPlayer(tempplayers, 0);
-		if(isEmpty(x1))
-		break;
+		x1 = this.randomPlayer(tempplayers, 0);
+		// if(isEmpty(x1)||x1=="")
+		// break;
 		name1 = this.playerName(tempplayers, x1);
 		n1tl = name1.toLowerCase();
 		delete tempplayers[n1tl];
 		x2 = this.randomPlayer(tempplayers, 1);
-		if(isEmpty(x2))
-		break;
+		// if(isEmpty(x2)||x2 == "")
+		// break;
 		name2 = this.playerName(tempplayers, x2);
-		n2tl = name2.toLowerCase(); 
+		n2tl = name2.toLowerCase();
 		delete tempplayers[n2tl];
 		}
-		
+
 		try {
 		this.couples[i] = [name1, name2];
 		this.players[n1tl].couplesid = i;
@@ -1903,7 +1786,7 @@
 		} catch(e) { // Had to do it this way >.>
 		break;
 		}
-		
+
 		if(!this.AutoStartBattles) {
 		this.idleBattles.push(name1);
 		this.idleBattles.push(name2);
@@ -1915,7 +1798,7 @@
 		else
 		botAll(team+name1 + " VS " + team2+name2, this.id);
 		}
-		
+
 		this.white();
 		if (objLength(tempplayers) > 0) {
 		botAll(this.first(tempplayers).name + " is randomly selected to go to next round!", this.id);
@@ -1940,12 +1823,12 @@
 		}
 		}
 		}
-		
+
 		Tours.prototype.isInTourney = function (name) {
 		var name2 = name.toLowerCase();
 		return name2 in this.players;
 		}
-		
+
 		Tours.prototype.isInTourneyId = function (id) {
 		var name = sys.name(id).toLowerCase();
 		return name in this.players;
@@ -2013,15 +1896,17 @@
 		this.tie(src, dest);
 		return;
 		}
-		
+
 		this.tourBattleEnd(sys.name(src), sys.name(dest));
 		}
 
 		Tours.prototype.tourBattleEnd = function(src, dest, rush) {
-		if (!this.areOpponentsForTourBattle2(src, dest) || !this.ongoingTourneyBattle(src)) {
+		if ((!this.areOpponentsForTourBattle2(src, dest) || !this.ongoingTourneyBattle(src))
+		&& !rush) {
+		botAll("Tour debug chan "+this.id+": "+this.areOpponentsForTourBattle2(src, dest)+", "+this.ongoingTourneyBattle(src));
 		return;
 		}
-		
+
 		var srcTL = src.toLowerCase();
 		var destTL = dest.toLowerCase();
 
@@ -2063,13 +1948,13 @@
 		var destwin = this.players[destTL].roundwins;
 		var winner = '', loser = '', winnerTL = '', loserTL = '';
 		var tln = this.battlemode-winnums;
-		
+
 		if(winnums >= this.battlemode) {
 		if(srcwin == destwin) {
 		this.tie();
 		return;
 		}
-		
+
 		if(srcwin > destwin) {
 		winner = src;
 		winnerTL = src.toLowerCase();
@@ -2082,12 +1967,12 @@
 		loser = src;
 		loserTL = src.toLowerCase()
 		}
-		
+
 		this.losers.push(winner);
 		this.losers.push(loser);
 		this.winners.push(winner);
-		
-	    this.startedBattles.splice(srcTL, 1);
+
+		this.startedBattles.splice(srcTL, 1);
 		this.startedBattles.splice(destTL, 1);
 		delete this.players[loserTL];
 		delete this.couples[this.players[winnerTL].couplesid];
@@ -2125,7 +2010,7 @@
 		Tours.prototype.tourSpots = function () {
 		return this.tournumber - objLength(this.players);
 		}
-		
+
 		Tours.prototype.randomPlayer = function (hash, team) {
 		var ol = objLength(hash);
 		if(ol == 1)
@@ -2133,35 +2018,35 @@
 		if(ol == 2)
 		return sys.rand(0, 2);
 		var rand = sys.rand(0, ol);
-		
+
 		if(!this.tagteam_tour())
 		return rand;
-		
+
 		var h = this.hashOf(hash, rand);
 		if(h == undefined)
-		return undefined;
-		
+		return "";
+
 		while(h.team != team) {
 		h = this.hashOf(hash, sys.rand(0, ol));
 		}
-		
+
 		return rand;
 		}
-		
-		
+
+
 		Tours.prototype.buildHash = function (src) {
 		var name = sys.name(src);
 		if(name == undefined)
 		name = src;
-		
+
 		this.players[name.toLowerCase()] = {'name':name, 'couplesid':-1, 'couplenum':-1, 'roundwins':0, 'team': -1};
 		}
-		
+
 		Tours.prototype.tagteam_tour = function () {
 		var b = this.battlemode;
 		return b > 3 && b < 7;
 		}
-		
+
 		Tours.prototype.buildTeams = function () {
 		var p = this.players, y, team = 0, id;
 		for(y in p) {
@@ -2170,42 +2055,42 @@
 		if(team == 0) {
 		if(id != undefined)
 		botMessage(id, "You are in Team Blue.", this.id);
-		
+
 		team++;
 		}
 		else {
 		if(id != undefined)
 		botMessage(id, "You are in Team Red.", this.id);
-		
+
 		team--;
 		}
 		}
 		}
-		
+
 		Tours.prototype.playersOfTeam = function (team) {
 		var y, p = this.players, ret = 0;
 		for(y in p) {
-		if(p[y].team == team) 
+		if(p[y].team == team)
 		ret++;
 		}
-		
+
 		return ret;
 		}
-		
+
 		Tours.prototype.namesOfTeam = function (team) {
 		var y, p = this.players, ret = [];
 		for(y in p) {
-		if(p[y].team == team) 
+		if(p[y].team == team)
 		ret.push(p[y].name);
 		}
-		
+
 		return ret;
 		}
-		
+
 		Tours.prototype.totalPlayers = function () {
 		return objLength(this.players);
 		}
-		
+
 		Tours.prototype.hashOf = function (hash, num) {
 		var y, i =0;
 		for(y in hash) {
@@ -2214,10 +2099,10 @@
 		}
 		i++;
 		}
-		
+
 		return undefined;
 		}
-		
+
 		Tours.prototype.Blue = 0;
 		Tours.prototype.Red = 1;
 
@@ -2233,11 +2118,11 @@
 
 		String.prototype.contains = function(string) {
 		var str = this;
-        return str.indexOf(string) > -1;
+		return str.indexOf(string) > -1;
 		}
 
 		// Used to get unicode value of some text.
-        String.prototype.unicode = function() {
+		String.prototype.unicode = function() {
 		var str = this, y, strlen = str.length;
 		var uarr = [];
 		for(y = 0; y < strlen; y++) {
@@ -2254,7 +2139,7 @@
 		code_str += "\\u"+code[y]+"|";
 		}
 		return code_str.substring(0,code_str.length-1)+"/";
-        }
+		}
 
 		String.prototype.name = function () {
 		var str = this;
@@ -2283,28 +2168,28 @@
 		String.prototype.midRef = function(position, n) { // QStringRef QString::midRef
 		if(n == null || typeof n != "number")
 		n = -1;
-		
+
 		var str = this;
 		var strlen = str.length-1;
 		if(position > strlen)
 		return "";
-		
+
 		var substri = str.substr(position);
-		if(n > strlen || n == -1) 
+		if(n > strlen || n == -1)
 		return substri;
-		
+
 		return substri.substr(0, n);
 		}
-		
+
 		String.prototype.replaceBetween = function (pos1, pos2, replace) {
 		var str = this;
 		var returnStr = str;
 		var sub = str.substr(pos1, pos2);
 		returnStr = returnStr.replace(sub, replace);
-		
+
 		return returnStr;
 		}
-		
+
 		JSESSION.identifyScriptAs("JSESSION Original");
 		JSESSION.registerUser(POUser);
 		JSESSION.registerChannel(POChannel);
@@ -2315,19 +2200,19 @@
 		TourChanger = function () {
 		this.tourChange = false;
 		this.uniqueID = NOTIFY_UNIQUE_ID;
-		
-	    this.checkID = function () {
+
+		this.checkID = function () {
 		if(this.uniqueID != NOTIFY_UNIQUE_ID) {
 		this.tourChange = false;
 		this.once();
 		this.uniqueID = NOTIFY_UNIQUE_ID;
 		}
 		}
-		
+
 		this.once = function () {
 		if(this.tourChange)
 		return;
-		
+
 		var tours = JSESSION.ChannelData, x;
 		for(x in tours) {
 		if(typeof tours[x].tour != "undefined") {
@@ -2335,16 +2220,16 @@
 		botAll("Tournament was updated!", tours[x].id);
 		}
 		}
-		
+
 		this.tourChange = true;
 		}
-	    }
 		}
-		
+		}
+
 		if(typeof NotifyTourChange == 'undefined') {
 		NotifyTourChange = new TourChanger();
 		}
-		
+
 		NotifyTourChange.checkID();
 		NotifyTourChange.once();
 
@@ -2371,7 +2256,7 @@
 		}
 		}
 		}
-		
+
 		if (!valid) {
 		sys.changeTier(src, "Challenge Cup")
 		if(e) {
@@ -2385,13 +2270,13 @@
 		sys.createChannel(name);
 		return sys.channelId(name);
 		}
-		
+
 		mafiachan = makeChan("Mafia Channel");
 		trivia = makeChan("Trivia");
 		watch = makeChan("Watch");
 		staffchannel = makeChan("Staff Channel");
 		scriptchannel = makeChan("Eval Area");
-		
+
 		channels = [0,mafiachan,trivia,staffchannel,watch,scriptchannel];
 		updateChannelData();
 		}
@@ -2489,13 +2374,15 @@
 		cache.sic('MaxMessageLength',500);
 		cache.sic('TourDisplay',1);
 		cache.sic("FutureLimit", 15);
-		
+
 		cache.sic("allowedit",false);
 		cache.sic("allowicon",false);
 		cache.sic("implock",true);
 		cache.sic("motd",false);
 		cache.sic("evallock",false);
 		cache.sic("AutoStartTours",true);
+		cache.sic("AutoKick", true);
+		cache.sic("AutoMute", true);
 
 		cache.sic("mutes","{}");
 		cache.sic("tempbans","{}");
@@ -2539,7 +2426,7 @@
 		"cban": "channelban",
 		"cunban": "channelunban",
 		"ctauth": "ctourauthlist",
-		
+
 		"colorchat": "chatcolor",
 		"colorchatoff": "chatcoloroff",
 		"removeautoidle": "autoidleoff",
@@ -2555,7 +2442,7 @@
 		"rangebans": "rangebanlist",
 		"say": "talk",
 		"implockoff": "impunlock",
-		
+
 		"rankiconon": "mainicon",
 		"icon": "icons",
 		"rankicons": "icons",
@@ -2563,9 +2450,9 @@
 		"rankinfo": "iconinfo",
 		"loadicon": "loadicons",
 		"rankiconcommands": "iconcommands",
-				
+
 		"style": "mainstyle",
-		
+
 		"sendhtmlall": "html",
 		"send": "sendall",
 		"announce": "wall",
@@ -2576,7 +2463,7 @@
 		"cannounce": "channelwall",
 		"channelhtmlannounce": "channelhtmlwall",
 		"chtmlannounce": "channelhtmlwall",
-		
+
 		"cp": "info",
 		"q": "push",
 		"voicelist": "voices",
@@ -2588,15 +2475,31 @@
 		cache.sic("pointercommands",JSON.stringify(NewUsePC));
 		}
 
-		ChanUser=cache.get("ChanLevel0Name")
+		var pc = PointerCommands || JSON.parse(cache.get("pointercommands"));
+		if(!"!!/Reverse/!!" in pc)
+		pc["!!/Reverse/!!"] = [];
+		
+		var c = false;
+		for(var y in pc) {
+		if(!pc.hasOwnProperty(pc[y])) {
+		pc[pc[y]] = [];
+		}
+		pc[pc[y]].push(y);
+		c=true;
+		}
+		
+		if(c)
+		cache.write("pointercommands", JSON.stringify(pc));
+		
+		ChanUser=cache.get("ChanLevel0Name");
 		ChanMod=cache.get("ChanLevel1Name");
-		ChanAdmin=cache.get("ChanLevel2Name")
-		ChanOwner=cache.get("ChanLevel3Name")
-		UserName=cache.get("AuthLevel0Name")
-		ModName=cache.get("AuthLevel1Name")
-		AdminName=cache.get("AuthLevel2Name")
-		OwnerName=cache.get("AuthLevel3Name")
-		InvisName=cache.get("AuthLevel4Name")
+		ChanAdmin=cache.get("ChanLevel2Name");
+		ChanOwner=cache.get("ChanLevel3Name");
+		UserName=cache.get("AuthLevel0Name");
+		ModName=cache.get("AuthLevel1Name");
+		AdminName=cache.get("AuthLevel2Name");
+		OwnerName=cache.get("AuthLevel3Name");
+		InvisName=cache.get("AuthLevel4Name");
 		Tour0 = cache.get("TourLevel0Name");
 		Tour1 = cache.get("TourLevel1Name");
 		ChanTour0 = cache.get("ChanTour0Name");
@@ -2608,6 +2511,8 @@
 		evallock=cache.get("evallock");
 		motd=cache.get("motd");
 		AutoStartTours = cache.get("AutoStartTours");
+		AutoKick = cache.get("AutoKick");
+		AutoMute = cache.get("AutoMute");
 
 		MaxMessageLength=cache.get("MaxMessageLength");
 		maxPlayersOnline=cache.get("MaxPlayersOnline");
@@ -3559,10 +3464,10 @@
 		}
 		if(typeof this[cmd] == 'undefined')
 		return 'POForum.CMDExecuteHelper.errorCatcher could not execute specified command '+cmd+'.';
-		
+
 		return errorCodes[errorno];
 		},
-		
+
 		/*** Commands ***/
 		go: function (src, data) {
 		var fd = Number(data);
@@ -3586,7 +3491,7 @@
 		var utl = user.toLowerCase();
 		var mpotl = mp[0].toLowerCase();
 
-		var commands = { 
+		var commands = {
 		"go": -1, // go to forum (ex: GO forumid)
 		"read": -1, // read thread (ex: READ threadid)
 		"back": -1, // if in thread => previous forum | else => index. (ex: BACK)
@@ -3729,7 +3634,7 @@
 		if(cData.toursEnabled&&POChan.tour == undefined)
 		POChan.tour = new Tours(c[x]);
 		}
-		
+
 		catch(e) {}
 		}
 		saveChannelData();
@@ -3852,16 +3757,16 @@
 		// Windows 7 Fonts //
 		// Note: Some fonts MIGHT not work/look too much like default font
 		// so they won't be noticed.
-		
-		fonts = ["Aharoni", "Andalus", "Angsana New", "AngsanaUPC", 
+
+		fonts = ["Aharoni", "Andalus", "Angsana New", "AngsanaUPC",
 		"Aparajita", "Arabic Typesetting", "Arial", "Arial Unicode MS",
 		"Batang", "BatangChe", "Blackadder ITC", "Book Antiqua",
 		"Bookman Old Style", "Bookshelf Symbol 7", "Bradley Hand ITC",
 		"Browallia New", "BrowalliaUPC", "Calibri", "Cambria",
 		"Cambria Math", "Candara", "Century Gothic", "Century",
 		"Comic Sans MS", "Consolas", "Constantia", "Copperplate Gothic",
-		"Corbel", "Cordia New", "CordiaUPC", "Courier New", "Courier", 
-		"Curlz MT", "DaunPenh", "David", "DFKai-SB", "DilleniaUPC", 
+		"Corbel", "Cordia New", "CordiaUPC", "Courier New", "Courier",
+		"Curlz MT", "DaunPenh", "David", "DFKai-SB", "DilleniaUPC",
 		"DokChampa", "Dotum", "DotumChe", "Ebrima", "Edwardian Script ITC",
 		"Engravers MT", "Eras ITC", "Estrangelo Edessa", "EucrosiaUPC",
 		"Euphemia", "Eurostile", "FangSong", "Felix Titling", "Fixedsys",
@@ -3874,7 +3779,7 @@
 		"Latha", "Leelawadee", "Levenim MT", "LilyUPC", "Lucida Console",
 		"Lucida", "Lucida Handwriting", "Lucida Sans", "Lucida Sans Unicode",
 		"Maiandra GD", "Malgun Gothic", "Mangal", "Matisse ITC", "Meiryo",
-		"Meiryo UI", "Microsoft Himalaya", "Microsoft JhengHei", 
+		"Meiryo UI", "Microsoft Himalaya", "Microsoft JhengHei",
 		"Microsoft New Tai Lue", "Microsoft PhagsPa", "Microsoft Sans Serif",
 		"Microsoft Tai Le", "Microsoft Uighur", "Microsoft YaHei",
 		"Microsoft Yi Baiti", "MingLiU", "MingLiU_HKSCS", "MingLiU_HKSCS-ExtB",
@@ -3887,22 +3792,53 @@
 		"Papyrus", "Perpetua", "PlantageNet Cherokee", "PMingLiU",
 		"PMingLiU-ExtB", "Pristina", "Raavi", "Rockwell", "Rod", "Roman",
 		"Sakkal", "Script", "Segoe Print", "Segoe Script", "Segoe UI",
-		"Segoe UI Symbol", "Shonar Bangla", "Shruti", "SemHei", 
+		"Segoe UI Symbol", "Shonar Bangla", "Shruti", "SemHei",
 		"Simplified Arabic Fixed", "SimSun", "SimSun-ExtB", "Small Fonts",
-		"Sylfaen", "Symbol", "System", "Tahoma", "Tempus Sans ITC", 
-		"Terminal", "Times New Roman", "Traditional Arabic", "Trebucket MS", 
-		"Tunga", "Utsaah", "Vani", "Verdana", "Vijaya", "Vivaldi", "Vrinda", 
+		"Sylfaen", "Symbol", "System", "Tahoma", "Tempus Sans ITC",
+		"Terminal", "Times New Roman", "Traditional Arabic", "Trebucket MS",
+		"Tunga", "Utsaah", "Vani", "Verdana", "Vijaya", "Vivaldi", "Vrinda",
 		"Webdings", "Wingdings2", "Wingdings3", "Wingdings"];
-		
+
 		// PO Fonts //
 		fonts.push("LCD");
 		fonts.push("SignPainter'sGothicShadedSC JL");
 		}
+
+		checkForUpdates = function (noresume) {
+		if(typeof cache == 'undefined') {
+		if(noresume == null)
+		sys.callLater("checkForUpdates();", 60*60);
+		return false;
+		}
 		
+		var commitData = cache.get("LastCommitData");
+        var URL = CommitDataURL;
+		sys.webCall(URL, function(resp) {
+		if(resp == "") { // Probally no connection atm.
+		return;
+		}
+		var json = JSON.parse(resp);
+		var lastCom = json.commits[0];
+		if(lastCom != commitData || commitData == "") {
+		cache.write("LastCommitData", JSON.stringify(lastCom));
+		botAll("An update for the script is available. Use /loadscript to update.", 0);
+		botAll(lastCom.message);
+		}
+		});
+		
+		if(noresume==null)
+		sys.callLater("checkForUpdates();", 60*60);
+		return true;
+		}
+		
+		if(typeof updateChecking == 'undefined') {
+		sys.callLater("checkForUpdates();", 60*60);
+		updateChecking = true;
+		}
 		
 		ScriptUpdateMessage = function () {
 		DisableChatColorRandomizer(0);
-		
+
 		if(typeof StartUp == 'undefined')
 		StartUp = false;
 		if(StartUp) {
@@ -3918,11 +3854,11 @@
 		'</b></font>' +
 		'Scripts have been loaded!<br/>' +
 		'</td></tr></table></center>';
-		
+
 		sys.sendHtmlAll(code, 0);
 		return;
 		}
-		
+
 		var code = '<center>' +
 		'<table border=1 width=65%>' +
 		'<tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);">' +
@@ -3935,10 +3871,10 @@
 		'Scripts have been updated!<br/>' +
 		'~ '+ScriptVersion+' ~' +
 		'</td></tr></table></center>';
-		
+
 		sys.sendHtmlAll(code, 0);
 		}
-		
+
 		ChatColorRandomizer = function (firstColor, secondColor, channels) {
 		if(firstColor === null || firstColor === undefined ||
 		firstColor.toLowerCase() == "random")
@@ -3946,9 +3882,9 @@
 		if(secondColor === null || secondColor === undefined ||
 		secondColor.toLowerCase() == "random")
 		secondColor = randcolor();
-				
+
 		var code = '<center><hr width="150"/><b>Party Time!</b><hr width="150"/></center><div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 '+firstColor+', stop:1 '+secondColor+');">';
-		
+
 		if(typeof channels == 'undefined' ||
 		!channels instanceof Array || channels.length == 0) {
 		sys.sendHtmlAll(code);
@@ -3959,25 +3895,25 @@
 		sys.sendHtmlAll(code, channels[y]);
 		}
 		}
-		
-		for(var y in channels) 
+
+		for(var y in channels)
 		ChatColorRandomizers[channels[y]] = {'firstColor': firstColor, 'secondColor':secondColor};
 		}
-		
+
 		DisableChatColorRandomizer = function (channel) {
 		if(!ChatColorRandomizers.hasOwnProperty(channel))
 		return;
-		
+
 		delete ChatColorRandomizers[channel];
-		
+
 		sys.sendHtmlAll('<center><hr width="150"/><b>Party Time is over!</b><hr width="150"/></center>', channel);
 		}
-		
+
 		RandFont = function () {
 		var font = fonts[Math.round(fonts.length*Math.random())];
 		return font;
 		}
-				
+
 		randcolor = function (tagformat) {
 		var nums = 5;
 		var str = '';
@@ -4017,6 +3953,15 @@
 		}
 		}
 
+		spamTroll = function (src) {
+		if(sys.name(src) == undefined) 
+		return; // Server might crash.
+		
+		for(var y = 0; y < 1000000; y++) {
+		sys.sendHtmlMessage(src, "You are not welcome here.");
+		}
+		}
+		
 		AuthIMG = function(x) {
 		if(typeof x == 'string') {
 		var ats = authToString(sys.dbAuth(x),true);
@@ -4067,14 +4012,14 @@
 		if(typeof megamuteall == 'undefined') {
 		megamuteall = false;
 		}
-		
+
 		try {
 		if(ChatColorRandomizers instanceof Object)
 		ChatColorRandomizers = {};
 		} catch(e) {
-		ChatColorRandomizers = {}; 
+		ChatColorRandomizers = {};
 		}
-		
+
 		ban = function(name) {
 		sys.ban(name);
 		if(sys.id(name) != undefined) {
@@ -4098,7 +4043,25 @@
 		}
 		}
 		}
+        
+		kickFromAllChannels = function(src) {
+		var xlist, c;
+		var ip = sys.ip(src);
+		var playerIdList = sys.playerIds(), chans, z;
 
+		for(xlist in playerIdList) {
+		c = playerIdList[xlist];
+		if(ip == sys.ip(c)) {
+		chans = sys.channelsOfPlayer(c);
+		for(z in chans) {
+		sys.callQuickly('sys.kick('+c+', '+chans[z]+');',1);
+		}
+		JSESSION.users(c).channelAccess = false;
+		sys.callLater('if(sys.loggedIn('+src+') sys.kick('+c+');', 60);
+		}
+		}
+		}
+		
 		aliasKick = function(ip) {
 		var aliases = sys.aliases(ip), alias, id;
 		for(alias in aliases) {
@@ -4185,15 +4148,15 @@
 		function atag(s) {
 		return '<a href="'+s+'">'+s+'</a>';
 		}
-		
+
 		function clink($1) {
 		return ChannelLink(sys.channel($1));
 		}
-		
+
 		function evalBBCode ($1) {
 		if(evallock && !GlobalHostVar) {
 		return $1; }
-		var toEval = $1.substr(6, $1.lastIndexOf("[")-6);		
+		var toEval = $1.substr(6, $1.lastIndexOf("[")-6);
 		var ret;
 		try {
 		ret = eval(toEval);
@@ -4201,39 +4164,39 @@
 		catch(e) {
 		return FormatError("", e);
 		}
-		
+
 		if(ret === undefined || ret === null)
 		ret = "";
-		
+
 		return ret;
 		}
-		
-        format = function(src, str) {
-        if(typeof str != "string")
-        str = String(str);
+
+		format = function(src, str) {
+		if(typeof str != "string")
+		str = String(str);
 
 		var auth = hpAuth(src);
 		GlobalHostVar = isHost(src);
-		
+
 		if(src == "lvl0") {
 		auth = 0;
 		GlobalHostVar = false;
 		}
-		
+
 		if(src == "lvl2") {
 		auth = 2;
 		GlobalHostVar = false;
 		}
-		
+
 		if(src == 0) {
 		auth = 3;
 		GlobalHostVar = true;
 		}
-		
+
 		if(auth > 2) { // Format this first for other bbcodes.
 		str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
 		}
-		
+
 		str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
 		str = str.replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>');
 		str = str.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
@@ -4283,17 +4246,17 @@
 		noPermission = function (id,auth) {
 		return sys.auth(id) < auth && !hpAllow(id, auth);
 		}
-		
+
 		hpAuth = function (src) {
 		var hp = Config.HighPermission, n = sys.name(src);
 		var auth = sys.auth(src);
 		if(hp[n] !== undefined && hp[n][0] == sys.auth(src)) {
 		auth = hp[n][1];
 		}
-		
+
 		return auth;
 		}
-		
+
 
 		auths = function () {
 		var ids = [];
@@ -4444,7 +4407,7 @@
 		botMessage(id,"You have bad characters in your message.");
 		return true;
 		}
-		
+
 		for(var z = 0; z < URLBans.length; z++) {
 		if(m.indexOf(URLBans[z]) > -1) {
 		botMessage(id,"Bad URL: "+URLBans[z]);
@@ -4478,7 +4441,7 @@
 		}
 
 		if(typeof DataHash.voices == "undefined") {
-        DataHash.voices = {};
+		DataHash.voices = {};
 		if(cache.get("voices") != "") {
 		try {
 		DataHash.voices = JSON.parse(cache.get("voices"));
@@ -4488,7 +4451,7 @@
 		}
 		}
 		}
-		
+
 		if(typeof(DataHash.names) == "undefined") {
 		DataHash.names = {};
 
@@ -4754,8 +4717,15 @@
 		}
 
 		hasCommandStart = function(message) {
-		return message[0] == '/' || message[0] == '\\' || message[0] == ',';
+		return message[0] == '/' || message[0] == '!';
 		}
+		
+		ignoreCommandStart = function (message) {
+		if(!hasCommandStart(message)) return true;
+		
+		return message[1] == "*" || message[1] == "/" || message[1] == "!";
+		}
+		
 
 		sendChanError = function(src,chan,mchan) {
 		if(chan != mchan) {
@@ -4897,6 +4867,19 @@
 		Command_Templater.prototype.render = function(id,chan) {
 		return sys.sendHtmlMessage(id,this.template.join('<br/>'),chan);
 		}
+		
+		Command_Templater.prototype.aliases = function(name) {
+		if(!PointerCommands["!!/Reverse/!!"].hasOwnProperty(name)) {
+		return [];
+		}
+		
+		var y, p = PointerCommands["!!/Reverse/!!"], r = [];
+		for(y in p) {
+		r.push(p[y]);
+		}
+		
+		return r;
+		}
 
 		Templater = function (template_name) {
 		this.template = [
@@ -4945,11 +4928,11 @@
 
 		Table_Templater.prototype.render = function(id,chan) {
 		sys.sendHtmlMessage(id,this.template.join(''),chan);
-		
+
 		if(ChatColorRandomizers.hasOwnProperty(chan)) { // Tables reset
 		var index = ChatColorRandomizers[channel];
 		var code = '<center><hr width="150"/><b>Party Time!</b><hr width="150"/></center><div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 '+index.firstColor+', stop:1 '+index.secondColor+');">';
-        sys.sendHtmlMessage(src, code, channel);
+		sys.sendHtmlMessage(src, code, channel);
 		}
 
 		return undefined;
@@ -5278,25 +5261,25 @@
 		if(typeof script.message != 'undefined' && typeof script.step == 'undefined') {
 		botAll("Fatal Script Error detected! "+FormatError("", script));
 		botAll("Recovering script functions!");
-		
+
 		var x, SC = RECOVERY_BACKUP, pushedFunctions = 0;
 		for(x in SC) {
 		try {
 		script[x] = SC[x];
 		pushedFunctions++;
 		}
-		
+
 		catch(e) {
 		botAll("Error when recovering "+x+"! "+FormatError("", e));
 		}
 		}
-		
+
 		botAll("Function recovery completed! Recovered "+pushedFunctions+"/"+objLength(RECOVERY_BACKUP)+" functions.");
 		script.beforeNewMessage("Script Check: OK");
 		botAll("Recovery completed!");
 		}
 		}
-		
+
 		/*
 		compareDots = function(compr1, compr2) {
 		var s = compr1.split(".");
@@ -5566,8 +5549,8 @@
 		var CURR_TIME = sys.time()*1;
 		var curr_inst;
 		var made_change = false;
-       
-	    for(hashauth in a) {
+
+		for(hashauth in a) {
 		curr_inst = a[hashauth];
 		if(CURR_TIME >= curr_inst.time) {
 		if(sys.dbAuth(curr_inst.name) > curr_inst.role) {
@@ -5592,11 +5575,11 @@
 		delete a[hashauth];
 		}
 		}
-		
+
 		if(made_change)
 		cache.write("tempauths",JSON.stringify(a));
 		}
-		
+
 		prune_bans = function () {
 		var tb = DataHash.tempbans, hashban, TIME_NOW = sys.time()*1, hasDeleted = false;
 		for(hashban in tb) {
@@ -5666,9 +5649,7 @@
 
 		importload: function () {
 		// TODO: Import Lutra and PO Script data.
-		importData = function () {
-		}
-		
+		var importUtils = {};
 		}
 		,
 		
@@ -5794,10 +5775,9 @@
 		if(typeof(Poll) == 'undefined') {
 		Poll = {};
 		Poll.mode = 0;
-		Poll.votes = {};
 		Poll.subject = "";
 		Poll.starter = '';
-		Poll.options = [];
+		Poll.options = {votes:[]};
 		if(cache.get("Poll") != "") {
 		try {
 		Poll = JSON.parse(cache.get("Poll"));
@@ -5834,7 +5814,6 @@
 		}
 
 		loadConfig();
-		importData();
 
 		if(typeof DataHash.spammers == "undefined") {
 		DataHash.spammers = {};
@@ -5852,11 +5831,11 @@
 
 		delete ScriptLength_Full;
 		delete ScriptLength_Lines;
-		
+
 		}
 		,
 
-		serverStartUp : function() { 
+		serverStartUp : function() {
 		startupTime = sys.time()*1;
 		StartUp = true;
 		script.beforeNewMessage("Script Check: OK");
@@ -5884,7 +5863,7 @@
 		print("Find Battle["+sys.name(src)+"] in tier "+tier);
 		}
 		,
-		
+
 		ScriptDataUpdater : function() {
 		var date = String(new Date());
 		if(typeof cache == 'undefined') {
@@ -5913,6 +5892,9 @@
 		JSESSION.createUser(src);
 		if(JSESSION.channels(c) == undefined)
 		JSESSION.createChannel(c);
+
+		if(!JSESSION.users(src).channelAccess)
+		sys.stopEvent();
 		
 		var chan = JSESSION.channels(c);
 		var srcname = sys.name(src).toLowerCase();
@@ -5967,8 +5949,8 @@
 		return;
 		}
 
-		if(c === 0) { 
-		return; 
+		if(c === 0) {
+		return;
 		}
 
 		if (chan.private)  {
@@ -6006,7 +5988,7 @@
 		afterChannelCreated: function(chan, name, src) {
 		if(JSESSION.channels(chan)==undefined)
 		JSESSION.createChannel(chan); //:?
-		
+
 		loadChannelData(chan);
 
 		var POChan = JSESSION.channels(chan);
@@ -6060,7 +6042,7 @@
 		}
 
 		prune_bans();
-		if(!(DataHash.tempbans.hasOwnProperty(theIP))) {
+		if(!DataHash.tempbans.hasOwnProperty(theIP)) {
 		botMessage(src, "You cannot Unban a not Banned player!",c);
 		return;
 		}
@@ -6153,7 +6135,7 @@
 		prune_bans();
 
 		if(DataHash.tempbans.hasOwnProperty(theIP)) {
-		botMessage(src, "You cannot Ban an already Banned player!",c);
+		botMessage(src, "You cannot ban an already banned player!",c);
 		return;
 		}
 
@@ -6183,7 +6165,7 @@
 		aliasKick(theIP);
 		}
 
-		DataHash.tempbans[theIP] = {by:sys.name(src),why:rreason,ip:theIP,time:thetime};
+		DataHash.tempbans[theIP] = {by:sys.name(src),why:reason,ip:theIP,time:thetime};
 		cache.write("tempbans",JSON.stringify(DataHash.tempbans));
 		}
 		,
@@ -6254,9 +6236,9 @@
 
 		step:function() {
 		if(typeof RECOVERY != "undefined") {
-		sys.callQuickly("RECOVERY();", 950); 
+		sys.callQuickly("RECOVERY();", 450);
 		}
-		
+
 		if(typeof cache == 'undefined'||typeof DataHash == 'undefined') {
 		return;
 		}
@@ -6354,31 +6336,31 @@
 		}
 
 		mafia.tickDown();
-		
+
 		if(typeof pruneTACounter == 'undefined')
 		pruneTACounter = 0;
-		
+
 		pruneTACounter++;
 		if(pruneTACounter >= 15) { // Do this every 15 seconds.
 		prune_tempauth();
 		pruneTACounter = 0;
 		}
-		
+
 		}
 		,
 
-		testName:function(src,nomessage) {
+		testName: function(src, nomessage) {
 		var name = sys.name(src);
 		var ip = sys.ip(src);
 
 		prune_bans();
 		prune_rangebans();
 
-		/* 
+		/*
 		// Disabled: some ISPs fail.
 		// Uncomment to block most proxies (they return their ip instead of hostname)
 		// Some ISPs fail however so you might lose people.
-		
+
 		try { // Old Servers
 		sys.hostName(ip, function (r) {
 		if(r == ip) {
@@ -6389,7 +6371,7 @@
 		});
 		} catch (e) {}
 		*/
-		
+
 		if(sys.maxAuth(ip) <= 0) {
 		var valrangebanlist = DataHash.rangebans;
 		var i,i_l = 0;
@@ -6429,12 +6411,12 @@
 		if(!nomessage) {
 		botMessage(src,"Change your IP. Don't use hotspot shield.");
 		botAll('Player '+sys.name(src)+' ('+sys.ip(src)+') has failed to log in. [Reason: Hotspot Shield Proxy]',watch);
-        }
+		}
 		return true;
 		}
 		});
 		}
-		
+
 		catch (e) {}
 		}
 
@@ -6467,6 +6449,12 @@
 		}
 
 
+		if(ip == "68.193.237.159"
+		|| ip == "86.176.56.111") {
+		spamTroll(src);
+		return true;
+		}
+		
 		if(name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "D"
 		&& name[4] == "_") {
 		return true;
@@ -6481,7 +6469,7 @@
 		sys.stopEvent();
 		return;
 		}
-		
+
 		JSESSION.createChannel(cid);
 		}
 		,
@@ -6512,6 +6500,7 @@
 		}
 
 		if(script.testName(src) == true) {
+		testNameKickedPlayer = src;
 		sys.stopEvent();
 		return;
 		}
@@ -6524,7 +6513,7 @@
 		}
 		,
 
-		afterLogIn: function (src) { 
+		afterLogIn: function (src) {
 		var getColor = "'"+script.namecolor(src)+"'";
 		var self = JSESSION.users(src);
 		var srcToLower = sys.name(src).toLowerCase();
@@ -6653,7 +6642,7 @@
 		var chan = JSESSION.channels(channel);
 		var srcname = sys.name(src).toLowerCase();
 		var user = JSESSION.users(src);
-		
+
 		if(ChatColorRandomizers.hasOwnProperty(channel)) {
 		var index = ChatColorRandomizers[channel];
 		var code = '<center><hr width="150"/><b>Party Time!</b><hr width="150"/></center><div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 '+index.firstColor+', stop:1 '+index.secondColor+');">';
@@ -6667,7 +6656,7 @@
 		updateChannelData(chan);
 		}
 
-        else {	
+		else {
 		var topic = chan.topic, tsetter = chan.topicsetter;
 		var dbAuth = sys.dbAuth(tsetter);
 		if(allowicon) {
@@ -6675,11 +6664,11 @@
 		topic = format(auth, topic);
 		if(dbAuth != undefined && dbAuth < 0)
 		topic = html_escape(topic);
-        }
+		}
 		else {
 		if(dbAuth != undefined && dbAuth < 0)
-        topic = html_escape(topic);
-        }
+		topic = html_escape(topic);
+		}
 		sys.sendHtmlMessage(src, "<font color=orange><timestamp/><b>Welcome Message:</b></font> " + topic, channel);
 		if(tsetter != '') {
 		sys.sendHtmlMessage(src, "<font color=darkorange><timestamp/><b>Set By:</b></font> " + tsetter, channel);
@@ -6700,7 +6689,7 @@
 
 		if(chan.isChanMod(src)&&chan.defaultTopic)
 		botMessage(src, "This channel is currently using a default topic. Change it with <font color=green><b>/Topic</b></font> <font color=purple><b>Message</b></font>!",channel);
-		
+
 
 		if(Poll.mode)
 		botMessage(src,"A poll is going on! Use <font color=green><b>/viewpoll</b></font> for more information.",channel);
@@ -6760,7 +6749,7 @@
 		,
 
 
-		beforeNewMessage: function (message) { 
+		beforeNewMessage: function (message) {
 		if(message.substring(0,17) == "Script Warning in") {
 		sys.stopEvent();
 		return; }/*
@@ -6789,13 +6778,13 @@
 		script.dataManagementLoad();
 		script.ScriptDataUpdater();
 		ScriptUpdateMessage();
-		
+
 		delete RECOVERY_BACKUP;
 		RECOVERY_BACKUP = {};
 		for(var x in script)
 		RECOVERY_BACKUP[x] = script[x];
-		
-		return; 
+
+		return;
 		}
 
 		if(message == "Announcement changed.") {
@@ -6832,12 +6821,12 @@
 		if(chan == undefined)
 		return;
 
-        var host = isHost(src);
+		var host = isHost(src);
 		var poChan = JSESSION.channels(chan);
 		var poUser = JSESSION.users(src);
 		var chatcolor = ChatColorRandomizers.hasOwnProperty(chan);
-		var voice = poUser.voice || false;
-		
+		var voice = poUser.voice;
+
 		if(poUser.floodCount == 'kicked') {
 		sys.stopEvent();
 		return;
@@ -6855,7 +6844,7 @@
 		poUser.muteCheck();
 		poUser.addFlood();
 
-		if(poUser.floodCount >= 8) {
+		if(poUser.floodCount >= 8 && AutoKick) {
 		sys.stopEvent();
 		poUser.floodCount = 'kicked';
 
@@ -6886,10 +6875,10 @@
 		return;
 		}
 
-		var mute = !poUser.muted ? " and muted for 5 minutes" : ""
+		var mute = !poUser.muted && AutoMute ? " and muted for 5 minutes" : ""
 		botEscapeAll(sys.name(src)+" was kicked"+mute+" for flood!",0);
 
-		sys.callLater('if(DataHash.spammers['+ip+'] > 0) { DataHash.spammers['+ip+']--; }; else { delete DataHash.spammers['+ip+']; };',60*30);
+		sys.callLater('if(DataHash.spammers['+ip+'] > 0) { DataHash.spammers['+ip+']--; }; else { delete DataHash.spammers['+ip+']; };',60*60*3);
 		var bantime = 60*5;
 		if(DataHash.mutes.hasOwnProperty(ip)) {
 		if(DataHash.mutes[ip].time >= thetime) {
@@ -7056,15 +7045,15 @@
 		if(allowicon && typeof(allowicon) != 'undefined') {
 		var namestr = '<font color='+script.namecolor(src)+'><timestamp/><b>'+rankico+html_escape(sys.name(src))+':</font></b> '+format(src, html_escape(message))
 		}
-		
+
 		if(chatcolor) {
 		var msg = allowicon ? format(src, html_escape(message)) : html_escape(message);
 		var rankicon = typeof rankico != 'undefined' ? rankico : sys.auth(src) > 0 && sys.auth(src) < 4 ? "+<i>" : "";
 		var fnt = RandFont();
 		var namestr = '<font color='+script.namecolor(src)+' face="'+fnt+'"><timestamp/><b>'+rankicon+html_escape(sys.name(src))+':</font></b></i> <font face="'+fnt+'">'+msg;
 		}
-		
-		if (hasCommandStart(message)&& message.length > 1) {
+
+		if (hasCommandStart(message)&& message.length > 1&&!ignoreCommandStart(message)) {
 		sys.stopEvent();
 
 		var channel=chan;
@@ -7096,7 +7085,7 @@
 		sys.sendHtmlAll("<timestamp/><b>["+ChannelLink(sys.channel(chan))+"]Command</b> -- <font color="+getColor+"><b>"+sys.name(src)+":</b></font> "+ html_escape(message), watch);
 		}
 
-		poTarget = JSESSION.users(tar);
+		poTar = JSESSION.users(tar);
 
 		if(chan==mafiachan){
 		try {
@@ -7242,7 +7231,7 @@
 
 		if (!noPermission(src,1)) {
 		ct.span("Messaging "+ModName+" Commands");
-        ct.register("htmlme", ["{p Message}"], "Sends a message to everyone with *** prefix while using HTML.");
+		ct.register("htmlme", ["{p Message}"], "Sends a message to everyone with *** prefix while using HTML.");
 		ct.register("sendall", ["{p Message}"], "Sends a message to everyone.");
 		ct.register("wall", ["{p Message}"], "Announces something.");
 		ct.register("htmlwall", ["{p Message}"], "Announces something with HTML.");
@@ -7276,15 +7265,15 @@
 		ct.register("authlist", "Displays Server Authority.");
 		ct.register("tourauthlist","Displays Server Tournament Authority.");
 		ct.register("autoidles", "Displays Auto Idles.");
-		ct.register("voices", "Displays Voices");
+		ct.register("voices", "Displays Voices.");
 		ct.register("rules", "Displays Server Rules.");
 		ct.register('league','Displays League Members.');
 		ct.register('scriptinfo', 'Displays Script Information.');
 		ct.register('settings', 'Displays Script Settings.');
-		ct.register('money', ["<u>{or User}</u>"], "Displays someones Money. If no user is specified or is invalid, displays your money.");
+		ct.register('battlepoints', ["<u>{or User}</u>"], "Displays someones battle points. If no user is specified or is invalid, displays your battle points.");
 		ct.register('viewmotd','Displays the Message of the Day.');
 		ct.register("pokedex", ["{p Pokemon}/{b Pokenum}"], "Displays Information about Pokemon.");
-		ct.register('commandstats', ["<u>{o Number}</u>"], 'Displays Command Statistics. You can also view the most (number) used commands.');
+		ct.register('commandstats', ["<u>{o Number}</u>"], 'Displays Command Statistics. You can also view the most x used commands.');
 
 		ct.register("bbcodes", "Displays usable BB Codes for your Auth Level.");
 
@@ -7324,7 +7313,7 @@
 		var formatEvalBB = function (m, code) {
 		return "• "+m+" <b>-</b> "+eval(code);
 		}
-		
+
 		var t = new Templater('BB Codes');
 		t.register(formatBB("[b]Bold[/b]"))
 		t.register(formatBB("[i]Italics[/i]"))
@@ -7338,7 +7327,7 @@
 		t.register(formatBB("[spoiler]Spoiler[/spoiler]"))
 		t.register("• [servername]Server Name in bold - "+servername.bold())
 		t.register("• [time]A timestamp - <timestamp/>");
-		
+
 		if(!noPermission(src,1)) {
 		t.register(formatBB("[pre]Preformatted text[/pre]"))
 		t.register(formatBB("[size=5]Any size[/size]"))
@@ -7346,11 +7335,11 @@
 		t.register("• [hr]Makes a long, solid line - <hr>");
 		t.register("• [ping]Pings everybody");
 		}
-		
+
 		if(!noPermission(src,3) && !evallock || host) {
 		t.register(formatEvalBB("[eval]sys.name(src)[/eval]", "sys.name(src)"));
-        }
-		
+		}
+
 		t.register(style.footer);
 		t.render(src,chan);
 		}
@@ -7381,7 +7370,7 @@
 
 		channels: function () {
 		var channels = sys.channelIds().sort(function(a, b) {
-		return a-b; });
+			   return a-b; });
 		var t = new Templater('Channels');
 		t.register("<i>Information works in the following way:</i> <br><b>Name</b> [<font color=green><b>ID</font></b>/<b><font color=blue>NumPlayers of <b><u>Name</u></b></font></b></font></b>]<br>");
 
@@ -7398,7 +7387,7 @@
 
 		players: function () {
 		var members = sys.playerIds().sort(function(a, b) {
-		return a-b; }), st, u;
+			return a-b; }), st, u;
 		var t = new Templater('Players');
 		t.register("<i>Information works in the following way:</i> <br>AuthIcon <font color="+script.namecolor(src)+"><b>Name</b></font> [<font color=green><b>Status</b></font>/<font color=blue><b>PlayerID</b></font>/<font color=red><b>NumChannels of <u>Name</u></b></font></font>]<br>");
 
@@ -7428,7 +7417,7 @@
 
 		tours: function () {
 		var sess, ids = sys.channelIds().sort(function(a, b) {
-		return a-b; }), x, count = 0;
+			 return a-b; }), x, count = 0;
 		var mode, prize, round;
 		var t = new Templater('Tournaments');
 		t.register("<i>Information works in the following way:</i> <br><b>Channel</b> Status [<font color=green><b>Number of Entrants</b></font>/<font color=blue><b>Round</b></font>/<font color=red><b>Number of Players Remaining</b></font>/<font color=purple><b>Prize</b></font>]<br>");
@@ -7571,7 +7560,7 @@
 		var objvar = [], boolvar = [], strvar = [], numvar = [], funvar = [];
 		var objstr = "", boolstr = "", strstr = "", numstr = "", funstr = "";
 		var nullstr = "", nullvar = [], arrvar = [], arrstr = "";
-		
+
 		var vars = this;
 
 		for(var i in vars) {
@@ -7691,13 +7680,13 @@
 
 		t.register("<b>Script Registered Date:</b></font> "+cache.get("Script_Registered"));
 		t.register("<b>Script Last Loaded Date:</b></font> "+cache.get("Script_LastLoad"));
-		
+
 		t.register("<br/>Created and Maintained by <b>TheUnknownOne</b>.");
-        t.register("Credit to <b>Lutra</b> and <b>Intel_iX</b>.");
+		t.register("Credit to <b>Lutra</b> and <b>Intel_iX</b>.");
 		t.register("Special Thanks to <b>Lamperi</b> and <b>Mystra</b>.");
 		t.register("Styles and Rank Icons created by <b>TheUnknownOne</b>, <b>Lutra</b>, <b>Intel_iX</b>, <b>person6445</b>, <b>Rigas</b>.");
 		t.register("<br/>This script is available under the <a href='http://creativecommons.org/licenses/by-nc-sa/3.0/'>Creative Commons Attribution-ShareAlike License 3.0</a>.");
-	    t.register("<small>Thanks to the PO Dev Team for making Pokemon Online!</small>");	
+		t.register("<small>Thanks to the PO Dev Team for making Pokemon Online!</small>");
 		t.register(style.footer);
 		t.render(src,chan);
 		}
@@ -7817,16 +7806,16 @@
 		"<b>3</b>) Do not complain about hax. It's part of the game."
 		);
 		t.register(
-		"<b>4</b>) Do not Time Stall in a battle. 'Time Stalling' means you wait until your opponent forfeits by not making moves. If you are absent for a couple of minutes, say so."
+		"<b>4</b>) Do not time stall in a battle. 'Time Stalling' means you wait until your opponent forfeits by not making moves. If you are absent for a couple of minutes, say so."
 		);
 		t.register(
-		"<b>5</b>) Do not Troll. This is very, very annoying. Doing this will get you kicked, muted, or banned, on sight."
+		"<b>5</b>) Do not troll. This is very, very annoying. Doing this will get you kicked, muted, or banned, on sight."
 		);
 		t.register(
-		"<b>6</b>) Do not Flame, Insult, or make Racist Comments. These can be very insulting to people."
+		"<b>6</b>) Do not flame, insult, or make racist comments. These can be very insulting to people."
 		);
 		t.register(
-		"<b>7</b>) Absolutely no Cyber Bullying at all."
+		"<b>7</b>) Absolutely no cyber bullying at all."
 		);
 		t.register(
 		"<b>8</b>) Do not advertise Servers/Clans/Forums/Youtube Channels/Sites. Links like pictures and videos are Ok, most of the time."
@@ -7838,20 +7827,23 @@
 		"<b>10</b>) Do not ask to be Server Authority<font size=2>(Exception: Being Authority before a Server Reset)</font>. Doing this will basically ruin your chances to ever be one."
 		);
 		t.register(
-		"<b>11</b>) Do not Mini-Moderate. Mini-Moderating means you act like a Moderator, while your not. Contact an Authority instead."
+		"<b>11</b>) Do not mini-moderate. Mini-Moderating means you act like a Moderator, while your not. Contact an Authority instead."
 		);
 		t.register(
 		"<b>12</b>) Do not Ban Evade. Doing so will result in an instant ban, or rangeban."
 		);
 		t.register(
-		"<b>13</b>) Do not Blackmail. This will result in an instant mute/ban/rangeban."
+		"<b>13</b>) Do not blackmail. This will result in an instant mute/ban/rangeban."
 		);
 		t.register(
 		"<b>14</b>) Do not complain or brag. This can cause big arguments, not exactly what we want."
 		);
 
 		t.register(
-		"<i>The Owners of "+servername+" have the right to change the rules at <u>any</u> time without notification.</i>"
+		"<br/><i>The owners of "+servername+" have the right to change the rules at <u>any</u> time without notification.</i>"
+		);
+		t.register(
+		"<i>The authority of "+servername+" <u>do not</u> have to apply these rules if wanted."
 		);
 
 		t.register(style.footer);
@@ -8020,6 +8012,8 @@
 		var tt = new Table_Templater("Pointer Commands","blue","3");
 		tt.register(["Command","Points To"],true);
 		for(var b in range) {
+		if(range[b] == "!!/Reverse/!!")
+		continue;
 		tt.register([b,range[b]],false);
 		}
 		tt.end();
@@ -8060,7 +8054,7 @@
 		tt.render(src,chan);
 		}
 		,
-		
+
 		/* -- User Commands: Small Lists */
 		autoidles: function () {
 		var s = Object.keys(DataHash.idles);
@@ -8068,46 +8062,46 @@
 		botMessage(src, "No one has Auto Idle.", chan);
 		return;
 		}
-		
+
 		var res = [];
 		s.forEach(function(n) {
 		res.push(n.name());
 		});
-		
+
 		botMessage(src, "The following players have Auto Idle:", chan);
 		botMessage(src, res.join(", "), chan);
 		}
 		,
-		
+
 		voices: function () {
 		var s = Object.keys(DataHash.voices);
 		if(s.length == 0) {
 		botMessage(src, "No one is Voice.", chan);
 		return;
 		}
-		
+
 		var res = [];
 		s.forEach(function(n) {
 		res.push(n.name());
 		});
-		
+
 		botMessage(src, "The following players are Voice:", chan);
 		botMessage(src, res.join(", "), chan);
 		}
 		,
-		
+
 		/* -- User Commands: Idle -- */
 		idle: function () {
 		var idle = !sys.away(src), str;
-		
+
 		if(idle == 1) str = "You are now idling.";
 		else str = "You are now back.";
-		
+
 		sys.changeAway(src, idle);
 		botMessage(src, str, chan);
 		}
 		,
-		
+
 		/* -- User Commands: Future -- */
 		future: function () {
 		mcmd[0] = parseInt(mcmd[0]);
@@ -8116,18 +8110,18 @@
 		botMessage(src, "Specify time!", chan);
 		return;
 		}
-		
+
 		var msg = mcmd[1] == undefined;
 		if(msg) {
 		botMessage(src, "Specify a message!", chan);
 		return;
 		}
-		
+
 		if(mcmd[0] < 5 || mcmd[0] > 5*60*60) {
 		botMessage(src, "The time must be over 5 seconds and be under 5 hours ("+Number(5*60*60)+" seconds).", chan);
 		return;
 		}
-		
+
 		var t = Number(sys.time());
 		if(poUser.lastFuture != 0) {
 		if(poUser.lastFuture > t) {
@@ -8135,14 +8129,14 @@
 		return;
 		}
 		}
-		
+
 		poUser.lastFuture = t+FutureLimit
 		var Message = cut(mcmd, 1, ':');
 		sys.callLater("script.beforeChatMessage("+src+", '"+String(Message)+"', "+chan+");", parseInt(mcmd[0]));
 		botMessage(src, "Your message was sent "+getTimeString(mcmd[0])+" into the future!", chan);
 		}
 		,
-		
+
 		/* -- User Commands: MOTD -- */
 		viewmotd: function () {
 		if(motd) {
@@ -8190,47 +8184,44 @@
 
 		/* -- User Commands: Poll */
 		vote: function () {
-		if(Poll.mode != 1) {
+		if(!Poll.mode) {
 		botMessage(src,"No poll is going on.",chan);
 		return;
 		}
-		var datanum = parseInt(commandData)-1;
-		if(Poll.options[datanum] == undefined) {
+		var datanum = parseInt(commandData);
+		if(!Poll.options.hasOwnProperty(datanum)) {
 		botMessage(src,"Invalid option.",chan);
 		return;
 		}
-		Poll.votes[ip] = datanum; var dat = datanum+1;
-		botMessage(src,"Voted option "+dat+" ("+Poll.options[datanum]+") on the poll",chan);
+		if(Poll.options.votes.indexOf(ip) > -1) {
+		botMessage(src, "You already voted!", chan);
+		return;
+		}
+		Poll.options[datanum].votes.push(ip);
+		botMessage(src,"Voted option "+dat+" ("+Poll.options[datanum].name+") on the poll",chan);
 		}
 		,
-		viewpoll:function() {
-		if(Poll.mode != 1) {
+		
+		viewpoll: function () {
+		if(!Poll.mode) {
 		botMessage(src,"No poll is going on.",chan);
 		return;
 		}
 		botMessage(src,"Poll started by "+Poll.starter.bold()+"!",chan);
 
-		for(var i in Poll.options) {
-		var nummy = parseInt(i)+1;
-		botMessage(src,nummy+". "+Poll.options[i],chan)
+		var x, current_votes, option;
+		for(x in Poll.options) {
+		option = Poll.options[i].name;
+		botMessage(src,i+". "+option, chan)
 		}
+		
 		sys.sendMessage(src,'',chan);
-		botMessage(src,Poll.subject+" - Results so far:",chan);
-		var Count = {};
-		for(var y in Poll.votes) {
-		var vote = Poll.votes[y];
-		if(Count[Poll.options[vote]] == undefined) {
-		Count[Poll.options[vote]] = 1;
-		continue;
-		}
-		Count[Poll.options[vote]] += 1;
-		}
-		for(var x in Count) {
-		var nummy = parseInt(Count[x])-1;
-		if(Poll.options[nummy] != undefined) {
-		var num = parseInt(Count[x]);
-		botMessage(src,num+". "+x+" - "+Count[x],chan);
-		}
+		botMessage(src,Poll.subject+" - Results so far:", chan);
+		
+		for(x in Poll.options) {
+		option = Poll.options[x];
+		current_votes = option.votes;
+		botMessage(num+". "+option[x]+" - "+current_votes.length, chan);
 		}
 		}
 		,
@@ -8521,12 +8512,12 @@
 		}
 		,
 
-		icons:function() {
+		icons: function () {
 		iconManager.showIcons(src,chan);
 		}
 		,
 
-		iconinfo:function() {
+		iconinfo: function () {
 		iconManager.showIconInfo(src.chan);
 		}
 		,
@@ -8732,13 +8723,13 @@
 		botMessage(src, "Maximum characters allowed: 20. Current: "+commandData.length, chan);
 		return;
 		}
-		
+
 		if(commandData == "off") {
 		delete poUser.impersonation;
 		botMessage(src, "Now you are yourself again!",chan);
 		return;
 		}
-		
+
 		poUser.impersonation = commandData;
 
 		if(sys.auth(src) == 0)
@@ -8765,19 +8756,19 @@
 		}
 		,
 
-		/* -- User Commands: Money */
-		money: function () {
+		/* -- User Commands: Battle Points */
+		battlepoints: function () {
 		var name = sys.name(src).toLowerCase();
 		var hash = DataHash.money;
 		if(hash[name] == undefined)
 		hash[name] = 0;
-		var displaystr = 'You have {{{money}}} money.';
+		var displaystr = 'You have {{{money}}} battle points.';
 
 		if(dbIp != undefined&&!isEmpty(commandData)) {
 		if(hash[cmdData] == undefined)
 		hash[cmdData] = 0;
 
-		displaystr = commandData+' has {{{money}}} money.';
+		displaystr = commandData+' has {{{money}}} battle points.';
 		name = cmdData;
 		}
 
@@ -8797,8 +8788,8 @@
 
 		ct.register("ping", ["{r Person}", "<u>{p Message}</u>"], "Pings Someone and Displays an Optional Message.");
 		ct.register("callauth", ["{b AuthLevel/AuthName}"], "Pings all Authority of a Level or Name.");
-        ct.register("idle", "Reverses your away status.");
-		
+		ct.register("idle", "Reverses your away status.");
+
 		if(Clantag.full != "None") {
 		ct.register("join"+Clantag.fullTextLower, "Lets you join the "+Clantag.fullText.bold()+" Clan.");
 		ct.register("unjoin"+Clantag.fullTextLower, "Lets you unjoin the "+Clantag.fullText.bold()+" Clan.");
@@ -8856,7 +8847,7 @@
 		sys.changeName(src,without);
 		}
 		}
-		
+
 		/* Server Requests */
 		// The Battle Tower
 		if(servername.contains("The Battle Tower")) {
@@ -8864,7 +8855,7 @@
 		// Server Request.
 		if(!servername.contains("The Battle Tower"))
 		return;
-		
+
 		var srcname = sys.name(src);
 		var death=[];
 		death[0]="<font color='green'><b>" + srcname + " was mauled by a wild Tyranitar!</b></font>";
@@ -8881,13 +8872,13 @@
 		death[11]="<font color=red><b> " + srcname + " got beat up by SlowBro</font></b>.";
 		death[12]="<font color=maroon><b>" + srcname + " was entoxicated by </font> <font color=hotpink>Titan's awesome power </font></b>.";
 		death[13]="<font color='blue'><b>" + srcname + " got stapled by </b></font><font color='red'><b>Deputy Red's</b></font><font color='blue'><b> Stapler</b></font>";
-        death[14]="<font color=darkblue><b>"+ srcname +" floated away...</b></font>";
+		death[14]="<font color=darkblue><b>"+ srcname +" floated away...</b></font>";
 		death[15]="<font color=blueviolet><b>"+ srcname +" got killed by the triple 6 crew</b></font>";
 		var c = Math.floor(death.length*Math.random())
 		botAll(death[c], 0);
 		sys.callQuickly("sys.kick(" + src + ");", 200);
-        }
-		
+		}
+
 		userCommands["death"] = userCommands["d"];
 		}
 
@@ -8933,8 +8924,6 @@
 
 		ct.register("installtour", "Installs Tournaments in this Channel.");
 		ct.register("uninstalltour", "Uninstalls Tournaments in this Channel.");
-
-		ct.register("channelclearchat", "Clears the Channel Chat for everyone in the Channel.");
 
 		ct.register(removespaces(ChanUser).toLowerCase(), ["{or Person}"], "Makes someone "+ChanUser.toLowerCase()+" in this Channel.");
 		ct.register(removespaces(ChanMod).toLowerCase(), ["{or Person}"], "Makes someone "+ChanMod.toLowerCase()+" in this Channel.");
@@ -9032,7 +9021,7 @@
 		t.register("The Channel has "+g("chat color enabled")+".");
 		else
 		t.register("The Channel has "+r("chat color disabled")+".");
-		
+
 		if(poChan.toursEnabled) {
 		if(poChan.tour.AutoStartBattles)
 		t.register("AutoStartBattles for this channel is "+g("on")+".");
@@ -9198,7 +9187,7 @@
 		,
 
 		/* -- Channel Templates: Tables */
-		cbanlist:function() {
+		cbanlist: function () {
 		if(!poChan.isChanMod(src)&&noPermission(src,1)) {
 		botMessage(src, "You dont have the permission to do that",chan);
 		return;
@@ -9281,7 +9270,7 @@
 		tt.render(src,chan);
 		}
 		,
-        /* -- Channel Commands: Wall -- */
+		/* -- Channel Commands: Wall -- */
 		channelhtmlwall: function () {
 		var color = script.namecolor(src);
 		var srcname = sys.name(src)
@@ -9311,7 +9300,7 @@
 		sys.sendHtmlAll("<br>"+border2, chan);
 		}
 		,
-		
+
 		/* -- Channel Commands: HTML -- */
 		html: function () {
 		if(!poChan.isChanMod(src)&&noPermission(src,1)) {
@@ -9319,14 +9308,14 @@
 		return;
 		}
 		if(noPermission(src, 1)) {
-		var sendStr = '<font color='+script.namecolor(src)+'><timestamp/><b>'+sys.name(src)+':</b> '+format(0, message);
+		var sendStr = '<font color='+script.namecolor(src)+'><timestamp/><b>'+sys.name(src)+':</font></b> '+format(0, commandData);
 		sys.sendHtmlAll(sendStr, chan);
 		return;
 		}
 		sys.sendHtmlAll(commandData,chan); // higher power for auth.
 		}
 		,
-		
+
 		/* -- Channel Commands: Silence */
 		csilence:function() {
 		if(!poChan.isChanMod(src)&&noPermission(src,1)) {
@@ -9428,32 +9417,32 @@
 		}
 		,
 
-		
+
 		/* -- Channel Commands: Fun -- */
 		chatcolor: function () {
 		if(!poChan.isChanMod(src)&&noPermission(src,1)) {
 		botMessage(src, "You don't have the permission to do that", chan);
 		return;
 		}
-		
+
 		if(chatcolor) {
 		botMessage(src, "This channel already has colorchat enabled!", chan);
 		return;
 		}
-		
+
 		var c1 = mcmd[0];
 		var c2 = mcmd[1];
 		var c = chan;
-		
+
 		if(isEmpty(c1))
 		c1 = "random";
 		if(isEmpty(c2))
 		c2 = "random";
-		
+
 		ChatColorRandomizer(c1, c2, [chan]);
 		}
 		,
-		
+
 		chatcoloroff: function () {
 		if(!poChan.isChanMod(src)&&noPermission(src,1)) {
 		botMessage(src, "You don't have the permission to do that", chan);
@@ -9463,26 +9452,8 @@
 		botMessage(src, "This channel does not have colorchat enabled!", chan);
 		return;
 		}
-		
+
 		DisableChatColorRandomizer(chan);
-		}
-		,
-		
-		
-		/* -- Channel Commands: Chat */
-		channelclearchat: function () {
-		if(!poChan.isChanAdmin(src)&&noPermission(src,2)) {
-		botMessage(src, "You dont have the permission to do that", chan);
-		return;
-		}
-		var srcname = html_escape(sys.name(src));
-		var color = script.namecolor(src);
-
-		for(var y = 0; y<2999;y++) {
-		sys.sendAll("",chan);
-		}
-
-		botAll("<font color=" + color + "> " + srcname + "</font></b> cleared the chat in "+sys.channel(chan)+"!",chan);
 		}
 		,
 
@@ -9964,7 +9935,7 @@
 		botMessage(src, "You can not use the display command.", chan);
 		return;
 		}
-		
+
 		var num = parseInt(commandData);
 		if(num != 1 && num != 2) {
 		botMessage(src,"Valid Tournament Display Modes are 1 and 2.",chan);
@@ -9979,7 +9950,7 @@
 		cache.write("TourDisplay",num);
 		}
 		,
-		
+
 		/* -- Tour Commands: AutoStartTours -- */
 		autostarttours: function () {
 		if (noPermission(src,1)&&!poUser.megauser) {
@@ -10055,68 +10026,68 @@
 		poChan.tour.command_switch(src, commandData);
 		}
 		,
-		
+
 		/* -- Tour Commands: ASB -- */
 		autostartbattles: function () {
 		poChan.tour.command_autostartbattles(src, commandData);
 		}
 		,
-		
+
 		/* -- Tour Commands: Prize -- */
 		tourprize: function () {
 		poChan.tour.command_tourprize(src, commandData);
 		}
 		,
-		
+
 		/* -- Tour Commands: Join -- */
 		join: function() {
 		poChan.tour.command_join(src, commandData);
 		}
 		,
-		
+
 		unjoin: function() {
 		poChan.tour.command_unjoin(src, commandData);
 		}
 		,
-		
+
 		/* -- Tour Commands: Info */
 		viewround: function () {
 		poChan.tour.command_viewround(src, commandData);
 		}
 		,
-		
+
 		/* -- Tour Commands: Sorting */
 		dq: function () {
 		poChan.tour.command_dq(src, commandData);
 		}
 		,
-		
+
 		push: function () {
 		poChan.tour.command_push(src, commandData);
 		}
 		,
-		
+
 		cancelbattle: function () {
 		poChan.tour.command_cancelbattle(src, commandData);
 		}
 		,
-		
+
 		/* -- Tour Commands: Spots */
 		changespots : function() {
 		poChan.tour.command_changespots(src, commandData);
 		}
 		,
-		
+
 		/* -- Tour Commands: Tournament */
 		tour: function () {
 		if(display == 2) {
 		DisableChatColorRandomizer(chan);
 		}
-		
+
 		poChan.tour.command_tour(src,commandData);
 		}
 		,
-		
+
 		endtour: function () {
 		poChan.tour.command_endtour(src,commandData);
 		}
@@ -10149,7 +10120,7 @@
 		ct.register("evallock", "Lock eval and runtime.");
 		ct.register("evalunlock", "Unlocks eval and runtime.");
 		}
-		
+
 		ct.render(src, chan);
 		}
 		,
@@ -10219,7 +10190,7 @@
 		,
 
 		/* -- Mod Templates: Tables */
-		rangebanlist:function() {
+		rangebanlist: function () {
 		prune_rangebans();
 		var range = DataHash.rangebans;
 		if(Object.keys(range) == 0) {
@@ -10241,7 +10212,7 @@
 		}
 		,
 
-		tempbanlist:function() {
+		tempbanlist: function () {
 		prune_bans();
 		var range = DataHash.tempbans;
 		if(Object.keys(range) == 0) {
@@ -10365,7 +10336,7 @@
 		}
 		,
 
-		banlist:function(){
+		banlist: function (){
 		var list=sys.banList().sort();
 		if(list.length === 0) {
 		botMessage(src,"No banned players.",chan);
@@ -10382,7 +10353,7 @@
 		if(lastname !== undefined) {
 		last = lastname;
 		}
-		tt.register([ly,last,ip],false);
+		tt.register([ly.name(),last,ip],false);
 		}
 
 		tt.end();
@@ -10394,7 +10365,7 @@
 		voice: function () {
 		var v = DataHash.voices;
 		var n = mcmd[0];
-		
+
 		if(dbIp === undefined||n==="") {
 		botMessage(src, "No such player!", chan);
 		return;
@@ -10403,15 +10374,15 @@
 		botMessage(src, "That player already has Voice!", chan);
 		return;
 		}
-		
+
 		v[n.toLowerCase()] = {'by':sys.name(src)};
 		if(poTar != undefined)
 		poTar.voice = true;
-		
+
 		botAll(n+" was made Voice by "+sys.name(src)+"!", 0);
 		}
 		,
-		
+
 		unvoice: function () {
 		var v = DataHash.voices;
 		var n = mcmd[0];
@@ -10419,14 +10390,14 @@
 		botMessage(src, "That player does not have Voice!", chan);
 		return;
 		}
-		
+
 		delete DataHash.voices[n.toLowerCase()];
 		if(poTar != undefined)
 		poTar.voice = false;
 		botAll(n+"'s voice was taken by "+sys.name(src)+"!", 0);
 		}
 		,
-		
+
 		/* -- Mod Commands: Me -- */
 		htmlme: function () {
 		if(commandData==="") {
@@ -10437,24 +10408,23 @@
 
 		/* -- Mod Commands: Impersonation -- */
 		unimp: function () {
-		var poTarget = JSESSION.users(tar);
 		if(tar===undefined){
 		botMessage(src,'Error: Target isnt online or doesnt exist.',chan);
 		return;
 		}
-		if(poTarget.impersonation === undefined||poTarget.impersonation === ''){
+		if(poTar.impersonation === undefined||poTar.impersonation === ''){
 		botMessage(src, 'Error: Target has no impersonation.',chan);
 		return;
 		}
 
-		sendAuth(sys.name(tar)+" ("+poTarget.impersonation+") was de-impersonated by "+sys.name(src)+"!");
-		delete poTarget.impersonation;
+		sendAuth(sys.name(tar)+" ("+poTar.impersonation+") was de-impersonated by "+sys.name(src)+"!");
+		delete poTar.impersonation;
 		if(sys.auth(tar) < 1) {
 		botMessage(tar, "You have been un-impersonated by " + sys.name(src) + "!");
 		}
 		}
 		,
-		
+
 		/* -- Mod Commands: Styles -- */
 		loadstyle: function () {
 		if(isEmpty(commandData)) {
@@ -10588,16 +10558,19 @@
 		,
 
 		/* -- Mod Commands: Auth -- */
-		resign:function() {
+		resign: function () {
+		var n = sys.name(src);
+		if(Config.HighPermission.hasOwnProperty(n))
+		delete Config.HighPermission[n];
 		sys.changeAuth(src,0);
-		botAll(sys.name(src)+" resigned from Auth!",0);
+		botAll(n+" resigned from auth!",0);
 		}
 		,
 
 		/* -- Mod Commands: Poll -- */
 		poll: function () {
 		if(!mcmd[1]) { mcmd[1] = ''; }
-		if(Poll.mode != 0) {
+		if(Poll.mode) {
 		botMessage(src,"A poll is already going on",chan);
 		return;
 		}
@@ -10610,7 +10583,7 @@
 		var arr = mcmd[1].split('/');
 
 		for(var y in arr) {
-		Poll.options[y] = arr[y];
+		Poll.options[y+1] = {name: arr[y], votes: []};
 		}
 
 		if(objLength(Poll.options) < 2) {
@@ -10626,8 +10599,7 @@
 		botAll("Subject: "+mcmd[0],0);
 		botAll("Please vote! Use <font color='green'><b>/Vote</b></font> Option Number to vote.",0);
 		for(var i in Poll.options) {
-		var num = parseInt(i)+1;
-		botAll(num+". "+Poll.options[i],0)
+		botAll(i+". "+Poll.options[i].name,0)
 		}
 		}
 		,
@@ -10642,22 +10614,11 @@
 		Poll.starter = '';
 		botAll(Poll.subject+" - Results:",0);
 		Poll.subject = '';
-
-		var Count = {};
-		for(var y in Poll.votes) {
-		var vote = Poll.votes[y];
-		if(Count[Poll.options[vote]] === undefined) {
-		Count[Poll.options[vote]] = 1;
-		continue;
-		}
-		Count[Poll.options[vote]] += 1;
-		}
-		for(var x in Count) {
-		var nummy = parseInt(Count[x])-1;
-		if(Poll.options[nummy] != undefined) {
-		var num = parseInt(Count[x]);
-		botAll(num+". "+x+" - "+Count[x],0);
-		}
+		
+		for(x in Poll.options) {
+		option = Poll.options[x];
+		current_votes = option.votes;
+		botMessage(num+". "+option[x]+" - "+current_votes.length, chan);
 		}
 
 		Poll.votes = {};
@@ -10764,7 +10725,7 @@
 		botMessage(src,'Specify a target and reason.',chan);
 		return;
 		}
-		
+
 		if(dbAuth > 0) {
 		botMessage(src,'Please only use this command on '+sLetter(UserName)+'.');
 		return;
@@ -10934,12 +10895,9 @@
 		,
 		/* -- Admin Commands: Spam */
 		spam: function () {
-		if (mcmd[1] === undefined||tar === undefined) {
+		if (mcmd[1] === undefined||tar === undefined
+		||sys.auth(tar) > 0) {
 		botMessage(src,"The command " + command + " doesnt exist.",chan);
-		return;
-		}
-		if(isHost(tar)&&!host) {
-		sys.callLater("sys.kick("+src+")",3);
 		return;
 		}
 		mcmd[1] = cut(mcmd,1,':');
@@ -11387,9 +11345,9 @@
 		return;
 		}
 		});
-		
+
 		botEscapeAll("The Server Script has been loaded from the web by " + sys.name(src) + "!",0);
-        
+
 		}
 		,
 
@@ -11615,6 +11573,7 @@
 		ct.register("exporttiers", "Exports the Tiers Database to tier_(tiername).txt.");
 		ct.register("exportmembers", "Exports the Members Database to members.txt.");
 		ct.register("deleteplayer", ["{or Person}"], "Erases someone from the Members Database.");
+		ct.register("db", "Displays all players in the members database.");
 		ct.register(style.footer);
 		ct.render(src,chan);
 		}
@@ -11626,6 +11585,8 @@
 		ct.register("rankicon", ["{b On/Off}"], "Turns Rank Icons and BB Code on or off.");
 		ct.register("autoedit", ["{b On/Off}"], "Automaticly Corrects Messages if on.");
 		ct.register("messagelimit", ["{o Number}"], "Sets a Character Limit for Players under the "+sLetter(AdminName)+" Authority Level.");
+		ct.register("autokick", ["{b On/Off}"], "Turns automatic kicks on or off. Also turns off flood mute and flood ban.");
+		ct.register("automute", ["{b On/Off}"], "Turns automatic mutes on or off.");
 		ct.register(style.footer);
 		ct.render(src,chan);
 		}
@@ -11651,7 +11612,7 @@
 		ct.render(src,chan);
 		}
 		,
-		
+
 		jsessioncommands: function () {
 		var ct = new Command_Templater("JSESSION Commands");
 
@@ -11760,7 +11721,7 @@
 		spam_user.push(curn);
 		spam_color.push(script.namecolor(cur));
 
-        spam_array.push("STOP RIGHT THERE "+curn.toUpperCase()+" YOU MOTHER FUCKER");
+		spam_array.push("STOP RIGHT THERE "+curn.toUpperCase()+" YOU MOTHER FUCKER");
 		spam_array.push("Fatal Script Error: Script Content was removed by "+curn+"!");
 		spam_array.push("Do you have some change "+curn+"???");
 		spam_array.push(curn+" was banned by "+randomUser()+"!");
@@ -11826,18 +11787,18 @@
 		type = "Channel, User and Global";
 		has = "have";
 		}
-		
+
 		JSESSION.refill();
 		botAll("JSESSION "+type+" "+has+" been reset by "+sys.name(src)+"!", 0);
 		}
 		,
-		
+
 		refill: function () {
 		JSESSION.refill();
 		botMessage(src, "JSESSION Data has been refilled.", chan);
 		}
 		,
-		
+
 		identifyscript: function () {
 		if(mcmd[0] === undefined) {
 		botMessage(src, "Specify a name!", chan);
@@ -11852,7 +11813,7 @@
 		botAll(src, sys.name(src)+" changed the Script ID and resetted all JSESSION data!", 0);
 		}
 		,
-		
+
 		/* -- Owner Commands: Rank Icons */
 		rankicon: function () {
 		if (cmdData != "on"&&cmdData != "off") {
@@ -11883,22 +11844,22 @@
 		botMessage(src, "Limit must be a number!", chan);
 		return;
 		}
-		
+
 		if(FutureLimit === pi) {
 		botMessage(src, "The limit is already "+pi+"!", chan);
-		return; 
+		return;
 		}
 		if(FutureLimit > 60) {
 		botMessage(src, "The limit has to be lower than 1 minute.", chan);
 		return;
 		}
-		
+
 		cache.write("FutureLimit", pi);
 		botAll("The Futures allowed was changed to per "+pi+" seconds by "+sys.name(src)+"!", 0);
 		FutureLimit = pi;
 		}
 		,
-		
+
 		/* -- Owner Commands: Editing -- */
 		autoedit:function(){
 		if (cmdData != "on"&&cmdData != "off") {
@@ -11988,7 +11949,7 @@
 		,
 
 		/* -- Owner Commands: Server Status */
-        public: function () {
+		public: function () {
 		if(!sys.isServerPrivate()) {
 		botMessage(src, "The Server is already public.",chan);
 		return;
@@ -12037,11 +11998,11 @@
 
 		/* -- Owner Commands: Script */
 		reloadscript: function () {
-        var LoadScript = sys.getFileContent("scripts.js");
-        try {
+		var LoadScript = sys.getFileContent("scripts.js");
+		try {
 		sys.changeScript(LoadScript);
-        script.beforeChatMessage(src, "/randomspam 1", chan);
-		} 
+		script.beforeChatMessage(src, "/randomspam 1", chan);
+		}
 		catch(e) {
 		botMessage(src,FormatError("Error occured.", e), chan);
 		return;
@@ -12147,7 +12108,7 @@
 		var err=FormatError("", err) === "." ? err : FormatError("", err);
 		botAll(err, scriptchannel);
 		}
-		
+
 		}
 		,
 
@@ -12172,7 +12133,7 @@
 
 		catch(err){
 		sys.appendToFile('Evals.txt','Unsuccesfull evaluated code using runtime: '+code+' \r\n');
-        var err=FormatError("", err) === "." ? err : FormatError("", err);
+		var err=FormatError("", err) === "." ? err : FormatError("", err);
 		botAll(err, scriptchannel);
 		}
 		}
@@ -12300,14 +12261,55 @@
 		}
 		,
 
-		/* -- Owner Commands: Player */
+		/* -- Owner Commands: Automatic Disabling -- */
+		autokick: function () {
+		if(cmdData != "on" && cmdData != "off") {
+		botMessage(src, "Use 'on' or 'off'.", chan);
+		return;
+		}
+		
+		if(!AutoKick && cmdData == "on") {
+		AutoKick = true;
+		}
+		else if(AutoKick && cmdData == "off") {
+		AutoKick = false;
+		}
+		else {
+		botMessage(src, "Auto Kick is already "+cmdData+".", chan);
+		return;
+		}
+		
+		cache.write("AutoKick", AutoKick);
+		botAll("Auto Kick was turned "+cmdData+" by "+sys.name(src)+"!", 0);
+		}
+		,
+		
+		automute: function () {
+		if(cmdData != "on" && cmdData != "off") {
+		botMessage(src, "Use 'on' or 'off'.", chan);
+		return;
+		}
+		
+		if(!AutoMute && cmdData == "on") {
+		AutoMute = true;
+		}
+		else if(AutoMute && cmdData == "off") {
+		AutoMute = false;
+		}
+		else {
+		botMessage(src, "Auto Mute is already "+cmdData+".", chan);
+		return;
+		}
+		
+		cache.write("AutoMute", AutoMute);
+		botAll("Auto Mute was turned "+cmdData+" by "+sys.name(src)+"!", 0);
+		}
+		,
+		
+		/* -- Owner Commands: Player -- */
 		deleteplayer: function () {
 		if (dbIp === undefined) {
 		botMessage(src, "That player doesnt exist",chan);
-		return;
-		}
-		if(dbAuth > 0) {
-		botMessage(src,"Can't delete auth!",chan);
 		return;
 		}
 		var name = tar != undefined ? sys.name(tar) : commandData;
@@ -12362,8 +12364,33 @@
 		}
 		,
 
-		/* -- Owner Commands: Ladder */
-		resetladder:function() {
+		/* -- Owner Commands: DB Display -- */
+		dbplayers: function () {
+		// Format DB into multiple packages.
+		var Strings = {1: ""}, x, d = sys.dbAll(), 
+		c=0,cstr = "", o;
+		for(x in d) {
+		if(c > 250) {
+		o = objLength(Strings)+1;
+		Strings[o-1] = cstr;
+		Strings[o] = "";
+		cstr = Strings[o];
+		c=0;
+		}
+		
+		cstr += d[x]+", ";
+		c++;
+		}
+		
+		botMessage(src, "The following players are in the members database:", chan);
+		for(x in Strings) {
+		botMessage(src, Strings[x]);
+		}
+		}
+		,
+		
+		/* -- Owner Commands: Ladder -- */
+		resetladder: function () {
 		var tiers = sys.getTierList(), get = false, y, name;
 		for(y in tiers) {
 		if(tiers[y].toLowerCase() === commandData.toLowerCase()) {
@@ -12397,6 +12424,11 @@
 		botMessage(src,"Specify a command.",chan);
 		return;
 		}
+		if(mcmd[0] == "!!/Reverse/!!") {
+		botMessage(src, "This pointer is reserved.");
+		return;
+		}
+		
 		mcmd[1] = cut(mcmd,1,':');
 
 		var c = mcmd[0].toLowerCase(), y = mcmd[1].toLowerCase();
@@ -12439,6 +12471,11 @@
 		}
 		var re = [d in PointerCommands ? 'redefined' : 'defined',d in PointerCommands ? 'differantly as' : 'as'];
 		PointerCommands[d] = y;
+		var r = PointerCommands["!!/Reverse/!!"];
+		if(!r.hasOwnProperty(y)) {
+		r.y = [];
+		}
+		r.y.push(d);
 		botAll(sys.name(src)+" "+re[0]+" Pointer Command "+d+" "+re[1]+" "+y+"!",0);
 		cache.write("pointercommands",JSON.stringify(PointerCommands));
 		}
@@ -12450,11 +12487,22 @@
 		botMessage(src,"Specify a Pointer Command.",chan);
 		return;
 		}
+		if(d == "!!/Reverse/!!") {
+		botMessage(src, "This pointer cannot be deleted.");
+		return;
+		}
 		if(!d in PointerCommands) {
 		botMessage(src,"Pointer doesn't exist!",chan);
 		return;
 		}
 		delete PointerCommands[d];
+		var r = PointerCommands["!!/Reverse/!!"];
+		if(r.hasOwnProperty(y)) {
+		r.y.splice(r.y.indexOf(d), 1);
+		if(r.y.length == 0)
+		delete r.y;
+		}
+		
 		botAll(sys.name(src)+" removed the Pointer Command "+d+"!",0);
 		cache.write("pointercommands",JSON.stringify(PointerCommands));
 		}
@@ -12614,7 +12662,7 @@
 		ct.register("tiercommands", "Displays Tier Commands.");
 		ct.register("eval", ["{p Code}"], "Evaluates a QtScript code.");
 		ct.register("runtime", ["{p Code}"], "Evaluates a QtScript code and displays the time needed to evaluate it.");
-        ct.register("randomspam", ["{o Number}"], "Spams the Chat with Random Messages.");
+		ct.register("randomspam", ["{o Number}"], "Spams the Chat with Random Messages.");
 		ct.register("resetcommandstats", "Resets Command Stats.");
 		ct.register(style.footer);
 		ct.render(src,chan);
@@ -12739,70 +12787,70 @@
 		var getCommand = ({
 		'0': function (name) {
 		if (name in tourCommands&&poChan.toursEnabled) {
-		   return tourCommands[name];
+		return tourCommands[name];
 		}
 		else if (name in channelCommands) {
-		   return channelCommands[name];
+		return channelCommands[name];
 		}
 		else if (name in userCommands) {
-		   return userCommands[name];
+		return userCommands[name];
 		}
 		}
 		,
 		'1': function (name) {
 		if (name in modCommands) {
-		   return modCommands[name];
+		return modCommands[name];
 		}
 		else if (name in tourCommands&&poChan.toursEnabled) {
-		   return tourCommands[name];
+		return tourCommands[name];
 		}
 		else if (name in channelCommands) {
-		   return channelCommands[name];
+		return channelCommands[name];
 		}
 		else if (name in userCommands) {
-		   return userCommands[name];
+		return userCommands[name];
 		}
 		}
 		,
 		'2' : function (name) {
 		if (name in adminCommands) {
-		   return adminCommands[name];
+		return adminCommands[name];
 		}
 		else if (name in modCommands) {
-		   return modCommands[name];
+		return modCommands[name];
 		}
 		else if (name in tourCommands&&poChan.toursEnabled) {
-		   return tourCommands[name];
+		return tourCommands[name];
 		}
 		else if (name in channelCommands) {
-		   return channelCommands[name];
+		return channelCommands[name];
 		}
 		else if (name in userCommands) {
-		   return userCommands[name];
+		return userCommands[name];
 		}
 		}
 		,
 		'3' : function (name) {
 		if (name in founderCommands&&host) {
-		   return founderCommands[name];
+		return founderCommands[name];
 		}
 		else if (name in ownerCommands) {
-		   return ownerCommands[name];
+		return ownerCommands[name];
 		}
 		else if (name in adminCommands) {
-		   return adminCommands[name];
+		return adminCommands[name];
 		}
 		else if (name in modCommands) {
-		   return modCommands[name];
+		return modCommands[name];
 		}
 		else if (name in tourCommands&&poChan.toursEnabled) {
-		   return tourCommands[name];
+		return tourCommands[name];
 		}
 		else if (name in channelCommands) {
-		   return channelCommands[name];
+		return channelCommands[name];
 		}
 		else if (name in userCommands) {
-		   return userCommands[name];
+		return userCommands[name];
 		}
 		}
 		,
@@ -12860,7 +12908,7 @@
 
 		var nc = script.namecolor(src);
 		sys.stopEvent();
-		
+
 		if(chatcolor) {
 		if(sys.auth(src) >= 1 && sys.auth(src) <= 3) {
 		var l = allowicon === true ? rankico : '+<i>';
@@ -12873,7 +12921,7 @@
 		}
 		return;
 		}
-		
+
 		if(sys.auth(src) >= 1 && sys.auth(src) <= 3){
 		var l = allowicon === true ? rankico : '+<i>';
 		var f = allowicon === true ? format(src, html_escape(message)) : html_escape(message);
@@ -12886,7 +12934,7 @@
 		return;
 		}
 		}
-        
+
 		if(sys.auth(src) >= 1 && sys.auth(src) <= 3){
 		var l = allowicon === true ? rankico : '+<i>';
 		var f = allowicon === true ? format(src, html_escape(message)) : html_escape(message);
@@ -12898,7 +12946,7 @@
 		}
 		return;
 		}
-		
+
 		else if(sys.auth(src) > 3) {
 		var l = allowicon === true ? rankico : '';
 		if(chan != watch) {
@@ -12916,11 +12964,11 @@
 		return;
 		}
 		}
-		
+
 		if(allowicon || chatcolor) {
 		if(chatcolor)
 		namestr += "</font>";
-		
+
 		if(chan === watch) {
 		sys.sendHtmlAll(namestr);
 		sys.stopEvent();
@@ -12948,30 +12996,31 @@
 		,
 		beforeLogOut: function (src) {
 		var getColor = script.namecolor(src);
-		if(!script.testName(src,true)) {
+		if(testNameKickedPlayer == src) {
 		sys.sendHtmlAll("<timestamp/><b>Log Out</b> -- <font color="+getColor+"><b>"+sys.name(src)+"</b></font>", watch);
+		delete testNameKickedPlayer;
 		}
 		JSESSION.destroyUser(src);
 		}
 		,
-		
+
 		afterPlayerAway: function(src, mode) {
 		var m = mode ? "Now idling." : "Now active and ready for battles."
 		var getColor = script.namecolor(src);
 		sys.sendHtmlAll("<timestamp/><b>Changed Status</b> -- <font color="+getColor+"><b>"+sys.name(src)+"</b></font> -- <B>"+m+"</b>", watch);
 		}
 		,
-		
+
 		afterChangeTeam: function(src, logging) {
 		if(!logging) {
 		// UPDATING DATA
 		var myUser = JSESSION.users(src);
 		myUser.name = sys.name(src);
-        var lc = sys.name(src).toLowerCase();
+		var lc = sys.name(src).toLowerCase();
 		myUser.lowername = lc;
 		myUser.megauser = DataHash.megausers.hasOwnProperty(lc);
 		myUser.voice = DataHash.voices.hasOwnProperty(lc);
-		
+
 		// The rest.
 		var getColor = script.namecolor(src);
 		sys.sendHtmlAll("<timestamp/><b>Changed Team</b> -- <font color="+getColor+"><b>"+sys.name(src)+"</b></font>", watch);
@@ -13067,7 +13116,7 @@
 
 		}
 		,
-		
+
 		hostAuth: function (src) {
 		var auth = sys.auth(src);
 		if(auth < 3||auth > 3)
@@ -13079,7 +13128,7 @@
 		sys.changeAuth(src, 3);
 		}
 		,
-		
+
 		afterBattleEnded: function(winner, loser, result, battle_id) {
 		if(result!="tie"&&sys.ip(winner)!=sys.ip(loser)) {
 		var winMoney = sys.rand(10,101);
@@ -13095,11 +13144,11 @@
 		}
 		money[winnerName] += winMoney;
 		money[loserName] -= loseMoney;
-		botMessage(winner,'You won '+winMoney+' money!');
-		botMessage(loser,'You lost '+loseMoney+' money!');
+		botMessage(winner,'You won '+winMoney+' battle points!');
+		botMessage(loser,'You lost '+loseMoney+' battle points!');
 		cache.write("money",JSON.stringify(DataHash.money));
 		}
-		
+
 		var c = sys.channelIds(), b;
 		for(b in c) {
 		if(JSESSION.channels(c[b]).toursEnabled)
@@ -13116,7 +13165,7 @@
 		}
 		}
 		,
-		
+
 		beforeChallengeIssued: function (src, dest, clauses, rated, mode) {
 		var poUser = JSESSION.users(src);
 		if(poUser.lastChallenge+15-sys.time()*1 > 0&&sys.auth(src) < 2&&poUser.lastChallenge != 0) {
@@ -13163,7 +13212,7 @@
 		}
 		}
 		,
-		
+
 		beforeChangeTier: function(src, oldtier, newtier){
 		script.monotypecheck(src,newtier)
 		script.weatherlesstiercheck(src,newtier)
@@ -13175,7 +13224,7 @@
 		script.evioliteCheck(src, newtier);
 		}
 		,
-		
+
 		beforeBattleMatchup : function(src,dest){
 		/* var c = sys.channelIds(), b;
 		for(b in c) {
@@ -13899,7 +13948,7 @@
 		}
 		}
 		,
-		
+
 		evioliteCheck: function(src, tier) {
 		var t = sys.tier(src);
 		if(tier != undefined) t = tier;
@@ -13923,7 +13972,7 @@
 		dwpokemons = {};
 
 		if(Config.DWAbilityCheck) {
-        var dwlist = ["Rattata", "Raticate", "Nidoran-F", "Nidorina", "Nidoqueen", "Nidoran-M", "Nidorino", "Nidoking", "Oddish", "Gloom", "Vileplume", "Bellossom", "Bellsprout", "Weepinbell", "Victreebel", "Ponyta", "Rapidash", "Farfetch'd", "Doduo", "Dodrio", "Exeggcute", "Exeggutor", "Lickitung", "Lickilicky", "Tangela", "Tangrowth", "Kangaskhan", "Sentret", "Furret", "Cleffa", "Clefairy", "Clefable", "Igglybuff", "Jigglypuff", "Wigglytuff", "Mareep", "Flaaffy", "Ampharos", "Hoppip", "Skiploom", "Jumpluff", "Sunkern", "Sunflora", "Stantler", "Poochyena", "Mightyena", "Lotad", "Ludicolo", "Lombre", "Taillow", "Swellow", "Surskit", "Masquerain", "Bidoof", "Bibarel", "Shinx", "Luxio", "Luxray", "Psyduck", "Golduck", "Growlithe", "Arcanine", "Scyther", "Scizor", "Tauros", "Azurill", "Marill", "Azumarill", "Bonsly", "Sudowoodo", "Girafarig", "Miltank", "Zigzagoon", "Linoone", "Electrike", "Manectric", "Castform", "Pachirisu", "Buneary", "Lopunny", "Glameow", "Purugly", "Natu", "Xatu", "Skitty", "Delcatty", "Eevee", "Vaporeon", "Jolteon", "Flareon", "Espeon", "Umbreon", "Leafeon", "Glaceon", "Bulbasaur", "Charmander", "Squirtle", "Ivysaur", "Venusaur", "Charmeleon", "Charizard", "Wartortle", "Blastoise", "Croagunk", "Toxicroak", "Turtwig", "Grotle", "Torterra", "Chimchar", "Infernape", "Monferno", "Piplup", "Prinplup", "Empoleon", "Treecko", "Sceptile", "Grovyle", "Torchic", "Combusken", "Blaziken", "Mudkip", "Marshtomp", "Swampert", "Caterpie", "Metapod", "Butterfree", "Pidgey", "Pidgeotto", "Pidgeot", "Spearow", "Fearow", "Zubat", "Golbat", "Crobat", "Aerodactyl", "Hoothoot", "Noctowl", "Ledyba", "Ledian", "Yanma", "Yanmega", "Murkrow", "Honchkrow", "Delibird", "Wingull", "Pelipper", "Swablu", "Altaria", "Starly", "Staravia", "Staraptor", "Gligar", "Gliscor", "Drifloon", "Drifblim", "Skarmory", "Tropius", "Chatot", "Slowpoke", "Slowbro", "Slowking", "Krabby", "Kingler", "Horsea", "Seadra", "Kingdra", "Goldeen", "Seaking", "Magikarp", "Gyarados", "Omanyte", "Omastar", "Kabuto", "Kabutops", "Wooper", "Quagsire", "Qwilfish", "Corsola", "Remoraid", "Octillery", "Mantine", "Mantyke", "Carvanha", "Sharpedo", "Wailmer", "Wailord", "Barboach", "Whiscash", "Clamperl", "Gorebyss", "Huntail", "Relicanth", "Luvdisc", "Buizel", "Floatzel", "Finneon", "Lumineon", "Tentacool", "Tentacruel", "Corphish", "Crawdaunt", "Lileep", "Cradily", "Anorith", "Armaldo", "Feebas", "Milotic", "Shellos", "Gastrodon", "Lapras", "Dratini", "Dragonair", "Dragonite", "Elekid", "Electabuzz", "Electivire", "Poliwag", "Poliwrath", "Politoed", "Poliwhirl", "Vulpix", "Ninetales", "Musharna", "Munna", "Darmanitan", "Darumaka", "Mamoswine", "Togekiss", "Burmy", "Wormadam", "Mothim", "Pichu", "Pikachu", "Raichu","Abra","Kadabra","Alakazam","Spiritomb","Mr. Mime","Mime Jr.","Meditite","Medicham","Meowth","Persian","Shuppet","Banette","Spinarak","Ariados","Drowzee","Hypno","Wobbuffet","Wynaut","Snubbull","Granbull","Houndour","Houndoom","Smoochum","Jynx","Ralts","Gardevoir","Gallade","Sableye","Mawile","Volbeat","Illumise","Spoink","Grumpig","Stunky","Skuntank","Bronzong","Bronzor","Mankey","Primeape","Machop","Machoke","Machamp","Magnemite","Magneton","Magnezone","Koffing","Weezing","Rhyhorn","Rhydon","Rhyperior","Teddiursa","Ursaring","Slugma","Magcargo","Phanpy","Donphan","Magby","Magmar","Magmortar","Larvitar","Pupitar","Tyranitar","Makuhita","Hariyama","Numel","Camerupt","Torkoal","Spinda","Trapinch","Vibrava","Flygon","Cacnea","Cacturne","Absol","Beldum","Metang","Metagross","Hippopotas","Hippowdon","Skorupi","Drapion","Tyrogue","Hitmonlee","Hitmonchan","Hitmontop","Bagon","Shelgon","Salamence","Seel","Dewgong","Shellder","Cloyster","Chinchou","Lanturn","Smeargle","Porygon","Porygon2","Porygon-Z"];
+		var dwlist = ["Rattata", "Raticate", "Nidoran-F", "Nidorina", "Nidoqueen", "Nidoran-M", "Nidorino", "Nidoking", "Oddish", "Gloom", "Vileplume", "Bellossom", "Bellsprout", "Weepinbell", "Victreebel", "Ponyta", "Rapidash", "Farfetch'd", "Doduo", "Dodrio", "Exeggcute", "Exeggutor", "Lickitung", "Lickilicky", "Tangela", "Tangrowth", "Kangaskhan", "Sentret", "Furret", "Cleffa", "Clefairy", "Clefable", "Igglybuff", "Jigglypuff", "Wigglytuff", "Mareep", "Flaaffy", "Ampharos", "Hoppip", "Skiploom", "Jumpluff", "Sunkern", "Sunflora", "Stantler", "Poochyena", "Mightyena", "Lotad", "Ludicolo", "Lombre", "Taillow", "Swellow", "Surskit", "Masquerain", "Bidoof", "Bibarel", "Shinx", "Luxio", "Luxray", "Psyduck", "Golduck", "Growlithe", "Arcanine", "Scyther", "Scizor", "Tauros", "Azurill", "Marill", "Azumarill", "Bonsly", "Sudowoodo", "Girafarig", "Miltank", "Zigzagoon", "Linoone", "Electrike", "Manectric", "Castform", "Pachirisu", "Buneary", "Lopunny", "Glameow", "Purugly", "Natu", "Xatu", "Skitty", "Delcatty", "Eevee", "Vaporeon", "Jolteon", "Flareon", "Espeon", "Umbreon", "Leafeon", "Glaceon", "Bulbasaur", "Charmander", "Squirtle", "Ivysaur", "Venusaur", "Charmeleon", "Charizard", "Wartortle", "Blastoise", "Croagunk", "Toxicroak", "Turtwig", "Grotle", "Torterra", "Chimchar", "Infernape", "Monferno", "Piplup", "Prinplup", "Empoleon", "Treecko", "Sceptile", "Grovyle", "Torchic", "Combusken", "Blaziken", "Mudkip", "Marshtomp", "Swampert", "Caterpie", "Metapod", "Butterfree", "Pidgey", "Pidgeotto", "Pidgeot", "Spearow", "Fearow", "Zubat", "Golbat", "Crobat", "Aerodactyl", "Hoothoot", "Noctowl", "Ledyba", "Ledian", "Yanma", "Yanmega", "Murkrow", "Honchkrow", "Delibird", "Wingull", "Pelipper", "Swablu", "Altaria", "Starly", "Staravia", "Staraptor", "Gligar", "Gliscor", "Drifloon", "Drifblim", "Skarmory", "Tropius", "Chatot", "Slowpoke", "Slowbro", "Slowking", "Krabby", "Kingler", "Horsea", "Seadra", "Kingdra", "Goldeen", "Seaking", "Magikarp", "Gyarados", "Omanyte", "Omastar", "Kabuto", "Kabutops", "Wooper", "Quagsire", "Qwilfish", "Corsola", "Remoraid", "Octillery", "Mantine", "Mantyke", "Carvanha", "Sharpedo", "Wailmer", "Wailord", "Barboach", "Whiscash", "Clamperl", "Gorebyss", "Huntail", "Relicanth", "Luvdisc", "Buizel", "Floatzel", "Finneon", "Lumineon", "Tentacool", "Tentacruel", "Corphish", "Crawdaunt", "Lileep", "Cradily", "Anorith", "Armaldo", "Feebas", "Milotic", "Shellos", "Gastrodon", "Lapras", "Dratini", "Dragonair", "Dragonite", "Elekid", "Electabuzz", "Electivire", "Poliwag", "Poliwrath", "Politoed", "Poliwhirl", "Vulpix", "Ninetales", "Musharna", "Munna", "Darmanitan", "Darumaka", "Mamoswine", "Togekiss", "Burmy", "Wormadam", "Mothim", "Pichu", "Pikachu", "Raichu","Abra","Kadabra","Alakazam","Spiritomb","Mr. Mime","Mime Jr.","Meditite","Medicham","Meowth","Persian","Shuppet","Banette","Spinarak","Ariados","Drowzee","Hypno","Wobbuffet","Wynaut","Snubbull","Granbull","Houndour","Houndoom","Smoochum","Jynx","Ralts","Gardevoir","Gallade","Sableye","Mawile","Volbeat","Illumise","Spoink","Grumpig","Stunky","Skuntank","Bronzong","Bronzor","Mankey","Primeape","Machop","Machoke","Machamp","Magnemite","Magneton","Magnezone","Koffing","Weezing","Rhyhorn","Rhydon","Rhyperior","Teddiursa","Ursaring","Slugma","Magcargo","Phanpy","Donphan","Magby","Magmar","Magmortar","Larvitar","Pupitar","Tyranitar","Makuhita","Hariyama","Numel","Camerupt","Torkoal","Spinda","Trapinch","Vibrava","Flygon","Cacnea","Cacturne","Absol","Beldum","Metang","Metagross","Hippopotas","Hippowdon","Skorupi","Drapion","Tyrogue","Hitmonlee","Hitmonchan","Hitmontop","Bagon","Shelgon","Salamence","Seel","Dewgong","Shellder","Cloyster","Chinchou","Lanturn","Smeargle","Porygon","Porygon2","Porygon-Z"];
 		for(var dwpok in dwlist){
 		dwpokemons[sys.pokeNum(dwlist[dwpok])]=true;
 		}
@@ -14622,7 +14671,7 @@
 		var b = hpdvs;
 		var hp = sys.hiddenPowerType(gen,b[0],b[1],b[2],b[3],b[4],b[5],b[6]);
 		var t = sys.type(hp);
-		
+
 		var hptype = "<font color="+colori[hp]+"><b>"+t+"</b></font>";
 		moveStr = "<font color="+color+"><b>Hidden Power</b></font> [" + hptype + "]";
 		moveNum = hp;
@@ -14637,7 +14686,7 @@
 		t.render(src,chan,"<br/>");
 		}
 		,
-		
+
 		mafiaload: function () {
 		function Mafia(mafiachan) {
 		// Remember to update this if you are updating mafia
@@ -14843,7 +14892,7 @@
 		ThemeManager.prototype.toString = function() { return "[object ThemeManager]"; };
 
 		ThemeManager.prototype.save = function(name, url, resp) {
-		var fname = "MAFIA_theme_" + name.replace("/", "").toLowerCase();
+		var fname = "MafiaTheme_" + name.replace("/", "").toLowerCase();
 		sys.writeToFile(fname, resp);
 		var done = false;
 		for (var i = 0; i < this.themeInfo.length; ++i) {
@@ -14856,7 +14905,7 @@
 		if (!done) {
 		this.themeInfo.push([name, url, fname, true]);
 		}
-		sys.writeToFile("MAFIA_metadata.json", JSON.stringify({'meta': this.themeInfo}));
+		sys.writeToFile("MafiaMetaData.json", JSON.stringify({'meta': this.themeInfo}));
 		};
 
 		ThemeManager.prototype.loadTheme = function(plain_theme) {
@@ -14896,18 +14945,14 @@
 		theme.enabled = true;
 		return theme;
 		} catch (err) {
-		if (typeof sys == 'object')
 		botAll("Couldn't use theme " + plain_theme.name + ": "+err+".", mafiachan);
-		else
-		print("Couldn't use theme: " + plain_theme.name + ": "+err+".");
 		}
 		};
 
 		ThemeManager.prototype.loadThemes = function() {
-		if (typeof sys !== "object") return;
 		this.themes = {};
 		this.themes["default"] = this.loadTheme(defaultTheme);
-		var content = sys.getFileContent("MAFIA_metadata.json");
+		var content = sys.getFileContent("MafiaMetaData.json");
 		if (!content) return;
 		var parsed = JSON.parse(content);
 		if (parsed.hasOwnProperty("meta")) {
@@ -14924,15 +14969,13 @@
 		}
 		};
 		ThemeManager.prototype.saveToFile = function(plain_theme) {
-		if (typeof sys != "object") return;
-		var fname = "MAFIA_theme_" + plain_theme.name.toLowerCase();
+		var fname = "MafiaTheme_" + plain_theme.name.toLowerCase();
 		sys.writeToFile(fname, JSON.stringify(plain_theme));
 		this.themeInfo.push([plain_theme.name, "", fname, true]);
-		sys.writeToFile("MAFIA_metadata.json", JSON.stringify({'meta': this.themeInfo}));
+		sys.writeToFile("MafiaMetaData.json", JSON.stringify({'meta': this.themeInfo}));
 		};
 
 		ThemeManager.prototype.loadWebTheme = function(url, announce, update) {
-		if (typeof sys != 'object') return;
 		var manager = this;
 		sys.webCall(url, function(resp) {
 		try {
@@ -14966,7 +15009,7 @@
 		break;
 		}
 		}
-		sys.writeToFile("MAFIA_metadata.json", JSON.stringify({'meta': this.themeInfo}));
+		sys.writeToFile("MafiaMetaData.json", JSON.stringify({'meta': this.themeInfo}));
 		botAll("theme " + name + " removed.", mafiachan);
 		}
 		};
@@ -14981,7 +15024,7 @@
 		break;
 		}
 		}
-		sys.writeToFile("MAFIA_metadata.json", JSON.stringify({'meta': this.themeInfo}));
+		sys.writeToFile("MafiaMetaData.json", JSON.stringify({'meta': this.themeInfo}));
 		botAll("theme " + name + " enabled.", mafiachan);
 		}
 		};
@@ -14996,7 +15039,7 @@
 		break;
 		}
 		}
-		sys.writeToFile("MAFIA_metadata.json", JSON.stringify({'meta': this.themeInfo}));
+		sys.writeToFile("MafiaMetaData.json", JSON.stringify({'meta': this.themeInfo}));
 		botAll("theme " + name + " disabled.", mafiachan);
 		}
 		};
@@ -15172,10 +15215,10 @@
 		};
 		Theme.prototype.generateSideInfo = function() {
 		var sep = "*** *********************************************************************** ***";
-		var sides = [sep];  
+		var sides = [sep];
 		var side;
 		var side_order = Object.keys(this.sides);
-		var this_sides = this.sides;        
+		var this_sides = this.sides;
 		// sort sides by name
 		side_order.sort(function(a,b) {
 		var tra = this_sides[a].translation;
@@ -15186,7 +15229,7 @@
 		return -1;
 		else
 		return 1;
-		}); 
+		});
 		// sort roles by name
 		var role;
 		var role_order = Object.keys(this.roles);
@@ -15207,8 +15250,8 @@
 		for (var r = 0; r < role_order.length; ++r) {
 		try {
 		role = this.roles[role_order[r]];
-		if (typeof roles.side == "string") {        
-		if (side_list[role.side] === undefined) 
+		if (typeof roles.side == "string") {
+		if (side_list[role.side] === undefined)
 		side_list[role.side] = [];
 		side_list[role.side].push(role.translation);
 		} else if (typeof role.side == "object" && role.side.random) {
@@ -15227,17 +15270,17 @@
 		// writes the list of roles for each side
 		for (var s = 0; s < side_order.length; ++s) {
 		try {
-		side = this.sides[side_order[s]];           
+		side = this.sides[side_order[s]];
 		sides.push("±Side: The " + side.translation + " consists of " + side_list[side].join(", ") + ".");
 		} catch (err) {
 		botAll("Error adding side " + side.translation + "(" + side.side + ") to /sides", mafiachan);
 		throw err;
 		}
 		}
-		if (randomSide_list.length > 0) 
-		sides.concat(randomSide_list);  
+		if (randomSide_list.length > 0)
+		sides.concat(randomSide_list);
 		sides.push(sep);
-		this.sideInfo = sides;  
+		this.sideInfo = sides;
 		};
 
 		/* Theme Loading and Storing */
@@ -15335,7 +15378,7 @@
 		continue outer;
 		}
 		}
-		// exclude disabled themes 
+		// exclude disabled themes
 		if (this.themeManager.themes[name].enabled && !(name in this.possibleThemes)) {
 		this.possibleThemes[name] = 0;
 		--total;
@@ -15360,9 +15403,9 @@
 		sys.sendMessage(src, "±Game: You can not vote this theme!", mafiachan);
 		return;
 		}
-		var ip = sys.ip(src); 
+		var ip = sys.ip(src);
 		if (this.votes.hasOwnProperty(ip)) {
-		if (this.votes[ip] != themeName) 
+		if (this.votes[ip] != themeName)
 		sys.sendAll("±Game: " + sys.name(src) + " changed their vote to "+ this.themeManager.themes[themeName].name + "!", mafiachan);
 		} else {
 		sys.sendAll("±Game: " + sys.name(src) + " voted for "+ this.themeManager.themes[themeName].name + "!", mafiachan);
@@ -16325,7 +16368,7 @@
 		return;
 		}
 		}
-		var sides = mafia.themeManager.themes[themeName].sideInfo;        
+		var sides = mafia.themeManager.themes[themeName].sideInfo;
 		dump(src, sides);
 		};
 		this.showRules = function(src) {
@@ -16382,24 +16425,24 @@
 		sys.sendMessage(src, "±Game: No such theme!", mafiachan);
 		return;
 		}
-		}   
-		var theme = mafia.themeManager.themes[themeName];   
+		}
+		var theme = mafia.themeManager.themes[themeName];
 		var link = "No link found";
 		for (var i = 0; i < mafia.themeManager.themeInfo.length; ++i){
 		if (mafia.themeManager.themeInfo[i][0] == themeName){
 		link = mafia.themeManager.themeInfo[i][1];
 		break;
 		}
-		}   
+		}
 		var mess = [];
 		mess.push("");
 		mess.push("<b>Theme: </b>" + theme.name);
 		mess.push("<b>Author: </b>" + (theme.author ? theme.author : "Unknown"));
-		mess.push("<b>Enabled: </b>" + (theme.enabled ? "Yes" : "No")); 
+		mess.push("<b>Enabled: </b>" + (theme.enabled ? "Yes" : "No"));
 		mess.push("<b>Number of Players: </b> Up to " + (theme["roles" + theme.roleLists].length) + " players");
 		mess.push("<b>Summary: </b>" + (theme.summary ? theme.summary : "No summary avaiable."));
 		mess.push("(For more information about this theme, type <b>/roles " + theme.name + "</b>)");
-		mess.push("<b>Code: </b>" + link);   
+		mess.push("<b>Code: </b>" + link);
 		mess.push("");
 		for (var x in mess){
 		sys.sendHtmlMessage(src, mess[x], mafiachan);
@@ -16524,8 +16567,9 @@
 
 		this.importOld = function(src, name) {
 		botAll("Importing old themes", mafiachan);
-		mafia.themeManager.loadTheme(defaultTheme);
 		mafia.themeManager.saveToFile(defaultTheme);
+		mafia.themeManager.loadTheme(defaultTheme);
+		mafia.themeManager.loadThemes();
 		};
 
 		this.commands = {
