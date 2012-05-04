@@ -13098,10 +13098,11 @@
 		,
 		beforeLogOut: function (src) {
 		var getColor = script.namecolor(src);
-		if(typeof testNameKickedPlayer == 'number'
-		&& testNameKickedPlayer === src) { // No need to check twice.
+		if(typeof testNameKickedPlayer == 'number') {
+		if(testNameKickedPlayer === src) {
 		sys.sendHtmlAll("<timestamp/><b>Log Out</b> -- <font color="+getColor+"><b>"+sys.name(src)+"</b></font>", watch);
 		delete testNameKickedPlayer;
+		}
 		}
 		JSESSION.destroyUser(src);
 		}
