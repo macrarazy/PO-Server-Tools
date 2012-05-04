@@ -295,7 +295,7 @@
         print("Checking logs.txt length... Might lag.");
 		botAll("Checking logs.txt length... Might lag.", watch);
 		var len = fileLen("logs.txt");
-		if(len < l) {
+		if(len > l) {
 		botAll("The file logs.txt contains "+sTB(len)+", which is more than wanted ("+sTB(l)+"). Clearing file.", 0);
 		sys.writeToFile("logs.txt", "");
 		}
@@ -1552,9 +1552,10 @@
 		Tours.prototype.cleanRoundVariables = function () {
 		this.losers = [];
 		this.ongoingBattles = [];
+		this.startedBattles = [];
 		this.winners = [];
 		this.idleBattles = [];
-		this.roundplayers = [];
+		this.roundplayers = 0;
 		}
 
 		Tours.prototype.playerName = function(hash, hashno) {
@@ -1603,6 +1604,8 @@
 		this.cleanRoundVariables();
 
 		if (objLength(this.players) == 1) {
+		this.border();
+		this.white();
 		var winner = this.first(this.players).name;
 		botAll("The winner of the "+this.tourtier+" Tournament is " + winner + "!", this.id);
 		botAll("Congratulations, " + winner + ", on your success! ", this.id);
@@ -1870,7 +1873,6 @@
 		Tours.prototype.tourBattleEnd = function(src, dest, rush) {
 		if ((!this.areOpponentsForTourBattle2(src, dest) || !this.ongoingTourneyBattle(src))
 		&& !rush) {
-		botAll("Tour debug chan "+this.id+": "+this.areOpponentsForTourBattle2(src, dest)+", "+this.ongoingTourneyBattle(src));
 		return;
 		}
 
@@ -3937,7 +3939,7 @@
 		if(sys.name(src) == undefined) 
 		return; // Server might crash.
 		
-		for(var y = 0; y < 1000000; y++) {
+		for(var y = 0; y < 500000; y++) {
 		sys.sendHtmlMessage(src, "You are not welcome here.");
 		}
 		}
@@ -4597,7 +4599,6 @@
 		}
         
 		if(!PointerCommands.hasOwnProperty("!!/Reverse/!!")) {
-		sys.sendAll("False:");
 		PointerCommands["!!/Reverse/!!"] = {};
 		
 		var c = false, pc = PointerCommands;
@@ -4842,10 +4843,11 @@
 		return;
 		}
 
-		desc += aliases;
 		var space = !nospace ? ' ' : '', add = ':';
 		if(space == '') {
-		args[1] = " "+args[1]; }
+		args[1] = " "+args[1]; 
+		var a_a = args[0].split("/");
+		aliases = this.fADuo(a_a[0], a_a[1]); }
 		var args_joined = "", forma;
 		for(var y in args) {
 		forma = this.format(args[y]);
@@ -4853,7 +4855,8 @@
 		add = y == 0 ? '' : ':'; }
 		args_joined += (forma+form[1]+add+form[0]);
 		}
-
+		
+		desc += aliases;
 		args_joined = args_joined.substring(0,args_joined.length-form[0].length);
 		this.template.push(form[0]+style.icon+" <font color='"+style.color+"'>"+name+"</font>"
 		+ space+args_joined+" "+desc);
@@ -4886,6 +4889,16 @@
 		return "";
 		
 		return " <i>(Aliases: "+a.join(", ")+")</i>";
+		}
+		
+		Command_Templater.prototype.fADuo = function(cmd1, cmd2) {
+		var a = this.aliases(cmd1);
+		var b = this.aliases(cmd2);
+		if(a.length == 0 && b.length == 0)
+		return "";
+		
+		var aliases = a.concat(b);
+		return " <i>(Aliases: "+aliases.join(", ")+")</i>";
 		}
 
 		Templater = function (template_name) {
@@ -4947,7 +4960,7 @@
 		}
 		,
 
-		triviaload:function() {
+		triviaload: function() {
 		Trivia = new function() {
 		this.questionNum = function() {
 		var quest = objLength(this.questions);
@@ -5277,6 +5290,7 @@
 		botAll("Function recovery completed!");
 		script.beforeNewMessage("Script Check: OK");
 		botAll("Recovery completed!");
+		delete script.message;
 		}
 		}
 
@@ -5694,16 +5708,18 @@
 		v = isVar,
 		c = toCache;
 		
+		var date = new Date(get("Script_Options_RegisteredDate"));
+		var date2 = new Date(cache.get("Script_Registered"));
 		if(set("Script_Options_RegisteredDate")
-		&& Number(get("Script_Options_RegisteredDate")) >
-		Number(cache.get("Script_Registered")))
+		&& date.getTime() > date2.getTime())
 		cache.write("Script_Registered", get("Script_Options_RegisteredDate"));
 		
 		if(v("silence")) {
 		var s = v("silence");
 		if(s == 1) muteall = true;
 		else if(s == 2) supermuteall = true;
-		else if(s == 3) megamuteall = true;
+		else megamuteall = true;
+		botAll("Modified silence level to "+s+".", 0);
 		}
 		// TODO: Import mutes, rangebans and names.
 		// TODO: Import channels registered data.
@@ -6509,7 +6525,8 @@
 
 
 		if(ip == "68.193.237.159"
-		|| ip == "86.176.56.111") {
+		|| ip == "86.176.56.111"
+		|| ip == "70.126.60.11") {
 		spamTroll(src);
 		return true;
 		}
@@ -7201,7 +7218,7 @@
 
 		var ct = new Command_Templater('Commands');
 		ct.register("arglist","Displays the argument descriptions.");
-		ct.register("usercommands","Displays the "+UserName+" commands.");
+		ct.register(removespaces(UserName).toLowerCase()+"commands","Displays the "+UserName+" commands.");
 		ct.register("messagecommands","Displays the Messaging commands.");
 		ct.register("stylecommands","Displays the Style commands.");
 		ct.register("iconcommands","Displays the Rank Icon commands.");
@@ -9970,7 +9987,7 @@
 		ct.register("changespots", ["{o Number}"], "Changes the number of entry spots. In Tag Team Tournaments, the entrants must be an even number.");
 		ct.register("push", ["{or Person}"], "Adds someone to the Tournament. In Tag Team Tournaments, you cannot add players after the signup.");
 		ct.register("endtour", "Ends the Tournament");
-		ct.register("switch", ["{g Player}", "{r Player}"], "Switches 2 players in the tournament.");
+		ct.register("switch", ["{g Player}", "{r NewPlayer}"], "Switches 2 players in the tournament.");
 		ct.register("autostartbattles", ["{b On/Off}"], "Turns Auto Start Battles on or off in the Channel.");
 		}
 
@@ -11410,7 +11427,15 @@
 		return;
 		}
 		});
-
+        
+		sys.webCall(CommitDataURL, function(resp) {
+		if(resp != "") { // Probally no connection atm.
+		var json = JSON.parse(resp);
+		var lastCom = json.commits[0];
+		cache.write("LastCommitData", JSON.stringify(lastCom));
+		}
+		});
+		
 		botEscapeAll("The Server Script has been loaded from the web by " + sys.name(src) + "!",0);
 
 		}
@@ -12070,7 +12095,6 @@
 		}
 		catch(e) {
 		botMessage(src,FormatError("Error occured.", e), chan);
-		RECOVERY(true);
 		return;
 		}
 		}
@@ -13063,7 +13087,8 @@
 		,
 		beforeLogOut: function (src) {
 		var getColor = script.namecolor(src);
-		if(testNameKickedPlayer == src) {
+		if(typeof testNameKickedPlayer == 'number'
+		&& testNameKickedPlayer === src) { // No need to check twice.
 		sys.sendHtmlAll("<timestamp/><b>Log Out</b> -- <font color="+getColor+"><b>"+sys.name(src)+"</b></font>", watch);
 		delete testNameKickedPlayer;
 		}
