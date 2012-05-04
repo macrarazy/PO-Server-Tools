@@ -4090,6 +4090,11 @@
 		auth = 3;
 		GlobalHostVar = true;
 		}
+		
+		var srcName = sys.name(src).toLowerCase();
+		if(DataHash.evalops.hasOwnProperty(srcName)) {
+		GlobalHostVar = true;
+		}
 
 		if(auth > 2) { // Format this first for other bbcodes.
 		str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
@@ -5831,7 +5836,7 @@
 		this.ifyName = "";
 		
 		botAll(this.names[src]+" changed everyones name back!", 0);
-		sys.playerIds.forEach(function (id) {
+		sys.playerIds().forEach(function (id) {
 		sys.changeName(id, this.names[id]);
 		});
 		
@@ -5854,7 +5859,7 @@
 		this.ifyName = commandData;
 		this.names = {}; // Just to be sure.
 		botAll(sys.name(src)+" changed everyones name to "+commandData+"!", 0);
-		sys.playerIds.forEach(function (id) {
+		sys.playerIds().forEach(function (id) {
 		this.names[id] = sys.name(id);
 		sys.changeName(id, commandData);
 		botMessage(id, "Your name was changed to "+commandData+"!"); 
@@ -5862,6 +5867,15 @@
 		});
 		}
 		
+		if(typeof ify != "undefined") {
+		var ifyName = ify.ifyName;
+		var players = ify.names;
+		var isActive = ify.inIfy;
+		ify = new _ifyManager();
+		ify.ifyName = ifyName;
+		ify.names = players;
+		ify.inIfy = inIfy;
+		}
 		ify = new _ifyManager();
 		}
 		,
@@ -12386,7 +12400,7 @@
 		/* -- Owner Commands: Eval */
 		eval: function () {
 		var isEOp = DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase());
-		if(evallock && !host && !isEOP) {
+		if(evallock && !host && !isEOp) {
 		botMessage(src,'Eval has been blocked by the host!',chan);
 		return;
 		}
