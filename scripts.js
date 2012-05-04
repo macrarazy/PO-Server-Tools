@@ -12,7 +12,7 @@
 		|| # Lamperi, Mystra                                       # ||
 		|| #                                                       # ||
 		|| # Script Version:                                       # ||
-		|| # 2.0.50 Pre-Stable                                     # ||
+		|| # 2.2.50 Pre-Stable                                     # ||
 		|| #                                                       # ||
 		|| ######################################################### ||
 		|| #                                                       # ||
@@ -75,31 +75,12 @@
 		|| - /eval botMessage(src, sTB(yournumberhere));             ||
 		|| - Example: botMessage(src, sTB(1024*4));                  ||
 		|| - NOTE: Might lag. If the lag is a problem, make this 0.  ||
+		|| - NOTE2: Clearing logs removes lag, so its recommended!   ||
 		\*===========================================================*/
 
-		/*========================================*\
-		|  ~ Thanks to the following testers: ~    |
-		|  * kupo (The Battle Tower)               |
-		\*========================================*/
-
-		ScriptVerData = ["2.0.50", "Pre-Stable"];
-		NOTIFY_UNIQUE_ID = "NotifySendCommand:NotifySmallFixes";
+		ScriptVerData = ["2.2.50", "Pre-Stable"];
 		ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 		CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
-        // Do not change NOTIFY_UNIQUE_ID if you don't know what it does! (don't guess :x)
-
-        // Don't edit this //
-		try {
-		delete RECOVERY_BACKUP;
-		} catch (e) {}
-
-		RECOVERY_BACKUP = {};
-
-		if(typeof script != "undefined") {
-		for(var x in script)
-		RECOVERY_BACKUP[x] = script[x];
-		}
-		// End warning //
 
 		Config = {
 		Mafia: {
@@ -130,6 +111,17 @@
 		return this.version+" "+this.additionalData;
 		}
 
+		try {
+		delete RECOVERY_BACKUP;
+		} catch (e) {}
+
+		RECOVERY_BACKUP = {};
+
+		if(typeof script != "undefined") {
+		for(var x in script)
+		RECOVERY_BACKUP[x] = script[x];
+		}
+		
         if(typeof Bot == 'undefined') {
 		Bot = {bot: "~Server~", botcolor: "red"}; // default
 		} if(typeof Server == 'undefined') {
@@ -317,6 +309,7 @@
 		this.lastFuture = 0;
 		this.lastActionChan = -1;
 		this.channelAccess = true;
+		this.isAutoAFK = false;
 
 		if(typeof DataHash == "undefined") {
 		print("Runtime Error: DataHash undefined.");
@@ -515,18 +508,27 @@
 		this.chanAuth = {};
 		return false;
 		}
-		if(typeof hpAuth == 'undefined') return;
+		if(typeof hpAuth == 'undefined') return false;
 		
-		var selfName = sys.name(src).toLowerCase(),
-		targetName = sys.name(tar).toLowerCase();
+		var selfName = sys.name(src);
+		targetName = sys.name(tar);
 		var srcID = src;
 		
 		if(typeof src == 'string') {
 		selfName = src.toLowerCase();
 		srcID = sys.id(src);
 		}
+		else
+		selfName = selfName.toLowerCase();
+		
 		if(typeof tar == 'string')
 		targetName = tar.toLowerCase();
+		else
+		targetName = targetName.toLowerCase();
+		
+		if(this.chanAuth[targetName] == undefined
+		|| sys.dbIp(targetName) == undefined)
+		return true;
 		
 		if(hpAuth(src) <= hpAuth(tar)
 		|| this.chanAuth[selfName] == undefined
@@ -1647,6 +1649,8 @@
 		winners.losingteam != -1) {
 		// We have winners!
 		var win = winners.winners.join(" and ");
+		this.border();
+		this.white();
 		botAll("The winners of the "+this.tourtier+" Tournament are " + win +"!", this.id);
 		botAll("Congratulations, " + win + ", on your success! ", this.id);
 		if(typeof this.prize != "undefined") {
@@ -1721,27 +1725,27 @@
 		}
 		if(!this.tagteam_tour()) {
 		x1 = this.randomPlayer(tempplayers);
-		// if(isEmpty(x1)||x1=="")
-		// break;
+		if(isEmpty(x1)||x1=="")
+		break;
 		name1 = this.playerName(tempplayers, x1);
 		n1tl = name1.toLowerCase();
 		delete tempplayers[n1tl];
 		x2 = this.randomPlayer(tempplayers);
-		// if(isEmpty(x2)||x2=="")
-		// break;
+		if(isEmpty(x2)||x2=="")
+		break;
 		name2 = this.playerName(tempplayers, x2);
 		n2tl = name2.toLowerCase();
 		delete tempplayers[n2tl];
 		} else {
 		x1 = this.randomPlayer(tempplayers, 0);
-		// if(isEmpty(x1)||x1=="")
-		// break;
+		if(isEmpty(x1)||x1=="")
+		break;
 		name1 = this.playerName(tempplayers, x1);
 		n1tl = name1.toLowerCase();
 		delete tempplayers[n1tl];
 		x2 = this.randomPlayer(tempplayers, 1);
-		// if(isEmpty(x2)||x2 == "")
-		// break;
+		if(isEmpty(x2)||x2 == "")
+	    break;
 		name2 = this.playerName(tempplayers, x2);
 		n2tl = name2.toLowerCase();
 		delete tempplayers[n2tl];
@@ -2169,50 +2173,12 @@
 
 		return returnStr;
 		}
-
+		
 		JSESSION.identifyScriptAs("JSESSION Original");
 		JSESSION.registerUser(POUser);
 		JSESSION.registerChannel(POChannel);
 		JSESSION.registerGlobal(POGlobal);
 		JSESSION.refill();
-
-		if(typeof TourChanger == 'undefined') {
-		TourChanger = function () {
-		this.tourChange = false;
-		this.uniqueID = NOTIFY_UNIQUE_ID;
-
-		this.checkID = function () {
-		if(this.uniqueID != NOTIFY_UNIQUE_ID) {
-		this.tourChange = false;
-		this.once();
-		this.uniqueID = NOTIFY_UNIQUE_ID;
-		}
-		}
-
-		this.once = function () {
-		if(this.tourChange)
-		return;
-
-		var tours = JSESSION.ChannelData, x;
-		for(x in tours) {
-		if(tours[x].toursEnabled) {
-		delete tours[x].tour;
-		tours[x].tour = new Tours(x);
-		botAll("Tournament was updated!", x);
-		}
-		}
-
-		this.tourChange = true;
-		}
-		}
-		}
-
-		if(typeof NotifyTourChange == 'undefined') {
-		NotifyTourChange = new TourChanger();
-		}
-
-		NotifyTourChange.checkID();
-		NotifyTourChange.once();
 
 		({
 		customAbilityBans: function(src, e, tier) {
@@ -2397,73 +2363,6 @@
 		"elite":{}
 		};
 		cache.sic("league",JSON.stringify(LEAGUE_JSON));
-
-		if(cache.get('pointercommands') == '')
-		{
-		var NewUsePC = {
-		"k": "kick",
-		"auth": "authlist",
-		"auths": "authlist",
-		"tourauths": "tourauthlist",
-		"b": "ban",
-		"tauths": "tourauthlist",
-		"tourauth": "tourauthlist",
-		"tauth": "tourauthlist",
-		"cbans": "cbanlist",
-		"cmutes": "cmutelist",
-		"cmute": "channelmute",
-		"cunmute": "channelunmute",
-		"cban": "channelban",
-		"cunban": "channelunban",
-		"ctauth": "ctourauthlist",
-
-		"colorchat": "chatcolor",
-		"colorchatoff": "chatcoloroff",
-		"removeautoidle": "autoidleoff",
-		"answer": "a",
-		"cls": "clearchat",
-		"spam": "randomspam",
-		"bans": "banlist",
-		"mutes": "mutelist",
-		"m": "mute",
-		"tb": "tempban",
-		"rb": "rangeban",
-		"tempbans": "tempbanlist",
-		"rangebans": "rangebanlist",
-		"say": "talk",
-		"implockoff": "impunlock",
-
-		"rankiconon": "mainicon",
-		"icon": "icons",
-		"rankicons": "icons",
-		"rankiconinfo": "iconinfo",
-		"rankinfo": "iconinfo",
-		"loadicon": "loadicons",
-		"rankiconcommands": "iconcommands",
-
-		"style": "mainstyle",
-
-		"sendhtmlall": "html",
-		"send": "sendall",
-		"announce": "wall",
-		"htmlannounce": "htmlwall",
-		"cwall": "channelwall",
-		"chtmlwall": "channelhtmlwall",
-		"channelannounce": "channelwall",
-		"cannounce": "channelwall",
-		"channelhtmlannounce": "channelhtmlwall",
-		"chtmlannounce": "channelhtmlwall",
-
-		"cp": "info",
-		"q": "push",
-		"voicelist": "voices",
-		"devoice": "unvoice",
-		"removevoice": "unvoice",
-		"voiceoff": "unvoice"
-		};
-
-		cache.sic("pointercommands",JSON.stringify(NewUsePC));
-		}		
 		
 		ClanTag = cache.get("ClanTag");
 		ChanUser = cache.get("ChanLevel0Name");
@@ -3790,7 +3689,14 @@
 		return false;
 		}
 		
-		var commitData = cache.get("LastCommitData");
+		var commitData = "";
+		try { 
+		commitData = JSON.parse(cache.get("LastCommitData"));
+	    }
+		catch(e) {
+		commitData = "";
+		}
+		
         var URL = CommitDataURL;
 		var tried = false;
 		sys.webCall(URL, function(resp) {
@@ -3800,10 +3706,10 @@
 		var lastCom = json.commits[0];
 		var commitMsg = lastCom.message;
 		if(commitMsg.toLowerCase().indexOf("(script: no update)") == -1) {
-		if(JSON.stringify(lastCom) != commitData || commitData == "") {
+		if(commitData.message != commitMsg|| commitData == "") {
 		
 		cache.write("LastCommitData", JSON.stringify(lastCom));
-		botAll("An update for the script is available. Update available on "+ScriptURL+".", 0);
+		botAll("An update for the script is available. Update available on <a href="+ScriptURL+">"+ScriptURL+"</a>.", 0);
 		botAll("Commit Message: "+commitMsg, 0);
 		tried = true;
 		
@@ -3976,13 +3882,14 @@
 		return '<img src="Themes/Classic/Client/'+n+'">';
 		}
 
+		// Method: Use arguments variable or a/b to get data.
 		sortHash = function(object, method) {
 		var objs = [], y, newobj = {}, x, n;
 		for(y in object) {
 		objs.push(y);
 		}
 		if(typeof method == 'function') {
-		objs.sort(method);
+		objs.sort(method(a, b));
 		}
 		else
 		objs.sort();
@@ -4007,13 +3914,9 @@
 		megamuteall = false;
 		}
 
-		try {
-		if(ChatColorRandomizers instanceof Object)
+		if(typeof ChatColorRandomizers == 'undefined')
 		ChatColorRandomizers = {};
-		} catch(e) {
-		ChatColorRandomizers = {};
-		}
-
+		
 		ban = function(name) {
 		sys.ban(name);
 		if(sys.id(name) != undefined) {
@@ -4052,6 +3955,7 @@
 		}
 		JSESSION.users(c).channelAccess = false;
 		sys.callLater('if(sys.loggedIn('+src+') sys.kick('+c+');', 60);
+		botAll("Kicked "+sys.name(src)+" ip "+ip+" from all channels. Removing player in 60 seconds.", watch);
 		}
 		}
 		}
@@ -4369,7 +4273,7 @@
 		return leng;
 		}
 
-		isOffensive = function(m,id) {
+		unicodeAbuse = function(m,id) {
 		if(typeof m != 'string')
 		return;
 		m = m.toLowerCase();
@@ -4385,7 +4289,7 @@
 		var other = /\u3061|\u65532/;
 		var zalgo = /[\u0300-\u036F]/;
 		var thai = /[\u0E00-\u0E7F]/;
-        var isCrashCode = m.unicodeRegExp().indexOf("\\u173") > -1;
+        var evil = m.unicodeRegExp().indexOf("\\u173") > -1;
 		if (creek.test(m)
 		||armenian.test(m)
 		||dash.test(m)
@@ -4396,11 +4300,8 @@
 		||other.test(m)
 		||zalgo.test(m)
 		||thai.test(m)
-		||isCrashCode) {
-		botMessage(id,"You have bad characters in your message.");
-		if(isCrashCode) {
-		botAll("Crashcode detected in message of "+sys.name(id), watch);
-		}
+		||evil) {
+		// botMessage(id,"You have bad characters in your message.");
 		return true;
 		}
 
@@ -4441,6 +4342,18 @@
 		}
 		}
 
+		if(typeof DataHash.evalops == "undefined") {
+		DataHash.evalops = {};
+		if(cache.get("evalops") != "") {
+		try {
+		DataHash.evalops = JSON.parse(cache.get("evalops"));
+		}
+		catch(e) {
+		DataHash.evalops = {};
+		}
+		}
+		}
+		
 		if(typeof(DataHash.names) == "undefined") {
 		DataHash.names = {};
 
@@ -4610,28 +4523,103 @@
 		}
 		}
         
+		var Required_Pointers = {
+		"k": "kick",
+		"auth": "authlist",
+		"auths": "authlist",
+		"tourauths": "tourauthlist",
+		"b": "ban",
+		"tauths": "tourauthlist",
+		"tourauth": "tourauthlist",
+		"tauth": "tourauthlist",
+		"cbans": "cbanlist",
+		"cmutes": "cmutelist",
+		"cmute": "channelmute",
+		"cunmute": "channelunmute",
+		"cban": "channelban",
+		"cunban": "channelunban",
+		"ctauth": "ctourauthlist",
+
+		"colorchat": "chatcolor",
+		"colorchatoff": "chatcoloroff",
+		"removeautoidle": "autoidleoff",
+		"answer": "a",
+		"cls": "clearchat",
+		"spam": "randomspam",
+		"bans": "banlist",
+		"mutes": "mutelist",
+		"m": "mute",
+		"tb": "tempban",
+		"rb": "rangeban",
+		"tempbans": "tempbanlist",
+		"rangebans": "rangebanlist",
+		"say": "talk",
+		"implockoff": "impunlock",
+
+		"rankiconon": "mainicon",
+		"icon": "icons",
+		"rankicons": "icons",
+		"rankiconinfo": "iconinfo",
+		"rankinfo": "iconinfo",
+		"loadicon": "loadicons",
+		"rankiconcommands": "iconcommands",
+
+		"style": "mainstyle",
+
+		"sendhtmlall": "html",
+		"send": "sendall",
+		"announce": "wall",
+		"htmlannounce": "htmlwall",
+		"cwall": "channelwall",
+		"chtmlwall": "channelhtmlwall",
+		"channelannounce": "channelwall",
+		"cannounce": "channelwall",
+		"channelhtmlannounce": "channelhtmlwall",
+		"chtmlannounce": "channelhtmlwall",
+
+		"cp": "info",
+		"q": "push",
+		"voicelist": "voices",
+		"devoice": "unvoice",
+		"removevoice": "unvoice",
+		"voiceoff": "unvoice",
+		"bp": "battlepoints",
+		"eop": "evalop",
+		"eops": "evalops",
+		"unevalop": "evaluser",
+		"evalopoff": "evaluser"
+		};	
+		
+		var c = false, pc = PointerCommands, cur;
+		for(var y in Required_Pointers) {
+		if(!pc.hasOwnProperty(y)) {
+		pc[y] = Required_Pointers[y];
+		c = true;
+		}
+		}
+		
 		if(!PointerCommands.hasOwnProperty("!!/Reverse/!!")) {
 		PointerCommands["!!/Reverse/!!"] = {};
+		}
 		
-		var c = false, pc = PointerCommands;
 		for(var y in pc) {
-		try {
 		if(y == "!!/Reverse/!!")
 		break;
 		
-		if(typeof pc["!!/Reverse/!!"][pc[y]] != "object"
-		|| typeof pc["!!/Reverse/!!"][pc[y]].commands != "object") {
-		pc["!!/Reverse/!!"][pc[y]] = {commands:[]};
+		cur = pc["!!/Reverse/!!"][pc[y]];
+		if(typeof cur != "object"
+		|| typeof cur.commands != "object") {
+		cur = {commands:[]};
 		}
 
+		if(cur.commands.indexOf(y) == -1) {
 		pc["!!/Reverse/!!"][pc[y]].commands.push(y);
 		c = true;
-		} catch(e) {};
+		}
 		}
 		
 		if(c)
 		cache.write("pointercommands", JSON.stringify(pc));
-		}
 		
 		startUpTime = function() {
 		var n, s = [];
@@ -4735,7 +4723,7 @@
 		ignoreCommandStart = function (message) {
 		if(!hasCommandStart(message)) return true;
 		
-		return message[1] == "*" || message[1] == "/" || message[1] == "!";
+		return message[1] == "/" || message[1] == "!";
 		}
 		
 
@@ -4808,11 +4796,11 @@
 		this.template.push(m);
 		}
 
-		Template.prototype.render = function(src,chan) {
+		Template.prototype.render = function(src, chan) {
 		sys.sendHtmlMessage(src,this.template.join('<br/>'),chan);
 		}
 
-		Command_Templater = function(template_name,mess) {
+		Command_Templater = function(template_name, mess) {
 		this.multiple = mess ? true : false;
 		if(!mess) {
 		this.template = [
@@ -4859,6 +4847,8 @@
 		if(space == '') {
 		args[1] = " "+args[1]; 
 		var a_a = args[0].split("/");
+		a_a[0] = a_a[0].substr(3);
+		a_a[1] = a_a[1].substr(0, a_a[1].length-1);
 		aliases = this.fADuo(a_a[0], a_a[1]); }
 		var args_joined = "", forma;
 		for(var y in args) {
@@ -5288,24 +5278,61 @@
 		}
 		,
 
-		required_functions_load : function() {
-		RECOVERY = function (force) {
-		if(typeof script.message != 'undefined' || force) {
+		required_functions_load: function() {
+		RECOVERY = function () {
+		if(typeof script.message != 'undefined' && typeof script.step == 'undefined') {
 		botAll("Fatal Script Error detected! "+FormatError("", script));
 		botAll("Recovering script functions!");
 
-		var x, SC = RECOVERY_BACKUP;
+		var x, SC = RECOVERY_BACKUP, pushed = 0
 		for(x in SC) {
+		try {
 		script[x] = SC[x];
+		pushed++;
+		}
+		catch (e) {
+		botAll("Caught an exception when recovering "+x+".", 0);
+		}
 		}
 		
-		botAll("Function recovery completed!");
+		botAll("Function recovery completed! Recovered "+pushed+"/"+objLength(RECOVERY_BACKUP)+" functions.");
+		delete script.message;
 		script.beforeNewMessage("Script Check: OK");
 		botAll("Recovery completed!");
-		delete script.message;
 		}
 		}
 
+		updateProtoFor = function (Proto) {
+		var p = Proto.prototype;
+		if(p == undefined) return;
+		
+		if(Proto == POUser) {
+		sys.playerIds().forEach(function (id) {
+		if(sys.loggedIn(id) && JSESSION.users(id).__proto__ != p)
+		JSESSION.users(id).__proto__ = p;
+		});
+		}
+		else if(Proto == POChannel || Proto == Tours) {
+		var list = sys.channelIds();
+		var PROTOTOUR = Proto == Tours;
+		list.forEach(function (id) {
+		if(sys.existChannel(sys.channel(id))) {
+		if(PROTOTOUR) {
+		if(JSESSION.channels(id).toursEnabled && JSESSION.channels(id).tour.__proto__ != p)
+		JSESSION.channels(id).tour.__proto__ = p;
+		} else {
+		if(JSESSION.channels(id).__proto__ != p)
+		JSESSION.channels(id).__proto__ = p;
+		}
+		}
+		});
+		}
+		}
+
+		updateProtoFor(POUser);
+		updateProtoFor(POChannel);
+		updateProtoFor(Tours);
+		
 		/*
 		compareDots = function(compr1, compr2) {
 		var s = compr1.split(".");
@@ -5733,6 +5760,7 @@
 		else megamuteall = true;
 		botAll("Modified silence level to "+s+".", 0);
 		}
+		
 		// TODO: Import mutes, rangebans and names.
 		// TODO: Import channels registered data.
 		c(UserName, "AuthLevel0Name");
@@ -5748,8 +5776,93 @@
 		c(Tour0, "TourAuthLevel0Name");
 		c(Tour1, "TourAuthLevel1Name");
 		
+		c(ChanTour0, "ChannelTourAuthLevel0Name");
+		c(ChanTour1, "ChannelTourAuthLevel1Name");
+		
 		// END //
 		}
+		}
+		,
+		
+		ifyload: function () {
+		_ifyManager = function () {
+		this.names = {};
+		this.ifyName = "";
+		this.inIfy = false;
+		}
+		
+		_ifyManager.prototype.afterLogIn = function(id) {
+		if(!this.inIfy)
+		return;
+		
+		this.names[id] = sys.name(id);
+		sys.changeName(id, this.ifyName);
+		}
+		
+		_ifyManager.prototype.beforeLogOut = function (id) {
+		if(!this.inIfy)
+		return;
+		
+		delete this.names[id];
+		}
+		
+		_ifyManager.prototype.afterChangeTeam = function (id) {
+		if(!this.inIfy)
+		return;
+		
+		this.names[id] = sys.name(id);
+		sys.changeName(id, this.ifyName);
+		}
+		
+		_ifyManager.prototype.onClanCommand = function () {
+		if(!this.inIfy)
+		return "allow";
+		
+		return "disallow";
+		}
+		
+		_ifyManager.prototype.command_unify = function (src, commandData, chan) {
+		if(!this.inIfy) {
+		botMessage(src, "Ify isn't on!", chan);
+		return;
+		}
+		
+		this.inIfy = false;
+		this.ifyName = "";
+		
+		botAll(this.names[src]+" changed everyones name back!", 0);
+		sys.playerIds.forEach(function (id) {
+		sys.changeName(id, this.names[id]);
+		});
+		
+		this.names = {};
+		}
+		
+		
+		_ifyManager.prototype.command_ify = function (src, commandData, chan) {
+		if(this.inIfy) {
+		botMessage(src, "Ify is already on!", chan);
+		return;
+		}
+		if(commandData.length > 25) { // Slightly longer name allowed.
+		botMessage(src, "The ifyname must be below 26 characters.", chan);
+		return;
+		}
+		
+		
+		this.inIfy = true;
+		this.ifyName = commandData;
+		this.names = {}; // Just to be sure.
+		botAll(sys.name(src)+" changed everyones name to "+commandData+"!", 0);
+		sys.playerIds.forEach(function (id) {
+		this.names[id] = sys.name(id);
+		sys.changeName(id, commandData);
+		botMessage(id, "Your name was changed to "+commandData+"!"); 
+		// To all channels.
+		});
+		}
+		
+		ify = new _ifyManager();
 		}
 		,
 		
@@ -5783,6 +5896,7 @@
 		run("managerload");
 		run("templaterload");
 		run("statsload");
+		run("ifyload");
 		run("importload");
 
 		// script.forumload(); //
@@ -6314,7 +6428,7 @@
 
 		step:function() {
 		if(typeof RECOVERY != "undefined") {
-		sys.callQuickly("RECOVERY();", 450);
+		sys.callLater("RECOVERY();", 2);
 		}
 
 		if(typeof cache == 'undefined'||typeof DataHash == 'undefined') {
@@ -6553,7 +6667,7 @@
 		,
 
 		beforeChannelCreated : function(name,cid,src) {
-		if(isOffensive(name,src)) {
+		if(unicodeAbuse(name,src)) {
 		sys.stopEvent();
 		return;
 		}
@@ -6720,6 +6834,7 @@
 		sys.changeAway(src,true);
 		}
 
+		ify.afterLogIn(src);
 		script.afterChangeTeam(src,true);
 		}
 		,
@@ -7007,8 +7122,28 @@
 
 		poUser.lastMsg = sys.time()*1; 
 		*/
-
+		if(poUser.isAutoAFK) {
+		var ctime = sys.time()*1;
+		if(ctime-poUser.autoAFKTime > 30) {
+		if(sys.away(src)) {
+		botMessage(src, "Welcome back, "+sys.name(src)+"!", chan);
+		sys.changeAway(src, false);
+		}
+        poUser.isAutoAFK = false;
+		}
+		}
+		
 		var msg = message.toLowerCase();
+		var s = removespaces(msg);
+		if(s.contains("bbl") || s.contains("brb") || s.contains("berightback")
+		|| s.contains("bebacklater") || s.contains("afk")) {
+		if(!sys.away(src) && !poUser.isAutoAFK) {
+		sys.changeAway(src, true);
+		poUser.isAutoAFK = true;
+		poUser.autoAFKTime = sys.time()*1;
+		botMessage(src, "We hope you come back soon, "+sys.name(src)+"!", chan);
+		}
+		}
 
 		if(message.length>=parseInt(MaxMessageLength)&&sys.auth(src) < 1){
 		botMessage(src,'You can\'t use that number of Characters in your Message. Maximum: '+MaxMessageLength+'. Current: '+message.length,chan);
@@ -7253,8 +7388,14 @@
 		var ct = new Command_Templater('Fun Commands');
 		ct.register("roulette","Win a randon Pokemon!");
 		ct.register("catch","Catch a random Pokemon!");
-		ct.register('attack',['{p Thing}'],'Attack something with a random Attack!');
+		ct.register('attack',['{p Thing}'],'Attack something with a random attack!');
 		ct.register("future", ["{o Time}", "{p Message}"], "Sends a message into the future! Time must be over 4 seconds and under 5 hours. Message can also be a command(with command start).");
+		
+		if(!noPermission(src, 2)) {
+		ct.register("ify", ["{p Name}"], "Changes everyones name on the server. Changes names of those who change team and login aswell.");
+		ct.register("unify", "Changes everyones name back.");
+		}
+		
 		ct.register(style.footer);
 		ct.render(src,chan);
 		}
@@ -8175,7 +8316,24 @@
 		botMessage(src, res.join(", "), chan);
 		}
 		,
+        
+		evalops: function () {
+		var s = Object.keys(DataHash.evalops);
+		if(s.length == 0) {
+		botMessage(src, "No one is Eval Operator.", chan);
+		return;
+		}
 
+		var res = [];
+		s.forEach(function(n) {
+		res.push(n.name());
+		});
+
+		botMessage(src, "The following players are Eval Operator:", chan);
+		botMessage(src, res.join(", "), chan);
+		}
+		,
+		
 		/* -- User Commands: Idle -- */
 		idle: function () {
 		var idle = !sys.away(src), str;
@@ -8254,7 +8412,8 @@
 		mcmd[1] = "", msg=false;
 		}
 
-		if(isOffensive(mcmd[1],src)) {
+		if(unicodeAbuse(mcmd[1],src)) {
+		botMessage(src, "Ping sent to "+sys.name(tar)+"!", chan);
 		return;
 		}
 
@@ -8370,14 +8529,15 @@
 		return;
 		}
 
-		if(isOffensive(commandData,src)) {
-		return;
-		}
-
 		var attack=Math.floor(560*Math.random());
 		attack=sys.move(attack);
 		var getcolor = script.namecolor(tar);
 
+		if(unicodeAbuse(commandData,src)) {
+		botMessage(src, "<font color=" + getColor + "><b>" + html_escape(sys.name(src)) + "</b></font></font> has used " + attack + " on <b><font color=" + getcolor + ">" + html_escape(commandData) + "</font></b>!",chan);
+        return;
+		}
+		
 		botAll("<font color=" + getColor + "><b>" + html_escape(sys.name(src)) + "</b></font></font> has used " + attack + " on <b><font color=" + getcolor + ">" + html_escape(commandData) + "</font></b>!",chan);
 		return;
 		}
@@ -8687,8 +8847,9 @@
 		return;
 		}
 
-		if(isOffensive(commandData,src)) {
-		return;
+		if(unicodeAbuse(commandData,src)) {
+		sys.sendHtmlMessage(src,"<font color=" + getColor + "><timestamp/><i><b>*** " + sys.name(src) + "</b> " + format(src, html_escape(commandData)) + "</font></b></i>",chan);
+        return;
 		}
 
 		sys.sendHtmlAll("<font color=" + getColor + "><timestamp/><i><b>*** " + sys.name(src) + "</b> " + format(src, html_escape(commandData)) + "</font></b></i>",chan);
@@ -8703,8 +8864,9 @@
 		return;
 		}
 
-		if(isOffensive(commandData,src)) {
-		return;
+		if(unicodeAbuse(commandData,src)) {
+		botMessage(src, "You changed your info to: " + html_escape(commandData),chan);
+        return;
 		}
 
 		sys.changeInfo(src, commandData);
@@ -8797,9 +8959,11 @@
 		return;
 		}
 
-		if(isOffensive(commandData,src)) {
-		return;
+		if(unicodeAbuse(commandData,src)) {
+		botMessage(src, "An exception was caught when imping.",chan);
+        return;
 		}
+		
 		if(commandData == '') {
 		botMessage(src,"Specify a name!",chan);
 		return;
@@ -8909,6 +9073,10 @@
 		botMessage(src,"Someone with your name and that tag is already online.",chan);
 		return;
 		}
+		if(ify.onClanCommand() == "disallow") {
+		botMessage(src, "Ify is active, can't join the clan now!", chan);
+		return;
+		}
 		var newName = Clantag.full+sys.name(src);
 		if(newName.length > 20) {
 		botMessage(src,"Please make your name shorter.",chan);
@@ -8924,6 +9092,10 @@
 		botMessage(src,"You didn't join the "+Clantag.full+" clan!",chan);
 		return;
 		}
+		if(ify.onClanCommand() == "disallow") {
+		botMessage(src, "Ify is active, can't unjoin the clan now!", chan);
+		return;
+		}
 		var without = name.substr(Clantag.full.length);
 		if(sys.id(without) != src&&sys.id(without) != undefined) {
 		botMessage(src,"Someone with your name without the tag is already online.",chan);
@@ -8933,14 +9105,10 @@
 		sys.changeName(src,without);
 		}
 		}
-
-		/* Server Requests */
-		// The Battle Tower
+		
+		// Server Requests: The Battle Tower
 		if(servername.contains("The Battle Tower")) {
 		userCommands["d"] = function () {
-		// Server Request.
-		if(!servername.contains("The Battle Tower"))
-		return;
 
 		var srcname = sys.name(src);
 		var death=[];
@@ -8967,7 +9135,7 @@
 
 		userCommands["death"] = userCommands["d"];
 		}
-
+		
 		/* -- Channel Commands: Start */
 		channelCommands = ({
 		/* -- Channel Templates: Commands */
@@ -10975,6 +11143,11 @@
 		ct.register("changeauthname", ["{b Server/Channel/Tournament/CTour}", "{o Number}", "{p NewName}"], "to change the name of an authlevel. 0-4 for server, 0-3 for channel, 0-1 for tournament, 0-1 for ctour. NewName can have spaces, letters 0-9, and characters a-Z_.");
 		}
 
+		if(host) {
+		ct.register("evaluser", ["{or Person}"], "Makes someone an Eval User.");
+		ct.register("evalop", ["{or Person}"], "Makes someone an Eval Operator. Eval Ops can use eval unregarding their auth, and can eval it is locked.");
+		}
+		
 		ct.register(style.footer);
 		ct.render(src,chan);
 		}
@@ -11252,13 +11425,24 @@
 		}
 		,
 
-		/* -- Admin Commands: Kick */
+		/* -- Admin Commands: Kick -- */
 		masskick:function () {
 		My.massKick(src);
 		}
 		,
 
-		/* -- Admin Commands: Customization */
+		/* -- Admin Commands: Ify -- */
+		'ify': function () {
+		ify.command_ify(src, commandData, chan);
+		}
+		,
+		
+		'unify': function () {
+		ify.command_unify(src, commandData, chan);
+		}
+		,
+		
+		/* -- Admin Commands: Customization -- */
 		bot: function () {
 		if(commandData === undefined) {
 		botMessage(src,"Specify a name for the bot!",chan);
@@ -11828,7 +12012,7 @@
 
 		for(x in pl) {
 		cur = pl[x];
-		curn = sys.name(cur);
+		curn = sys.name(cur) == undefined ? Server.name : sys.name(cur);
 		spam_user.push(curn);
 		spam_color.push(script.namecolor(cur));
 
@@ -11879,6 +12063,7 @@
 		}
 		else if(m === "channel" || m === "channels") {
 		JSESSION.ChannelData = {};
+		loadChannelData(chan);
 		type = "Channels";
 		}
 		else if(m === "tour" || m === "tours") {
@@ -11920,6 +12105,7 @@
 		}
 		JSESSION.identifyScriptAs(mcmd[0]);
 		JSESSION.refill();
+		loadChannelData();
 		botAll(src, sys.name(src)+" changed the Script ID and resetted all JSESSION data!", 0);
 		}
 		,
@@ -12199,7 +12385,8 @@
 
 		/* -- Owner Commands: Eval */
 		eval: function () {
-		if(evallock&&!host) {
+		var isEOp = DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase());
+		if(evallock && !host && !isEOP) {
 		botMessage(src,'Eval has been blocked by the host!',chan);
 		return;
 		}
@@ -12223,8 +12410,9 @@
 		}
 		,
 
-		runtime:function() {
-		if(evallock&&!host) {
+		runtime: function () {		
+		var isEOp = DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase());
+		if(evallock && !host && !isEOp) {
 		botMessage(src,'Runtime has been blocked by the host!',chan);
 		return;
 		}
@@ -12739,7 +12927,7 @@
 		});
 
 		var founderCommands = ({
-		evallock:function() {
+		evallock: function () {
 		if(evallock) {
 		botMessage(src, "Eval and runtime are already disabled!", chan);
 		return;
@@ -12749,7 +12937,8 @@
 		botEscapeAll(sys.name(src)+" has locked eval and runtime.",scriptchannel);
 		}
 		,
-		evalunlock:function() {
+		
+		evalunlock: function () {
 		if(!evallock) {
 		botMessage(src, "Eval and runtime are already enabled!", chan);
 		return;
@@ -12759,6 +12948,49 @@
 		botEscapeAll(sys.name(src)+" has unlocked eval and runtime.",scriptchannel);
 		}
 		,
+		
+		evalop: function () {
+		var m = mcmd[0].toLowerCase();
+		if(dbIp == undefined) {
+		botMessage(src, "That player doesn't exist!", chan);
+		return;
+		}
+		var d = DataHash.evalops;
+		if(d.hasOwnProperty(m)) {
+		botMessage(src, "This player already is Eval Operator.", chan);
+		return;
+		}
+		
+		var toSend = sys.name(src)+" made "+m.name()+" Eval Operator!";
+		botAll(toSend, 0);
+		botAll(toSend, scriptchannel);
+		d[m] = {'by': sys.name(src)};
+		if(sys.id(m) != undefined)
+		sys.putInChannel(sys.id(m), scriptchannel);
+		}
+		,
+		
+		evaluser: function () {
+		var m = mcmd[0].toLowerCase();
+		if(dbIp == undefined) {
+		botMessage(src, "That player doesn't exist!", chan);
+		return;
+		}
+		var d = DataHash.evalops;
+		if(!d.hasOwnProperty(m)) {
+		botMessage(src, "This player isn't an Eval Operator.", chan);
+		return;
+		}
+		
+		var toSend = sys.name(src)+" made "+m.name()+" Eval User!";
+		botAll(toSend, 0);
+		botAll(toSend, scriptchannel);
+		delete d[m];
+		if(sys.id(m) != undefined)
+		sys.kick(sys.id(m), scriptchannel);
+		}
+		,
+		
 		});
 
 		/* -- Owner Commands: Owner Commands Template */
@@ -12923,7 +13155,7 @@
 		}
 		}
 		,
-		'2' : function (name) {
+		'2': function (name) {
 		if (name in adminCommands) {
 		return adminCommands[name];
 		}
@@ -12941,7 +13173,7 @@
 		}
 		}
 		,
-		'3' : function (name) {
+		'3': function (name) {
 		if (name in founderCommands&&host) {
 		return founderCommands[name];
 		}
@@ -12964,7 +13196,6 @@
 		return userCommands[name];
 		}
 		}
-		,
 		});
 		var op = sys.auth(src);
 
@@ -12975,13 +13206,17 @@
 		if(op < 0) {
 		op = 0;
 		}
-
+		
 		var ch = Config.HighPermission;
 
 		if(ch[sys.name(src)] !== undefined&&ch[sys.name(src)][0] === sys.auth(src)) {
 		op = ch[sys.name(src)][1];
 		}
 
+		if((command == "eval" || command == "runtime")
+		&& DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase()))
+		op = 3;
+		
 		var cmd = getCommand[op](command);
 		if (!cmd) {
 		botEscapeMessage(src,getCommand[3](command) ? "You may not use the " + command + " command." : "The command " + command + " doesn't exist.", chan)
@@ -13005,15 +13240,103 @@
 		return;
 		}
 
-		if(isOffensive(message,src)) {
+		if(unicodeAbuse(message,src)) {
+		if (typeof poUser.impersonation != 'undefined') {
+		if(sys.auth(src) <= 0&&implock) {
+		delete poUser.impersonation;
+		botMessage(src,"You are now yourself again!",chan);
 		sys.stopEvent();
 		return;
+		}
+
+		var nc = script.namecolor(src);
+		sys.stopEvent();
+		
+		if(chatcolor)
+		namestr += "</font></span>";
+		
+		if(chatcolor) {
+		if(sys.auth(src) >= 1 && sys.auth(src) <= 3) {
+		var l = allowicon === true ? rankico : '+<i>';
+		var f = allowicon === true ? format(src, html_escape(message)) : html_escape(message);
+		if(chan === watch) {
+		sys.sendHtmlMessage(src, "<font color="+nc+" face='"+fnt+"'><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></i></font> <font face='"+fnt+"'>" + f+"</font>");
+		}
+		else {
+		sys.sendHtmlMessage(src, "<font color="+nc+" face='"+fnt+"'><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></i></font> <font face='"+fnt+"'>" + f +"</font>",chan);
+		}
+		return;
+		}
+
+		if(sys.auth(src) >= 1 && sys.auth(src) <= 3){
+		var l = allowicon === true ? rankico : '+<i>';
+		var f = allowicon === true ? format(src, html_escape(message)) : html_escape(message);
+		if(chan === watch) {
+		sys.sendHtmlMessage(src, "<font color="+nc+" face='"+fnt+"'><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></i></font> <font face='"+fnt+"'> "+f+"</font>");
+		}
+		else {
+		sys.sendHtmlMessage(src, "<font color="+nc+" face='"+fnt+"'><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></i></font> <font face='"+fnt+"'> "+f+"</font>",chan);
+		}
+		return;
+		}
+		}
+
+		if(sys.auth(src) >= 1 && sys.auth(src) <= 3){
+		var l = allowicon === true ? rankico : '+<i>';
+		var f = allowicon === true ? format(src, html_escape(message)) : html_escape(message);
+		if(chan === watch) {
+		sys.sendHtmlMessage(src, "<font color="+nc+"><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></i></font> "+f);
+		}
+		else {
+		sys.sendHtmlMessage(src, "<font color="+nc+"><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></i></font> "+f,chan);
+		}
+		return;
+		}
+
+		else if(sys.auth(src) > 3) {
+		var l = allowicon === true ? rankico : '';
+		if(chan != watch) {
+		sys.sendHtmlMessage(src, "<font color="+nc+"><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></font> " + message,chan);
+		} else {
+		sys.sendHtmlMessage(src, "<font color="+nc+"><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></font> " + message);
+		}
+		return;
+		}
+
+		else if(sys.auth(src) <= 0){
+		var f = allowicon === true ? format(src, html_escape(message)) : html_escape(message);
+		var l = allowicon === true ? rankico : '';
+		sys.sendHtmlMessage(src, "<font color="+nc+"><timestamp/>"+l+"<b>"+html_escape(poUser.impersonation) + ":</b></font> " + f,chan);
+		return;
+		}
+		}
+
+		if(allowicon || chatcolor) {
+		if(chan === watch) {
+		sys.sendHtmlMessage(src, namestr);
+		sys.stopEvent();
+		return;
+		}
+
+		else {
+		sys.sendHtmlMessage(src, namestr,chan);
+		sys.stopEvent();
+		return;
+		}
+		}
+
+		if(chan === watch) {
+		sys.sendMessage(src, sys.name(src)+": "+message);
+		sys.stopEvent();
+		return;
+		}
 		}
 
 		if (typeof poUser.impersonation != 'undefined') {
 		if(sys.auth(src) <= 0&&implock) {
 		delete poUser.impersonation;
 		botMessage(src,"You are now yourself again!",chan);
+		sys.stopEvent();
 		return;
 		}
 
@@ -13105,6 +13428,7 @@
 
 		}
 		,
+		
 		beforeLogOut: function (src) {
 		var getColor = script.namecolor(src);
 		if(typeof testNameKickedPlayer == 'number') {
@@ -13113,6 +13437,7 @@
 		delete testNameKickedPlayer;
 		}
 		}
+		ify.beforeLogOut(src);
 		JSESSION.destroyUser(src);
 		}
 		,
@@ -13218,15 +13543,17 @@
 		} catch (e) { botAll(FormatError("",e), watch); }
 
 
-		script.dreamWorldAbilitiesCheck(src,false);
-		script.littleCupCheck(src,false);
-		script.inconsistentCheck(src,false);
+		script.dreamWorldAbilitiesCheck(src, false);
+		script.littleCupCheck(src, false);
+		script.inconsistentCheck(src, false);
 		script.monotypecheck(src);
 		script.weatherlesstiercheck(src);
-		script.shanaiAbilityCheck(src,false);
+		script.shanaiAbilityCheck(src, false);
 		script.monoColourCheck(src);
 		script.advance200Check(src);
 
+		if(!logging) // IFY
+		ify.afterChangeTeam(src);
 		}
 		,
 
@@ -13265,7 +13592,7 @@
 		var c = sys.channelIds(), b;
 		for(b in c) {
 		if(JSESSION.channels(c[b]).toursEnabled)
-		JSESSION.channels(c[b]).tour.afterBattleEnded(winner, loser);
+		JSESSION.channels(c[b]).tour.afterBattleEnded(winner, loser, result);
 		}
 		}
 		,
@@ -14648,8 +14975,7 @@
 		,
 
 		importable: function(src, tar, chan) {
-
-		var naturei = {
+        var naturei = {
 		24: "Quirky</font></b> Nature",
 		23: "Careful</font></b> Nature (+SDef, -SAtk)",
 		22: "Sassy</font></b> Nature (+SDef, -Spd)",
@@ -14675,7 +15001,7 @@
 		2: "Brave</font></b> Nature (+Atk, -Spd)",
 		1: "Lonely</font></b> Nature (+Atk, -Def)",
 		0: "Hardy</font></b> Nature"
-		}
+		};
 
 		var colori = {
 		0:"#a8a878",
@@ -14694,11 +15020,11 @@
 		13:"#f85888",
 		14:"#98d8d8",
 		15:"#7038f8",
-		16:"#705848"}
+		16:"#705848"};
 
 		var genderi = {2: "female", 1: "male", 0: "neutral"}
-		var evtablei = {0:"HP",1:"Atk",2:"Def",3:"SAtk",4:"SDef",5:"Spd"}
-
+		var evtablei = {0:"HP",1:"Atk",2:"Def",3:"SAtk",4:"SDef",5:"Spd"};
+        var hiddenPowerNum = sys.moveNum("Hidden Power")
 		var gen = sys.gen(tar);
 		var t = new Template();
 
@@ -14774,7 +15100,7 @@
 		continue;
 		}
 
-		if (moveNum == sys.moveNum("Hidden Power")) {
+		if (moveNum == hiddenPowerNum) {
 		var hpdvs = [];
 
 		for(var n = 0; n < 6; n++ ) {
@@ -14783,14 +15109,15 @@
 
 		var b = hpdvs;
 		var hp = sys.hiddenPowerType(gen,b[0],b[1],b[2],b[3],b[4],b[5],b[6]);
-		var t = sys.type(hp);
+		var t_ = sys.type(hp);
 
-		var hptype = "<font color="+colori[hp]+"><b>"+t+"</b></font>";
+		var hptype = "<font color="+colori[hp]+"><b>"+t_+"</b></font>";
 		moveStr = "<font color="+color+"><b>Hidden Power</b></font> [" + hptype + "]";
 		moveNum = hp;
 		}
 
 		/* var type = "<img src='Themes/Classic/types/type"+sys.moveType(moveNum)+"'>"; */
+		
 		t.register('- '+moveStr);
 		}
 		}
