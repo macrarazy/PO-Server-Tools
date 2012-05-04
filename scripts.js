@@ -83,7 +83,7 @@
 		\*========================================*/
 
 		ScriptVerData = ["2.0.50", "Pre-Stable"];
-		NOTIFY_UNIQUE_ID = "Notify.tourFixUnjoin";
+		NOTIFY_UNIQUE_ID = "NotifySendCommand:NotifySmallFixes";
 		ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 		CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
         // Do not change NOTIFY_UNIQUE_ID if you don't know what it does! (don't guess :x)
@@ -1014,14 +1014,14 @@
 		botMessage(src,"Battles finished",this.id);
 		sys.sendMessage(src, "",this.id);
 		for (var x = 0; x < this.losers.length*2; x+=2)
-		botMessage(src,html_escape(this.losers[x]) + " won against " + html_escape(this.winresults[x+1]),this.id);
+		botMessage(src,html_escape(this.losers[x]) + " won against " + html_escape(this.losers[x+1]),this.id);
 		}
 
 		sys.sendMessage(src, "",this.id);
 
 		if (this.ongoingBattles.length > 0) {
 		sys.sendMessage(src, "",this.id);
-		botMessage(src,"Ongoing battles",this.id);
+		botMessage(src,"Ongoing battles:",this.id);
 		sys.sendMessage(src, "",this.id);
 		var x = 0;
 		for (x in this.ongoingBattles) {
@@ -1034,7 +1034,7 @@
 
 		if (this.idleBattles.length > 0) {
 		sys.sendMessage(src, "",this.id);
-		botMessage(src,"Yet to start battles",this.id);
+		botMessage(src,"Yet to start battles:",this.id);
 		sys.sendMessage(src, "",this.id);
 
 		var x = 0;
@@ -1047,7 +1047,7 @@
 
 		if (this.winners.length > 0) {
 		sys.sendMessage(src, "",this.id);
-		botMessage(src,"Members to the next round",this.id);
+		botMessage(src,"Players to the next round:",this.id);
 		sys.sendMessage(src, "",this.id);
 
 		var str = this.winners.join(", ");
@@ -1748,11 +1748,13 @@
 		}
 
 		try {
+		if(!isEmpty(name1) && !isEmpty(name2)) {
 		this.couples[i] = [name1, name2];
 		this.players[n1tl].couplesid = i;
 		this.players[n2tl].couplesid = i;
 		this.players[n1tl].couplenum = 0;
 		this.players[n2tl].couplenum = 1;
+		}
 		} catch(e) { // Had to do it this way >.>
 		break;
 		}
@@ -1775,6 +1777,7 @@
 		this.white();
 		}
 
+		this.fixCouples();
 		this.border();
 		this.white();
 		if(this.AutoStartBattles) {
@@ -1794,6 +1797,14 @@
 		}
 		}
 
+		Tours.prototype.fixCouples = function () {
+		var c = this.couples, x;
+		for(x in c) {
+		if(c[x][0] == "" && c[x][1] == "")
+		delete c[x];
+		}
+		}
+		
 		Tours.prototype.isInTourney = function (name) {
 		var name2 = name.toLowerCase();
 		return name2 in this.players;
