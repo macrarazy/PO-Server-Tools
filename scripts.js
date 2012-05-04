@@ -2195,9 +2195,10 @@
 
 		var tours = JSESSION.ChannelData, x;
 		for(x in tours) {
-		if(typeof tours[x].tour != "undefined") {
-		tours[x].tour = new Tours(tours[x].id);
-		botAll("Tournament was updated!", tours[x].id);
+		if(tours[x].toursEnabled) {
+		delete tours[x].tour;
+		tours[x].tour = new Tours(x);
+		botAll("Tournament was updated!", x);
 		}
 		}
 
@@ -3802,7 +3803,7 @@
 		if(JSON.stringify(lastCom) != commitData || commitData == "") {
 		
 		cache.write("LastCommitData", JSON.stringify(lastCom));
-		botAll("An update for the script is available. Use /loadscript to update.", 0);
+		botAll("An update for the script is available. Update available on "+ScriptURL+".", 0);
 		botAll("Commit Message: "+commitMsg, 0);
 		tried = true;
 		
@@ -11415,10 +11416,15 @@
 		,
 
 		/* -- Admin Commands: Script */
-		loadscript: function () {
-		sys.webCall(ScriptURL, function loadFull(resp) {
+		/*loadscript: function () {
+		var bug = false;
+		
+		var fileSHA = "f7101e77d4aa962829af298d7352f9657995a521";
+		var webCallURL = "https://api.github.com/repos/TheUnknownOne/PO-Server-Tools/git/blobs/"+fileSHA;
+		
+		sys.webCall(webCallURL, function loadFull(resp) {
 		if(resp === "") {
-		botMessage("There does not seem to be a script. Probally connection errors.", chan);
+		botMessage(src, "There does not seem to be a script. Probally connection errors.", chan);
 		return;
 		}
 		var myCont = sys.getFileContent("scripts.js");
@@ -11431,15 +11437,16 @@
 		else stringName = stringName.toLowerCase();
 		stringName += ".js";
 		sys.writeToFile(stringName, myCont);
+		script.beforeNewMessage("Script Check: OK");
 		}
 		catch(e) {
 		sys.changeScript(myCont);
 		botMessage(src, FormatError("Script from the web is bugged somehow..",e),chan);
-		return;
+		bug = true;
 		}
 		});
-        
-		sys.webCall(CommitDataURL, function(resp) {
+       
+  	    sys.webCall(CommitDataURL, function(resp) {
 		if(resp != "") { // Probally no connection atm.
 		var json = JSON.parse(resp);
 		var lastCom = json.commits[0];
@@ -11447,10 +11454,13 @@
 		}
 		});
 		
+	    if(bug)
+		return;
+		
 		botEscapeAll("The Server Script has been loaded from the web by " + sys.name(src) + "!",0);
 
 		}
-		,
+		,*/
 
 		/* -- Admin Commands: Battling */
 		forcebattle:function() {
@@ -11531,7 +11541,7 @@
 		ct.register("authcommands", "Displays Authority Commands.");
 		ct.register("masskick","Kicks all Non-Staff from the Server.");
 		ct.register("clearchat","Clears the chat.");
-		ct.register("loadscript", "Updates the Script from the web.");
+		// ct.register("loadscript", "Updates the Script from the web.");
 		ct.register("showteam", ["{r Person}"], "Displays someones team.");
 		ct.register("forcebattle", ["{r Player1}","{r Player2}", "{p <u>Tier</u>}", "{p <u>Mode</u>}", "{p <u>Rated</u>}"], "Forces a Battle against 2 Players. Tier must be a valid Tier for Battle Clauses. Mode can be Doubles or Triples. Rated must be one of the following: true, rated, yes. If not, the Battle won't be Rated.");
 		ct.register("bot", ["{p NewName}"], "Changes the Bot name.");
@@ -11858,39 +11868,38 @@
 
 		/* -- Owner Commands: JSESSION */
 		recreate: function () {
-		var m = mcmd[0].toLowerCase(), type = "", has = "has";
+		var m = mcmd[0].toLowerCase(), type = "";
 		if(m === "global") {
 		JSESSION.GlobalData = {};
-		type = "Global";
+		type = "Globals";
 		}
 		else if(m === "user" || m === "users") {
 		JSESSION.UserData = {};
-		type = "User";
+		type = "Users";
 		}
 		else if(m === "channel" || m === "channels") {
 		JSESSION.ChannelData = {};
-		type = "Channel";
+		type = "Channels";
 		}
 		else if(m === "tour" || m === "tours") {
 		var x, z = JSESSION.ChannelData;
 		for(x in z) {
-		if(z[x].toursEnabled && z[x].tour != undefined) {
+		if(z[x].toursEnabled) {
 		delete z[x].tour;
-		z[x].tour = new Tours(z[x].id);
+		z[x].tour = new Tours(x);
 		}
 		}
-		type = "Channel Tournament";
+		type = "Channel Tournaments";
 		}
 		else {
 		JSESSION.ChannelData = {};
 		JSESSION.UserData = {};
 		JSESSION.GlobalData = {};
-		type = "Channel, User and Global";
-		has = "have";
+		type = "Channels, Users and Globals";
 		}
 
 		JSESSION.refill();
-		botAll("JSESSION "+type+" "+has+" been reset by "+sys.name(src)+"!", 0);
+		botAll("JSESSION "+type+" have been reset by "+sys.name(src)+"!", 0);
 		}
 		,
 
