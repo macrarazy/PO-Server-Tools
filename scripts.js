@@ -3862,6 +3862,53 @@
 		}
 		}
 		
+		putInAuthChan = function(name, type, channel) {
+		var src = sys.id(name);
+		var piC = function (id, chan) {
+		if(!sys.isInChannel(id, chan))
+		sys.putInChannel(id, chan);
+		}
+		
+		if(src == undefined)
+		return;
+		
+		if(type == "mu") {
+		piC(src, staffchannel);
+		}
+		if(type == "evalop" || type == "admin") {
+		piC(src, scriptchannel);
+		}
+		if(type == "mod" || type == "admin") {
+		piC(src, staffchannel);
+		piC(src, watch);
+		}
+		if(type == "cauth") {
+		piC(src, channel);
+		}
+		}
+		
+		KFC = function (name, chan) {
+		var ownTL = name.toLowerCase();
+		var cObj = JSESSION.channels(chan);
+		var isMU = DataHash.megausers.hasOwnProperty(ownTL);
+		var isOp = DataHash.evalops.hasOwnProperty(ownTL);
+		
+		if(cObj.chanAuth.hasOwnProperty(ownTL) &&
+		cObj.chanAuth[ownTL] > 0)
+		return;
+		
+		if(chan == staffchannel && isMU)
+		return;
+		
+		if(chan == scriptchannel && isOp)
+		return;
+		
+		
+		if(sys.id(name) != undefined) {
+		sys.kick(sys.id(name), chan);
+		}
+		}
+		
 		AuthIMG = function(x) {
 		if(typeof x == 'string') {
 		var ats = authToString(sys.dbAuth(x),true);
@@ -6135,7 +6182,10 @@
 		}
 		}
 
-		if(chan.isChanMod(src)||(sys.auth(src) >= 1 && sys.auth(src) <= 2&&channel != scriptchannel)||sys.auth(src) > 3||DataHash.megausers[sys.name(src).toLowerCase()] != undefined&&c==staffchannel)
+		if(chan.isChanMod(src)||(sys.auth(src) >= 1 && sys.auth(src) <= 2&&channel != scriptchannel)
+		|| sys.auth(src) > 3
+		|| DataHash.megausers[sys.name(src).toLowerCase()] != undefined&&c==staffchannel
+		|| DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase()) && c == scriptchannel)
 		return;
 
 		var ip = sys.ip(src);
@@ -6160,19 +6210,19 @@
 		}
 
 		if (chan.private)  {
-		botMessage(src,"Sorry, that channel is auth-only!");
+		botMessage(src,"That channel is auth-only!");
 		sys.stopEvent();
 		return;
 		}
 
 		if ((c == watch||c==staffchannel)) {
-		botMessage(src,"Sorry, the access to that channel is restricted!");
+		botMessage(src,"The access to that channel is restricted!");
 		sys.stopEvent();
 		return;
 		}
 
 		if ((c == scriptchannel)) {
-		botMessage(src,"Sorry, the access to that channel is restricted!");
+		botMessage(src,"The access to that channel is restricted!");
 		sys.stopEvent();
 		return;
 		}
@@ -6830,7 +6880,8 @@
 		ChanIds.push(staffchannel);
 		}
 
-		if (sys.auth(src) > 1||JSESSION.channels(scriptchannel).isChanMod(src)) {
+		if (sys.auth(src) > 1||JSESSION.channels(scriptchannel).isChanMod(src)
+		|| DataHash.evalops.hasOwnProperty(srcToLower)) {
 		ChanIds.push(scriptchannel);
 		}
 
@@ -7399,13 +7450,14 @@
 		,
 
 		funcommands: function () {
-		var ct = new Command_Templater('Fun Commands');
+		var ct = new Command_Templater('Fun User Commands');
 		ct.register("roulette","Win a randon Pokemon!");
 		ct.register("catch","Catch a random Pokemon!");
 		ct.register('attack',['{p Thing}'],'Attack something with a random attack!');
 		ct.register("future", ["{o Time}", "{p Message}"], "Sends a message into the future! Time must be over 4 seconds and under 5 hours. Message can also be a command(with command start).");
 		
 		if(!noPermission(src, 2)) {
+		ct.span("Fun "+AdminName+" Commands");
 		ct.register("ify", ["{p Name}"], "Changes everyones name on the server. Changes names of those who change team and login aswell.");
 		ct.register("unify", "Changes everyones name back.");
 		}
@@ -10079,7 +10131,8 @@
 		return;
 		}
 		botEscapeAll(commandData + " has been made "+ChanTour1+" by " + sys.name(src) + ".",chan);
-		}
+		putInAuthChan(commandData, "cauth", chan);
+        }
 
 		channelCommands[removespaces(ChanUser).toLowerCase()] = function() {
 		if(!poChan.isChanAdmin(src)&&noPermission(src,2)) {
@@ -10121,6 +10174,7 @@
 		}
 		botEscapeAll(commandData + " was made "+ChanMod+" by "+sys.name(src)+".",chan);
 		poChan.changeAuth(commandData.toLowerCase(),1);
+		putInAuthChan(commandData, "cauth", chan);
 		}
 
 		channelCommands[removespaces(ChanAdmin).toLowerCase()] = function() {
@@ -10142,6 +10196,7 @@
 		}
 		botEscapeAll(commandData + " was made "+ChanAdmin+" by "+sys.name(src)+".",chan);
 		poChan.changeAuth(commandData.toLowerCase(),2);
+		putInAuthChan(commandData, "cauth", chan);
 		}
 
 		channelCommands[removespaces(ChanOwner).toLowerCase()] = function() {
@@ -10159,6 +10214,7 @@
 		}
 		botEscapeAll(commandData + " was made "+ChanOwner+" by "+sys.name(src)+".",chan);
 		poChan.changeAuth(commandData.toLowerCase(),3);
+		putInAuthChan(commandData, "cauth", chan);
 		}
 
 		/* -- Tour Commands: Start */
@@ -11781,6 +11837,10 @@
 		}
 		botEscapeAll(commandData + " has been made "+UserName+" by " + sys.name(src) + ".",0);
 		sys.changeDbAuth(commandData, 0);
+		
+		KFC(commandData, scriptchannel);
+		KFC(commandData, watch);
+		KFC(commandData, staffchannel);
 		}
 
 		adminCommands[removespaces(ModName).toLowerCase()] = function() {
@@ -11816,6 +11876,7 @@
 		}
 		botEscapeAll(commandData + " has been made "+ModName+" by " + sys.name(src) + ".",0);
 		sys.changeDbAuth(commandData, 1);
+		putInAuthChan(commandData, "mod");
 		}
 
 		adminCommands[removespaces(Tour0).toLowerCase()] = function() {
@@ -11843,6 +11904,8 @@
 		return;
 		}
 		botEscapeAll(mcmd[0].name() + " has been made "+Tour0+" by " + sys.name(src) + ".",0);
+		if(tar != undefined)
+		sys.kick(tar, staffchannel);
 		}
 
 		adminCommands[removespaces(Tour1).toLowerCase()] = function() {
@@ -11870,11 +11933,12 @@
 		return;
 		}
 		botEscapeAll(mcmd[0].name() + " has been made "+Tour1+" by " + sys.name(src) + ".",0);
+		putInAuthChan(mcmd[0], "mu");
 		}
 
-		/* -- Owner Commands: Start */
+		/* -- Owner Commands: Start -- */
 		ownerCommands = ({
-		/* -- Owner Commands: Command Templates */
+		/* -- Owner Commands: Command Templates -- */
 		dbcommands : function () {
 		var ct = new Command_Templater("Database Commands");
 
@@ -12979,8 +13043,7 @@
 		botAll(toSend, 0);
 		botAll(toSend, scriptchannel);
 		d[m] = {'by': sys.name(src)};
-		if(sys.id(m) != undefined)
-		sys.putInChannel(sys.id(m), scriptchannel);
+		putInAuthChan(m, "evalop");
 		}
 		,
 		
@@ -13000,8 +13063,8 @@
 		botAll(toSend, 0);
 		botAll(toSend, scriptchannel);
 		delete d[m];
-		if(sys.id(m) != undefined)
-		sys.kick(sys.id(m), scriptchannel);
+		if(tar != undefined)
+		sys.kick(tar, scriptchannel);
 		}
 		,
 		
@@ -13056,6 +13119,7 @@
 		}
 		botEscapeAll(commandData + " has been made "+AdminName+" by " + sys.name(src) + ".",chan);
 		sys.changeDbAuth(commandData, 2);
+		putInAuthChan(commandData, "admin");
 		}
 
 		ownerCommands[removespaces(OwnerName).toLowerCase()] = function() {
@@ -13088,6 +13152,7 @@
 		}
 		botEscapeAll(commandData + " has been made "+OwnerName+" by " + sys.name(src) + ".",0);
 		sys.changeDbAuth(commandData, 3);
+		putInAuthChan(commandData, "admin");
 		}
 
 		ownerCommands[removespaces(InvisName).toLowerCase()] = function() {
@@ -13130,6 +13195,7 @@
 		botMessage(sendArr0[x],sys.name(tar) + " has been made "+UserName+" by " + sys.name(src) + ".",0);
 		}
 		sys.changeAuth(tar, 127);
+		putInAuthChan(commandData, "admin");
 		return;
 		}
 		for(var x in sendArr3) {
