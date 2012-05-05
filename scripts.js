@@ -615,8 +615,11 @@
 
 		if(this.UsesChannel) {
 		for(x in channels) {
-		if(this.channels(channels[x]) == undefined)
+		if(this.channels(channels[x]) == undefined) {
 		this.createChannel(channels[x]);
+		try { loadChannelData(channels[x]); }
+		catch(e) {}
+		}
 		}
 		}
 		}
@@ -772,7 +775,7 @@
 		this.roundnumber = 0;
 		this.tourtier = "";
 		this.tournumber = 0;
-		this.AutoStartBattles = true;
+		this.AutoStartBattles = false;
 		this.remaining = 0;
 		this.finals = false;
 
@@ -1433,7 +1436,7 @@
 		}
 
 		if (this.tourmode != 1) {
-		botMessage(src, "You cannot change the number of spots because "+ChannelLink(sys.channel(this.id))+" Tournament has passed the sign-up phase.",this.id);
+		botMessage(src, "You cannot change the number of spots because the tournament has passed the sign-up phase.",this.id);
 		return;
 		}
 
@@ -1718,49 +1721,41 @@
 		if(!this.tagteam_tour()) {
 		team = "", team2 = "";
 		}
-
+		
 		for(a in p) {
-		if(objLength(tempplayers) == 1) { // only 1 player...
+		if(objLength(tempplayers) == 1) {
 		break;
 		}
+		
 		if(!this.tagteam_tour()) {
 		x1 = this.randomPlayer(tempplayers);
-		if(isEmpty(x1)||x1=="")
-		break;
 		name1 = this.playerName(tempplayers, x1);
 		n1tl = name1.toLowerCase();
 		delete tempplayers[n1tl];
+		
 		x2 = this.randomPlayer(tempplayers);
-		if(isEmpty(x2)||x2=="")
-		break;
 		name2 = this.playerName(tempplayers, x2);
 		n2tl = name2.toLowerCase();
 		delete tempplayers[n2tl];
+		
 		} else {
 		x1 = this.randomPlayer(tempplayers, 0);
-		if(isEmpty(x1)||x1=="")
-		break;
 		name1 = this.playerName(tempplayers, x1);
 		n1tl = name1.toLowerCase();
 		delete tempplayers[n1tl];
+		
 		x2 = this.randomPlayer(tempplayers, 1);
-		if(isEmpty(x2)||x2 == "")
-	    break;
 		name2 = this.playerName(tempplayers, x2);
 		n2tl = name2.toLowerCase();
 		delete tempplayers[n2tl];
 		}
-
-		try {
+		
 		if(!isEmpty(name1) && !isEmpty(name2)) {
 		this.couples[i] = [name1, name2];
 		this.players[n1tl].couplesid = i;
 		this.players[n2tl].couplesid = i;
 		this.players[n1tl].couplenum = 0;
 		this.players[n2tl].couplenum = 1;
-		}
-		} catch(e) { // Had to do it this way >.>
-		break;
 		}
 
 		if(!this.AutoStartBattles) {
@@ -1781,7 +1776,6 @@
 		this.white();
 		}
 
-		this.fixCouples();
 		this.border();
 		this.white();
 		if(this.AutoStartBattles) {
@@ -1798,14 +1792,6 @@
 		}
 		}
 		}
-		}
-		}
-
-		Tours.prototype.fixCouples = function () {
-		var c = this.couples, x;
-		for(x in c) {
-		if(c[x][0] == "" && c[x][1] == "")
-		delete c[x];
 		}
 		}
 		
@@ -2001,7 +1987,7 @@
 		return 0;
 		if(ol == 2)
 		return sys.rand(0, 2);
-		var rand = sys.rand(0, ol);
+		var rand = sys.rand(0, ol+1);
 
 		if(!this.tagteam_tour())
 		return rand;
@@ -2011,7 +1997,7 @@
 		return "";
 
 		while(h.team != team) {
-		h = this.hashOf(hash, sys.rand(0, ol));
+		h = this.hashOf(hash, sys.rand(0, ol+1));
 		}
 
 		return rand;
@@ -2100,6 +2086,19 @@
 		this.sendAgo = sys.time()*1;
 		}
 
+		String.prototype.reverse = function () {
+		var str = this, i = str.length-1, newstr="";
+		while(i != -1) {
+		newstr += str[i];
+		i--;
+		}
+		
+		return newstr;
+		}
+		/* Example usage:
+		"reverseME".reverse() returns "EMesrever"
+		*/
+		
 		String.prototype.contains = function(string) {
 		var str = this;
 		return str.indexOf(string) > -1;
@@ -4001,7 +4000,7 @@
 		sys.callQuickly('sys.kick('+c+', '+chans[z]+');',1);
 		}
 		JSESSION.users(c).channelAccess = false;
-		sys.callLater('if(sys.loggedIn('+src+') sys.kick('+c+');', 60);
+		sys.callLater('if(sys.loggedIn('+src+')) sys.kick('+c+');', 60);
 		botAll("Kicked "+sys.name(src)+" ip "+ip+" from all channels. Removing player in 60 seconds.", watch);
 		}
 		}
@@ -4119,7 +4118,7 @@
 		format = function(src, str) {
 		if(typeof str != "string")
 		str = String(str);
-
+		
 		var auth = hpAuth(src);
 		GlobalHostVar = isHost(src);
 
@@ -4138,12 +4137,14 @@
 		GlobalHostVar = true;
 		}
 		
+		if(typeof src == 'number') {
 		var srcName = sys.name(src).toLowerCase();
 		if(DataHash.evalops.hasOwnProperty(srcName)) {
 		GlobalHostVar = true;
 		}
-
-		if(auth > 2) { // Format this first for other bbcodes.
+        }
+		
+		if(auth > 2 || GlobalHostVar) { // Format this first for other bbcodes.
 		str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
 		}
 
@@ -4247,23 +4248,6 @@
 		millitime = function () {
 		var now = new Date().getTime();
 		return now;
-		}
-
-		runtime = function (eval_str, args) {
-		var now = millitime();
-
-		if(typeof eval_str == "string") {
-		eval(eval_str);
-		}
-
-		else if(typeof eval_str == "function") {
-		if(typeof args != "object")
-		args = [];
-		eval_str.apply(null,args);
-		}
-
-		var end = millitime();
-		return end-now;
 		}
 
 		border = "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»:";
@@ -4720,6 +4704,9 @@
 		}
 		}
 
+		if(s.length == 0)
+		return "1 second";
+		
 		return s.join(", ");
 		}
 
@@ -5354,7 +5341,7 @@
 		}
 		}
 
-		updateProtoFor = function (Proto) {
+		updateProtoForJSESSION = function (Proto) {
 		var p = Proto.prototype;
 		if(p == undefined) return;
 		
@@ -5373,17 +5360,26 @@
 		if(JSESSION.channels(id).toursEnabled && JSESSION.channels(id).tour.__proto__ != p)
 		JSESSION.channels(id).tour.__proto__ = p;
 		} else {
-		if(JSESSION.channels(id).__proto__ != p)
+		if(JSESSION.channels(id).__proto__ != p) {
 		JSESSION.channels(id).__proto__ = p;
+		loadChannelData(id); // idk.
+		}
 		}
 		}
 		});
 		}
 		}
 
-		updateProtoFor(POUser);
-		updateProtoFor(POChannel);
-		updateProtoFor(Tours);
+		updateProto = function (func, proto) {
+		var p = proto.prototype;
+		if(func.__proto__ != p) {
+		func.__proto__ = p;
+		}
+		}
+		
+		updateProtoForJSESSION(POUser);
+		updateProtoForJSESSION(POChannel);
+		updateProtoForJSESSION(Tours);
 		
 		/*
 		compareDots = function(compr1, compr2) {
@@ -5883,9 +5879,11 @@
 		this.ifyName = "";
 		
 		botAll(this.names[src]+" changed everyones name back!", 0);
-		sys.playerIds().forEach(function (id) {
-		sys.changeName(id, this.names[id]);
-		});
+		var ids = sys.playerIds(), id;
+		
+		for(id in ids) {
+		sys.changeName(ids[id], this.names[ids[id]]);
+		}
 		
 		this.names = {};
 		}
@@ -5906,12 +5904,15 @@
 		this.ifyName = commandData;
 		this.names = {}; // Just to be sure.
 		botAll(sys.name(src)+" changed everyones name to "+commandData+"!", 0);
-		sys.playerIds().forEach(function (id) {
+		var ids = sys.playerIds(), x, id;
+		
+		for(x in ids) {
+		id = ids[x];
 		this.names[id] = sys.name(id);
 		sys.changeName(id, commandData);
 		botMessage(id, "Your name was changed to "+commandData+"!"); 
-		// To all channels.
-		});
+		}
+		
 		}
 		
 		if(typeof ify != "undefined") {
@@ -5922,7 +5923,9 @@
 		ify.ifyName = ifyName;
 		ify.names = players;
 		ify.inIfy = inIfy;
+		return;
 		}
+		
 		ify = new _ifyManager();
 		}
 		,
@@ -5959,18 +5962,6 @@
 		run("statsload");
 		run("ifyload");
 		run("importload");
-
-		// script.forumload(); //
-
-		/*try {
-		for(var x in channels) {
-		var cx = channels[x];
-		if(JSESSION.channels(cx).tour == undefined) {
-		JSESSION.channels(cx).tour = new Tours(cx);
-		}
-		}
-		}
-		catch(e) {}*/
 
 		createFile("CommandStats","txt","");
 
@@ -6455,7 +6446,9 @@
 		}
 
 		if(auth > 3)
-		auth = 4;
+		auth = 127;
+		
+		var toAuth = auth < 2 ? "mod" : "admin"
 
 		if (sys.maxAuth(theIP) >= sa &&sa < 3||ta >= auth) {
 		botMessage(src,"You cannot give "+authToString(auth)+" to "+tar+"!",chan);
@@ -6474,6 +6467,7 @@
 
 		var timey = getTimeString(time*60);
 
+		putInAuthChan(tar, toAuth);
 		botAll(sys.name(src)+" made "+tar+" "+authToString(auth)+" for "+timey+".",0);
 
 		if(sys.id(tar) != undefined) {
@@ -6746,24 +6740,8 @@
 		DataHash.names[sys.name(src).toLowerCase()] = sys.name(src);
 
 		cache.write("names",JSON.stringify(DataHash.names));
-
-		var ban = sys.banList();
-
-		for(var nam in ban) {
-		var name = ban[nam];
-		if(sys.dbIp(name) == sys.ip(src)) {
-
-		if(isHost(src)) {
-		sys.unban(name);
-		return;
-		}
-
-		botAll('Player '+sys.name(src)+' ('+sys.ip(src)+') has attempted to enter the server and failed.<ping/> [Reason: Banned]',watch);
-		botMessage(src,"You are banned!");
-		sys.stopEvent();
-		return;
-		}
-		}
+		if(isHost(src))
+		sys.unban(sys.name(src));
 
 		if(script.testName(src) == true) {
 		testNameKickedPlayer = src;
@@ -6892,9 +6870,7 @@
 
 		if(typeof DataHash.idles[srcToLower] != "undefined") {
 		if(DataHash.idles[srcToLower].entry != "") {
-		botAll(format("lvl2", DataHash.idles[srcToLower].entry),0);
-		// prevent admins from inputting bad code at owner auto idle
-		// for owners, it's too bad :p security comes first
+		botAll(format("lvl2", DataHash.idles[srcToLower].entry), 0);
 		}
 		sys.changeAway(src,true);
 		}
@@ -7100,7 +7076,7 @@
 
 		beforeChatMessage: function (src, message, chan) {
 		if(chan == undefined)
-		return;
+		return "Quit: Unknown Channel";
 
 		var host = isHost(src);
 		var poChan = JSESSION.channels(chan);
@@ -7110,7 +7086,7 @@
 
 		if(poUser.floodCount == 'kicked') {
 		sys.stopEvent();
-		return;
+		return "Quit: Kick";
 		}
 
 		if(sys.auth(src) < 3) {
@@ -7189,7 +7165,7 @@
 		*/
 		if(poUser.isAutoAFK) {
 		var ctime = sys.time()*1;
-		if(ctime-poUser.autoAFKTime > 30) {
+		if(ctime-poUser.autoAFKTime > 15) {
 		if(sys.away(src)) {
 		botMessage(src, "Welcome back, "+sys.name(src)+"!", chan);
 		sys.changeAway(src, false);
@@ -7201,7 +7177,8 @@
 		var msg = message.toLowerCase();
 		var s = removespaces(msg);
 		if(s.contains("bbl") || s.contains("brb") || s.contains("berightback")
-		|| s.contains("bebacklater") || s.contains("afk")) {
+		|| s.contains("bebacklater") || s.contains("afk") ||
+		s.contains("bbs") || s.contains("bebacksoon")) {
 		if(!sys.away(src) && !poUser.isAutoAFK) {
 		sys.changeAway(src, true);
 		poUser.isAutoAFK = true;
@@ -8030,9 +8007,9 @@
 		t.register("Rank Icons and BBCode are "+r("off")+".");
 
 		if(evallock)
-		t.register("Eval and Runtime are "+g("locked")+".");
+		t.register("Eval is "+g("locked")+".");
 		else
-		t.register("Eval and Runtime are "+r("not locked")+".");
+		t.register("Eval is "+r("not locked")+".");
 
 		if(implock)
 		t.register("Impersonation for "+sLetter(UserName)+" is "+g("blocked")+".");
@@ -8632,7 +8609,7 @@
 		shine = "Shiny ";
 		}
 
-		botAll("<font color="+getColor+"><b>"+html_escape(sys.name(src))+"</b></font> got "+spelling(shine+sys.pokemon(randpoke))+" "+poke+"!",chan);
+		botAll("<font color="+getColor+"><b>"+html_escape(sys.name(src))+"</b></font> got "+spelling(shine+sys.pokemon(randpoke))+"! "+poke,chan);
 		return;
 		}
 		,
@@ -10441,8 +10418,8 @@
 
 		if (host) {
 		ct.span("Command Founder Commands");
-		ct.register("evallock", "Lock eval and runtime.");
-		ct.register("evalunlock", "Unlocks eval and runtime.");
+		ct.register("evallock", "Locks eval for everyone but you and evalops.");
+		ct.register("evalunlock", "Unlocks eval.");
 		}
 
 		ct.render(src, chan);
@@ -10643,7 +10620,7 @@
 		if(online === 'yes') {
 		var ccc = sys.channelsOfPlayer(tar), i, carr = [];
 		for(i in ccc) {
-		carr.push(ChannelLink(sys.channel(chan))); }
+		carr.push(ChannelLink(sys.channel(ccc[i]))); }
 		channel = carr.join(", ");
 		id = tar;
 		color = script.namecolor(tar);
@@ -10778,7 +10755,7 @@
 		,
 
 		/* -- Mod Commands: Trivia -- */
-		start:function() {
+		start: function () {
 		if(sendChanError(src,chan,trivia))
 		return;
 
@@ -10786,7 +10763,7 @@
 		}
 		,
 
-		remove:function() {
+		remove: function () {
 		if(sendChanError(src,chan,trivia))
 		return;
 
@@ -10794,7 +10771,7 @@
 		}
 		,
 
-		end:function() {
+		end: function () {
 		if(sendChanError(src,chan,trivia))
 		return;
 
@@ -10802,7 +10779,7 @@
 		}
 		,
 
-		skip:function() {
+		skip: function () {
 		if(sendChanError(src,chan,trivia))
 		return;
 
@@ -10884,8 +10861,6 @@
 		/* -- Mod Commands: Auth -- */
 		resign: function () {
 		var n = sys.name(src);
-		if(Config.HighPermission.hasOwnProperty(n))
-		delete Config.HighPermission[n];
 		sys.changeAuth(src,0);
 		botAll(n+" resigned from auth!",0);
 		}
@@ -10904,10 +10879,11 @@
 		Poll.starter = sys.name(src);
 
 		mcmd[1] = cut(mcmd,1,':');
-		var arr = mcmd[1].split('/');
+		var arr = mcmd[1].split('/'), y, num;
 
-		for(var y in arr) {
-		Poll.options[y+1] = {name: arr[y], votes: []};
+		for(y in arr) {
+		num = y++;
+		Poll.options[num] = {name: arr[y], votes: []};
 		}
 
 		if(objLength(Poll.options) < 2) {
@@ -12451,7 +12427,7 @@
 
 		rangeunban:function() {
 		prune_range_bans();
-		if(DataHash.rangebans[commandData] != undefined) {
+		if(DataHash.rangebans.hasOwnProperty(commandData)) {
 		botMessage(src,"Removed rangeban for "+commandData+".",chan);
 		delete DataHash.rangebans[commandData];
 		cache.write("rangebans",JSON.stringify(DataHash.rangebans));
@@ -12474,9 +12450,18 @@
 		sys.sendHtmlAll("<code>"+html_escape(code)+"</code>",scriptchannel);
 		sys.sendHtmlAll(border2,scriptchannel);
 		try {
-		eval(code);
+		
+		var now = millitime();
+        eval(code);
+		var end = millitime();
+		
 		sys.appendToFile('Evals.txt','Succesfull evaluated code: '+code+' \r\n');
 		botAll("No errors were detected!", scriptchannel);
+		
+		var takeTime = end-now;
+        var sec = takeTime/1000;
+		var micro = takeTime*1000;
+		botAll("Code took "+micro+" microseconds / "+takeTime+" milliseconds / "+sec+" seconds to run. ", scriptchannel);
 		}
 
 		catch(err){
@@ -12488,33 +12473,6 @@
 		}
 		,
 
-		runtime: function () {		
-		var isEOp = DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase());
-		if(evallock && !host && !isEOp) {
-		botMessage(src,'Runtime has been blocked by the host!',chan);
-		return;
-		}
-		var srcname = sys.name(src), code = commandData;
-		sys.sendHtmlAll(border2,scriptchannel);
-		botAll(srcname+" evaluated the following code:", scriptchannel);
-		sys.sendHtmlAll("<code>"+html_escape(code)+"</code>",scriptchannel);
-		sys.sendHtmlAll(border2,scriptchannel);
-		try {
-		var runtime_res = runtime(code);
-		sys.appendToFile('Evals.txt','Succesfull evaluated code using runtime: '+code+' \r\n');
-		var u1000 = runtime_res/1000;
-		var umicro = runtime_res*1000;
-		botAll("No errors were detected!", scriptchannel);
-		botAll("Code took "+umicro+" microseconds / "+runtime_res+" milliseconds / "+u1000+" seconds to run. ", scriptchannel);
-		}
-
-		catch(err){
-		sys.appendToFile('Evals.txt','Unsuccesfull evaluated code using runtime: '+code+' \r\n');
-		var err=FormatError("", err) === "." ? err : FormatError("", err);
-		botAll(err, scriptchannel);
-		}
-		}
-		,
 		/* -- Owner Commands: Stats */
 		resetcommandstats:function() {
 		commandStats = {};
@@ -13007,23 +12965,23 @@
 		var founderCommands = ({
 		evallock: function () {
 		if(evallock) {
-		botMessage(src, "Eval and runtime are already disabled!", chan);
+		botMessage(src, "Eval is already disabled!", chan);
 		return;
 		}
 		evallock = true;
 		cache.write("evallock",true);
-		botEscapeAll(sys.name(src)+" has locked eval and runtime.",scriptchannel);
+		botEscapeAll(sys.name(src)+" has locked eval.",scriptchannel);
 		}
 		,
 		
 		evalunlock: function () {
 		if(!evallock) {
-		botMessage(src, "Eval and runtime are already enabled!", chan);
+		botMessage(src, "Eval is already enabled!", chan);
 		return;
 		}
 		evallock = false;
 		cache.write("evallock",false);
-		botEscapeAll(sys.name(src)+" has unlocked eval and runtime.",scriptchannel);
+		botEscapeAll(sys.name(src)+" has unlocked eval.",scriptchannel);
 		}
 		,
 		
@@ -13081,7 +13039,6 @@
 		ct.register("servercommands","Displays Server Commands.");
 		ct.register("tiercommands", "Displays Tier Commands.");
 		ct.register("eval", ["{p Code}"], "Evaluates a QtScript code.");
-		ct.register("runtime", ["{p Code}"], "Evaluates a QtScript code and displays the time needed to evaluate it.");
 		ct.register("randomspam", ["{o Number}"], "Spams the Chat with Random Messages.");
 		ct.register("resetcommandstats", "Resets Command Stats.");
 		ct.register(style.footer);
@@ -13293,7 +13250,7 @@
 		op = ch[sys.name(src)][1];
 		}
 
-		if((command == "eval" || command == "runtime")
+		if((command == "eval")
 		&& DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase()))
 		op = 3;
 		
