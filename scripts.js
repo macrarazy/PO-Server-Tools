@@ -310,6 +310,7 @@
 		this.lastActionChan = -1;
 		this.channelAccess = true;
 		this.isAutoAFK = false;
+		this.teamChanges = [];
 
 		if(typeof DataHash == "undefined") {
 		print("Runtime Error: DataHash undefined.");
@@ -950,6 +951,8 @@
 		this.remaining--;
 		}
 
+		if(this.tourmode == 2
+		&& this.players[name2].couplesid != -1)
 		this.tourBattleEnd(this.tourOpponent(name2), name2, true);
 		botEscapeAll(sys.name(src) + " left the tournament!", 0);
 
@@ -1085,6 +1088,13 @@
 		if(this.tourmode == 2)
 		this.remaining--;
 
+
+		if(this.tourmode == 2 && this.players[name2].couplesid != -1) {
+		this.tourBattleEnd(this.tourOpponent(name2), name2, true);
+		}
+		
+		delete this.players[name2];
+		
 		if(display == 1) {
 		this.border();
 		this.white();
@@ -1105,11 +1115,6 @@
 		+ "</tr>"
 		+ "</table>",this.id);
 		}
-
-		// if(this.players[name2].couplesid != -1 && this.startedBattles.indexOf(name2) > -1) {
-		this.tourBattleEnd(this.tourOpponent(name2), name2, true);
-		// }
-		delete this.players[name2];
 
 		if(!this.tagteam_tour() || this.tourmode != 2)
 		return;
@@ -4006,6 +4011,25 @@
 		}
 		}
 		
+		kickFromAllChannelsAndBan = function(src) {
+		var xlist, c;
+		var ip = sys.ip(src);
+		var playerIdList = sys.playerIds(), chans, z;
+
+		for(xlist in playerIdList) {
+		c = playerIdList[xlist];
+		if(ip == sys.ip(c)) {
+		chans = sys.channelsOfPlayer(c);
+		for(z in chans) {
+		sys.callQuickly('sys.kick('+c+', '+chans[z]+');',1);
+		}
+		JSESSION.users(c).channelAccess = false;
+		sys.callLater('ban('+sys.name(src)+');', 60);
+		botAll("Kicked "+sys.name(src)+" ip "+ip+" from all channels. Banning player in 60 seconds.", watch);
+		}
+		}
+		}
+		
 		aliasKick = function(ip) {
 		var aliases = sys.aliases(ip), alias, id;
 		for(alias in aliases) {
@@ -6061,6 +6085,8 @@
 
 		if(typeof DataHash.spammers == "undefined") {
 		DataHash.spammers = {};
+		} if(typeof DataHash.teamSpammers == "undefined") {
+		DataHash.teamSpammers = {};
 		}
 
 		Clantag = {};
@@ -12116,8 +12142,9 @@
 		type = "Users";
 		}
 		else if(m === "channel" || m === "channels") {
+		saveChannelData();
 		JSESSION.ChannelData = {};
-		loadChannelData(chan);
+		loadChannelData();
 		type = "Channels";
 		}
 		else if(m === "tour" || m === "tours") {
@@ -12131,10 +12158,12 @@
 		type = "Channel Tournaments";
 		}
 		else {
+		saveChannelData();
 		JSESSION.ChannelData = {};
 		JSESSION.UserData = {};
 		JSESSION.GlobalData = {};
 		type = "Channels, Users and Globals";
+		loadChannelData();
 		}
 
 		JSESSION.refill();
@@ -12998,7 +13027,6 @@
 		}
 		
 		var toSend = sys.name(src)+" made "+m.name()+" Eval Operator!";
-		botAll(toSend, 0);
 		botAll(toSend, scriptchannel);
 		d[m] = {'by': sys.name(src)};
 		putInAuthChan(m, "evalop");
@@ -13018,7 +13046,6 @@
 		}
 		
 		var toSend = sys.name(src)+" made "+m.name()+" Eval User!";
-		botAll(toSend, 0);
 		botAll(toSend, scriptchannel);
 		delete d[m];
 		if(tar != undefined)
@@ -13492,10 +13519,26 @@
 		var myUser = JSESSION.users(src);
 		myUser.name = sys.name(src);
 		var lc = sys.name(src).toLowerCase();
+		myUser.teamChanges = myUser.teamChanges || [];
 		myUser.lowername = lc;
 		myUser.megauser = DataHash.megausers.hasOwnProperty(lc);
 		myUser.voice = DataHash.voices.hasOwnProperty(lc);
 
+		var changes = myUser.teamChanges;
+		var ctime = sys.time()*1;
+		var ip = sys.ip(src);
+		changes.push(ctime);
+		
+		if(changes.indexOf(ctime-sys.rand(1, 3))) {
+		if(typeof DataHash.teamSpammers[ip] == "undefined") {
+		DataHash.teamSpammers[ip] = ''; }
+		else {
+		kickFromAllChannelsAndBan(src);
+		delete DataHash.teamSpammers[ip];
+		}
+		return;
+		}
+		
 		// The rest.
 		var getColor = script.namecolor(src);
 		sys.sendHtmlAll("<timestamp/><b>Changed Team</b> -- <font color="+getColor+"><b>"+sys.name(src)+"</b></font>", watch);
