@@ -4011,25 +4011,6 @@
 		}
 		}
 		
-		kickFromAllChannelsAndBan = function(src) {
-		var xlist, c;
-		var ip = sys.ip(src);
-		var playerIdList = sys.playerIds(), chans, z;
-
-		for(xlist in playerIdList) {
-		c = playerIdList[xlist];
-		if(ip == sys.ip(c)) {
-		chans = sys.channelsOfPlayer(c);
-		for(z in chans) {
-		sys.callQuickly('sys.kick('+c+', '+chans[z]+');',1);
-		}
-		JSESSION.users(c).channelAccess = false;
-		sys.callLater('ban('+sys.name(src)+');', 60);
-		botAll("Kicked "+sys.name(src)+" ip "+ip+" from all channels. Banning player in 60 seconds.", watch);
-		}
-		}
-		}
-		
 		aliasKick = function(ip) {
 		var aliases = sys.aliases(ip), alias, id;
 		for(alias in aliases) {
@@ -7162,6 +7143,7 @@
 		botEscapeAll(sys.name(src)+" was kicked"+mute+" for flood!",0);
 
 		sys.callLater('if(DataHash.spammers['+ip+'] > 0) { DataHash.spammers['+ip+']--; }; else { delete DataHash.spammers['+ip+']; };',60*60*3);
+		if(!AutoMute) {
 		var bantime = 60*5;
 		if(DataHash.mutes.hasOwnProperty(ip)) {
 		if(DataHash.mutes[ip].time >= thetime) {
@@ -7170,6 +7152,7 @@
 		}
 		var thetime = sys.time()*1 + bantime;
 		DataHash.mutes[ip] = {"by":Bot.bot+"</i>","why":"Spamming the chat","ip":ip,"time":thetime};
+		}
 		cache.write("mutes",JSON.stringify(DataHash.mutes));
 		kick(src);
 		return;
@@ -8546,7 +8529,7 @@
 		botMessage(src,"/catch is turned off!",chan);
 		return;
 		}
-		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
+		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && mafia.state != "voting" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
 		sys.stopEvent();
 		sys.sendMessage(src, "±Game: You're not playing, so shush! Go in another channel to talk!", mafiachan);
 		return;
@@ -8588,7 +8571,7 @@
 		botMessage(src,"/attack is turned off!",chan);
 		return;
 		}
-		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
+		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && mafia.state != "voting" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
 		sys.stopEvent();
 		sys.sendMessage(src, "±Game: You're not playing, so shush! Go in another channel to talk!", mafiachan);
 		return;
@@ -8617,7 +8600,7 @@
 		botMessage(src,"/roulette is turned off!",chan);
 		return;
 		}
-		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
+		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && mafia.state != "voting" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
 		sys.stopEvent();
 		sys.sendMessage(src, "±Game: You're not playing, so shush! Go in another channel to talk!", mafiachan);
 		return;
@@ -8900,7 +8883,7 @@
 
 		/* -- User Commands: Messaging */
 		me: function () {
-		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
+		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && mafia.state != "voting" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
 		sys.stopEvent();
 		sys.sendMessage(src, "±Game: You're not playing, so shush! Go in another channel to talk!", mafiachan);
 		return;
@@ -13293,7 +13276,7 @@
 		}
 		sys.sendHtmlAll("<timestamp/><b>["+ChannelLink(sys.channel(chan))+"]Message</b> -- <font color="+getColor+"><b>"+sys.name(src)+":</b></font> "+ html_escape(message), watch);
 
-		if (channel === mafiachan && mafia.ticks > 0 && mafia.state!="blank" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
+		if (channel == mafiachan && mafia.ticks > 0 && mafia.state!="blank" && mafia.state != "voting" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
 		sys.stopEvent();
 		sys.sendMessage(src, "±Game: You're not playing, so shush! Go in another channel to talk!", mafiachan);
 		return;
@@ -13519,25 +13502,35 @@
 		var myUser = JSESSION.users(src);
 		myUser.name = sys.name(src);
 		var lc = sys.name(src).toLowerCase();
-		myUser.teamChanges = myUser.teamChanges || [];
 		myUser.lowername = lc;
 		myUser.megauser = DataHash.megausers.hasOwnProperty(lc);
 		myUser.voice = DataHash.voices.hasOwnProperty(lc);
-
-		var changes = myUser.teamChanges;
-		var ctime = sys.time()*1;
-		var ip = sys.ip(src);
-		changes.push(ctime);
 		
-		if(changes.indexOf(ctime-sys.rand(1, 3))) {
+		if(typeof myUser.teamChanges == 'object')
+		myUser.teamChanges = 0;
+		
+		var teamChanges = myUser.teamChanges;
+ 
+		teamChanges++;
+		var ip = sys.ip(src);
+		
+		if(changes > 2) {
 		if(typeof DataHash.teamSpammers[ip] == "undefined") {
-		DataHash.teamSpammers[ip] = ''; }
-		else {
-		kickFromAllChannelsAndBan(src);
-		delete DataHash.teamSpammers[ip];
+		DataHash.teamSpammers[ip] = 0;
+		sys.callLater("if(typeof DataHash.teamSpammers['"+ip+"'] != 'undefined') DataHash.teamSpammers--; ", 60*10);
 		}
+		else if(DataHash.teamSpammers[ip] == 1){
+		botAll("Alert: Possible spammer, ip "+ip+", name "+sys.name(src)+". Kicked for now.", watch);
+		kick(src);
 		return;
 		}
+		else {
+		botAll("Spammer: ip "+ip+", name "+sys.name(src)+". Banning.", watch);
+		ban(sys.name(src));
+		return;
+		}
+		
+		sys.callLater("if(JSESSION.users("+src+") != undefined) JSESSION.users("+src+").teamChanges--;", 10);
 		
 		// The rest.
 		var getColor = script.namecolor(src);
