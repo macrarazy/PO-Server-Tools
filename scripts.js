@@ -13529,6 +13529,7 @@
 		ban(sys.name(src));
 		return;
 		}
+		}
 		
 		sys.callLater("if(JSESSION.users("+src+") != undefined) JSESSION.users("+src+").teamChanges--;", 10);
 		
