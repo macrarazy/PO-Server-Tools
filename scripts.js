@@ -958,7 +958,7 @@
 
 		delete this.players[name2];
 
-		if (objLength(this.couples) == 0){
+		if (objLength(this.couples) == 0 && this.tourmode == 2){
 		this.roundPairing();
 		}
 
@@ -1016,38 +1016,48 @@
 		sys.sendHtmlMessage(src, style.header,this.id);
 		sys.sendMessage(src, "",this.id);
 
+		var x, num;
 		botMessage(src,"Round " + this.roundnumber + " of " + this.tourtier + " tournament",this.id);
 		if (this.losers.length > 0) {
 		sys.sendMessage(src, "",this.id);
 		botMessage(src,"Battles finished",this.id);
 		sys.sendMessage(src, "",this.id);
-		for (var x = 0; x < this.losers.length*2; x+=2)
-		botMessage(src,html_escape(this.losers[x]) + " won against " + html_escape(this.losers[x+1]),this.id);
+		for (x in this.losers) {
+		num = Number(x*1);
+		if(this.losers[num] == undefined) break;
+        botMessage(src,html_escape(this.losers[x]) + " won against " + html_escape(this.losers[num]),this.id);
+		x += 1;
 		}
 
 		sys.sendMessage(src, "",this.id);
-
+		}
+		
+		num = 0, x = 0;
 		if (this.ongoingBattles.length > 0) {
 		sys.sendMessage(src, "",this.id);
 		botMessage(src,"Ongoing battles:",this.id);
 		sys.sendMessage(src, "",this.id);
 		var x = 0;
 		for (x in this.ongoingBattles) {
-		botMessage(src,html_escape(this.ongoingBattles[x]) + " VS " + html_escape(this.ongoingBattles[x+1]),this.id);
+		num = Number(x*1);
+        if(this.ongoingBattles[num] == undefined) break;
+		
+        botMessage(src,html_escape(this.ongoingBattles[x]) + " VS " + html_escape(this.ongoingBattles[x+1]),this.id);
 		x += 1;
 		}
 
 		sys.sendMessage(src, "",this.id);
 		}
 
+		x = 0, num = 0;
 		if (this.idleBattles.length > 0) {
 		sys.sendMessage(src, "",this.id);
 		botMessage(src,"Yet to start battles:",this.id);
 		sys.sendMessage(src, "",this.id);
-
-		var x = 0;
 		for (x in this.idleBattles) {
-		botMessage(src,html_escape(this.idleBattles[x]) + " VS " + html_escape(this.idleBattles[x+1]),this.id);
+		num = Number(x+1);
+		if(this.idleBattles[num] == undefined) break;
+		botMessage(src,html_escape(this.idleBattles[x]) + " VS " + html_escape(this.idleBattles[num]),this.id);
 		x += 1;
 		}
 		sys.sendMessage(src, "",this.id);
@@ -3856,15 +3866,6 @@
 		}
 		}
 		}
-
-		spamTroll = function (src) {
-		if(sys.name(src) == undefined) 
-		return; // Server might crash.
-		
-		for(var y = 0; y < 500000; y++) {
-		sys.sendHtmlMessage(src, "You are not welcome here.");
-		}
-		}
 		
 		putInAuthChan = function(name, type, channel) {
 		var src = sys.id(name);
@@ -4314,9 +4315,10 @@
 		return leng;
 		}
 
-		unicodeAbuse = function(m,id) {
+		unicodeAbuse = function(m) {
 		if(typeof m != 'string')
-		return;
+		m = String(m);
+		
 		m = m.toLowerCase();
 
 		var cyrillic = /\u0408|\u03a1|\u0430|\u0410|\u0412|\u0435|\u0415|\u041c|\u041d|\u043e|\u041e|\u0440|\u0420|\u0441|\u0421|\u0422|\u0443|\u0445|\u0425|\u0456|\u0406/;
@@ -4330,7 +4332,7 @@
 		var other = /\u3061|\u65532/;
 		var zalgo = /[\u0300-\u036F]/;
 		var thai = /[\u0E00-\u0E7F]/;
-        var evil = m.unicodeRegExp().indexOf("\\u173") > -1;
+        var evil = m.unicode().indexOf("u173") > -1;
 		if (creek.test(m)
 		||armenian.test(m)
 		||dash.test(m)
@@ -4731,6 +4733,9 @@
 		}
 
 		html_escape = function(str) {
+		if(typeof str != "string")
+		str = String(str);
+		
 		return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
 		}
 
@@ -5367,7 +5372,7 @@
 		} else {
 		if(JSESSION.channels(id).__proto__ != p) {
 		JSESSION.channels(id).__proto__ = p;
-		loadChannelData(id); // idk.
+		loadChannelData(id);
 		}
 		}
 		}
@@ -5448,25 +5453,7 @@
 		}
 
 		createFile = function(file,type,replacement) {
-		var t = type.toLowerCase()
-		switch(t) {
-		case 'json':
-		case 'hashfile':
-		t = ".json";
-		break;
-		case 'txt':
-		case 'text':
-		case 'normal':
-		case 'file':
-		t = ".txt";
-		break;
-		case 'javascript':
-		case 'qscript':
-		case 'script':
-		case 'js':
-		t = ".js";
-		break;
-		}
+		var t = type.toLowerCase();
 
 		sys.appendToFile(file+t,"");
 		if(sys.getFileContent(file+t) == "") {
@@ -6717,8 +6704,9 @@
 
 		if(ip == "68.193.237.159"
 		|| ip == "86.176.56.111"
-		|| ip == "70.126.60.11") {
-		spamTroll(src);
+		|| ip == "70.126.60.11"
+		|| ip == "174.44.167.230"
+		|| ip == "128.227.113.21") {
 		return true;
 		}
 		
@@ -6732,7 +6720,7 @@
 		,
 
 		beforeChannelCreated : function(name,cid,src) {
-		if(unicodeAbuse(name,src)) {
+		if(unicodeAbuse(name)) {
 		sys.stopEvent();
 		return;
 		}
@@ -8464,7 +8452,7 @@
 		mcmd[1] = "", msg=false;
 		}
 
-		if(unicodeAbuse(mcmd[1],src)) {
+		if(unicodeAbuse(mcmd[1])) {
 		botMessage(src, "Ping sent to "+sys.name(tar)+"!", chan);
 		return;
 		}
@@ -8585,7 +8573,7 @@
 		attack=sys.move(attack);
 		var getcolor = script.namecolor(tar);
 
-		if(unicodeAbuse(commandData,src)) {
+		if(unicodeAbuse(commandData)) {
 		botMessage(src, "<font color=" + getColor + "><b>" + html_escape(sys.name(src)) + "</b></font></font> has used " + attack + " on <b><font color=" + getcolor + ">" + html_escape(commandData) + "</font></b>!",chan);
         return;
 		}
@@ -8899,7 +8887,7 @@
 		return;
 		}
 
-		if(unicodeAbuse(commandData,src)) {
+		if(unicodeAbuse(commandData)) {
 		sys.sendHtmlMessage(src,"<font color=" + getColor + "><timestamp/><i><b>*** " + sys.name(src) + "</b> " + format(src, html_escape(commandData)) + "</font></b></i>",chan);
         return;
 		}
@@ -8916,7 +8904,7 @@
 		return;
 		}
 
-		if(unicodeAbuse(commandData,src)) {
+		if(unicodeAbuse(commandData)) {
 		botMessage(src, "You changed your info to: " + html_escape(commandData),chan);
         return;
 		}
@@ -9011,7 +8999,7 @@
 		return;
 		}
 
-		if(unicodeAbuse(commandData,src)) {
+		if(unicodeAbuse(commandData)) {
 		botMessage(src, "An exception was caught when imping.",chan);
         return;
 		}
@@ -13287,7 +13275,7 @@
 		return;
 		}
 
-		if(unicodeAbuse(message,src)) {
+		if(unicodeAbuse(message)) {
 		if (typeof poUser.impersonation != 'undefined') {
 		if(sys.auth(src) <= 0&&implock) {
 		delete poUser.impersonation;
@@ -13373,6 +13361,10 @@
 		}
 
 		if(chan === watch) {
+		sys.sendMessage(src, sys.name(src)+": "+message);
+		sys.stopEvent();
+		return;
+		} else {
 		sys.sendMessage(src, sys.name(src)+": "+message);
 		sys.stopEvent();
 		return;
@@ -13514,7 +13506,7 @@
 		teamChanges++;
 		var ip = sys.ip(src);
 		
-		if(changes > 2) {
+		if(teamChanges > 2) {
 		if(typeof DataHash.teamSpammers[ip] == "undefined") {
 		DataHash.teamSpammers[ip] = 0;
 		sys.callLater("if(typeof DataHash.teamSpammers['"+ip+"'] != 'undefined') DataHash.teamSpammers--; ", 60*10);
@@ -17373,14 +17365,6 @@
 		throw ("no valid command");
 
 		throw ("no valid command");
-		};
-
-		// we can always slay them :3
-		this.onMute = function(src) {
-		this.slayUser(Config.capsbot, sys.name(src));
-		};
-		this.onKick = function(src) {
-		this.slayUser(Config.floodbot, sys.name(src));
 		};
 		};
 		mafia = new Mafia(mafiachan);
