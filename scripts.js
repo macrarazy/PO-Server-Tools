@@ -2077,6 +2077,10 @@ JSESSION.refill();
         scriptchannel = makeChan("Eval Area");
 
         channels = [0, mafiachan, trivia, staffchannel, watch, scriptchannel];
+		
+		for(var y in channels) {
+		JSESSION.createChannel(channels[y]);
+		}
     },
 
     cacheload: function () {
@@ -2312,18 +2316,44 @@ JSESSION.refill();
                 }
 
                 cData = data[cChan.name];
+				
+				try {
                 cChan.chanAuth = JSON.parse(cData.chanAuth);
+				}
+				catch(e) {
+				cChan.chanAuth = {};
+				}
+				
                 cChan.creator = cData.creator;
                 cChan.topic = cData.topic;
                 cChan.topicsetter = cData.topicsetter;
                 cChan.perm = cData.perm;
+				
+				try {
                 cChan.banlist = JSON.parse(cData.banlist);
+				}
+				catch(e) {
+				cChan.banlist = {};
+				}
+				
+				try {
                 cChan.mutelist = JSON.parse(cData.mutelist);
+				}
+				catch(e) {
+				cChan.mutelist = {};
+				}
+				
                 cChan.private = cData.private;
                 cChan.defaultTopic = cData.defaultTopic;
                 cChan.silence = cData.silence;
 
+				try {
                 cChan.tourAuth = JSON.parse(cData.tourAuth);
+				}
+				catch(e) {
+				cChan.tourAuth = {};
+				}
+				
                 if (cData.toursEnabled && cChan.tour == undefined) cChan.tour = new Tours(cChan.id);
             }
         }
@@ -2377,8 +2407,8 @@ JSESSION.refill();
             if (JSESSION.channels(cid) == undefined || sys.channel(cid) == undefined) return "ERROR: No Channel";
             /* No such channel. Probally called by /eval */
 
-            var cChan = JSESSION.channels(cid);
             var cData = this.channelData;
+			var cChan = JSESSION.channels(cid);
 
             if (cData.hasOwnProperty(channelName) && !shouldOverwrite) {
                 return;
@@ -2405,9 +2435,16 @@ JSESSION.refill();
         ChannelDataManager.prototype.changeChanAuth = function (chan, auth) {
             var name = sys.channel(chan);
 
-            if (!name in this.channelData) this.generateBasicData(name);
-
-            this.channelData[name].chanAuth = JSON.stringify(auth);
+            if (!name in this.channelData) {
+			this.generateBasicData(name);
+			}
+            
+			try {
+              this.channelData[name].chanAuth = JSON.stringify(auth);
+			} 
+            catch (e) {
+            }
+			
             this.save();
         }
 
@@ -4179,7 +4216,7 @@ JSESSION.refill();
         }
 
         createFile = function (file, type, replacement) {
-            var t = type.toLowerCase();
+            var t = "."+type.toLowerCase();
 
             sys.appendToFile(file + t, "");
             if (sys.getFileContent(file + t) == "") {
@@ -4678,10 +4715,11 @@ JSESSION.refill();
             var ifyName = ify.ifyName;
             var players = ify.names;
             var isActive = ify.inIfy;
+			
             ify = new _ifyManager();
             ify.ifyName = ifyName;
             ify.names = players;
-            ify.inIfy = inIfy;
+            ify.inIfy = isActive;
             return;
         }
 
@@ -4837,6 +4875,8 @@ JSESSION.refill();
 
         updateProto(cData, ChannelDataManager);
 
+		cData.loadDataForAll();
+		
         delete ScriptLength_Full;
         delete ScriptLength_Lines;
 
@@ -15880,6 +15920,9 @@ return;
             };
         };
 
+		if(typeof poGlobal == 'undefined')
+		poGlobal = JSESSION.global();
+		
         if (typeof mafia == 'undefined') {
             mafia = new Mafia(mafiachan);
             mafia.importOld();
