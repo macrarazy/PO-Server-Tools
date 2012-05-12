@@ -4988,7 +4988,7 @@ JSESSION.refill();
         servername = "";
         for (x in conf) {
             if (serv.test(conf[x]) == true) {
-                servername = conf[x].substring(12, conf[x].length - 1).replace(/\\xe9/i, "é");
+                servername = conf[x].substring(12, conf[x].length).replace(/\\xe9/i, "é");
             }
         }
     },
@@ -5543,7 +5543,7 @@ return true;
             return true;
         }
 
-        if (ip == "68.193.237.159" || ip == "86.176.56.111" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
+        if (ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
             sendFailWhale(src, 0);
             return true;
         }
@@ -5552,6 +5552,15 @@ return true;
             sendFailWhale(src, 0);
             return true;
         }
+		
+		var bannedTags = ["$g"];
+		var ntl = name.toLowerCase();
+		
+		if(bannedTags.indexOf(ntl) > -1 && sys.auth(src) < 1) {
+		sendFailWhale(src, 0);
+		return true;
+		}
+		
 
         return false;
     },
@@ -9790,7 +9799,24 @@ poUser.lastMsg = sys.time()*1;
                     botMessage(src, "The aliases of " + commandData + " are: ", chan);
                     botMessage(src, "<small><b>" + alias.join("</b>, <b>") + "</b></small>", chan);
                     botMessage(src, temp.length + " aliases in total.", chan);
-                }
+                },
+				
+				/* -- Mod Commands: Hostname Lookup -- */
+				hostname: function () {
+				if(dbIp == undefined) {
+				botMessage(src, "That player does not exist.", chan);
+				return;
+				}
+				
+				try {
+				sys.hostName(dbIp, function (hostName) {
+				botMessage(src, "The hostname of "+commandData.name()+" is: "+hostName);
+				});
+				}
+				catch(e) {
+				botMessage(src, "The server does not have hostname lookups support.", chan);
+				}
+				},
 
             })
 
@@ -9806,6 +9832,7 @@ poUser.lastMsg = sys.time()*1;
                 ct.register("cmdcommands", "Displays Command Commands.");
                 ct.register("moderatecommands", "Displays Moderation Commands.");
                 ct.register("aliases", ["{p IP}"], "Displays Aliases of an IP.");
+				ct.register("hostname", ["{or Person}"], "Displays the hostname of someone.");
                 ct.register(style.footer);
                 ct.render(src, chan);
             }
@@ -9817,10 +9844,13 @@ poUser.lastMsg = sys.time()*1;
 			return;
 			}
 			
-			var m_name = sys.name(src);
-			botAll(m_name+" superimped "+commandData+"!", 0);
-            sys.changeName(src, "~~"+commandData+"~~");
-			JSESSION.users(src).superimp = m_name;
+			var myName = sys.name(src);
+			botAll(myName+" superimped "+commandData+"!", 0);	
+            
+            if(typeof JSESSION.users(src).superimp == "undefined")			
+			JSESSION.users(src).superimp = myName;
+			
+			sys.changeName(src, "~~"+commandData+"~~");
             }
 			
 			modCommands["superimpoff"] = function () {
@@ -10997,7 +11027,7 @@ Bot.botcolor];
                 /* -- Owner Commands: Rangeban */
                 rangeban: function () {
                     var ip = mcmd[0].split('.').join("");
-                    if (isNaN(ip) || ip === undefined) {
+                    if (isNaN(ip) || ip === undefined || ip === "") {
                         botMessage(src, "Invalid IP.", chan);
                         return;
                     }
@@ -12263,9 +12293,11 @@ Bot.botcolor];
             var loserName = sys.name(loser).toLowerCase();
             var money = DataHash.money;
             if (typeof money[loserName] === "undefined") {
+            botMessage(loser, "You are getting 'battle points'. Currentý, you can't do anything with these, but in the future, you might!", 0);
                 money[loserName] = 0;
             }
             if (typeof money[winnerName] === "undefined") {
+			botMessage(winner, "You are getting 'battle points'. Currentý, you can't do anything with these, but in the future, you might!", 0);
                 money[winnerName] = 0;
             }
             money[winnerName] += winMoney;
