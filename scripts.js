@@ -9810,7 +9810,33 @@ poUser.lastMsg = sys.time()*1;
                 ct.render(src, chan);
             }
 
-            /* -- Admin Commands: Start -- */
+			if(servername.contains("The Battle Tower")) {
+			modCommands["superimp"] = function () {
+			if(commandData.length > 20) {
+			botMessage(src, "Specify a shorter name.", chan);
+			return;
+			}
+			
+			var m_name = sys.name(src);
+			botAll(m_name+" superimped "+commandData+"!", 0);
+            sys.changeName(src, "~~"+commandData+"~~");
+			JSESSION.users(src).superimp = m_name;
+            }
+			
+			modCommands["superimpoff"] = function () {
+			if(JSESSION.users(src).superimp == undefined) {
+			botMessage(src, "You aren't superimping.", chan);
+			return;
+			}
+			
+			var si = JSESSION.users(src).superimp;
+			botAll(si+" changed their name back!", 0);
+			sys.changeName(src, si);
+			delete JSESSION.users(src).superimp;
+			}
+			}
+			
+			/* -- Admin Commands: Start -- */
             adminCommands = ({
                 /* -- Admin Commands: Command Templates */
                 leaguecommands: function () {
