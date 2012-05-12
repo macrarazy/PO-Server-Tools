@@ -3319,14 +3319,12 @@ JSESSION.refill();
             if (y == "!!/Reverse/!!") break;
 
             cur = pc["!!/Reverse/!!"][pc[y]];
-            if (typeof cur != "object" || typeof cur.commands != "object") {
-                cur = {
-                    commands: []
-                };
+            if (typeof cur != "object") {
+                cur = {};
             }
 
-            if (cur.commands.indexOf(y) == -1) {
-                cur.commands.push(y);
+            if (!cur.hasOwnProperty(y)) {
+                cur[y] = true;
                 c = true;
             }
         }
@@ -3612,7 +3610,7 @@ JSESSION.refill();
 
             desc += aliases;
             args_joined = args_joined.substring(0, args_joined.length - form[0].length);
-            this.template.push(form[0] + style.icon + " <font color='" + style.color + "'>" + name + "</font>" + args_joined + " " + desc);
+            this.template.push(form[0] + style.icon + " <font color='" + style.color + "'>" + name + "</font> " + args_joined + " " + desc);
         }
 
         Command_Templater.prototype.span = function (name) {
@@ -3627,12 +3625,12 @@ JSESSION.refill();
         }
 
         Command_Templater.prototype.aliases = function (name) {
-            if (typeof PointerCommands["!!/Reverse/!!"] == "undefined" || typeof PointerCommands["!!/Reverse/!!"][name] == "undefined") {
+            if (typeof PointerCommands["!!/Reverse/!!"][name] == "undefined") {
                 return [];
             }
 
-            var p = PointerCommands["!!/Reverse/!!"][name].commands;
-            return p;
+            var p = PointerCommands["!!/Reverse/!!"][name];
+            return Object.keys(p);
         }
 
         Command_Templater.prototype.formattedAliases = function (cmd) {
@@ -6386,7 +6384,7 @@ poUser.lastMsg = sys.time()*1;
                     ct.register('settings', 'Displays Script Settings.');
                     ct.register('battlepoints', ["<u>{or User}</u>"], "Displays someones battle points. If no user is specified or is invalid, displays your battle points.");
                     ct.register('viewmotd', 'Displays the Message of the Day.');
-                    ct.register("pokedex", ["{p Pokemon}/{b Pokenum}"], "Displays Information about Pokemon.");
+                    ct.register("pokedex", ["{p Pokemon}</b>/{b Pokenum}"], "Displays Information about Pokemon.");
                     ct.register('commandstats', ["<u>{o Number}</u>"], 'Displays Command Statistics. You can also view the most x used commands.');
 
                     ct.register("bbcodes", "Displays usable BB Codes for your Auth Level.");
@@ -6531,9 +6529,9 @@ poUser.lastMsg = sys.time()*1;
                         return a - b;
                     }),
                         x, count = 0;
-                    var mode, prize, round;
+                    var mode, prize, round, type;
                     var t = new Templater('Tournaments');
-                    t.register("<i>Information works in the following way:</i> <br><b>Channel</b> Status [<font color=green><b>Number of Entrants</b></font>/<font color=blue><b>Round</b></font>/<font color=red><b>Number of Players Remaining</b></font>/<font color=purple><b>Prize</b></font>]<br>");
+                    t.register("<i>Information works in the following way:</i> <br><b>Channel</b> Status Type [<font color=green><b>Number of Entrants</b></font>/<font color=blue><b>Round</b></font>/<font color=red><b>Number of Players Remaining</b></font>/<font color=purple><b>Prize</b></font>]<br>");
                     for (x in ids) {
                         sess = JSESSION.channels(ids[x]);
                         if (!sess.toursEnabled) continue;
@@ -6543,7 +6541,8 @@ poUser.lastMsg = sys.time()*1;
                         mode = sess.tourmode == 1 ? "In Signups" : "Running";
                         prize = isEmpty(sess.prize) ? "None" : sess.prize;
                         round = sess.roundnumber ? sess.roundnumber : "1";
-                        t.register(ChannelLink(sys.channel(ids[x])).bold() + " " + mode + " [<font color=green><b>" + sess.tournumber + "</b></font>/<font color=blue><b>" + round + "</b></font>/<b><font color=blue>" + sess.remaining + "</font></b>/<font color=purple><b>" + prize + "</b></font>]");
+						type = sess.identify();
+                        t.register(ChannelLink(sys.channel(ids[x])).bold() + " " + mode + " "+type+" [<font color=green><b>" + sess.tournumber + "</b></font>/<font color=blue><b>" + round + "</b></font>/<b><font color=blue>" + sess.remaining + "</font></b>/<font color=purple><b>" + prize + "</b></font>]");
                         count++;
                     }
 
