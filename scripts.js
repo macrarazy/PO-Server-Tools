@@ -3315,20 +3315,23 @@ JSESSION.refill();
             PointerCommands["!!/Reverse/!!"] = {};
         }
 
-        for (var y in pc) {
+		var y;
+        for (y in pc) {
+		sys.sendAll("y = "+y+", pc[y] = "+pc[y]);
             if (y == "!!/Reverse/!!") break;
 
             cur = pc["!!/Reverse/!!"][pc[y]];
             if (typeof cur != "object") {
                 cur = {};
+				pc["!!/Reverse/!!"][pc[y]] = {};
             }
 
             if (!cur.hasOwnProperty(y)) {
-                cur[y] = true;
+                pc["!!/Reverse/!!"][pc[y]][y] = '';
                 c = true;
             }
         }
-
+		
         if (c) cache.write("pointercommands", JSON.stringify(pc));
 
         stringToTime = function (str, time) {
@@ -6384,7 +6387,7 @@ poUser.lastMsg = sys.time()*1;
                     ct.register('settings', 'Displays Script Settings.');
                     ct.register('battlepoints', ["<u>{or User}</u>"], "Displays someones battle points. If no user is specified or is invalid, displays your battle points.");
                     ct.register('viewmotd', 'Displays the Message of the Day.');
-                    ct.register("pokedex", ["{p Pokemon}</b>/{b Pokenum}"], "Displays Information about Pokemon.");
+                    ct.register("pokedex", ["{p Pokemon}</b>/<b>{b Pokenum}</b>"], "Displays Information about Pokemon.");
                     ct.register('commandstats', ["<u>{o Number}</u>"], 'Displays Command Statistics. You can also view the most x used commands.');
 
                     ct.register("bbcodes", "Displays usable BB Codes for your Auth Level.");
