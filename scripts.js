@@ -3326,7 +3326,7 @@ JSESSION.refill();
             }
 
             if (cur.commands.indexOf(y) == -1) {
-                pc["!!/Reverse/!!"][pc[y]].commands.push(y);
+                cur.commands.push(y);
                 c = true;
             }
         }
@@ -10665,7 +10665,7 @@ Bot.botcolor];
                         spam_color = [],
                         spam_array = [];
                     var spam_script = "Script Check",
-                        spam_script_color = Bot.color;
+                        spam_script_color = Bot.botcolor;
 
                     var x, pl = sys.playerIds(),
                         cur, curn;
