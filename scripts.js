@@ -3317,7 +3317,6 @@ JSESSION.refill();
 
 		var y;
         for (y in pc) {
-		sys.sendAll("y = "+y+", pc[y] = "+pc[y]);
             if (y == "!!/Reverse/!!") break;
 
             cur = pc["!!/Reverse/!!"][pc[y]];
