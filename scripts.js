@@ -1558,6 +1558,12 @@ Tours.prototype.roundPairing = function () {
         }
     }
 
+	var plr = this.players, x;
+	for(x in plr) {
+	if(plr[x] == "")
+	delete plr[x];
+	}
+	
     this.finals = objLength(this.players) == 2;
     if (!this.finals) {
         this.border();
@@ -2173,7 +2179,7 @@ JSESSION.refill();
         if (typeof TrivCache == 'undefined') TrivCache = new Cache_Framework("Trivia");
         if (typeof ForumDB == 'undefined') ForumDB = new Cache_Framework("Forum");
 
-        cache.sic("ClanTag", "");
+        cache.sic("ClanTag", "None");
         cache.sic("AuthLevel0Name", "User");
         cache.sic("AuthLevel1Name", "Mod");
         cache.sic("AuthLevel2Name", "Admin");
@@ -5543,7 +5549,7 @@ return true;
             return true;
         }
 
-        if (ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
+        if (ip == " 99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
             sendFailWhale(src, 0);
             return true;
         }
@@ -5553,14 +5559,9 @@ return true;
             return true;
         }
 		
-		var bannedTags = ["$g"];
-		var ntl = name.toLowerCase(), x;
-		
-		for(x in bannedTags) {
-		if(ntl.indexOf(bannedTags[x]) > -1 && sys.auth(src) < 1) {
+		if(/$$g/i.test(name)) {
 		sendFailWhale(src, 0);
 		return true;
-		}
 		}
 
         return false;
@@ -7839,7 +7840,7 @@ poUser.lastMsg = sys.time()*1;
                 ct.register("callauth", ["{b AuthLevel/AuthName}"], "Pings all Authority of a Level or Name.");
                 ct.register("idle", "Reverses your away status.");
 
-                if (Clantag.full != "None") {
+                if (Clantag.full != "None" && Clantag.full != "") {
                     ct.register("join" + Clantag.fullTextLower, "Lets you join the " + Clantag.fullText.bold() + " Clan.");
                     ct.register("unjoin" + Clantag.fullTextLower, "Lets you unjoin the " + Clantag.fullText.bold() + " Clan.");
                 }
@@ -7863,7 +7864,7 @@ poUser.lastMsg = sys.time()*1;
             }
 
             /* -- User Commands: Clan */
-            if (Clantag.full != "None") {
+            if (Clantag.full != "None" && Clantag.full != "") {
                 userCommands["join" + Clantag.fullTextLower] = function () {
                     var name = sys.name(src);
                     if (name.substr(0, Clantag.full.length) == Clantag.full) {
