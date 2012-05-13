@@ -5277,7 +5277,7 @@ JSESSION.refill();
         var ta = sys.dbAuth(tar);
         var theIP = sys.dbIp(tar);
         auth = Math.round(auth);
-        var timeUnitTime = stringToTime(timeunit, time);
+        var timeUnitTime = stringToTime(timeUnit, time);
 
         if (theIP == undefined) {
             botMessage(src, "Null target!", chan);
