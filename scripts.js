@@ -301,6 +301,7 @@ clearlogs = function () {
     if (len > l) {
         botAll("The file logs.txt contains " + sTB(len) + ", which is more than wanted (" + sTB(l) + "). Clearing file.", 0);
         sys.writeToFile("logs.txt", "");
+		gc(); // Garbage Collector
     }
 }
 
@@ -328,7 +329,7 @@ function POUser(id) {
         this.megauser = false;
         this.icon = "";
         this.voice = false;
-        this.macro = "%m";
+        this.macro = ["%m1", "%m2", "%m3", "%m4", "%m5"];
         return;
     }
 
@@ -360,7 +361,7 @@ function POUser(id) {
 
     if (DataHash.macros !== undefined) {
         i = DataHash.macros;
-        this.macro = i.hasOwnProperty(this.lowername) ? i[this.lowername] : "%m";
+        this.macro = i.hasOwnProperty(this.lowername) ? i[this.lowername] : ["%m1", "%m2", "%m3", "%m4", "%m5"];
     }
 
 }
@@ -3144,8 +3145,11 @@ JSESSION.refill();
             var other = /\u3061|\u65532/;
             var zalgo = /[\u0300-\u036F]/;
             var thai = /[\u0E00-\u0E7F]/;
-            var evil = m.unicode().indexOf("u173") > -1;
-            if (creek.test(m) || armenian.test(m) || dash.test(m) || space.test(m) || cyrillic.test(m) || greek.test(m) || special.test(m) || other.test(m) || zalgo.test(m) || thai.test(m) || evil) {
+			var unicodeArr = m.unicode();
+            var evil = unicodeArr.indexOf("173") > -1;
+			var fakei = m.indexOf("¡") > -1;
+			
+            if (fakei || creek.test(m) || armenian.test(m) || dash.test(m) || space.test(m) || cyrillic.test(m) || greek.test(m) || special.test(m) || other.test(m) || zalgo.test(m) || thai.test(m) || evil) {
                 // botMessage(id,"You have bad characters in your message.");
                 return true;
             }
@@ -3353,7 +3357,7 @@ JSESSION.refill();
                 'h': 60 * 60,
                 'd': 24 * 60 * 60,
                 'w': 7 * 24 * 60 * 60,
-                'm': 2592000,
+                'mo': 2592000,
                 'y': 31536000
             };
 
@@ -4429,7 +4433,7 @@ JSESSION.refill();
                 }
 
             var isVar = function (v) {
-                    return typeof _GLOBAL[v] != 'undefined'
+                    return typeof _GLOBAL[v] != 'undefined';
                 }
 
             var toCache = function (globalVar, LutraValName) {
@@ -4995,6 +4999,9 @@ JSESSION.refill();
         for (x in conf) {
             if (serv.test(conf[x]) == true) {
                 servername = conf[x].substring(12, conf[x].length).replace(/\\xe9/i, "é");
+				if(servername[servername.length-1] == " ") {
+				servername = servername.substr(0, servername.length);
+				}
             }
         }
     },
@@ -5539,8 +5546,9 @@ return true;
         var other = /\u3061|\u65532/;
         var zalgo = /[\u0300-\u036F]/;
         var thai = /[\u0E00-\u0E7F]/;
+		var fakei = name.indexOf("¡") > -1;
 
-        if (creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
+        if (fakei || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
             if (!nomessage) {
                 sendFailWhale(src, 0);
                 botMessage(src, "You are using bad characters in your name.");
@@ -5549,18 +5557,24 @@ return true;
             return true;
         }
 
-        if (ip == " 99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
-            sendFailWhale(src, 0);
+        if (ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
+            if(!nomessage) {
+			sendFailWhale(src, 0);
+			}
             return true;
         }
 
         if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "D" && name[4] == "_") {
-            sendFailWhale(src, 0);
+            if(!nomessage) {
+			sendFailWhale(src, 0);
+			}
             return true;
         }
 		
-		if(/$$g/i.test(name)) {
+		if(/\$g/i.test(name) && sys.auth(src) == 0) {
+		if(!nomessage) {
 		sendFailWhale(src, 0);
+		}
 		return true;
 		}
 
@@ -5569,6 +5583,7 @@ return true;
 
     beforeChannelCreated: function (name, cid, src) {
         if (unicodeAbuse(name)) {
+		sys.sendHtmlMessage(src, "<i>Error while sending socket to server -- Received error n°5: The server could not handle your request</i>");
             sys.stopEvent();
             return;
         }
@@ -5907,8 +5922,21 @@ if(message == "Maximum Players Changed.") {
         var poUser = JSESSION.users(src);
         var chatcolor = ChatColorRandomizers.hasOwnProperty(chan);
         var voice = poUser.voice;
-        var macro = poUser.macro === undefined ? "%m" : poUser.macro;
-        message = message.replace(/%m/g, macro);
+        var macro = poUser.macro, macroX, macroRegExp, macroXNum;
+		if(typeof macro == 'string') {
+		var newArrayIs = ["%m1", "%m2", "%m3", "%m4", "%m5"];
+		macro = newArrayIs;
+		poUser.macro = newArrayIs;
+		delete newArrayIs;
+		}
+				
+		for(macroX in macro) {
+		macroXNum = macroX *1 + 1;
+		macroRegExp = new RegExp("%m"+macroXNum, "g");
+        message = message.replace(macroRegExp, macro[macroX]);
+		}
+		
+		delete macroX, macroRegExp, macroXNum;
 
 
         if (poUser.floodCount == 'kicked') {
@@ -5939,9 +5967,9 @@ if(message == "Maximum Players Changed.") {
 
             DataHash.spammers[ip] += 1;
 
-            if (DataHash.spammers[ip] >= 5) {
-                var bantime = 60 * 60 * 24;
-                var thetime = sys.time() * 1 + bantime
+            if (DataHash.spammers[ip] >= 5 && !ip in DataHash.tempbans) {
+                var bantime = stringToTime('d', 1);
+                var thetime = sys.time() * 1 + bantime;
                 DataHash.tempbans[ip] = {
                     "by": Bot.bot + "</i>",
                     "why": "Spamming the chat",
@@ -5955,9 +5983,9 @@ if(message == "Maximum Players Changed.") {
                 return;
             }
 
-            if (DataHash.spammers[ip] >= 3 && DataHash.spammers[ip] < 5) {
-                var bantime = 5 * 60 * 60;
-                var thetime = sys.time() * 1 + bantime
+            if (DataHash.spammers[ip] >= 3 && DataHash.spammers[ip] < 5 && !ip in DataHash.tempbans) {
+                var bantime = stringToTime('h', 5);
+                var thetime = sys.time() * 1 + bantime;
                 DataHash.tempbans[ip] = {
                     "by": Bot.bot + "</i>",
                     "why": "Spamming the chat",
@@ -5974,11 +6002,11 @@ if(message == "Maximum Players Changed.") {
             botEscapeAll(sys.name(src) + " was kicked" + mute + " for flood!", 0);
 
             sys.callLater('if(DataHash.spammers[' + ip + '] > 0) { DataHash.spammers[' + ip + ']--; }; else { delete DataHash.spammers[' + ip + ']; };', 60 * 60 * 3);
-            if (!AutoMute) {
-                var bantime = 60 * 5;
+            if (AutoMute) {
+                var bantime = stringToTime('m', 5);
                 if (DataHash.mutes.hasOwnProperty(ip)) {
                     if (DataHash.mutes[ip].time >= thetime) {
-                        bantime = 60 * 10;
+                        bantime = bantime * 2;
                     }
                 }
                 var thetime = sys.time() * 1 + bantime;
@@ -5989,6 +6017,8 @@ if(message == "Maximum Players Changed.") {
                     "time": thetime
                 };
             }
+				sys.sendAll(JSON.stringify(DataHash.mutes));
+				sys.sendAll(ip in DataHash.mutes);
             cache.write("mutes", JSON.stringify(DataHash.mutes));
             kick(src);
             return;
@@ -6421,7 +6451,7 @@ poUser.lastMsg = sys.time()*1;
                     t.register(arg("orange", "Specify a number"));
                     t.register(arg("purple", "Specify some text"));
                     t.register(arg("blue", "Select one of the given choices"));
-                    t.register(arg("blueviolet", "Specify a time unit that starts with the following: s (second), m (minute), h (hour), d (day), w (week), m (month), y (year), de (decade). The default is second if none specified"));
+                    t.register(arg("blueviolet", "Specify a time unit that starts with the following: s (second), m (minute), h (hour), d (day), w (week), mo (month), y (year), de (decade). The default is second if none specified"));
                     t.register(arg("green", "Specify a player in the channel's tournament") + "<br/>");
                     t.register("Any argument containing an <u>underline</u> is optional.");
                     t.register(style.footer);
@@ -7288,16 +7318,27 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- User Commands: Macro -- */
                 macro: function () {
-                    if (isEmpty(commandData)) {
-                        botMessage(src, "Your macro is: " + macro, chan);
+				mcmd[1] = cut(mcmd, 1, ':');
+				
+                    if (isEmpty(mcmd[1])) {
+                        botMessage(src, "Your macros are: " + poUser.macro.join(", "), chan);
                         return;
                     }
 
-                    poUser.macro = commandData;
+					var num = Math.round(mcmd[0] * 1);
+					if(num > 5 || num < 1) {
+					botMessage(src, "Specify a range of 1-5", chan);
+					return;
+					}
+					
+                    poUser.macro[num-1] = mcmd[1];
                     var toL = sys.name(src).toLowerCase();
-                    DataHash.macros[toL] = commandData;
+					if(typeof DataHash.macros[toL] != "object")
+					DataHash.macros[toL] = ["%m1", "%m2", "%m3", "%m4", "%m5"];
+					
+                    DataHash.macros[toL] = poUser.macro;
 
-                    botMessage(src, "You changed your macro to: " + commandData, chan);
+                    botMessage(src, "You changed macro "+num+" to: " + mcmd[1], chan);
                 },
 
                 /* -- User Commands: Fun -- */'catch': function () {
@@ -7853,7 +7894,7 @@ poUser.lastMsg = sys.time()*1;
                 ct.register("unregister", "Clears your password.");
                 ct.register("changeavatar", ["{o Number}"], "Changes your Avatar. Changes back once you leave the Server.");
                 ct.register("changeinfo", ["{p Info}"], "Changes your Description. Changes back once you leave the Server.");
-                ct.register("macro", ["{p Message}"], "Changes your macro. If no macro is specified, displays your macro. %m is replaced by your macro in your message.");
+                ct.register("macro", ["{b 1-5}", "{p Message}"], "Changes one of your five macros. If no macro is specified, displays your macro. %m(macronumber) is replaced by that macro in your message (this adds up to your caps and flood count, and can be used for commands).");
 
                 if (!implock) {
                     ct.register("imp", ["{p Thing}"], "Impersonates something.");
