@@ -1,4 +1,4 @@
-﻿/*===========================================================*\
+/*===========================================================*\
 || #               -Script Information-                    # ||
 || ######################################################### ||
 || #                                                       # ||
@@ -2747,11 +2747,11 @@ JSESSION.refill();
         }
 
         sendFailWhale = function (id, chan) {
-            botMessage(src, "▄██████████████▄▐█▄▄▄▄█▌", chan);
-            botMessage(src, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
-            botMessage(src, "████▄█▌▄▌▄▐▐▌▀███▄▄█▌", chan);
-            botMessage(src, "▄▄▄▄▄██████████████▀", chan);
-            botMessage(src, "Fail!", chan);
+            botMessage(id, "▄██████████████▄▐█▄▄▄▄█▌", chan);
+            botMessage(id, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
+            botMessage(id, "████▄█▌▄▌▄▐▐▌▀███▄▄█▌", chan);
+            botMessage(id, "▄▄▄▄▄██████████████▀", chan);
+            botMessage(id, "Fail!", chan);
         }
 
         // Method: Use arguments variable or a/b to get data.
@@ -6891,8 +6891,8 @@ poUser.lastMsg = sys.time()*1;
                     if (AutoKick) t.register("Auto Kick is " + g("on") + ".");
                     else t.register("Auto Kick is " + r("off") + ".");
 
-                    if (AutoMute) t.register("Auto Mute is " + g("on") + ".");
-                    else t.register("Auto Mute is " + r("off") + ".");
+                    if (AutoMute) t.register("Auto Mute is " + g("on") + ".<br/>");
+                    else t.register("Auto Mute is " + r("off") + ".<br/>");
 
                     t.register("Server Auth Level 0 Name is " + UserName.bold().fontcolor("green") + ".");
                     t.register("Server Auth Level 1 Name is " + ModName.bold().fontcolor("blue") + ".");
@@ -6913,11 +6913,11 @@ poUser.lastMsg = sys.time()*1;
 
                     t.register("Maximum Message Length is " + String(MaxMessageLength).bold() + ".");
                     t.register("Tournament Display Mode is " + display + ".");
-                    t.register("The Future Limit is per " + FutureLimit + " seconds.");
+                    t.register("The Future Limit is per " + FutureLimit + " seconds.<br/>");
 
                     t.register("The Bot Name is " + Bot.bot.bold().fontcolor(Bot.botcolor) + "</i>.");
                     t.register("The Server Chat Name is " + Server.name.bold().fontcolor(Server.color) + "</i>.");
-                    t.register("The Clantag is " + ClanTag.bold() + ".");
+                    t.register("The Clantag is " + ClanTag == "" ? "None" : ClanTag.bold() + ".");
 
                     t.register(style.footer);
                     t.render(src, chan);
