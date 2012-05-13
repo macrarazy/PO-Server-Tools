@@ -967,7 +967,7 @@ Tours.prototype.command_viewround = function (src, commandData) {
         botMessage(src, "Battles finished", this.id);
         sys.sendMessage(src, "", this.id);
         for (x in this.losers) {
-            num = Number(x * 1);
+            num = Number(x) + 1;
             if (this.losers[num] == undefined) break;
             botMessage(src, html_escape(this.losers[x]) + " won against " + html_escape(this.losers[num]), this.id);
             x += 1;
@@ -983,7 +983,7 @@ Tours.prototype.command_viewround = function (src, commandData) {
         sys.sendMessage(src, "", this.id);
         var x = 0;
         for (x in this.ongoingBattles) {
-            num = Number(x * 1);
+            num = Number(x) + 1;
             if (this.ongoingBattles[num] == undefined) break;
 
             botMessage(src, html_escape(this.ongoingBattles[x]) + " VS " + html_escape(this.ongoingBattles[x + 1]), this.id);
@@ -999,7 +999,7 @@ Tours.prototype.command_viewround = function (src, commandData) {
         botMessage(src, "Yet to start battles:", this.id);
         sys.sendMessage(src, "", this.id);
         for (x in this.idleBattles) {
-            num = Number(x + 1);
+            num = Number(x) + 1;
             if (this.idleBattles[num] == undefined) break;
             botMessage(src, html_escape(this.idleBattles[x]) + " VS " + html_escape(this.idleBattles[num]), this.id);
             x += 1;
@@ -3698,7 +3698,6 @@ JSESSION.refill();
 
     triviaload: function () {
         Trivia = new
-
         function () {
             this.questionNum = function () {
                 var quest = objLength(this.questions);
@@ -4691,6 +4690,7 @@ JSESSION.refill();
                 print("Finished PO Data import.");
             }
 
+			delete MemoryHash;
             // END //
             print("Finished importing!");
         }
@@ -5486,7 +5486,7 @@ return true;
                             var why = DataHash.rangebans[i].why;
 
                             sendFailWhale(src, 0);
-                            botMessage(src, 'Your RangeIP: ' + i + ' is banned by ' + by + '. Reason: ' + why + '. ' + time + '!', 0);
+                            botMessage(src, 'Your RangeIP ' + i + ' is banned by ' + by + '. Reason: ' + why + '. ' + time + '!', 0);
                             botAll('Player ' + name + ' with RangeIP ' + i + ' has attempted to enter the Server and failed. [Reason: Rangebanned]', watch);
                         }
                         return true;
@@ -5495,13 +5495,13 @@ return true;
             }
         }
 
-        if (typeof DataHash.tempbans[ip] != "undefined" && sys.maxAuth(ip) < 1) {
+        if (ip in DataHash.tempbans && sys.auth(src) < 1) {
             if (!nomessage) {
                 var time = DataHash.tempbans[ip].time != 0 ? getTimeString(DataHash.tempbans[ip].time - sys.time() * 1) : "forever";
                 var reason = DataHash.tempbans[ip].why;
-                var by = DataHash.tempbans[ip].by
+                var by = DataHash.tempbans[ip].by;
                 sendFailWhale(src, 0);
-                botMessage(src, "You are banned! By " + by + ". Reason " + why + ". For " + time + "!");
+                botMessage(src, "You are banned! By " + by + ". Reason " + why + ". For " + time + "!", 0);
                 botAll('Player ' + sys.name(src) + ' (' + sys.ip(src) + ') has attempted to enter the Server and failed. [Reason: Tempbanned]', watch);
             }
             return true;
@@ -5554,13 +5554,14 @@ return true;
         }
 		
 		var bannedTags = ["$g"];
-		var ntl = name.toLowerCase();
+		var ntl = name.toLowerCase(), x;
 		
-		if(bannedTags.indexOf(ntl) > -1 && sys.auth(src) < 1) {
+		for(x in bannedTags) {
+		if(ntl.indexOf(bannedTags[x]) > -1 && sys.auth(src) < 1) {
 		sendFailWhale(src, 0);
 		return true;
 		}
-		
+		}
 
         return false;
     },
@@ -5582,7 +5583,7 @@ return true;
         cache.write("names", JSON.stringify(DataHash.names));
         if (isHost(src)) sys.unban(sys.name(src));
 
-        if (script.testName(src) == true) {
+        if (script.testName(src)) {
             testNameKickedPlayer = src;
             sys.stopEvent();
             return;
@@ -5825,7 +5826,6 @@ return true;
 
         if (message.toLowerCase() == "~~server~~: !importdata") {
             ImportData();
-            print("Data has been imported!");
             sys.stopEvent();
             return;
         }
@@ -5845,7 +5845,7 @@ if(message == "Maximum Players Changed.") {
                         JSESSION.channels(0).topic = "Welcome to " + sys.channel(0) + "!";
                         cData.changeTopic(0, JSESSION.channels(0).topic, '', true);
                     }
-                sys.delayedCall(update(), 1); // since its before.
+                sys.delayedCall(update, 1); // since its before.
             }
             return;
         }
@@ -5948,7 +5948,7 @@ if(message == "Maximum Players Changed.") {
                     "time": thetime
                 };
                 cache.write("tempbans", JSON.stringify(DataHash.tempbans));
-                botAll(sys.name(src) + " was banned for 1 day by " + Bot.bot + "</i> for spamming", 0);
+                botAll(sys.name(src) + " was banned for 1 day by " + Bot.bot + "</i> for spamming.", 0);
                 delete DataHash.spammers[ip];
                 kick(src);
                 return;
@@ -5964,7 +5964,7 @@ if(message == "Maximum Players Changed.") {
                     "time": thetime
                 };
                 cache.write("tempbans", JSON.stringify(DataHash.tempbans));
-                botAll(sys.name(src) + " was banned for 5 hours by " + Bot.bot + "</i> for spamming", 0);
+                botAll(sys.name(src) + " was banned for 5 hours by " + Bot.bot + "</i> for spamming.", 0);
                 kick(src);
                 return;
             }
@@ -16119,10 +16119,9 @@ return;
             poGlobal.mafiaVersion = mafia.version;
         }
         else {
-            var tempMafia = new Mafia(0);
 
-            if (poGlobal.mafiaVersion != tempMafia.version) {
-                poGlobal.mafiaVersion = tempMafia.version;
+            if (Mafia.version) {
+                poGlobal.mafiaVersion = Mafia.version;
 
                 mafia = new Mafia(mafiachan);
                 mafia.importOld();
