@@ -5594,6 +5594,7 @@ return true;
 		sendFailWhale(src, 0);
 		botMessage(src, "Don't use a proxy!");
 		botAll(sys.name(id)+" tried to enter the server and failed. [Reason: Proxy]", watch);
+		kick(src);
 		}
 		}
 	});
@@ -5614,6 +5615,7 @@ return true;
 		sendFailWhale(src, 0);
 		botMessage(src, "Don't use a proxy!");
 		botAll(sys.name(id)+" tried to enter the server and failed. [Reason: Proxy]", watch);
+		kick(src);
 		}
 		}
 	}
@@ -16173,7 +16175,7 @@ return;
         }
         else {
 
-            if (Mafia.version) {
+            if (Mafia.version != mafia.version) {
                 poGlobal.mafiaVersion = Mafia.version;
 
                 mafia = new Mafia(mafiachan);
