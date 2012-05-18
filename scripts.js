@@ -1,4 +1,4 @@
-/*===========================================================*\
+﻿/*===========================================================*\
 || #               -Script Information-                    # ||
 || ######################################################### ||
 || #                                                       # ||
@@ -66,6 +66,10 @@
 || - If the script should publicly welcome/goodbye people.   ||
 || - true = yes. false = no                                  ||
 ===============================================================
+|| @ Superimping:                                            ||
+|| - If auth may use superimp. This can be a security risk.  ||
+|| - true = yes. false = no                                  ||
+===============================================================
 || @ ClearLogsAt:                                            ||
 || - If file size of logs.txt is higher than given size      ||
 || - Cleans all data. Gets checked every hour. 0 = off       ||
@@ -85,6 +89,7 @@ EvaluationTimeStart = new Date().getTime(); /* Do not modify this! This is only 
 ScriptVerData = ["2.2.50", "Pre-Stable"];
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
+IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1";
 
 Config = {
     Mafia: {
@@ -95,6 +100,7 @@ Config = {
     DWAbilityCheck: true,
     AutoChannelJoin: true,
     WelcomeMessages: false,
+	Superimping: false,
 
     ClearLogsAt: 36700160,
     HighPermission: {
@@ -114,10 +120,8 @@ VERSION.prototype.toString = function () {
     return this.version + " " + this.additionalData;
 }
 
-try {
+if(typeof RECOVERY_BACKUP !== "undefined")
     delete RECOVERY_BACKUP;
-}
-catch (e) {}
 
 RECOVERY_BACKUP = {};
 
@@ -144,7 +148,7 @@ ScriptVersion = new VERSION(ScriptVerData[0], ScriptVerData[1]);
 
 /*** BOTS ***/
 botEscapeMessage = function (src, message, channel) {
-    if (typeof Config == 'undefined') return;
+    if (typeof Bot == 'undefined') return;
 
     var color = Bot.botcolor;
     var name = Bot.bot;
@@ -157,7 +161,7 @@ botEscapeMessage = function (src, message, channel) {
 }
 
 botMessage = function (src, message, channel) {
-    if (typeof Config == 'undefined') return;
+    if (typeof Bot == 'undefined') return;
 
     var color = Bot.botcolor;
     var name = Bot.bot;
@@ -170,7 +174,7 @@ botMessage = function (src, message, channel) {
 }
 
 botEscapeAll = function (message, channel) {
-    if (typeof Config == 'undefined') return;
+    if (typeof Bot == 'undefined') return;
 
     var color = Bot.botcolor;
     var name = Bot.bot;
@@ -183,7 +187,7 @@ botEscapeAll = function (message, channel) {
 }
 
 botAll = function (message, channel) {
-    if (typeof Config == 'undefined') return;
+    if (typeof Bot == 'undefined') return;
 
     var color = Bot.botcolor;
     var name = Bot.bot;
@@ -273,7 +277,7 @@ var capsMessage = function (mess) {
     }
 
 var normalLetter = function (l) {
-        return /[a-z]/.test(l);
+        return /[qwertyuiopasdfghjklzxcvbnm]/.test(l);
     }
 
 fileLen = function (file) {
@@ -299,18 +303,21 @@ clearlogs = function () {
     botAll("Checking logs.txt length... Might lag.", watch);
     var len = fileLen("logs.txt");
     if (len > l) {
-        botAll("The file logs.txt contains " + sTB(len) + ", which is more than wanted (" + sTB(l) + "). Clearing file.", 0);
+        botAll("The file logs.txt contains " + sTB(len) + ", which is more than given maximum (" + sTB(l) + "). Clearing file.", 0);
         sys.writeToFile("logs.txt", "");
 		gc(); // Garbage Collector
     }
 }
 
 function POUser(id) {
+var my_name = sys.name(id), mn_lc = my_name.toLowerCase();
+if(my_name == undefined) return;
+
     this.id = id;
     this.impersonation = undefined;
     this.ip = sys.ip(id);
-    this.name = sys.name(id);
-    this.lowername = sys.name(id).toLowerCase();
+    this.name = my_name;
+    this.lowername = mn_lc;
     var date = sys.time() * 1;
     this.lastMsg = 0;
     this.loginTime = date;
@@ -318,10 +325,8 @@ function POUser(id) {
     this.floodCount = 0;
     this.caps = 0;
     this.lastFuture = 0;
-    this.lastActionChan = -1;
-    this.channelAccess = true;
     this.isAutoAFK = false;
-    this.teamChanges = [];
+    this.teamChanges = 0;
 
     if (typeof DataHash == "undefined") {
         print("Runtime Error: DataHash undefined.");
@@ -339,29 +344,29 @@ function POUser(id) {
     }
 
     if (DataHash.megausers !== undefined) {
-        this.megauser = DataHash.megausers.hasOwnProperty(this.lowername);
+        this.megauser = DataHash.megausers.hasOwnProperty(mn_lc);
     }
 
-    var i;
+    var i, dh = DataHash;
 
-    if (DataHash.rankicons !== undefined) {
-        i = DataHash.rankicons;
-        if (i.hasOwnProperty(this.lowername)) {
-            this.icon = i[this.lowername];
+    if (dh.rankicons !== undefined) {
+        i = dh.rankicons;
+        if (i.hasOwnProperty(mn_lc)) {
+            this.icon = i[mn_lc];
         }
         else {
             this.icon = undefined;
         }
     }
 
-    if (DataHash.voices !== undefined) {
-        i = DataHash.voices;
-        this.voice = i.hasOwnProperty(this.lowername);
+    if (dh.voices !== undefined) {
+        i = dh.voices;
+        this.voice = i.hasOwnProperty(mn_lc);
     }
 
-    if (DataHash.macros !== undefined) {
-        i = DataHash.macros;
-        this.macro = i.hasOwnProperty(this.lowername) ? i[this.lowername] : ["%m1", "%m2", "%m3", "%m4", "%m5"];
+    if (dh.macros !== undefined) {
+        i = dh.macros;
+        this.macro = i.hasOwnProperty(mn_lc) ? i[mn_lc] : ["%m1", "%m2", "%m3", "%m4", "%m5"];
     }
 
 }
@@ -392,15 +397,16 @@ POUser.prototype.capsMute = function (message) {
 
     if (typeof AutoMute != 'undefined' && !AutoMute) return false;
 
+	var newCapsAmount = 0;
     for (var z in message) {
         if (capsMessage(message[z])) {
-            this.caps += 1;
+            newCapsAmount += 1;
         }
         else {
-            this.caps -= 1;
+            newCapsAmount -= 1;
         }
-        if (this.caps < 0) {
-            this.caps = 0;
+        if (newCapsAmount < 0) {
+            newCapsAmount = 0;
         }
     }
 
@@ -438,7 +444,7 @@ function POChannel(id) {
     this.topicsetter = '';
     this.toursEnabled = false;
 
-    if (typeof (channels) != "undefined" && id in channels || typeof (channels) == "undefined") {
+    if (typeof (channels) != "undefined" && channels.indexOf(id) != -1 || typeof (channels) == "undefined") {
         this.perm = true;
         this.tour = new Tours(this.id);
         this.toursEnabled = true;
@@ -541,7 +547,9 @@ POChannel.prototype.canIssue = function (src, tar) {
 
     if (this.chanAuth[targetName] == undefined || sys.dbIp(targetName) == undefined) return true;
 
-    if (hpAuth(src) <= hpAuth(tar) || this.chanAuth[selfName] == undefined || srcID == undefined || this.chanAuth[selfName] <= this.chanAuth[targetName] && !this.isChanOwner(src)) return false;
+    if (hpAuth(src) <= hpAuth(tar) || this.chanAuth[selfName] == undefined || srcID == undefined || this.chanAuth[selfName] <= this.chanAuth[targetName] && !this.isChanOwner(src)) {
+	return false;
+	}
 
     return true;
 }
@@ -756,7 +764,7 @@ cut = function (array, entry, join) {
     return array.splice(entry).join(join);
 }
 
-function Tours(id) {
+function Tours (id) {
     this.id = id;
     this.tourmode = 0;
     this.tourstarter = "";
@@ -770,15 +778,11 @@ function Tours(id) {
 
     this.battlemode = 0;
 
-    this.completed = {};
+    this.roundStatus = this.roundStatusGenerate();
     this.couples = {};
-    this.losers = [];
-    this.ongoingBattles = [];
-    this.idleBattles = [];
-    this.startedBattles = [];
-    this.winners = [];
     this.players = {};
     this.roundplayers = 0;
+	this.startTime = 0;
 }
 
 Tours.prototype.border = function () {
@@ -787,6 +791,36 @@ Tours.prototype.border = function () {
 
 Tours.prototype.white = function () {
     return sys.sendAll("", this.id);
+}
+
+Tours.prototype.roundStatusGenerate = function () {
+var rethash = {'winLose': {}, 'idleBattles': {}, 'ongoingBattles': {}};
+
+return rethash;
+}
+
+Tours.prototype.idleBattler = function (name) {
+var hash = this.roundStatus.idleBattles, x, chash;
+for(x in hash) {
+chash = hash[x];
+if(chash[0] === name || chash[1] === name) {
+return x;
+}
+}
+
+return false;
+}
+
+Tours.prototype.isBattling = function (name) {
+var hash = this.roundStatus.ongoingBattles, x, chash;
+for(x in hash) {
+chash = hash[x];
+if(chash[0] === name || chash[1] === name) {
+return x;
+}
+}
+
+return false;
 }
 
 Tours.prototype.identify = function (test) {
@@ -868,7 +902,7 @@ Tours.prototype.command_join = function (src, commandData) {
         return;
     }
     var name = sys.name(src).toLowerCase();
-    if (name in this.players) {
+    if (this.players[name] != undefined) {
         botMessage(src, "You are already in the tournament. You are not able to join more than once.", this.id);
         return;
     }
@@ -902,7 +936,7 @@ Tours.prototype.command_unjoin = function (src, commandData) {
     }
 
     var name2 = sys.name(src).toLowerCase();
-    if (!name2 in this.players) {
+    if (this.players[name2] == undefined) {
         botMessage(src, "You have not joined the tournament.", this.id);
         return;
     }
@@ -912,43 +946,14 @@ Tours.prototype.command_unjoin = function (src, commandData) {
     }
 
     botEscapeAll(sys.name(src) + " left the tournament!", 0);
-    if (this.tourmode == 2 && this.players[name2].couplesid != -1) this.tourBattleEnd(this.tourOpponent(name2), name2, true);
+    if (this.tourmode == 2 && this.players[name2].couplesid != -1) 
+	this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
 
     delete this.players[name2];
 
     if (objLength(this.couples) == 0 && this.tourmode == 2) {
         this.roundPairing();
     }
-
-    if (!this.tagteam_tour() || this.tourmode != 2) return;
-
-    var loser = "";
-    var winners = [];
-
-    if (this.playersOfTeam(this.Blue) == 0) {
-        loser = "Team Blue";
-        winners = this.namesOfTeam(this.Red);
-    }
-    else if (this.playersOfTeam(this.Red) == 0) {
-        loser = "Team Red";
-        winners = this.namesOfTeam(this.Blue);
-    }
-
-    if (loser == "") return;
-
-    if (display == 1) {
-        this.border();
-        this.white();
-        botEscapeAll(loser + " lost the Tournament!", this.id);
-        botEscapeAll(winners.join(", ") + " won the Tournament! (no prizes will be given)", this.id);
-        this.white();
-        this.border();
-    }
-    else {
-        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + loser + " lost the Tournament!" + winners.join(", ") + " won the Tournament! <small><b>(no prizes will be given)</b></small>" + "</center>" + "<hr width='300'>" + "</td>" + "</tr>" + "</table>", this.id);
-    }
-
-    return;
 }
 
 Tours.prototype.command_viewround = function (src, commandData) {
@@ -956,70 +961,71 @@ Tours.prototype.command_viewround = function (src, commandData) {
         botMessage(src, "You are unable to view the round because a tournament is not currently running or is in signing up phase.", this.id);
         return;
     }
-
-    sys.sendMessage(src, "", this.id);
-    sys.sendHtmlMessage(src, style.header, this.id);
-    sys.sendMessage(src, "", this.id);
-
-    var x, num;
-    botMessage(src, "Round " + this.roundnumber + " of " + this.tourtier + " tournament", this.id);
-    if (this.losers.length > 0) {
-        sys.sendMessage(src, "", this.id);
-        botMessage(src, "Battles finished", this.id);
-        sys.sendMessage(src, "", this.id);
-        for (x in this.losers) {
-            num = Number(x) + 1;
-            if (this.losers[num] == undefined) break;
-            botMessage(src, html_escape(this.losers[x]) + " won against " + html_escape(this.losers[num]), this.id);
-            x += 1;
+	
+	var chan = this.id;
+	
+    sys.sendMessage(src, "", chan);
+    sys.sendHtmlMessage(src, style.header, chan);
+    sys.sendMessage(src, "", chan);
+	
+	var battleHash = this.roundStatus, idleBattles = battleHash.idleBattles, 
+	ongoingBattles = battleHash.ongoingBattles, winLose = battleHash.winLose, 
+	anyFinishedBattles = objLength(winLose) > 0, x;
+	
+	var roundInfoStr = "Round "+this.roundnumber;
+	if(this.finals) 
+	roundInfoStr = "Finals";
+	
+    botMessage(src, roundInfoStr + " " + this.tourtier + " tournament:", chan);
+    if (anyFinishedBattles) {
+        sys.sendMessage(src, "", chan);
+        botMessage(src, "Battles finished", chan);
+        sys.sendMessage(src, "", chan);
+        for (x in winLose) {
+            botMessage(src, html_escape(winLose[x][0]) + " won against " + html_escape(winLose[x][1]), chan);
         }
 
-        sys.sendMessage(src, "", this.id);
+        sys.sendMessage(src, "", chan);
     }
-
-    num = 0, x = 0;
-    if (this.ongoingBattles.length > 0) {
-        sys.sendMessage(src, "", this.id);
-        botMessage(src, "Ongoing battles:", this.id);
-        sys.sendMessage(src, "", this.id);
-        var x = 0;
-        for (x in this.ongoingBattles) {
-            num = Number(x) + 1;
-            if (this.ongoingBattles[num] == undefined) break;
-
-            botMessage(src, html_escape(this.ongoingBattles[x]) + " VS " + html_escape(this.ongoingBattles[x + 1]), this.id);
-            x += 1;
+	
+    if (objLength(ongoingBattles) > 0) {
+        sys.sendMessage(src, "", chan);
+        botMessage(src, "Ongoing battles:", chan);
+        sys.sendMessage(src, "", chan);
+        for (x in ongoingBattles) {
+            botMessage(src, html_escape(ongoingBattles[x][0]) + " VS " + html_escape(ongoingBattles[x][1]), chan);
         }
 
-        sys.sendMessage(src, "", this.id);
+        sys.sendMessage(src, "", chan);
     }
-
-    x = 0, num = 0;
-    if (this.idleBattles.length > 0) {
-        sys.sendMessage(src, "", this.id);
-        botMessage(src, "Yet to start battles:", this.id);
-        sys.sendMessage(src, "", this.id);
-        for (x in this.idleBattles) {
-            num = Number(x) + 1;
-            if (this.idleBattles[num] == undefined) break;
-            botMessage(src, html_escape(this.idleBattles[x]) + " VS " + html_escape(this.idleBattles[num]), this.id);
-            x += 1;
+	
+    if (objLength(idleBattles) > 0) {
+        sys.sendMessage(src, "", chan);
+        botMessage(src, "Yet to start battles:", chan);
+        sys.sendMessage(src, "", chan);
+        for (x in idleBattles) {
+            botMessage(src, html_escape(idleBattles[x][0]) + " VS " + html_escape(idleBattles[x][1]), chan);
         }
-        sys.sendMessage(src, "", this.id);
+        sys.sendMessage(src, "", chan);
     }
 
-    if (this.winners.length > 0) {
-        sys.sendMessage(src, "", this.id);
-        botMessage(src, "Players to the next round:", this.id);
-        sys.sendMessage(src, "", this.id);
+    if (anyFinishedBattles) {
+        sys.sendMessage(src, "", chan);
+        botMessage(src, "Players to the next round:", chan);
+        sys.sendMessage(src, "", chan);
 
-        var str = this.winners.join(", ");
-
-        botMessage(src, str, this.id);
-        sys.sendMessage(src, "", this.id);
+        var str = "";
+		for(x in winLose) {
+		str += winLose[x][0]+", ";
+		}
+		
+		str = str.substr(0, str.lastIndexOf(","));
+		
+        botMessage(src, str, chan);
+        sys.sendMessage(src, "", chan);
     }
 
-    sys.sendHtmlMessage(src, style.footer, this.id);
+    sys.sendHtmlMessage(src, style.footer, chan);
     return;
 }
 
@@ -1035,7 +1041,7 @@ Tours.prototype.command_dq = function (src, commandData) {
         return;
     }
     var name2 = commandData.toLowerCase();
-    if (!name2 in this.players) {
+    if (this.players[name2] == undefined) {
         botMessage(src, "This player is not in the tournament.", this.id);
         return;
     }
@@ -1055,39 +1061,9 @@ Tours.prototype.command_dq = function (src, commandData) {
 
 
     if (this.tourmode == 2 && this.players[name2].couplesid != -1) {
-        this.tourBattleEnd(this.tourOpponent(name2), name2, true);
+        this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
     }
     delete this.players[name2];
-
-    if (!this.tagteam_tour() || this.tourmode != 2) return;
-
-    var loser = "";
-    var winners = [];
-
-    if (this.playersOfTeam(this.Blue) == 0) {
-        loser = "Team Blue";
-        winners = this.namesOfTeam(this.Red);
-    }
-    else if (this.playersOfTeam(this.Red) == 0) {
-        loser = "Team Red";
-        winners = this.namesOfTeam(this.Blue);
-    }
-
-    if (loser == "") return;
-
-    if (display == 1) {
-        this.border();
-        this.white();
-        botEscapeAll(loser + " lost the Tournament!", this.id);
-        botEscapeAll(winners.join(", ") + " won the Tournament! (no prizes will be given)", this.id);
-        this.white();
-        this.border();
-    }
-    else {
-        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + loser + " lost the Tournament!" + winners.join(", ") + " won the Tournament! <small><b>(no prizes will be given)</b></small>" + "</center>" + "<hr width='300'>" + "</td>" + "</tr>" + "</table>", this.id);
-    }
-
-    return;
 }
 
 Tours.prototype.command_switch = function (src, commandData) {
@@ -1098,6 +1074,7 @@ Tours.prototype.command_switch = function (src, commandData) {
     }
 
     var parts = commandData.split(':');
+	parts[1] = parts[1].toLowerCase();
     if (!this.isInTourney(parts[0]) || sys.id(parts[1]) == undefined) {
         botMessage(src, "The players need to exist!", this.id);
         return;
@@ -1108,8 +1085,22 @@ Tours.prototype.command_switch = function (src, commandData) {
     }
 
     var obj = this.players[parts[0].toLowerCase()];
+	var playerN = parts[0].name(), switchN = parts[1].name();
+	var indexOfIdle = this.idleBattler(playerN);
+	var indexThingy, pNum;
+	
+	if(indexOfIdle !== false) {
+	indexThingy = this.roundStatus.idleBattles[indexOfIdle];
+	pNum = indexThingy[0] == playerN;
+	delete this.roundStatus.idleBattlers[indexOfIdle];
+	if(pNum)
+	this.roundStatus.idleBattlers[indexOfIdle] = [swittchN, indexThingy[1]];
+	else
+	this.roundStatus.idleBattlers[indexOfIdle] = [indexThingy[0], switchN];
+	}
+	
     this.players[parts[1]] = obj;
-    this.players[parts[1]].name = sys.name(sys.id(parts[1]));
+    this.players[parts[1]].name = switchN;
     delete this.players[parts[0].toLowerCase()];
 
     if (display == 1) {
@@ -1192,30 +1183,27 @@ Tours.prototype.command_cancelbattle = function (src, commandData) {
         return;
     }
     var name = commandData.toLowerCase();
-    if (!name in this.players) {
+    if (this.players[name] == undefined) {
         botMessage(src, "This player is not in the tournament", this.id);
         return;
     }
-    var startername = sys.id(name) != undefined ? sys.name(sys.id(name)) : DataHash.names[name];
-    if (this.startedBattles.indexOf(startername) == -1) {
+    var startername = sys.id(name) != undefined ? sys.name(sys.id(name)) : name.name();
+    var bIndex = this.isBattling(startername);
+	if (bIndex === false) {
         botMessage(src, "Either this player is through the next round, or his/her battle hasn't begon yet.", this.id);
         return;
     }
-
-    var namenum = this.players[name].couplenum,
-        nummy = this.players[name].couplesid;
-    var opp = this.couples[nummy][namenum].toLowerCase();
-    delete this.startedBattles[name];
-    delete this.startedBattles[opp];
+    delete this.roundStatus.startedBattles[bIndex];
+	
     if (display == 1) {
         this.border();
         this.white();
-        botEscapeAll(commandData + " can forfeit their battle and rematch now.", this.id);
+        botEscapeAll(startername + " can forfeit their battle and rematch now.", this.id);
         this.white();
         this.border();
     }
     else {
-        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + commandData + " can forfeit their battle and rematch now." + "</center>" + "<hr width='300'>" + "</td>" + "</tr>" + "</table>", this.id);
+        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + startername + " can forfeit their battle and rematch now." + "</center>" + "<hr width='300'>" + "</td>" + "</tr>" + "</table>", this.id);
     }
     return;
 }
@@ -1312,8 +1300,9 @@ Tours.prototype.command_tour = function (src, commandData) {
         var prize = !isEmpty(this.prize) ? '<b>Prize:</b> ' + this.prize + '<br>' : ''
         sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "A Tournament was started by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!<br>" + "<b>Players:</b> " + this.tournumber + " <br>" + "<b>Type:</b> " + this.identify(cp) + " <br>" + "<b>Tier:</b> " + this.tourtier + " <br>" + prize + "Type <b style='color:green'>/Join</b> to join the Tournament!" + "</center>" + "<hr width='300'>" + "</td>" + "</tr>" + "</table>", this.id);
     }
+	
+	this.startTime = sys.time() * 1;
     this.tourstarter = sys.name(src);
-    return;
 }
 
 Tours.prototype.command_changespots = function (src, commandData) {
@@ -1411,21 +1400,15 @@ Tours.prototype.clearVariables = function () {
     this.battlemode = 0;
 
     this.couples = {};
-    this.losers = [];
-    this.ongoingBattles = [];
-    this.startedBattles = [];
-    this.idleBattles = [];
+	this.roundStatus = this.roundStatusGenerate();
     this.winners = [];
     this.players = {};
     this.roundplayers = 0;
+	this.startTime = 0;
 }
 
 Tours.prototype.cleanRoundVariables = function () {
-    this.losers = [];
-    this.ongoingBattles = [];
-    this.startedBattles = [];
-    this.winners = [];
-    this.idleBattles = [];
+    this.roundStatus = this.roundStatusGenerate();
     this.roundplayers = 0;
 }
 
@@ -1588,11 +1571,13 @@ Tours.prototype.roundPairing = function () {
 
     var a;
 
+	if(this.tagteam_tour()) {
     var team = "<b><font color=blue>[Team Blue]</font></b>",
         team2 = "<b><font color=red>[Team Red]</font></b>";
+		}
 
-    if (!this.tagteam_tour()) {
-        team = "", team2 = "";
+    else {
+        var team = "", team2 = "";
     }
 
     for (a in p) {
@@ -1636,8 +1621,7 @@ Tours.prototype.roundPairing = function () {
         }
 
         if (!this.AutoStartBattles) {
-            this.idleBattles.push(name1);
-            this.idleBattles.push(name2);
+            this.roundStatus.idleBattles[i] = [name1, name2];
         }
         i++;
 
@@ -1662,8 +1646,7 @@ Tours.prototype.roundPairing = function () {
                 if (sys.tier(sys.id(p)) == sys.tier(sys.id(op)) && cmp(sys.tier(sys.id(p)), this.tourtier)) {
                     if (!this.ongoingTourneyBattle(p) && !this.ongoingTourneyBattle(op)) {
                         sys.forceBattle(sys.id(p), sys.id(op), sys.getClauses(this.tourtier), 0, false);
-                        this.startedBattles.push(p);
-                        this.startedBattles.push(op);
+                        this.startedBattles[i] = [p.name(), op.name()];
                     }
                 }
             }
@@ -1700,7 +1683,7 @@ Tours.prototype.areOpponentsForTourBattle2 = function (src, dest) {
 }
 
 Tours.prototype.ongoingTourneyBattle = function (name) {
-    return this.startedBattles.indexOf(name.toLowerCase()) > -1;
+    return this.isBattling(name.name());
 }
 
 Tours.prototype.afterBattleStarted = function (src, dest) {
@@ -1709,10 +1692,9 @@ Tours.prototype.afterBattleStarted = function (src, dest) {
             var n1 = sys.name(src),
                 n2 = sys.name(dest);
             if (sys.tier(src) == sys.tier(dest) && cmp(sys.tier(src), this.tourtier)) {
-                this.idleBattles.splice(n1, 1);
-                this.idleBattles.splice(n2, 1);
-                this.startedBattles.push(n1);
-                this.startedBattles.push(n2);
+                var idleBattleIndex = this.idleBattler(n1);
+				delete this.roundStatus.idleBattles[idleBattleIndex];
+                this.roundStatus.startedBattles[objLength(this.roundStatus.startedBattles)-1] = [n1, n2];
                 if (!this.finals) botAll("Round " + this.roundnumber + " Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
                 else botAll("Final Round Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
             }
@@ -1730,10 +1712,9 @@ Tours.prototype.tie = function (src, dest) {
         sys.forceBattle(src, dest, sys.getClauses(this.tourtier), 0, false);
     }
     else {
-        this.idleBattles.push(sTL);
-        this.idleBattles.push(dTL);
-        this.startedBattles.splice(sTL, 1);
-        this.startedBattles.splice(dTL, 1);
+                var startedBattleIndex = this.isBattling(s);
+				delete this.roundStatus.startedBattles[startedBattleIndex];
+                this.roundStatus.idleBattles[objLength(this.roundStatus.idleBattles)-1] = [s, d];
     }
 }
 
@@ -1756,12 +1737,12 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
     var destTL = dest.toLowerCase();
 
     if (this.battlemode == 1 || this.battlemode == 4 || rush) {
-        this.losers.push(src);
-        this.losers.push(dest);
-        this.winners.push(src);
-
-        this.startedBattles.splice(srcTL, 1);
-        this.startedBattles.splice(destTL, 1);
+	var stuff = this.roundStatus;
+	var stuffSBIndex = this.isBattling(src);
+	stuff.winLose[objLength(stuff.winLose)-1] = [src, dest];
+	if(stuffSBIndex !== false)
+	delete stuff.startedBattles[stuffSBIndex];
+	
         delete this.players[destTL];
         delete this.couples[this.players[srcTL].couplesid];
         this.players[srcTL].couplesid = -1;
@@ -1815,12 +1796,12 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
                 loserTL = src.toLowerCase()
             }
 
-            this.losers.push(winner);
-            this.losers.push(loser);
-            this.winners.push(winner);
-
-            this.startedBattles.splice(srcTL, 1);
-            this.startedBattles.splice(destTL, 1);
+	var stuff = this.roundStatus;
+	var stuffSBIndex = this.isBattling(src);
+	stuff.winLose[objLength(stuff.winLose)-1] = [src, dest];
+	if(stuffSBIndex !== false)
+	delete stuff.startedBattles[stuffSBIndex];
+	
             delete this.players[loserTL];
             delete this.couples[this.players[winnerTL].couplesid];
             this.players[winnerTL].couplesid = -1;
@@ -1965,15 +1946,13 @@ function Mail(sender, text, title) {
 }
 
 String.prototype.reverse = function () {
-    var str = this,
-        i = str.length - 1,
-        newstr = "";
-    while (i != -1) {
-        newstr += str[i];
-        i--;
-    }
+    var strThis = this;
+	var strThisArr = strThis.split("");
+	strThisArr.reverse();
+	strThisArr.join("");
 
-    return newstr;
+    this = strThisArr;
+	return this;
 }
 /* Example usage:
 "reverseME".reverse() returns "EMesrever"
@@ -1982,28 +1961,6 @@ String.prototype.reverse = function () {
 String.prototype.contains = function (string) {
     var str = this;
     return str.indexOf(string) > -1;
-}
-
-// Used to get unicode value of some text.
-String.prototype.unicode = function () {
-    var str = this,
-        y, strlen = str.length;
-    var uarr = [];
-    for (y = 0; y < strlen; y++) {
-        uarr.push(str.charCodeAt(y));
-    }
-    return uarr;
-}
-
-String.prototype.unicodeRegExp = function () {
-    var str = this,
-        y;
-    var code = str.unicode();
-    var code_str = "/";
-    for (y in code) {
-        code_str += "\\u" + code[y] + "|";
-    }
-    return code_str.substring(0, code_str.length - 1) + "/";
 }
 
 String.prototype.name = function () {
@@ -2178,7 +2135,6 @@ JSESSION.refill();
 
         if (typeof cache == 'undefined') cache = new Cache_Framework("RegVals");
         if (typeof TrivCache == 'undefined') TrivCache = new Cache_Framework("Trivia");
-        if (typeof ForumDB == 'undefined') ForumDB = new Cache_Framework("Forum");
 
         cache.sic("ClanTag", "None");
         cache.sic("AuthLevel0Name", "User");
@@ -2754,17 +2710,13 @@ JSESSION.refill();
             botMessage(id, "Fail!", chan);
         }
 
-        // Method: Use arguments variable or a/b to get data.
         sortHash = function (object, method) {
-            var objs = [],
+            var objs = Object.keys(object),
                 y, newobj = {},
                 x, n;
-
-            for (y in object) {
-                objs.push(y);
-            }
+				
             if (typeof method == 'function') {
-                objs.sort(method(a, b));
+                objs.sort(method);
             }
             else objs.sort();
 
@@ -2810,26 +2762,6 @@ JSESSION.refill();
                 if (ip == sys.ip(c)) {
                     botAll("Running kick against IP: " + ip + ", id: " + src + ", name: " + sys.name(src), watch);
                     sys.callQuickly('sys.kick(' + c + ');', 1);
-                }
-            }
-        }
-
-        kickFromAllChannels = function (src) {
-            var xlist, c;
-            var ip = sys.ip(src);
-            var playerIdList = sys.playerIds(),
-                chans, z;
-
-            for (xlist in playerIdList) {
-                c = playerIdList[xlist];
-                if (ip == sys.ip(c)) {
-                    chans = sys.channelsOfPlayer(c);
-                    for (z in chans) {
-                        sys.callQuickly('sys.kick(' + c + ', ' + chans[z] + ');', 1);
-                    }
-                    JSESSION.users(c).channelAccess = false;
-                    sys.callLater('if(sys.loggedIn(' + src + ')) sys.kick(' + c + ');', 60);
-                    botAll("Kicked " + sys.name(src) + " ip " + ip + " from all channels. Removing player in 60 seconds.", watch);
                 }
             }
         }
@@ -3145,18 +3077,59 @@ JSESSION.refill();
             var other = /\u3061|\u65532/;
             var zalgo = /[\u0300-\u036F]/;
             var thai = /[\u0E00-\u0E7F]/;
-			var unicodeArr = m.unicode();
-            var evil = unicodeArr.indexOf("173") > -1;
-			var fakei = m.indexOf("¡") > -1;
+            var evil = /\xAD/;
 			
-            if (fakei || creek.test(m) || armenian.test(m) || dash.test(m) || space.test(m) || cyrillic.test(m) || greek.test(m) || special.test(m) || other.test(m) || zalgo.test(m) || thai.test(m) || evil) {
-                // botMessage(id,"You have bad characters in your message.");
+            if (creek.test(m) || armenian.test(m) || dash.test(m) || space.test(m) || cyrillic.test(m) || greek.test(m) || special.test(m) || other.test(m) || zalgo.test(m) || thai.test(m) || evil.test(m)) {
+				// botMessage(id,"You have bad characters in your message.");
                 return true;
             }
 
             return false;
         }
 
+		numToStr = function (num, type) {
+		var types = {"bin": 2, "binary": 2, "hex": 16, "octal": 8, "hexadecimal": 16};
+		var theType = types[type.toLowerCase()];
+		
+		if(theType === undefined) return String(num);
+		
+		return num.toString(theType);
+		}
+		
+		var offline = function () {
+		return "<small>Offline</small>".fontcolor("red").bold();
+		}
+		
+		var online = function () {
+		return "<small>Online</small>".fontcolor("green").bold();
+		}
+		
+		var lastOn = function (name) {
+		var lastOnline = sys.dbLastOn(name);
+		
+		if(lastOnline == undefined)
+		lastOnline = "Unknown";
+		
+		var str = "<b><font color='blue' size='2'>Last Online:</font></b> "+lastOnline.italics();
+		
+		return str;
+		}
+		
+		playerInfo = function (name) {
+		var id = sys.id(name),
+		auth = sys.dbAuth(name);
+
+		if (sys.dbIp(name) == undefined)
+		return "<img src='Themes/Classic/Client/uAway.png'> "+name.bold()+" "+offline()+" "+lastOn(name);
+		
+		if (id == undefined) {
+		return AuthIMG(name) + " " + name.name().bold() + " "+offline()+" "+lastOn(name);
+		}
+		
+		var color = script.namecolor(id);
+		return AuthIMG(id) + " " + sys.name(id).bold().fontcolor(color) + " <small>(<font color='blue'><b>Session ID: "+id+"</b></font>)</small> "+online();
+		}
+						
         cmp = function (a, b) {
             return a.toLowerCase() == b.toLowerCase();
         }
@@ -3201,6 +3174,7 @@ JSESSION.refill();
         defineDataProp("idles");
         defineDataProp("tempbans");
         defineDataProp("macros");
+		defineDataProp("locations");
 
         var ids = sys.playerIds(),
             x, n, l;
@@ -3347,6 +3321,7 @@ JSESSION.refill();
             if (typeof str != 'string') return 0;
 
             str = str.toLowerCase();
+			time = time * 1;
 
             var unitString = str[0];
             var unitString2 = str.substr(0, 2);
@@ -3357,26 +3332,29 @@ JSESSION.refill();
                 'h': 60 * 60,
                 'd': 24 * 60 * 60,
                 'w': 7 * 24 * 60 * 60,
-                'mo': 2592000,
                 'y': 31536000
             };
+			
+			var units2 = {
+			'mo': 2592000
+			};
 
-            units.de = units.y * 10;
+
+            units2.de = units.y * 10;
             var unit1 = units[unitString];
-            if (unit1 == undefined) {
-                var unit2 = units[unitString2];
-                if (unit2 == undefined) {
-                    return units.s * time;
+			var unit2 = units2[unitString2];
+			
+                if (unit2 != undefined) {
+                    return unit2 * time;
                 }
-
-                return unit2 * time;
+				
+            if (unit1 != undefined) {
+                return unit1 * time;
             }
 
-            return unit1 * time;
+            return units.s * time;
         }
 
-
-        var unitName
         startUpTime = function () {
                 var n, s = [];
                 var d = [
@@ -3390,7 +3368,7 @@ JSESSION.refill();
                 ];
                 var sec = sys.time() * 1 - startupTime;
 
-                for (j = 0; j < d.length; ++j) {
+                for (var j = 0; j < d.length; ++j) {
                     var n = parseInt(sec / d[j][0]);
                     if (n > 0) {
                         s.push((n + " " + d[j][1] + (n > 1 ? "s" : "")));
@@ -3400,7 +3378,7 @@ JSESSION.refill();
                 }
                 if (s.length == 0) return "1 <b>Second</b>";
 
-                return s.join("</b>, ");
+                return andJoin(s)+"</b>";
             }
 
         lastName = function (ip) {
@@ -3433,7 +3411,7 @@ JSESSION.refill();
                 [1, "second"]
             ];
 
-            for (j = 0; j < d.length; ++j) {
+            for (var j = 0; j < d.length; ++j) {
                 var n = parseInt(sec / d[j][0]);
                 if (n > 0) {
                     s.push((n + " " + d[j][1] + (n > 1 ? "s" : "")));
@@ -3444,7 +3422,7 @@ JSESSION.refill();
 
             if (s.length == 0) return "1 second";
 
-            return s.join(", ");
+            return andJoin(s);
         }
 
         shuffle = function (o) {
@@ -3515,26 +3493,7 @@ JSESSION.refill();
             }
             return false;
         }
-
-        authsOf = function (authy) {
-            var auths = sys.dbAuths();
-            var count = 0;
-            for (var y in auths) {
-                if (authy < 4) {
-                    if (sys.dbAuth(auths[y]) == authy) {
-                        count++;
-                    }
-                }
-                else {
-                    if (sys.dbAuth(auths[y]) >= authy) {
-                        count++;
-                    }
-                }
-            }
-
-            return count;
-        }
-
+		
         objLength = function (obj) {
             return Object.keys(obj).length;
         }
@@ -4047,6 +4006,29 @@ JSESSION.refill();
             }
         }
 
+		andJoin = function (array) {
+		var x, retstr = '', arrlen = array.length;
+		
+		if(arrlen === 0 || arrlen === 1) {
+		return array.join("");
+		}
+		
+		arrlen--;
+		
+		for(x in array) {
+		if(Number(x) === arrlen) {
+		retstr = retstr.substr(0, retstr.lastIndexOf(","));
+		retstr += " and "+array[x];
+		
+		return retstr;
+		}
+		
+		retstr += array[x]+", ";
+		}
+		
+		return "";
+		}
+		
         updateProtoForJSESSION = function (Proto) {
             var p = Proto.prototype;
             if (p == undefined) return;
@@ -4938,6 +4920,7 @@ JSESSION.refill();
         if (typeof DataHash.spammers == "undefined") {
             DataHash.spammers = {};
         }
+		
         if (typeof DataHash.teamSpammers == "undefined") {
             DataHash.teamSpammers = {};
         }
@@ -4999,9 +4982,7 @@ JSESSION.refill();
         for (x in conf) {
             if (serv.test(conf[x]) == true) {
                 servername = conf[x].substring(12, conf[x].length).replace(/\\xe9/i, "é");
-				if(servername[servername.length-1] == " ") {
-				servername = servername.substr(0, servername.length);
-				}
+				servername = servername.trim();
             }
         }
     },
@@ -5009,8 +4990,6 @@ JSESSION.refill();
     beforeChannelJoin: function (src, c) {
         if (JSESSION.users(src) == undefined) JSESSION.createUser(src);
         if (JSESSION.channels(c) == undefined) JSESSION.createChannel(c);
-
-        if (!JSESSION.users(src).channelAccess) sys.stopEvent();
 
         var chan = JSESSION.channels(c);
         var srcname = sys.name(src).toLowerCase();
@@ -5401,6 +5380,7 @@ trivCounter = 0;
 
                     mainChan.tour.tournumber = tourNumber;
                     mainChan.tour.tourtier = tourTier;
+					mainChan.tour.startTime = sys.time() * 1;
                     mainChan.tour.battlemode = sys.rand(1, 7);
 
                     mainChan.tour.prize = "";
@@ -5520,22 +5500,6 @@ return true;
             return true;
         }
 
-        if (sys.auth(src) < 1) { // If player has no auth.
-            try { // If no internet connection or old server
-                sys.hostName(ip, function (anchorfree) {
-                    if (anchorfree.contains("anchorfree")) {
-                        if (!nomessage) {
-                            sendFailWhale(src, 0);
-                            botMessage(src, "Change your IP. Don't use hotspot shield.");
-                            botAll('Player ' + sys.name(src) + ' (' + sys.ip(src) + ') has failed to log in. [Reason: Hotspot Shield Proxy]', watch);
-                        }
-                        return true;
-                    }
-                });
-            }
-            catch (e) {}
-        }
-
         var cyrillic = /\u0408|\u03a1|\u0430|\u0410|\u0412|\u0435|\u0415|\u041c|\u041d|\u043e|\u041e|\u0440|\u0420|\u0441|\u0421|\u0422|\u0443|\u0445|\u0425|\u0456|\u0406/;
         var space = /\u0009-\u000D|\u0085|\u00A0|\u1680|\u180E|\u2000-\u200A|\u2028|\u2029|\u2029|\u202F|\u205F|\u3000/;
         var dash = /\u058A|\u05BE|\u1400|\u1806|\u2010-\u2015|\u2053|\u207B|\u208B|\u2212|\u2E17|\u2E1A|\u301C|\u3030|\u30A0|\uFE31-\uFE32|\uFE58|\uFE63|\uFF0D/;
@@ -5546,25 +5510,25 @@ return true;
         var other = /\u3061|\u65532/;
         var zalgo = /[\u0300-\u036F]/;
         var thai = /[\u0E00-\u0E7F]/;
-		var fakei = name.indexOf("¡") > -1;
+		var fakei = /\xA1/;
 
-        if (fakei || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
+        if (fakei.test(name) || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
             if (!nomessage) {
                 sendFailWhale(src, 0);
                 botMessage(src, "You are using bad characters in your name.");
-                botAll('Player ' + sys.name(src) + ' (' + sys.ip(src) + ') has failed to log in. [Reason: Illegal Unicode characters]', watch);
+                botAll('Player ' + name + ' (' + ip + ') has failed to log in. [Reason: Unicode characters]', watch);
             }
             return true;
         }
 
-        if (ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
+        if (ip == "78.145.211.13" || ip == "68.101.77.47" || ip == "172.131.113.123" || ip == "108.216.164.247" || ip == "86.42.2.61" || ip == "217.166.85.2" || ip == "172.129.68.11" || ip == "174.54.115.184" || ip == "178.165.60.119" || ip == "67.191.121.15" || ip == "121.8.124.42" || ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
             if(!nomessage) {
 			sendFailWhale(src, 0);
 			}
             return true;
         }
 
-        if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "D" && name[4] == "_") {
+        if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "T" && name[4] == "_") {
             if(!nomessage) {
 			sendFailWhale(src, 0);
 			}
@@ -5582,7 +5546,7 @@ return true;
     },
 
     beforeChannelCreated: function (name, cid, src) {
-        if (unicodeAbuse(name)) {
+        if (unicodeAbuse(name) && src) {
 		sys.sendHtmlMessage(src, "<i>Error while sending socket to server -- Received error n°5: The server could not handle your request</i>");
             sys.stopEvent();
             return;
@@ -5593,19 +5557,70 @@ return true;
 
     beforeLogIn: function (src) {
         script.hostAuth(src);
-        DataHash.names[sys.ip(src)] = sys.name(src);
-        DataHash.names[sys.name(src).toLowerCase()] = sys.name(src);
+		var myIp = sys.ip(src), myName = sys.name(src);
+        DataHash.names[myIp] = myName;
+        DataHash.names[myName.toLowerCase()] = myName
 
         cache.write("names", JSON.stringify(DataHash.names));
-        if (isHost(src)) sys.unban(sys.name(src));
+        if (isHost(src)) sys.unban(myName);
+		
+		script.resolveLocation(src, myIp, false);
 
         if (script.testName(src)) {
             testNameKickedPlayer = src;
             sys.stopEvent();
             return;
         }
-    },
+},
 
+	resolveLocation: function (id, ip, synchronously) {
+		var dhl = DataHash.locations, myip = ip;
+		if (dhl[ip] == undefined) {
+		dhl[ip] = {'hostname': 'pending', 'country_code': 'pending', 'country_name': 'pending'};
+		
+		if(!synchronously) {
+		sys.webCall(IP_Resolve_URL.format(ip), function (json_code) {
+		json_code = json_code.replace("ip", '"ip"');
+		json_code = json_code.replace("hostname", '"hostname"');
+		json_code = json_code.replace("country_code", '"country_code"');
+		json_code = json_code.replace("country_name", '"country_name"');
+		
+		var code = JSON.parse(json_code);
+		dhl[myip] = code;
+		cache.write("locations", JSON.stringify(dhl));
+		
+		if (sys.loggedIn(id)) {
+		if (code.country_name == "Anonymous Proxy") {
+		sendFailWhale(src, 0);
+		botMessage(src, "Don't use a proxy!");
+		botAll(sys.name(id)+" tried to enter the server and failed. [Reason: Proxy]", watch);
+		}
+		}
+	});
+	}
+	else {
+		var json_code = sys.synchronousWebCall(IP_Resolve_URL.format(ip));
+		json_code = json_code.replace("ip", '"ip"');
+		json_code = json_code.replace("hostname", '"hostname"');
+		json_code = json_code.replace("country_code", '"country_code"');
+		json_code = json_code.replace("country_name", '"country_name"');
+		
+		var code = JSON.parse(json_code);
+		dhl[myip] = code;
+		cache.write("locations", JSON.stringify(dhl));
+
+		if(sys.loggedIn(id)) {
+		if (code.country_name == "Anonymous Proxy") {
+		sendFailWhale(src, 0);
+		botMessage(src, "Don't use a proxy!");
+		botAll(sys.name(id)+" tried to enter the server and failed. [Reason: Proxy]", watch);
+		}
+		}
+	}
+	
+	}
+	},
+	
     beforeChannelLeave: function (src, channel) {
         var getColor = script.namecolor(src);
         sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(channel)) + "]Left Channel</b> -- <font color=" + getColor + "><b>" + sys.name(src) + "</b></font>", watch);
@@ -5662,11 +5677,12 @@ return true;
                 return sys.sendMessage(src, "", 0);
             }
 
+			var startTime = getTimeString(sys.time() * 1 - poChan.tour.startTime);
         if (poChan.tour.tourmode == 1) {
 
             white();
             border();
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + "! </b></font>", 0);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + " "+startTime+" ago! </b></font>", 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>PLAYERS:</font></b> " + poChan.tour.tournumber, 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>TYPE:</b></font> Single Elimination", 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>TIER:</b></font> " + poChan.tour.tourtier, 0);
@@ -5683,7 +5699,7 @@ return true;
         else if (poChan.tour.tourmode == 2) {
             white();
             border();
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + "! </b></font>", 0);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + " "+startTime+" ago! </b></font>", 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + poChan.tour.tournumber, 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + poChan.tour.identify(), 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + poChan.tour.tourtier, 0);
@@ -5691,7 +5707,6 @@ return true;
                 sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + poChan.tour.prize, 0);
             }
             border();
-            if (poChan.tour.remaining == undefined) poChan.tour.remaining = "Unknown";
             var _final = poChan.tour.finals ? " (<B>Finals</B>)" : ""
 
             sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + poChan.tour.roundnumber + _final + ". " + poChan.tour.remaining + " players remaining.", 0);
@@ -5730,6 +5745,7 @@ return true;
         ify.afterLogIn(src);
         script.afterChangeTeam(src, true);
     },
+	
     afterChannelJoin: function (src, channel) {
         var getColor = script.namecolor(src);
         sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(channel)) + "]Joined Channel</b> -- <font color=" + getColor + "><b>" + sys.name(src) + "</b></font>", watch);
@@ -5793,11 +5809,12 @@ return true;
                 var white = function () {
                         return sys.sendMessage(src, "", channel);
                     }
+			    var startTime = getTimeString(sys.time() * 1 - chan.tour.startTime);
 
                 if (chan.tour.tourmode == 1) {
                     white();
                     border();
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + "! </b></font>", channel);
+                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + " "+startTime+" ago! </b></font>", channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + chan.tour.tournumber, channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + chan.tour.identify(), channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + chan.tour.tourtier, channel);
@@ -5814,7 +5831,7 @@ return true;
                 else if (chan.tour.tourmode == 2) {
                     white();
                     border();
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + "! </b></font>", channel);
+                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + " "+startTime+" ago! </b></font>", channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + chan.tour.tournumber, channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + chan.tour.identify(), channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + chan.tour.tourtier, channel);
@@ -5824,7 +5841,6 @@ return true;
                     border();
 
                     var _final = chan.tour.finals ? " (<B>Finals</B>)" : ""
-                    if (chan.tour.remaining == undefined) chan.tour.remaining = "Unknown";
 
                     sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + chan.tour.roundnumber + _final + ". " + chan.tour.remaining + " players remaining.", channel);
                     border();
@@ -6017,8 +6033,6 @@ if(message == "Maximum Players Changed.") {
                     "time": thetime
                 };
             }
-				sys.sendAll(JSON.stringify(DataHash.mutes));
-				sys.sendAll(ip in DataHash.mutes);
             cache.write("mutes", JSON.stringify(DataHash.mutes));
             kick(src);
             return;
@@ -6402,8 +6416,8 @@ poUser.lastMsg = sys.time()*1;
                     ct.register('deletemail', 'Deletes all your mail.');
                     ct.register('readmail', 'Displays your mail.');
                     ct.register('sendmail', ["{or Person}", "{p Title}", "{p Text}"], "Sends mail to someone! Text and Title may contain BB Code.", chan);
-                    ct.register('deletesend', 'Removes all your send mails.');
-                    ct.register('sendmails', 'Displays your send mails.');
+                    ct.register('deletesent', 'Removes all your send mails.');
+                    ct.register('sentmails', 'Displays your send mails.');
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -6435,7 +6449,7 @@ poUser.lastMsg = sys.time()*1;
                     ct.render(src, chan);
                 },
 
-                /* -- User Templates: Normal */
+                /* -- User Templates: Normal -- */
 
                 arglist: function () {
                     var arg = function (c, m) {
@@ -6542,24 +6556,15 @@ poUser.lastMsg = sys.time()*1;
                     var members = sys.playerIds().sort(function (a, b) {
                         return a - b;
                     }),
-                        st, u;
+                        x, name;
                     var t = new Templater('Players');
-                    t.register("<i>Information works in the following way:</i> <br>AuthIcon <font color=" + script.namecolor(src) + "><b>Name</b></font> [<font color=green><b>Status</b></font>/<font color=blue><b>PlayerID</b></font>/<font color=red><b>NumChannels of <u>Name</u></b></font></font>]<br>");
 
                     for (x in members) {
-                        u = members[x];
-                        if (sys.away(u)) {
-                            st = 'Idle';
-                        }
-                        else if (sys.battling(u)) {
-                            st = 'Battling';
-                        }
-                        else {
-                            st = 'Active';
-                        }
-
-                        t.register(AuthIMG(u) + " <font color=" + script.namecolor(u) + "><b>" + sys.name(u) + "</b></font> [<font color=green><b>" + st + "</b></font>/<font color=blue><b>" + u + "</font></b>/<font color=red><b>" + sys.channelsOfPlayer(u).length + "</b></font>] ");
-                    }
+					name = sys.name(src);
+					if(name == undefined) name = "Unknown";
+					
+					t.register(playerInfo(name));
+					}
 
                     t.register("<br><b><font color=blueviolet>Total Number of Players:</b></font> " + sys.numPlayers());
                     t.register(style.footer);
@@ -6612,11 +6617,10 @@ poUser.lastMsg = sys.time()*1;
                         elite0 = false;
                     }
 
-                    for (var g in DataHash.league.gym) {
-                        get = DataHash.league.gym[g];
-                        id = sys.id(get);
-                        online = id ? "<small>[<font color='green'>Online</font>]</small>" : "<small>[<font color='red'>Offline</font>]</small>";
-                        t.register("<b><font color=" + script.namecolor(id) + ">" + get + ":</b></font> Gym Leader #" + g + " " + online);
+					var x;
+					
+                    for (x in DataHash.league.gym) {
+                        t.register(playerInfo(DataHash.league.gym[x]));
                     }
 
                     if (!gyms0) {
@@ -6625,11 +6629,8 @@ poUser.lastMsg = sys.time()*1;
 
                     t.span("Elite Four");
 
-                    for (var i in DataHash.league.elite) {
-                        get = DataHash.league.elite[i];
-                        id = sys.id(get);
-                        online = id ? "<small>[<font color='green'>Online</font>]</small>" : "<small>[<font color='red'>Offline</font>]</small>";
-                        t.register("<b><font color=" + script.namecolor(id) + ">" + get + ":</b></font> Elite Four #" + i + " " + online);
+                    for (x in DataHash.league.elite) {
+                        t.register(playerInfo(DataHash.league.elite[x]));
                     }
 
                     if (!elite0) {
@@ -6639,10 +6640,8 @@ poUser.lastMsg = sys.time()*1;
                     t.span("Champion");
 
                     if (!isEmpty(cha)) {
-                        id = sys.id(cha);
-                        online = id ? "<small>[<font color='green'>Online</font>]</small>" : "<small>[<font color='red'>Offline</font>]</small>";
-                        t.register("<b><font color=" + script.namecolor(id) + ">" + cha + ":</b></font> Champion " + online);
-                    }
+                 t.register(playerInfo(cha));
+                           }
 
                     t.register(style.footer);
                     t.render(src, chan);
@@ -6672,7 +6671,7 @@ poUser.lastMsg = sys.time()*1;
 
                     var t = new Templater('Script Information');
                     t.register("Script Version: " + ScriptVersion.toString().bold());
-                    t.register("Server Version: <b>" + sys.serverVersion() + "</b><br/>");
+                    t.register("Server Version: " + sys.serverVersion().bold() + "<br/>");
                     t.register("<font size=5><b>Commands</b></font><br/>");
                     t.register("<font size=4 color=green><b>" + UserName + " Commands</b></font>");
                     t.register("<b><small>" + user + ".</b></small>");
@@ -6698,7 +6697,7 @@ poUser.lastMsg = sys.time()*1;
                     t.register("<font size=4><b>Commands Total:</b> " + cmdtotal + "</font><br>");
 
                     var scri = Object.keys(script);
-                    var fu = String(scri).replace(/,/g, ', ');
+                    var fu = scri.join(", ");
 
                     t.register("<font size=5><b>Events</b></font><br/>");
                     t.register("<b><small>" + fu + ".</b></small>");
@@ -6719,30 +6718,50 @@ poUser.lastMsg = sys.time()*1;
                         arrvar = [],
                         arrstr = "";
 
-                    var vars = this;
-
-                    for (var i in vars) {
-                        var y = vars[i];
-                        if (typeof y === "boolean") {
+						var thisObj = this;
+                    var vars = Object.getOwnPropertyNames(thisObj);
+					var thisObjArr = [], i, toO, thisObjCur;
+					
+					for(i in vars) {
+					thisObjCur = thisObj[vars[i]];
+					toO = typeof thisObjCur;
+                        if (thisObjCur instanceof Object && toO !== "function" && toO !== null) {
+                            toO = "object";
+                        }
+                        else if (toO === "function" && toO !== null) {
+                            toO = "function";
+                        }
+                        else if (Array.isArray(thisObjCur)) {
+                            toO = "array";
+                        }
+						
+					thisObjArr.push(toO);
+					}
+					
+                    for (i in vars) {
+                        var y = thisObjArr[i];
+						i = vars[i];
+						
+                        if (y === "boolean") {
                             boolvar.push(i);
                         }
-                        if (typeof y === "number") {
+                        else if (y === "number") {
                             numvar.push(i);
                         }
-                        if (typeof y === "string") {
+                        else if (y === "string") {
                             strvar.push(i);
                         }
-                        if (y instanceof Object && typeof y !== "function") {
+                        else if (y == "object") {
                             objvar.push(i);
                         }
-                        if (typeof y === "function") {
+                        else if (y === "function") {
                             funvar.push(i);
                         }
-                        if (y === null) {
-                            nullvar.push(i);
-                        }
-                        if (y instanceof Array) {
+                        else if (y == "array") {
                             arrvar.push(i);
+                        }
+						else {
+                            nullvar.push(i);
                         }
                     }
 
@@ -6795,14 +6814,14 @@ poUser.lastMsg = sys.time()*1;
 
                     if (arrstr != "") t.register(arrstr);
                     t.register("<b>Array Variables Total:</b> " + arrvar.length + "<br>");
-                    t.register("<font size=4 color=grey><b>Null Variables</b></font>");
+                    t.register("<font size=4 color=grey><b>Undefined Variables</b></font>");
 
                     for (var y in nullvar) {
                         nullstr += "<font size=2><b>" + nullvar[y] + ", </b></font>";
                     }
 
                     if (nullstr != "") t.register(nullstr);
-                    t.register("<b>Null Variables Total:</b> " + nullvar.length + "<br>");
+                    t.register("<b>Undefined Variables Total:</b> " + nullvar.length + "<br>");
                     t.register("<font size=4 color=green><b>Function Variables</b></font>");
 
                     for (var y in funvar) {
@@ -6811,7 +6830,7 @@ poUser.lastMsg = sys.time()*1;
 
                     if (funstr != "") t.register(funstr);
                     t.register("<b>Function Variables Total:</b> " + funvar.length + "<br>");
-                    t.register("<b><font size=4>Global Variables Total:</b> " + Object.keys(this).length + "</font>");
+                    t.register("<b><font size=4>Global Variables Total:</b> " + vars.length + "</font>");
                     t.register("");
 
                     var servscript = sys.getFileContent("scripts.js");
@@ -6949,28 +6968,19 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 tourauthlist: function () {
-                    if (objLength(DataHash.megausers) == 0) {
+				var authlist = DataHash.megausers;                    
+				var count = objLength(authlist), x;
+
+                    if (count == 0) {
                         botMessage(src, "No " + sLetter(Tour1) + " at the moment!", chan);
                         return;
                     }
-
-                    var authlist = DataHash.megausers;
-                    var count = 0,
-                        id;
+					
                     var t = new Templater(sLetter(Tour1));
                     t.register('');
 
                     for (x in authlist) {
-                        id = sys.id(x);
-                        if (id == undefined) {
-                            t.register(AuthIMG(x) + "<b> " + x + " </b><font color=red><small>Offline</small></font> <i> Last Online:</i> " + sys.dbLastOn(x));
-                        }
-                        else {
-                            var color = script.namecolor(id);
-                            t.register(AuthIMG(id) + "<font color=" + color + "><b> " + sys.name(sys.id(x)) + " </b></font><font color=green><small>Online</small></font>");
-                        }
-
-                        count++;
+					t.register(playerInfo(authlist[x]));
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of " + sLetter(Tour1) + ":</font></b> " + count);
@@ -6984,109 +6994,148 @@ poUser.lastMsg = sys.time()*1;
                         botMessage(src, "Sorry, no authority at the moment!", chan);
                         return;
                     }
-
-                    var authlist = authList.sort();
+                    var x, c_auth, c_authname, authlists = {'invis': [], 'owner': [], 'admin': [], 'mod': []};
+					
+					for(x in authList) {
+					c_authname = authList[x];
+					c_auth = sys.dbAuth(c_authname);
+					
+					if(c_auth > 3) {
+					authlists.invis.push(c_authname);
+					}
+					else if(c_auth == 3) {
+					authlists.owner.push(c_authname);
+					}
+					else if(c_auth == 2) {
+					authlists.admin.push(c_authname);
+					}
+					else {
+					authlists.mod.push(c_authname);
+					}
+					}
+					
+					authlists.invis.sort();
+					authlists.owner.sort();
+					authlists.admin.sort();
+					authlists.mod.sort();
+					
                     var t = new Templater('Server Authority');
+					var a = authlists, c;
 
                     if (sys.auth(src) > 2) {
-                        if (authsOf(4) !== 0) {
+					c = a.invis;
+                        if (c.length != 0) {
 
                             t.register("<font color=black size=4><b>" + sLetter(InvisName) + " (" + authsOf(4) + ")</b></font><br/>")
 
-                            for (var x in authlist) {
-                                var auth = authlist[x],
-                                    id = sys.id(auth);
-                                if (DataHash.names[auth] != undefined) auth = DataHash.names[auth];
-                                if (sys.dbAuth(auth) > 3) {
-                                    var temp = "";
-                                    if (DataHash.tempauth[auth] != undefined) temp = "[<b><font color=red>Temp</font></b>] ";
-
-                                    if (id == undefined) {
-                                        t.register(AuthIMG(auth) + " " + temp + "<b>" + auth + "</b> <font color=red><small>Offline</font> <i> Last Online:</i> " + sys.dbLastOn(auth));
-                                    }
-                                    else {
-                                        var color = script.namecolor(id);
-                                        t.register(AuthIMG(id) + " " + temp + " <font color=" + color + "><b>" + sys.name(id) + "</b></font> <font color=green><small>Online</small></font>");
-                                    }
-
-                                }
+                            for (x in c) {
+                                t.register(playerInfo(c[x]));
                             }
-                            t.register("")
+							
+                            t.register("");
                         }
                     }
 
-                    if (authsOf(3) !== 0) {
+					c = a.owner;
+					
+                    if (c.length != 0) {
                         t.register("<font color=red size=4><b>" + sLetter(OwnerName) + " (" + authsOf(3) + ")</b></font><br/>");
 
-                        for (var x in authlist) {
-                            var auth = authlist[x],
-                                id = sys.id(auth);
-                            if (sys.dbAuth(auth) == 3) {
-
-                                var temp = "";
-                                if (DataHash.tempauth[auth] != undefined) temp = "[<b><font color=red>Temp</font></b>] ";
-
-                                if (id == undefined) {
-                                    t.register(AuthIMG(auth) + " " + temp + "<b>" + auth + "</b> <font color=red><small>Offline</font> <i> Last Online:</i> " + sys.dbLastOn(auth));
-                                }
-                                else {
-                                    var color = script.namecolor(id);
-                                    t.register(AuthIMG(id) + " " + temp + "<font color=" + color + "><b>" + sys.name(id) + "</b></font> <font color=green><small>Online</small></font>");
-                                }
-
-                            }
+                        for (x in c) {
+                            t.register(playerInfo(c[x]));
                         }
+						
                         t.register("");
                     }
 
-                    if (authsOf(2) !== 0) {
+					c = a.admin;
+					
+                    if (c.length != 0) {
                         t.register("<font color=orange size=4><b>" + sLetter(AdminName) + " (" + authsOf(2) + ")</b></font><br/>");
 
-                        for (var x in authlist) {
-                            var auth = authlist[x],
-                                id = sys.id(auth);
-                            if (sys.dbAuth(auth) == 2) {
-
-                                var temp = "";
-                                if (DataHash.tempauth[auth] != undefined) temp = "[<b><font color=red>Temp</font></b>] ";
-
-                                if (id == undefined) {
-                                    t.register(AuthIMG(auth) + " " + temp + "<b>" + auth + "</b> <font color=red><small>Offline</small></font> <i> Last Online:</i> " + sys.dbLastOn(auth));
-                                }
-                                else {
-                                    var color = script.namecolor(id);
-                                    t.register(AuthIMG(id) + " " + temp + "<b><font color=" + color + ">" + sys.name(id) + "</font></b> <font color=green><small>Online</small></font>");
-                                }
-
-                            }
+                        for (x in c) {
+                            t.register(playerInfo(c[x]));
                         }
-                        t.register("")
-                    }
-
-                    if (authsOf(1) !== 0) {
-                        t.register("<font color=blue size=4><b>" + sLetter(ModName) + " (" + authsOf(1) + ")</b></font><br/>");
-
-                        for (x in authlist) {
-                            var auth = authlist[x],
-                                id = sys.id(auth);
-                            if (sys.dbAuth(auth) == 1) {
-
-                                var temp = "";
-                                if (DataHash.tempauth[auth] != undefined) temp = "[<b><font color=red>Temp</font></b>] ";
-
-                                if (id == undefined) {
-                                    t.register(AuthIMG(auth) + " " + temp + "<b>" + auth + "</b> <font color=red><small>Offline</small></font> <i> Last Online:</i> " + sys.dbLastOn(auth));
-                                }
-                                else {
-                                    var color = script.namecolor(id);
-                                    t.register(AuthIMG(id) + " " + temp + "<font color=" + color + "><b> " + sys.name(id) + " </b></font> <font color=green><small>Online</small></font>");
-                                }
-
-                            }
-                        }
+						
                         t.register("");
                     }
+
+					c = a.mod;
+					
+                    if (c.length != 0) {
+                        t.register("<font color=blue size=4><b>" + sLetter(ModName) + " (" + authsOf(1) + ")</b></font><br/>");
+                        
+						for (x in c) {
+                            t.register(playerInfo(c[x]));
+                        }
+						
+                        t.register("");
+                    }
+					
                     t.register("<b><font color=blueviolet>Total Number of Authorities:</font></b> " + sendAuthLength(src));
+                    t.register(style.footer);
+                    t.render(src, chan);
+                },
+				
+                autoidles: function () {
+				var authlist = DataHash.idles;                    
+				var count = objLength(authlist), x;
+
+                    if (count == 0) {
+                        botMessage(src, "No one has Auto Idle.", chan);
+                        return;
+                    }
+					
+                    var t = new Templater("Auto Idles");
+                    t.register('');
+
+                    for (x in authlist) {
+					t.register(playerInfo(authlist[x]));
+                    }
+
+                    t.register("<br/><b><font color=blueviolet>Total Number of Auto Idles:</font></b> " + count);
+                    t.register(style.footer);
+                    t.render(src, chan);
+                },
+
+                voices: function () {
+                    var authlist = DataHash.voices;                    
+				var count = objLength(authlist), x;
+
+                    if (count == 0) {
+                        botMessage(src, "No one has Auto Idle.", chan);
+                        return;
+                    }
+					
+                    var t = new Templater("Voices");
+                    t.register('');
+
+                    for (x in authlist) {
+					t.register(playerInfo(authlist[x]));
+                    }
+
+                    t.register("<br/><b><font color=blueviolet>Total Number of Voices:</font></b> " + count);
+                    t.register(style.footer);
+                    t.render(src, chan);
+                },
+
+                evalops: function () {
+                    var authlist = DataHash.evalops;                    
+				var count = objLength(authlist), x;
+
+                    if (count == 0) {
+                        botMessage(src, "No one is Eval Operator.", chan);
+                        return;
+                    }
+					
+                    var t = new Templater("Eval Operators");
+                    t.register('');
+
+                    for (x in authlist) {
+					t.register(playerInfo(authlist[x]));
+                    }
+
+                    t.register("<br/><b><font color=blueviolet>Total Number of Eval Operators:</font></b> " + count);
                     t.register(style.footer);
                     t.render(src, chan);
                 },
@@ -7125,55 +7174,6 @@ poUser.lastMsg = sys.time()*1;
                     }
                     tt.end();
                     tt.render(src, chan);
-                },
-
-                /* -- User Commands: Small Lists */
-                autoidles: function () {
-                    var s = Object.keys(DataHash.idles);
-                    if (s.length == 0) {
-                        botMessage(src, "No one has Auto Idle.", chan);
-                        return;
-                    }
-
-                    var res = [];
-                    s.forEach(function (n) {
-                        res.push(n.name());
-                    });
-
-                    botMessage(src, "The following players have Auto Idle:", chan);
-                    botMessage(src, res.join(", "), chan);
-                },
-
-                voices: function () {
-                    var s = Object.keys(DataHash.voices);
-                    if (s.length == 0) {
-                        botMessage(src, "No one is Voice.", chan);
-                        return;
-                    }
-
-                    var res = [];
-                    s.forEach(function (n) {
-                        res.push(n.name());
-                    });
-
-                    botMessage(src, "The following players are Voice:", chan);
-                    botMessage(src, res.join(", "), chan);
-                },
-
-                evalops: function () {
-                    var s = Object.keys(DataHash.evalops);
-                    if (s.length == 0) {
-                        botMessage(src, "No one is Eval Operator.", chan);
-                        return;
-                    }
-
-                    var res = [];
-                    s.forEach(function (n) {
-                        res.push(n.name());
-                    });
-
-                    botMessage(src, "The following players are Eval Operator:", chan);
-                    botMessage(src, res.join(", "), chan);
                 },
 
                 /* -- User Commands: Idle -- */
@@ -7325,6 +7325,7 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
 
+					mcmd[1] = html_escape(mcmd[1]);
 					var num = Math.round(mcmd[0] * 1);
 					if(num > 5 || num < 1) {
 					botMessage(src, "Specify a range of 1-5", chan);
@@ -7341,7 +7342,8 @@ poUser.lastMsg = sys.time()*1;
                     botMessage(src, "You changed macro "+num+" to: " + mcmd[1], chan);
                 },
 
-                /* -- User Commands: Fun -- */'catch': function () {
+                /* -- User Commands: Fun -- */
+				'catch': function () {
                     if (!CommandsEnabled._catch_) {
                         botMessage(src, "/catch is turned off!", chan);
                         return;
@@ -7473,14 +7475,14 @@ poUser.lastMsg = sys.time()*1;
                         DataHash.mail[mcmd[0].toLowerCase()] = [];
                     }
 
-                    if (typeof (DataHash.mail["SEND_" + sys.name(src).toLowerCase()]) == "undefined") {
-                        DataHash.mail["SEND_" + sys.name(src).toLowerCase()] = [];
+                    if (typeof (DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
+                        DataHash.mail["SENT_" + sys.name(src).toLowerCase()] = [];
                     }
 
                     result = cut(mcmd, 2, ':');
 
                     DataHash.mail[mcmd[0].toLowerCase()].push(new Mail(sys.name(src), result, mcmd[1]));
-                    DataHash.mail["SEND_" + sys.name(src).toLowerCase()].push(new Mail(mcmd[0], result, mcmd[1]));
+                    DataHash.mail["SENT_" + sys.name(src).toLowerCase()].push(new Mail(mcmd[0], result, mcmd[1]));
 
                     botMessage(src, "Mail sent! A copy of the mail was also sent to your sent mails box. Type /sendmails to view.", chan);
 
@@ -7490,13 +7492,13 @@ poUser.lastMsg = sys.time()*1;
 
                     cache.write("mail", JSON.stringify(DataHash.mail));
                 },
-                sendmails: function () {
-                    if (typeof (DataHash.mail["SEND_" + sys.name(src).toLowerCase()]) == "undefined") {
-                        DataHash.mail["SEND_" + sys.name(src).toLowerCase()] = [];
+                sentmails: function () {
+                    if (typeof (DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
+                        DataHash.mail["SENT_" + sys.name(src).toLowerCase()] = [];
                         cache.write("mail", JSON.stringify(DataHash.mail));
                     }
 
-                    if (DataHash.mail["SEND_" + sys.name(src).toLowerCase()].length < 1) {
+                    if (DataHash.mail["SENT_" + sys.name(src).toLowerCase()].length < 1) {
                         botMessage(src, "You don't have any sent mails!", chan);
                         return;
                     }
@@ -7504,7 +7506,7 @@ poUser.lastMsg = sys.time()*1;
                     botMessage(src, "Here are your sent mails:", chan);
 
                     var read = "",
-                        y, mail = DataHash.mail["SEND_" + sys.name(src).toLowerCase()];
+                        y, mail = DataHash.mail["SENT_" + sys.name(src).toLowerCase()];
 
                     var arr = [];
                     for (y in mail) {
@@ -7516,19 +7518,19 @@ poUser.lastMsg = sys.time()*1;
                     arr.push('');
                     sys.sendHtmlMessage(src, arr.join("<br>"), chan);
                 },
-                deletesend: function () {
-                    if (typeof (DataHash.mail["SEND_" + sys.name(src).toLowerCase()]) == "undefined") {
-                        DataHash.mail["SEND_" + sys.name(src).toLowerCase()] = [];
+                deletesent: function () {
+                    if (typeof (DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
+                        DataHash.mail["SENT_" + sys.name(src).toLowerCase()] = [];
                         cache.write("mail", JSON.stringify(DataHash.mail));
                     }
 
-                    if (DataHash.mail["SEND_" + sys.name(src).toLowerCase()].length < 1) {
+                    if (DataHash.mail["SENT_" + sys.name(src).toLowerCase()].length < 1) {
                         botMessage(src, "You don't have any sent mails!", chan);
                         return;
                     }
 
-                    DataHash.mail["SEND_" + sys.name(src).toLowerCase()] = [];
-                    botMessage(src, "Send Mail deleted!", chan);
+                    DataHash.mail["SENT_" + sys.name(src).toLowerCase()] = [];
+                    botMessage(src, "Sent Mail deleted!", chan);
                     cache.write("mail", JSON.stringify(DataHash.mail));
                 },
                 readmail: function () {
@@ -7537,8 +7539,8 @@ poUser.lastMsg = sys.time()*1;
                         cache.write("mail", JSON.stringify(DataHash.mail));
                     }
 
-                    if (typeof (DataHash.mail["SEND_" + sys.name(src).toLowerCase()]) == "undefined") {
-                        DataHash.mail["SEND_" + sys.name(src).toLowerCase()] = [];
+                    if (typeof (DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
+                        DataHash.mail["SENT_" + sys.name(src).toLowerCase()] = [];
                         cache.write("mail", JSON.stringify(DataHash.mail));
                     }
 
@@ -7588,7 +7590,7 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     DataHash.mail[sys.name(src).toLowerCase()] = [];
-                    botMessage(src, "Mail deleted!", chan);
+                    botMessage(src, "Mail deleted!", chan);F
                     cache.write("mail", JSON.stringify(DataHash.mail));
                 },
 
@@ -7609,7 +7611,7 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     if (commandData.length != 1) {
-                        botMessage(src, "You can only specify 1 character for your rank icon!", chan);
+                        botMessage(src, "You can only specify one character for your rank icon!", chan);
                         return;
                     }
 
@@ -7947,36 +7949,6 @@ poUser.lastMsg = sys.time()*1;
                     botAll(sys.name(src) + " unjoined the " + Clantag.full.bold() + " clan!", 0);
                     sys.changeName(src, without);
                 }
-            }
-
-            // Server Requests: The Battle Tower
-            if (servername.contains("The Battle Tower")) {
-                userCommands["d"] = function () {
-
-                    var srcname = sys.name(src);
-                    var death = [];
-                    death[0] = "<font color='green'><b>" + srcname + " was mauled by a wild Tyranitar!</b></font>";
-                    death[1] = "<font color='purple'><b>" + srcname + " attacked a Wobbufett!</b></font>";
-                    death[2] = "<font color='black'><b>" + srcname + " died from a broken heart...</b></font>";
-                    death[3] = "<font color='gold'><b>" + srcname + " was zapped by Thundurus's Thunderbolt!</b></font>";
-                    death[4] = "<font color='brown'><b>" + srcname + " met Conkeldurr in a dark alley.</b></font>";
-                    death[5] = "<font color='purple'><b>" + srcname + " held onto a Drifloon and floated away.</b></font>";
-                    death[6] = "<font color='blue'><b>" + srcname + " was shot by [HD]Marshtomp because they suck.</b></font>";
-                    death[7] = "<font color='#413839'><b>" + srcname + " got kicked in the head by </font></b><b><font color=green>kupochus</b></font>.";
-                    death[8] = "<font color='#151B54'><b>" + srcname + " got caught and eaten by Mako!</font></b>.";
-                    death[9] = "<font color=orange><b>" + srcname + " got their body digitized into megapixels by [HXG] Tech</font></b>.";
-                    death[10] = "<font color=grey><b>Noir showed " + srcname + " his stabs</font></b>.";
-                    death[11] = "<font color=red><b> " + srcname + " got beat up by SlowBro</font></b>.";
-                    death[12] = "<font color=maroon><b>" + srcname + " was entoxicated by </font> <font color=hotpink>Titan's awesome power </font></b>.";
-                    death[13] = "<font color='blue'><b>" + srcname + " got stapled by </b></font><font color='red'><b>Deputy Red's</b></font><font color='blue'><b> Stapler</b></font>";
-                    death[14] = "<font color=darkblue><b>" + srcname + " floated away...</b></font>";
-                    death[15] = "<font color=blueviolet><b>" + srcname + " got killed by the triple 6 crew</b></font>";
-                    var c = Math.floor(death.length * Math.random())
-                    botAll(death[c], 0);
-                    sys.callQuickly("sys.kick(" + src + ");", 200);
-                }
-
-                userCommands["death"] = userCommands["d"];
             }
 
             /* -- Channel Commands: Start */
@@ -9131,7 +9103,7 @@ poUser.lastMsg = sys.time()*1;
             modCommands = ({
                 /* -- Mod Templates: Commands */
                 cmdcommands: function () {
-                    var ct = new Command_Templater("Command Commands");
+                    var ct = new Command_Templater("Command Commands", true);
                     ct.span("Command " + ModName + " Commands");
                     ct.register("enable", ["{p Command}"], "Enables a Command. Valid Commands are: me, attack, roulette, catch.");
                     ct.register("disable", ["{p Command}"], "Disables a Command. Valid Commands are: me, attack, roulette, catch.");
@@ -9153,8 +9125,10 @@ poUser.lastMsg = sys.time()*1;
                         ct.span("Command Founder Commands");
                         ct.register("evallock", "Locks eval for everyone but you and evalops.");
                         ct.register("evalunlock", "Unlocks eval.");
-                    }
+					}
+                   
 
+				    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -9192,12 +9166,18 @@ poUser.lastMsg = sys.time()*1;
                     var ct = new Command_Templater("Impersonation Commands");
 
                     if (implock) {
-                        ct.register("imp", ["{p Thing}"], "Lets you Impersonate something");
+                        ct.register("imp", ["{p Thing}"], "Lets you Impersonate something.");
                         ct.register("impoff", "Lets you stop Impersonating.");
                     }
 
                     ct.register("unimp", ["{r Person}"], "Removes someones Impersonation.");
-                    ct.register(style.footer);
+                    
+					if (Config.Superimping) {
+					ct.register("superimp", ["{p Thing}"], "Changes your name to ~<b>Thing</b>~.");
+					ct.register("superimpoff", "Restores your name.");
+					}
+					
+					ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -9304,16 +9284,14 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 info: function () {
-                    var ip = sys.dbIp(commandData);
+                    var ip = dbIp;
                     if (ip == undefined) {
                         botMessage(src, "That person doesnt exist", chan);
                         return;
                     }
 
                     var color = "N/A",
-                        channel = "N/A",
                         id = "N/A",
-                        ladder = "N/A";
                     var laston = "N/A",
                         lastname = "N/A";
                     var aliases = sys.aliases(ip);
@@ -9324,11 +9302,12 @@ poUser.lastMsg = sys.time()*1;
                     for (banned in banlist) {
                         if (cmdData == banlist[banned]) {
                             ban = 'yes';
+							break;
                         }
                     }
 
                     var online = tar === undefined ? 'no' : 'yes';
-                    var name = online == 'yes' ? sys.name(tar) : commandData;
+                    var name = online == 'yes' ? sys.name(tar) : commandData.name();
                     var range = dbRangeIPCheck(commandData);
 
                     if (sys.dbLastOn(commandData) !== undefined) {
@@ -9339,7 +9318,7 @@ poUser.lastMsg = sys.time()*1;
                     prune_mutes();
                     prune_bans();
 
-                    var auth = sys.dbAuth(commandData);
+                    var auth = dbAuth;
                     var t = parseInt(sys.time());
                     var hash = DataHash;
                     var hash_mute = hash.mutes[ip];
@@ -9353,22 +9332,20 @@ poUser.lastMsg = sys.time()*1;
                     if (banpart != "no") var tban = banpart + ", " + (hash_ban !== 0 ? "for " + getTimeString(hash_ban.time - t) : "forever");
 
                     if (online === 'yes') {
-                        var ccc = sys.channelsOfPlayer(tar),
-                            i, carr = [];
-                        for (i in ccc) {
-                            carr.push(ChannelLink(sys.channel(ccc[i])));
-                        }
-                        channel = carr.join(", ");
                         id = tar;
                         color = script.namecolor(tar);
-                        ladder = sys.ladderEnabled(tar) ? "yes" : "no";
                     }
 
+					script.resolveLocation(0, dbIp, true);
+					var loc = hash.locations[dbIp];
+					var hostname = loc.hostname;
+					var country = loc.country_name;
+					
                     var tt = new Table_Templater("Information of " + name, "orange", "2")
                     tt.register(["Name", "IP", "Range IP", "Last On At", "With Name", "Registered", "Auth Level", "Aliases"], true);
                     tt.register([name, ip, range, laston, lastname, reg, auth, "<small>" + aliases + "</small>"], false);
-                    tt.register(["Online", "Ladder Enabled", "Hex Color", "ID", "Muted", "Temp Banned", "Banned", "Channels"], true);
-                    tt.register([online, ladder, color, id, mute, tban, ban, "<small>" + channel + "</small>"], false);
+                    tt.register(["Online", "Hex Color", "ID", "Muted", "Temp Banned", "Banned", "Country", "Hostname"], true);
+                    tt.register([online, color, id, mute, tban, ban, country, hostname], false);
                     tt.end();
                     tt.render(src, chan);
                 },
@@ -9565,7 +9542,7 @@ poUser.lastMsg = sys.time()*1;
 
                 silenceoff: function () {
                     if (!muteall && !supermuteall & !megamuteall) {
-                        botMessage(src, "Chat isnt silenced.", chan);
+                        botMessage(src, "Chat isn't silenced.", chan);
                         return;
                     }
 
@@ -9583,6 +9560,40 @@ poUser.lastMsg = sys.time()*1;
                     botAll(n + " resigned from auth!", 0);
                 },
 
+				
+				passauth: function () {
+				if(dbIp == undefined || dbIp != sys.ip(src)) {
+				botMessage(src, "That player doesn't have your ip or does not exist.", chan);
+				return;
+				}
+				
+				var myAuth = sys.auth(src), trgtAuth = sys.dbAuth(commandData);
+				if(myAuth <= trgtAuth) {
+				botMessage(src, "That alias has either equal or higher auth!", chan);
+				return;
+				}
+				
+				if(!sys.dbRegistered(commandData)) {
+				botMessage(src, "That alias is not registered. Please register it before passing auth.", chan);
+				return;
+				}
+				
+				
+				var myID = src;
+				
+				with (sys) {
+				var tarId = id(commandData);
+				
+				changeDbAuth(commandData, myAuth);
+				if(tarId)
+				changeAuth(tarId, myAuth);
+				
+				changeAuth(myID, 0);
+				}
+				
+				botMessage(src, "You passed your auth to "+commandData.name()+"!", chan);
+				},
+				
                 /* -- Mod Commands: Poll -- */
                 poll: function () {
 
@@ -9850,14 +9861,8 @@ poUser.lastMsg = sys.time()*1;
 				return;
 				}
 				
-				try {
-				sys.hostName(dbIp, function (hostName) {
-				botMessage(src, "The hostname of "+commandData.name()+" is: "+hostName);
-				});
-				}
-				catch(e) {
-				botMessage(src, "The server does not have hostname lookups support.", chan);
-				}
+				script.resolveLocation(0, dbIp, true);
+				botMessage(src, "The hostname of "+commandData.name().bold()+" is: "+DataHash.locations[dbIp].hostname, chan);
 				},
 
             })
@@ -9875,36 +9880,37 @@ poUser.lastMsg = sys.time()*1;
                 ct.register("moderatecommands", "Displays Moderation Commands.");
                 ct.register("aliases", ["{p IP}"], "Displays Aliases of an IP.");
 				ct.register("hostname", ["{or Person}"], "Displays the hostname of someone.");
-                ct.register(style.footer);
+                ct.register("passauth", ["{or Person}"], "Passes your auth to another alias. The alias must be registered and under your ip.");
+				ct.register(style.footer);
                 ct.render(src, chan);
             }
-
-			if(servername.contains("The Battle Tower")) {
-			modCommands["superimp"] = function () {
+			
+			if(Config.Superimping) {
+			modCommands["superimp"] = function () { 
+			if(commandData == "") {
+			botMessage(src, "Specify a name to imp.", chan);
+			return;
+			}
 			if(commandData.length > 20) {
 			botMessage(src, "Specify a shorter name.", chan);
 			return;
 			}
 			
-			var myName = sys.name(src);
-			botAll(myName+" superimped "+commandData+"!", 0);	
-            
-            if(typeof JSESSION.users(src).superimp == "undefined")			
-			JSESSION.users(src).superimp = myName;
+			if(poUser.superimp == undefined)
+			poUser.superimp = sys.name(src);
 			
-			sys.changeName(src, "~~"+commandData+"~~");
-            }
+			botAll(sys.name(src)+" superimped "+commandData+"!", 0);
+			sys.changeName(src, "~"+commandData+"~");
+			}
 			
 			modCommands["superimpoff"] = function () {
-			if(JSESSION.users(src).superimp == undefined) {
-			botMessage(src, "You aren't superimping.", chan);
+			if(poUser.superimp == undefined) {
+			botMessage(src, "You aren't superimping!", chan);
 			return;
 			}
 			
-			var si = JSESSION.users(src).superimp;
-			botAll(si+" changed their name back!", 0);
-			sys.changeName(src, si);
-			delete JSESSION.users(src).superimp;
+			sys.changeName(src, poUser.superimp);
+			botAll(sys.name(src)+" changed their name back!", 0);
 			}
 			}
 			
@@ -9930,7 +9936,7 @@ poUser.lastMsg = sys.time()*1;
                     ct.register(removespaces(Tour1).toLowerCase(), ["{or Person}"], "Makes someone " + Tour1 + " Tournament Authority.");
                     ct.register(removespaces(UserName).toLowerCase(), ["{or Person}"], "Makes someone " + UserName + " Server Authority.");
                     ct.register(removespaces(ModName).toLowerCase(), ["{or Person}"], "Makes someone " + ModName + " Server Authority.");
-                    ct.register("tempauth", ["{or Person}", "{o AuthLevel}", "{o Time}"], "Makes someone temporal Authority. Any other authing command(exclusing tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4. Only " + sLetter(OwnerName) + " can do 2, 3, or 4.");
+                    ct.register("tempauth", ["{or Person}", "{o AuthLevel}", "{o Time}", "{bv Time Unit}"], "Makes someone temporal authority. Any other authing command(exclusing tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4. Only " + sLetter(OwnerName) + " can do 2, 3, or 4.");
 
                     if (!noPermission(src, 3)) {
                         ct.span("Authority " + OwnerName + " Commands");
@@ -10207,7 +10213,8 @@ poUser.lastMsg = sys.time()*1;
                     My.massKick(src);
                 },
 
-                /* -- Admin Commands: Ify -- */'ify': function () {
+                /* -- Admin Commands: Ify -- */
+				'ify': function () {
                     ify.command_ify(src, commandData, chan);
                 },
 
@@ -10363,7 +10370,7 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Admin Commands: Temp-Auth */
                 tempauth: function () {
-                    script.tAuth(src, mcmd[0], Number(mcmd[1]), Number(mcmd[2]), chan);
+                    script.tAuth(src, mcmd[0], Number(mcmd[1]), Number(mcmd[2]), chan, mcmd[3]);
                 },
 
                 /* -- Admin Commands: Script */
@@ -10989,7 +10996,7 @@ Bot.botcolor];
 
                 /* -- Owner Commands: Updating */
                 updatetiers: function () {
-                    var URL = "https://raw.github.com/lamperi/po-server-goodies/56c0ad87dcb448d8afa47a555bb5ada8781ec931/tiers.xml";
+                    var URL = "http://pokemon-online.eu/tiers.xml";
                     if (/http[s]\:\/\//.test(commandData)) {
                         URL = commandData;
                     }
@@ -12195,6 +12202,7 @@ Bot.botcolor];
             myUser.lowername = lc;
             myUser.megauser = DataHash.megausers.hasOwnProperty(lc);
             myUser.voice = DataHash.voices.hasOwnProperty(lc);
+			myUser.icon = DataHash.rankicons.hasOwnProperty(lc) ? DataHash.icons[lc] : undefined;
 
             if (typeof myUser.teamChanges == 'object') myUser.teamChanges = 0;
 
@@ -12206,13 +12214,13 @@ Bot.botcolor];
             if (teamChanges > 2) {
                 if (typeof DataHash.teamSpammers[ip] == "undefined") {
                     DataHash.teamSpammers[ip] = 0;
-                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers--; ", 60 * 10);
+                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers--; ", 60 * 3);
                 }
                 else if (DataHash.teamSpammers[ip] == 0) {
                     DataHash.teamSpammers[ip] = 1;
                     botAll("Alert: Possible spammer, ip " + ip + ", name " + sys.name(src) + ". Kicked for now.", watch);
                     kick(src);
-                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers--; ", 60 * 10);
+                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers--; ", 60 * 5);
                     return;
                 }
                 else {
@@ -12222,10 +12230,12 @@ Bot.botcolor];
                     return;
                 }
             }
+			
+			script.resolveLocation(src, sys.ip(src), false);
+			
+            sys.callLater("if(JSESSION.users(" + src + ") != undefined) JSESSION.users(" + src + ").teamChanges--;", 5);
 
-            sys.callLater("if(JSESSION.users(" + src + ") != undefined) JSESSION.users(" + src + ").teamChanges--;", 10);
-
-            // The rest.
+            // Everything else //
             var getColor = script.namecolor(src);
             sys.sendHtmlAll("<timestamp/><b>Changed Team</b> -- <font color=" + getColor + "><b>" + sys.name(src) + "</b></font>", watch);
 
@@ -12335,11 +12345,11 @@ Bot.botcolor];
             var loserName = sys.name(loser).toLowerCase();
             var money = DataHash.money;
             if (typeof money[loserName] === "undefined") {
-            botMessage(loser, "You are getting 'battle points'. Currentý, you can't do anything with these, but in the future, you might!", 0);
+            botMessage(loser, "You are getting 'battle points'. Currentlý, you can't do anything with these, but in the future, you might!", 0);
                 money[loserName] = 0;
             }
             if (typeof money[winnerName] === "undefined") {
-			botMessage(winner, "You are getting 'battle points'. Currentý, you can't do anything with these, but in the future, you might!", 0);
+			botMessage(winner, "You are getting 'battle points'. Currentlý, you can't do anything with these, but in the future, you might!", 0);
                 money[winnerName] = 0;
             }
             money[winnerName] += winMoney;
@@ -12366,13 +12376,14 @@ Bot.botcolor];
 
     beforeChallengeIssued: function (src, dest, clauses, rated, mode) {
         var poUser = JSESSION.users(src);
-        if (poUser.lastChallenge + 15 - sys.time() * 1 > 0 && sys.auth(src) < 2 && poUser.lastChallenge != 0) {
-            botMessage(src, "Please wait " + getTimeString(poUser.lastChallenge + 15 - sys.time() * 1) + " before challenging.");
+		var time = sys.time() * 1;
+        if (poUser.lastChallenge + 15 - time > 0 && sys.auth(src) < 2 && poUser.lastChallenge != 0) {
+            botMessage(src, "Please wait " + getTimeString(poUser.lastChallenge + 15 - time) + " before challenging.");
             sys.stopEvent();
             return;
         }
 
-        poUser.lastChallenge = sys.time() * 1;
+        poUser.lastChallenge = time;
 
         if ((sys.tier(src) === "Challenge Cup" && sys.tier(dest) === "Challenge Cup" || sys.tier(src) === "1v1 Challenge Cup" && sys.tier(dest) === "1v1 Challenge Cup") && (clauses % 32 < 16)) {
             botMessage(src, "Challenge Cup must be enabled in the challenge window for a CC battle");
@@ -13201,8 +13212,8 @@ return;
             "name": "default",
             "author": "Lutra",
             "styling": {
-                "header": "<font color=cornflowerblue><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»</font>",
-                "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»</font>",
+                "header": "<font color=cornflowerblue><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»</b></font>",
+                "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»</b></font>",
                 "icon": "•",
                 "formatting": ["<b>", "</b>"],
                 "color": "green",
@@ -13229,8 +13240,8 @@ return;
             "name": "dem tildes",
             "author": "person6445",
             "styling": {
-                "header": "<font color=midnightblue><b>˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??</font><br/>",
-                "footer": "<br/><font color=midnightblue><b>˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??</font>",
+                "header": "<font color=midnightblue><b>˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??</b></font><br/>",
+                "footer": "<br/><font color=midnightblue><b>˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??˜~˜??</b></font>",
                 "icon": "<font color=magenta>?</font>",
                 "formatting": ["<b><font color=magenta>", "</font></b>"],
                 "message": "<br><b><font color=limegreen>Enter these commands into the client's main channel:</font></b><br/>",
@@ -15484,7 +15495,7 @@ return;
                     sys.sendAll("You have " + mafia.ticks + " seconds to debate who are the bad guys! :", mafiachan);
                     for (var role in mafia.theme.standbyRoles) {
                         names = mafia.getPlayersForRole(mafia.theme.standbyRoles[role]);
-                        for (j = 0; j < names.length; ++j) {
+                        for (var j = 0; j < names.length; ++j) {
                             for (var k in mafia.players[names[j]].role.actions.standby) {
                                 mafia.sendPlayer(names[j], mafia.players[names[j]].role.actions.standby[k].msg);
                             }
