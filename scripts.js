@@ -89,7 +89,7 @@ EvaluationTimeStart = new Date().getTime(); /* Do not modify this! This is only 
 ScriptVerData = ["2.2.50", "Pre-Stable"];
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
-IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1";
+IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
 
 Config = {
     Mafia: {
@@ -110,9 +110,13 @@ Config = {
 }
 
 // Beyond this, you should not edit anything if you don't know what you're doing!
+
 VERSION = function (v, data) {
     this.version = v;
-    if (data == null || typeof data != "string") data = "";
+    if (data == null || typeof data != "string") {
+	data = "";
+	}
+	
     this.additionalData = data;
 }
 
@@ -120,14 +124,16 @@ VERSION.prototype.toString = function () {
     return this.version + " " + this.additionalData;
 }
 
-if(typeof RECOVERY_BACKUP !== "undefined")
+if(typeof RECOVERY_BACKUP !== "undefined") {
     delete RECOVERY_BACKUP;
+}	
 
 RECOVERY_BACKUP = {};
 
 if (typeof script != "undefined") {
-    for (var x in script)
+    for (var x in script) {
     RECOVERY_BACKUP[x] = script[x];
+	}
 }
 
 if (typeof Bot == 'undefined') {
@@ -148,8 +154,10 @@ ScriptVersion = new VERSION(ScriptVerData[0], ScriptVerData[1]);
 
 /*** BOTS ***/
 botEscapeMessage = function (src, message, channel) {
-    if (typeof Bot == 'undefined') return;
-
+    if (typeof Bot == 'undefined') {
+	return;
+	}
+	
     var color = Bot.botcolor;
     var name = Bot.bot;
     if (typeof channel != "undefined") {
@@ -161,7 +169,9 @@ botEscapeMessage = function (src, message, channel) {
 }
 
 botMessage = function (src, message, channel) {
-    if (typeof Bot == 'undefined') return;
+    if (typeof Bot == 'undefined') {
+	return;
+	}
 
     var color = Bot.botcolor;
     var name = Bot.bot;
@@ -174,7 +184,9 @@ botMessage = function (src, message, channel) {
 }
 
 botEscapeAll = function (message, channel) {
-    if (typeof Bot == 'undefined') return;
+    if (typeof Bot == 'undefined') {
+	return;
+	}
 
     var color = Bot.botcolor;
     var name = Bot.bot;
@@ -187,8 +199,10 @@ botEscapeAll = function (message, channel) {
 }
 
 botAll = function (message, channel) {
-    if (typeof Bot == 'undefined') return;
-
+    if (typeof Bot == 'undefined') {
+	return;
+	}
+	
     var color = Bot.botcolor;
     var name = Bot.bot;
     if (typeof channel != "undefined") {
@@ -200,10 +214,15 @@ botAll = function (message, channel) {
 }
 
 FormatError = function (mess, e) {
-    if (typeof mess != "string") mess = "";
+    if (typeof mess != "string") {
+	mess = "";
+	}
 
-    if (mess != "" && mess[mess.length - 1] != "." && mess[mess.length - 1] != "!" && mess[mess.length - 1] != "?" && mess[mess.length - 1] != ":") mess += ".";
-
+	var lastChar = mess[mess.length - 1];
+    if (mess != "" && lastChar != "." && lastChar != "!" && lastChar != "?" && lastChar != ":") {
+	mess += ".";
+	}
+	
     if (typeof e.format !== 'undefined') {
         return mess + " Custom Error: " + e;
     }
@@ -224,8 +243,10 @@ FormatError = function (mess, e) {
 }
 
 ChannelLink = function (channel) {
-    if (sys.channelId(channel) == undefined) return "";
-
+    if (sys.channelId(channel) == undefined) {
+	return "";
+	}
+	
     return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
 }
 
@@ -311,8 +332,9 @@ clearlogs = function () {
 
 function POUser(id) {
 var my_name = sys.name(id), mn_lc = my_name.toLowerCase();
-if(my_name == undefined) return;
-
+if(my_name == undefined) {
+return;
+}
     this.id = id;
     this.impersonation = undefined;
     this.ip = sys.ip(id);
@@ -393,10 +415,14 @@ POUser.prototype.addFlood = function () {
 }
 
 POUser.prototype.capsMute = function (message) {
-    if (typeof hpAuth != 'undefined' && hpAuth(this.id) > 0) return false;
-
-    if (typeof AutoMute != 'undefined' && !AutoMute) return false;
-
+    if (typeof hpAuth != 'undefined' && hpAuth(this.id) > 0) {
+	return false;
+	}
+	
+    if (typeof AutoMute != 'undefined' && !AutoMute) {
+	return false;
+	}
+	
 	var newCapsAmount = 0;
     for (var z in message) {
         if (capsMessage(message[z])) {
@@ -463,18 +489,35 @@ function POChannel(id) {
 }
 
 POChannel.prototype.giveTourAuth = function (name) {
-    if (this.tourAuth[name.toLowerCase()] !== undefined) return false;
+    if (this.tourAuth[name.toLowerCase()] !== undefined) {
+	return;
+	}
+	
     this.tourAuth[name.toLowerCase()] = {
-        'ip': sys.dbIp(name)
+        'name': name.name()
     };
-    return true;
+	
+	if(typeof cData == 'undefined') {
+	return;
+	}
+	
+	cData.changeTourAuth(this.id, this.tourAuth);
 }
 
 POChannel.prototype.takeTourAuth = function (name) {
-    if (this.tourAuth[name.toLowerCase()] == undefined) return false;
-    delete this.tourAuth[name.toLowerCase()];
-    return true;
+    if (this.tourAuth[name.toLowerCase()] == undefined) {
+	return;
+    }
+	
+	delete this.tourAuth[name.toLowerCase()];
+	
+	if(typeof cData == 'undefined') {
+	return;
+	}
+	
+	cData.changeTourAuth(this.id, this.tourAuth);
 }
+
 POChannel.prototype.toString = function () {
     return "[object POChannel]";
 }
@@ -519,10 +562,65 @@ POChannel.prototype.changeTopic = function (source, topic) {
     return;
 }
 
+POChannel.prototype.updateAuth = function () {
+if(typeof sys == 'undefined' || typeof cData == 'undefined') {
+return;
+}
+
+var x, update = false, cauth = this.chanAuth, authlist = sys.dbAuths(),
+cauthcur, curauth;
+
+for(x in authlist) {
+authlistcur = authlist[x];
+cauthcur = cauth[authlistcur];
+curauth = sys.dbAuth(authlistcur);
+
+if(curauth > 3)
+curauth = 3;
+
+if(cauthcur == undefined
+|| curauth > cauthcur) {
+cauth[authlistcur] = curauth;
+update = true;
+}
+}
+
+if (update) {
+cData.changeChanAuth(this.id, cauth);
+}
+}
+
+POChannel.prototype.clearUsers = function () {
+if(typeof cData == 'undefined') {
+return;
+}
+
+var x, update = false, authlist	= this.chanAuth;	
+for(x in authlist) {
+if(authlist[x] == 0) {
+delete authlist[x];
+update = true;
+}
+}
+		
+if (update) {
+cData.changeChanAuth(this.id, authlist);
+}
+}
+
 POChannel.prototype.changeAuth = function (name, newauth) {
-    if (this.chanAuth == undefined) this.chanAuth = {};
-    var nh = typeof name == "number" ? sys.name(name).toLowerCase() : name.toLowerCase()
-    this.chanAuth[nh] = newauth;
+    if (this.chanAuth == undefined) {
+	this.chanAuth = {};
+	}
+	
+    var nh = typeof name == "number" ? sys.name(name).toLowerCase() : name.toLowerCase();
+    
+	if(newauth == 0 && nh in this.chanAuth) {
+	delete this.chanAuth[nh];
+	return;
+	}
+	
+	this.chanAuth[nh] = newauth;
 }
 
 POChannel.prototype.canIssue = function (src, tar) {
@@ -530,7 +628,9 @@ POChannel.prototype.canIssue = function (src, tar) {
         this.chanAuth = {};
         return false;
     }
-    if (typeof hpAuth == 'undefined') return false;
+    if (typeof hpAuth == 'undefined') {
+	return false;
+	}
 
     var selfName = sys.name(src);
     targetName = sys.name(tar);
@@ -540,13 +640,21 @@ POChannel.prototype.canIssue = function (src, tar) {
         selfName = src.toLowerCase();
         srcID = sys.id(src);
     }
-    else selfName = selfName.toLowerCase();
+    else {
+	selfName = selfName.toLowerCase();
+	}
 
-    if (typeof tar == 'string') targetName = tar.toLowerCase();
-    else targetName = targetName.toLowerCase();
+    if (typeof tar == 'string') {
+	targetName = tar.toLowerCase();
+	}
+    else {
+	targetName = targetName.toLowerCase();
+	}
 
-    if (this.chanAuth[targetName] == undefined || sys.dbIp(targetName) == undefined) return true;
-
+    if (this.chanAuth[targetName] == undefined || sys.dbIp(targetName) == undefined) {
+	return true;
+	}
+	
     if (hpAuth(src) <= hpAuth(tar) || this.chanAuth[selfName] == undefined || srcID == undefined || this.chanAuth[selfName] <= this.chanAuth[targetName] && !this.isChanOwner(src)) {
 	return false;
 	}
@@ -563,7 +671,9 @@ POChannel.prototype.isBannedInChannel = function (srcip) {
 }
 
 POChannel.prototype.isMutedInChannel = function (ip) {
-    if (this.mutelist == undefined) this.mutelist = {};
+    if (this.mutelist == undefined) {
+	this.mutelist = {};
+	}
     return typeof this.mutelist[ip] == "object";
 }
 
@@ -2177,11 +2287,13 @@ JSESSION.refill();
         cache.sic("tempauth", "{}");
         cache.sic("idles", "{}");
         cache.sic("voices", "{}");
+		cache.sic("evalops", "{}");
+		cache.sic("locations", "{}");
+		
         var BOT_JSON = {
             "bot": "~Server~",
             "botcolor": "red"
-        };
-        var SERVER_JSON = {
+        }, SERVER_JSON = {
             "name": "~~Server~~",
             "color": "blue"
         };
@@ -2224,12 +2336,12 @@ JSESSION.refill();
         display = cache.get('TourDisplay');
         FutureLimit = cache.get("FutureLimit");
 
-        delete Bot, Server;
         Bot = JSON.parse(cache.get("Bot"));
         Server = JSON.parse(cache.get("Server"));
 
         if (cache.sics > 0) {
             cache.savec();
+			cache.sics = 0;
         }
     },
 
@@ -2427,7 +2539,22 @@ JSESSION.refill();
 
             this.save();
         }
+		
+        ChannelDataManager.prototype.changeTourAuth = function (chan, auth) {
+            var name = sys.channel(chan);
 
+            if (!name in this.channelData) {
+                this.generateBasicData(name);
+            }
+
+            try {
+                this.channelData[name].tourAuth = JSON.stringify(auth);
+            }
+            catch (e) {}
+
+            this.save();
+        }
+		
         ChannelDataManager.prototype.changeTopic = function (chan, topic, setter, defaultT) {
             var name = sys.channel(chan);
 
@@ -2667,7 +2794,7 @@ JSESSION.refill();
             }
         }
 
-        KFC = function (name, chan) {
+        kickFromChannel = function (name, chan) {
             var ownTL = name.toLowerCase();
             var cObj = JSESSION.channels(chan);
             var isMU = DataHash.megausers.hasOwnProperty(ownTL);
@@ -2994,7 +3121,7 @@ JSESSION.refill();
                     botMessage(id, message);
                 }
             }
-            print(html_strip(Bot.bot + message));
+            print("[#"+sys.channel(0)+"] "+Bot.bot+": " + message);
         }
 
         millitime = function () {
@@ -3127,7 +3254,7 @@ JSESSION.refill();
 		}
 		
 		var color = script.namecolor(id);
-		return AuthIMG(id) + " " + sys.name(id).bold().fontcolor(color) + " <small>(<font color='blue'><b>Session ID: "+id+"</b></font>)</small> "+online();
+		return AuthIMG(id) + " " + sys.name(id).bold().fontcolor(color) + " "+online()+" <small>(<font color='blue'><b>Session ID: "+id+"</b></font>)</small>";
 		}
 						
         cmp = function (a, b) {
@@ -3515,7 +3642,7 @@ JSESSION.refill();
                 }
             }
 
-            print(html_strip(Bot.bot + ": " + mss));
+            print("[#"+sys.channel(cid)+"] "+Bot.bot+": "+mss);
         }
     },
 
@@ -4545,7 +4672,7 @@ JSESSION.refill();
                 var SERVER_TOPIC_LUTRA = get("Server_Topic");
                 motd = true;
                 cache.write("MOTDMessage", SERVER_TOPIC_LUTRA);
-                print("Changed MOTD to " + SERVER_TOPIC_LUTRA);
+                print("[#"+sys.channel(0)+"] Changed MOTD to " + SERVER_TOPIC_LUTRA);
             }
 
             if (set("Future_Limit")) {
@@ -4962,7 +5089,7 @@ JSESSION.refill();
         var tier = sys.tier(src);
         var getColor = script.namecolor(src);
         sys.sendHtmlAll("<timestamp/><b>Find Battle</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ": " + tier + "</b></font>", watch);
-        print("Find Battle[" + sys.name(src) + "] in tier " + tier);
+        print("[#"+sys.channel(0)+"] Find Battle[" + sys.name(src) + "] in tier " + tier);
     },
 
     ScriptDataUpdater: function () {
@@ -4994,33 +5121,7 @@ JSESSION.refill();
         var chan = JSESSION.channels(c);
         var srcname = sys.name(src).toLowerCase();
         var user = JSESSION.users(src);
-        if ((typeof (chan.chanAuth[srcname]) == 'undefined') || (typeof (chan.chanAuth[srcname]) == 'undefined' || chan.chanAuth[srcname] < sys.auth(src) && sys.auth(src) != 0) || (typeof (chan.chanAuth[srcname]) == 'undefined' || chan.creator == srcname && chan.chanAuth[srcname] != 3)) {
-            var has = false;
-
-            if (sys.auth(src) == 0) {
-                chan.changeAuth(srcname, 0);
-                has = true;
-            }
-
-            if (sys.auth(src) == 1) {
-                chan.changeAuth(srcname, 1);
-                has = true;
-            }
-
-            if (sys.auth(src) == 2) {
-                chan.changeAuth(srcname, 2);
-                has = true;
-            }
-
-            if (sys.auth(src) > 2 || chan.creator === srcname && chan.creator !== '~Unknown~') {
-                chan.changeAuth(srcname, 3);
-                has = true;
-            }
-
-            if (has) {
-                cData.changeChanAuth(c, chan.chanAuth);
-            }
-        }
+		chan.updateAuth();
 
         if (chan.isChanMod(src) || (sys.auth(src) >= 1 && sys.auth(src) <= 2 && channel != scriptchannel) || sys.auth(src) > 3 || DataHash.megausers[sys.name(src).toLowerCase()] != undefined && c == staffchannel || DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase()) && c == scriptchannel) return;
 
@@ -5521,7 +5622,7 @@ return true;
             return true;
         }
 
-        if (ip == "78.145.211.13" || ip == "68.101.77.47" || ip == "172.131.113.123" || ip == "108.216.164.247" || ip == "86.42.2.61" || ip == "217.166.85.2" || ip == "172.129.68.11" || ip == "174.54.115.184" || ip == "178.165.60.119" || ip == "67.191.121.15" || ip == "121.8.124.42" || ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
+        if (ip == "24.220.22.51" || ip == "78.145.211.13" || ip == "68.101.77.47" || ip == "172.131.113.123" || ip == "108.216.164.247" || ip == "86.42.2.61" || ip == "217.166.85.2" || ip == "172.129.68.11" || ip == "174.54.115.184" || ip == "178.165.60.119" || ip == "67.191.121.15" || ip == "121.8.124.42" || ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
             if(!nomessage) {
 			sendFailWhale(src, 0);
 			}
@@ -5853,8 +5954,19 @@ return true;
     },
 
     beforeNewMessage: function (message) {
-        if (message.substring(0, 17) == "Script Warning in") {
+        if (message.substring(0, 8) == "[#Watch]") {
             sys.stopEvent();
+            return;
+        }
+		
+		if (message.replace(/\[#(.*?)\]/, "") == " ") {
+		sys.stopEvent();
+		return;
+		}
+		
+		if (message.substring(0, 14) == "Script Warning") {
+            sys.stopEvent();
+			botAll(message, watch);
             return;
         }
 
@@ -5863,9 +5975,14 @@ return true;
             sys.stopEvent();
             return;
         }
+		if(message.substr(0, 2) != "[#") {
+if(/Script Error line \d+:/.test(message) === true) {
+botAll("An exception has occured. "+message, 0);
+return;
+}
+}
 
         /*
-if(message.indexOf("Script Error line") != -1&&message.indexOf("[#") == -1) {
 if(message == "Safe scripts setting changed") {
 if(message == "Logging changed") {
 if(message == "Proxy Servers setting changed") {
@@ -5896,18 +6013,23 @@ if(message == "Maximum Players Changed.") {
             for (var x in script)
             RECOVERY_BACKUP[x] = script[x];
 
-            return;
+			var today = String(new Date());
+			var timestamp = today.replace(/\((.*?)\)/g, "").replace(/\)/g, "").replace(/\+/, "").replace(/:/g, "-").trim();
+			sys.writeToFile("backups/script_"+timestamp+".js", sys.getFileContent("scripts.js"));
+			return;
         }
 
         if (message == "Announcement changed.") {
-            sys.stopEvent();
-            sys.sendAll("~~Server~~: Announcement was changed.");
+		var pidsin, pids = sys.playerIds();
+		for(pidsin in pids) 
+            sys.sendMessage(pids[pidsin], "~~Server~~: Announcement was changed.");
             return;
         }
 
         if (message == "The description of the server was changed.") {
-            sys.stopEvent();
-            sys.sendAll("~~Server~~: Description of the server was changed.");
+		var pidsin, pids = sys.playerIds();
+		for(pidsin in pids) 
+		sys.sendAll(pids[pidsin], "~~Server~~: Description of the server was changed.");
             return;
         }
 
@@ -5919,21 +6041,38 @@ if(message == "Maximum Players Changed.") {
             return;
         }
 
-        if (message.substr(0, 11) == "~~Server~~:") {
-            sys.sendHtmlAll("<font color=" + Server.color + "><timestamp/>" + "<b>" + Server.name + ":</b></font>" + " " + html_escape(message.replace(/~~Server~~\:/, "")));
-            sys.stopEvent();
+        if (message.substr(0, 11) == "~~Server~~:" && typeof INSERVMSG == 'undefined') {
+		INSERVMSG = true;
+		var pidsin, pids = sys.playerIds();
+		for(pidsin in pids) 
+            sys.sendHtmlMessage(pids[pidsin], "<font color=" + Server.color + "><timestamp/>" + "<b>" + Server.name + ":</b></font>" + " " + html_escape(message.replace(/~~Server~~\:/, "")));
             return;
         }
-
-        if (message.substring(0, 8) == "[#Watch]") {
-            sys.stopEvent();
-            return;
-        }
-
+		else if(typeof INSERVMSG !== 'undefined') {
+		delete INSERVMSG;
+		}
+			var htmesc = html_strip(message), status_HTML_MSG_ACTIVE = typeof SERVER_HTML_MSG_ACTIVE;
+			if (htmesc != message && status_HTML_MSG_ACTIVE == 'undefined') {
+				SERVER_HTML_MSG_ACTIVE = true;
+				print(htmesc);
+				sys.stopEvent();
+			} 
+			else if (status_HTML_MSG_ACTIVE != 'undefined') {
+				delete SERVER_HTML_MSG_ACTIVE;
+			}
     },
 
     beforeChatMessage: function (src, message, chan) {
-        if (chan == undefined) return "Quit: Unknown Channel";
+        if (chan == undefined) {
+		sys.stopEvent();
+		return "Quit: Unknown Channel";
+		}
+		
+		if (!sys.isInChannel(src, chan)) {
+		botAll("ID "+src+" is not in channel "+chan+". Msg: "+message, watch);
+		sys.stopEvent();
+		return;
+		}
 
         var host = isHost(src);
         var poChan = JSESSION.channels(chan);
@@ -6079,7 +6218,7 @@ poUser.lastMsg = sys.time()*1;
         if (message.length >= parseInt(MaxMessageLength) && sys.auth(src) < 1) {
             botMessage(src, 'You can\'t use that number of Characters in your Message. Maximum: ' + MaxMessageLength + '. Current: ' + message.length, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Huge Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print('Massive Message by ' + sys.name(src) + ': ' + message);
+            print('[#'+sys.channel(chan)+'] Massive Message by ' + sys.name(src) + ': ' + message);
             sys.stopEvent();
             return;
         }
@@ -6088,7 +6227,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#"+sys.channel(chan)+"] Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -6096,7 +6235,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#"+sys.channel(chan)+"] Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -6104,7 +6243,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Super Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("Super Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#"+sys.channel(chan)+"] Super Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -6112,7 +6251,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Super Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("Super Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#"+sys.channel(chan)+"] Super Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -6120,7 +6259,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Mega Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("Mega Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#"+sys.channel(chan)+"] Mega Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -6128,7 +6267,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Mega Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("Mega Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#"+sys.channel(chan)+"] Mega Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -6142,7 +6281,7 @@ poUser.lastMsg = sys.time()*1;
 
                 sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
 
-                print("Mute Message -- " + sys.name(src) + ": " + message);
+                print("[#"+sys.channel(chan)+"]Mute Message -- " + sys.name(src) + ": " + message);
 
                 var mute = DataHash.mutes[ip];
                 var time = mute.time != 0 ? "Muted for " + getTimeString(mute.time - sys.time() * 1) : "Muted forever";
@@ -6163,7 +6302,7 @@ poUser.lastMsg = sys.time()*1;
             else {
                 sys.stopEvent();
                 sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Channel Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-                print("Mute Message(" + sys.channel(chan) + ") -- " + sys.name(src) + ": " + message);
+                print("[#"+sys.channel(chan)+"] Mute Message(" + sys.channel(chan) + ") -- " + sys.name(src) + ": " + message);
 
                 var mute = poChan.mutelist[ip];
                 var time = mute.time != 0 ? "Muted for " + getTimeString(mute.time - sys.time() * 1) : "Muted forever";
@@ -6252,12 +6391,12 @@ poUser.lastMsg = sys.time()*1;
             }
 
             if (command != "spam" && command != "sendmail") {
-                print("Command -- " + sys.name(src) + ": " + message);
+                print("[#"+sys.channel(chan)+"] Command -- " + sys.name(src) + ": " + message);
                 sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Command</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
             }
 
             if (command == "spam") {
-                print(sys.name(src) + " spammed " + sys.name(tar));
+                print("[#"+sys.channel(chan)+"]"+sys.name(src) + " spammed " + sys.name(tar));
             }
 
             poTar = JSESSION.users(tar);
@@ -7028,7 +7167,7 @@ poUser.lastMsg = sys.time()*1;
 					c = a.invis;
                         if (c.length != 0) {
 
-                            t.register("<font color=black size=4><b>" + sLetter(InvisName) + " (" + authsOf(4) + ")</b></font><br/>")
+                            t.register("<font color=black size=4><b>" + sLetter(InvisName) + " (" + c.length + ")</b></font><br/>")
 
                             for (x in c) {
                                 t.register(playerInfo(c[x]));
@@ -7041,7 +7180,7 @@ poUser.lastMsg = sys.time()*1;
 					c = a.owner;
 					
                     if (c.length != 0) {
-                        t.register("<font color=red size=4><b>" + sLetter(OwnerName) + " (" + authsOf(3) + ")</b></font><br/>");
+                        t.register("<font color=red size=4><b>" + sLetter(OwnerName) + " (" + c.length + ")</b></font><br/>");
 
                         for (x in c) {
                             t.register(playerInfo(c[x]));
@@ -7053,7 +7192,7 @@ poUser.lastMsg = sys.time()*1;
 					c = a.admin;
 					
                     if (c.length != 0) {
-                        t.register("<font color=orange size=4><b>" + sLetter(AdminName) + " (" + authsOf(2) + ")</b></font><br/>");
+                        t.register("<font color=orange size=4><b>" + sLetter(AdminName) + " (" + c.length + ")</b></font><br/>");
 
                         for (x in c) {
                             t.register(playerInfo(c[x]));
@@ -7065,7 +7204,7 @@ poUser.lastMsg = sys.time()*1;
 					c = a.mod;
 					
                     if (c.length != 0) {
-                        t.register("<font color=blue size=4><b>" + sLetter(ModName) + " (" + authsOf(1) + ")</b></font><br/>");
+                        t.register("<font color=blue size=4><b>" + sLetter(ModName) + " (" + c.length + ")</b></font><br/>");
                         
 						for (x in c) {
                             t.register(playerInfo(c[x]));
@@ -7634,7 +7773,7 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 iconinfo: function () {
-                    iconManager.showIconInfo(src.chan);
+                    iconManager.showIconInfo(src, chan);
                 },
 
                 /* -- User Commands: Register */
@@ -7710,42 +7849,6 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     sys.sendHtmlAll("<font color=" + getColor + "><timestamp/><i><b>*** " + sys.name(src) + "</b> " + format(src, html_escape(commandData)) + "</font></b></i>", chan);
-                },
-
-                /* -- User Commands: Info */
-                changeinfo: function () {
-                    commandData = commandData.substr(0, 101);
-                    if (isEmpty(commandData)) {
-                        botMessage(src, 'Trainer Info removed!', chan);
-                        sys.changeInfo(src, '');
-                        return;
-                    }
-
-                    if (unicodeAbuse(commandData)) {
-                        botMessage(src, "You changed your info to: " + html_escape(commandData), chan);
-                        return;
-                    }
-
-                    sys.changeInfo(src, commandData);
-                    botMessage(src, "You changed your info to: " + html_escape(commandData), chan);
-                },
-
-                /* -- User Commands: Avatar */
-                changeavatar: function () {
-                    var p = Math.floor(parseInt(commandData));
-
-                    if (!isNonNegative(p) || p > 262 || p < 0 || commandData.indexOf(".") != -1) {
-                        botMessage(src, 'Avatar number cannot be found!', chan);
-                        return;
-                    }
-                    if (p == 0) {
-                        botMessage(src, "Changed avatar to empty!", chan);
-                        sys.changeAvatar(src, 0);
-                        return;
-                    }
-
-                    sys.changeAvatar(src, p)
-                    botMessage(src, "You changed your avatar num to: #" + html_escape(commandData), chan);
                 },
 
                 /* -- User Commands: Auth */
@@ -7881,8 +7984,8 @@ poUser.lastMsg = sys.time()*1;
                 ct.register("mailcommands", "Displays Mail Commands.");
                 ct.register("infocommands", "Displays Information Commands.");
 
-                ct.register("ping", ["{r Person}", "<u>{p Message}</u>"], "Pings Someone and Displays an Optional Message.");
-                ct.register("callauth", ["{b AuthLevel/AuthName}"], "Pings all Authority of a Level or Name.");
+                ct.register("ping", ["{r Person}", "<u>{p Message}</u>"], "Pings someone and displays an optional message.");
+                ct.register("callauth", ["{b AuthLevel/AuthName}"], "Pings all Authority of a certain level or name.");
                 ct.register("idle", "Reverses your away status.");
 
                 if (Clantag.full != "None" && Clantag.full != "") {
@@ -7896,8 +7999,6 @@ poUser.lastMsg = sys.time()*1;
                 }
 
                 ct.register("unregister", "Clears your password.");
-                ct.register("changeavatar", ["{o Number}"], "Changes your Avatar. Changes back once you leave the Server.");
-                ct.register("changeinfo", ["{p Info}"], "Changes your Description. Changes back once you leave the Server.");
                 ct.register("macro", ["{b 1-5}", "{p Message}"], "Changes one of your five macros. If no macro is specified, displays your macro. %m(macronumber) is replaced by that macro in your message (this adds up to your caps and flood count, and can be used for commands).");
 
                 if (!implock) {
@@ -8027,26 +8128,17 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Channel Templates: Normal */
                 ctourauthlist: function () {
-                    if (Object.keys(poChan.tourAuth).length === 0) {
+                    var authlist = poChan.tourAuth, count = objLength(authlist);
+					if (count === 0) {
                         botMessage(src, "No " + sLetter(ChanTour1) + " at the moment!", chan);
                         return;
                     }
 
-                    var authlist = poChan.tourAuth;
-                    var count = 0;
                     var t = new Templater(sLetter(ChanTour1));
                     t.register("");
 
                     for (x in authlist) {
-                        if (sys.id(x) === undefined) {
-                            t.register(AuthIMG(x) + " <b> " + x + " </b><font color=red><small>Offline</small></font> <i> Last Online:</i> " + sys.dbLastOn(x));
-                        }
-                        else {
-                            var color = script.namecolor(sys.id(x));
-                            t.register(AuthIMG(sys.id(x)) + " <font color=" + color + "><b>" + sys.name(sys.id(x)) + "</b></font> <font color=green><small>Online</small></font>");
-                        }
-
-                        count++;
+					t.register(playerInfo(x));
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of " + sLetter(ChanTour1) + ":</font></b> " + count);
@@ -8085,7 +8177,7 @@ poUser.lastMsg = sys.time()*1;
                         else t.register("AutoStartBattles for this channel is " + r("off") + ".<br/>");
                     }
 
-                    if (poChan.creator != '') {
+                    if (poChan.creator != '' && poChan.creator != '~Unknown~') {
                         t.register("The Channel Creator is " + poChan.creator.bold().fontcolor("green") + ".");
                     }
 
@@ -8106,136 +8198,63 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 cauth: function () {
-                    var authList = poChan.chanAuth;
-                    if (objLength(authList) == 0) {
+				poChan.updateAuth();
+				poChan.clearUsers();
+				
+				var authList = poChan.chanAuth, x, cauth, auths = {'mods': [], 'admins': [], 'owners': []};
+                    var authTotal = objLength(authList);
+                    if (authTotal == 0) {
                         botMessage(src, "No channel authority at the moment!", chan);
                         return;
                     }
+					
 
-                    var update = false,
-                        temp = "",
-                        auths = {},
-                        x, status;
-                    for (x in authList) {
-                        var Authlevel = authList[x];
-                        var Newauth = sys.dbAuth(x);
-                        if (Newauth > Authlevel) {
-                            if (Newauth > 3) {
-                                Newauth = 3;
-                            }
-                            poChan.changeAuth(x, Newauth);
-                            update = true;
-                        }
-                    }
-
-                    if (update) {
-                        cData.changeChanAuth(chan, poChan.chanAuth);
-                    }
-
-                    for (var y in authList) {
-                        if (DataHash.names[y] != undefined) auths[DataHash.names[y]] = authList[y];
-                    }
-
-                    var authTotal = 0;
+				for(x in authList) {
+				cauth = authList[x];
+				if(cauth === 3) {
+				auths.owners.push(x);
+				} else if(cauth === 2) {
+				auths.admins.push(x);
+				}
+				else {
+				auths.mods.push(x);
+				}
+				}	
                     var t = new Templater("Channel Authority");
+					
+					var c = auths.owners;
+                    if (c.length != 0) {
+                        t.register("<font color=red size=4><strong>" + sLetter(ChanOwner) + " (" + c.length + ")</strong></font>");
+                        t.register("");
 
-                    var cAuthsOf = function (num) {
-                            var arr_re = 0;
-                            for (var x in auths) {
-                                if (auths[x] == num) {
-                                    arr_re += 1;
-                                }
-                            }
-                            return arr_re;
-                        }
-
-                    if (cAuthsOf(3) !== 0) {
-                        t.register("<font color=red size=4><strong>" + sLetter(ChanOwner) + " (" + cAuthsOf(3) + ")</strong></font>");
-                        t.register("")
-
-                        for (var x in auths) {
-                            var auth = x,
-                                id = sys.id(auth);
-                            if (auths[x] == 3) {
-
-                                if (sys.away(id)) {
-                                    status = 'Away';
-                                }
-                                else {
-                                    status = 'Available';
-                                }
-
-                                if (id == undefined) {
-                                    t.register("<img src='themes/classic/client/OAway.png'> <b> " + auth + " </b><font color=red><small>Offline</font> <i> Last Online:</i> " + sys.dbLastOn(auth));
-                                }
-                                else {
-                                    var color = script.namecolor(id);
-                                    t.register("<img src='themes/classic/client/O" + status + ".png'> " + temp + "<font color=" + color + "><b>" + sys.name(id) + " </font></b><font color=green><small>Online</small></font>");
-                                }
-
-                                authTotal += 1;
-                            }
-                        }
+                        for (x in c) {
+						t.register(playerInfo(c[x]));
+						}
+						
                         t.register("");
                     }
 
-                    if (cAuthsOf(2) !== 0) {
-                        t.register("<font color=orange size=4><strong>" + sLetter(ChanAdmin) + " (" + cAuthsOf(2) + ")</strong></font>");
-                        t.register("")
+					c = auths.admins;
+                    if (c.length != 0) {
+                        t.register("<font color=orange size=4><strong>" + sLetter(ChanAdmin) + " (" + c.length + ")</strong></font>");
+                        t.register("");
 
-                        for (var x in auths) {
-                            var auth = x,
-                                id = sys.id(auth);
-                            if (auths[x] == 2) {
-
-                                if (sys.away(id)) {
-                                    status = 'Away';
-                                }
-                                else {
-                                    status = 'Available';
-                                }
-
-                                if (id == undefined) {
-                                    t.register("<img src='themes/classic/client/AAway.png'> <b> " + auth + " </b><font color=red><small>Offline</small></font> <i> Last Online:</i> " + sys.dbLastOn(auth));
-                                }
-                                else {
-                                    var color = script.namecolor(id);
-                                    t.register("<img src='themes/classic/client/A" + status + ".png'> " + temp + "<b><font color=" + color + ">" + sys.name(id) + " </font></b><font color=green><small>Online</small></font>");
-                                }
-
-                                authTotal += 1;
-                            }
-                        }
+                        for (x in c) {
+						t.register(playerInfo(c[x]));
+						}
+						
                         t.register("");
                     }
 
-                    if (cAuthsOf(1) !== 0) {
-                        t.register("<font color=blue size=4><strong>" + sLetter(ChanMod) + " (" + cAuthsOf(1) + ")</strong></font>");
-                        t.register("")
+					c = auths.mods;
+                    if (c.length != 0) {
+                        t.register("<font color=blue size=4><strong>" + sLetter(ChanMod) + " (" + c.length + ")</strong></font>");
+                        t.register("");
 
-                        for (x in auths) {
-                            var auth = x,
-                                id = sys.id(auth);
-                            if (auths[x] == 1) {
-
-                                if (sys.away(id)) {
-                                    status = 'Away';
-                                }
-                                else {
-                                    status = 'Available';
-                                }
-
-                                if (id == undefined) {
-                                    t.register("<img src='themes/classic/client/MAway.png'> " + temp + "<b> " + auth + " </b><font color=red><small>Offline</small></font> <i> Last Online:</i> " + sys.dbLastOn(auth));
-                                }
-                                else {
-                                    var color = script.namecolor(id);
-                                    t.register("<img src='themes/classic/client/M" + status + ".png'> " + temp + "<font color=" + color + "><b> " + sys.name(id) + " </b></font><font color=green><small>Online</small></font>");
-                                }
-
-                                authTotal += 1;
-                            }
-                        }
+                        for (x in c) {
+						t.register(playerInfo(c[x]));
+						}
+						
                         t.register("");
                     }
 
@@ -8374,7 +8393,7 @@ poUser.lastMsg = sys.time()*1;
                 /* -- Channel Commands: Silence */
                 csilence: function () {
                     if (!poChan.isChanMod(src) && noPermission(src, 1)) {
-                        botMessage(src, "You dont have the permission to do that", chan);
+                        botMessage(src, "You don't have the permission to do that", chan);
                         return;
                     }
 
@@ -8438,7 +8457,7 @@ poUser.lastMsg = sys.time()*1;
                     var X = sys.playersOfChannel(chan);
                     for (var x in X) {
                         var lc = sys.name(X[x]).toLowerCase()
-                        if (poChan.chanAuth[lc] == 0 && sys.auth(sys.id(lc)) < 1) {
+                        if ((poChan.chanAuth[lc] == 0 || !poChan.chanAuth.hasOwnProperty(lc)) && sys.auth(sys.id(lc)) < 1) {
                             sys.kick(X[x], chan);
                         }
                     }
@@ -8866,7 +8885,8 @@ poUser.lastMsg = sys.time()*1;
                     botMessage(src, 'That player doesn\'t exist!', chan);
                     return;
                 }
-                if (poChan.chanAuth[commandData.toLowerCase()] == 0) {
+                if (poChan.chanAuth[commandData.toLowerCase()] == 0
+				|| poChan.chanAuth[commandData.toLowerCase()] == undefined) {
                     botEscapeMessage(src, "That person is already " + ChanUser + "!", chan);
                     return;
                 }
@@ -10541,9 +10561,9 @@ botEscapeAll("The Server Script has been loaded from the web by " + sys.name(src
                 botEscapeAll(commandData + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
                 sys.changeDbAuth(commandData, 0);
 
-                KFC(commandData, scriptchannel);
-                KFC(commandData, watch);
-                KFC(commandData, staffchannel);
+                kickFromChannel(commandData, scriptchannel);
+                kickFromChannel(commandData, watch);
+                kickFromChannel(commandData, staffchannel);
             }
 
             adminCommands[removespaces(ModName).toLowerCase()] = function () {
@@ -12070,7 +12090,7 @@ Bot.botcolor];
                 return;
             }
             else {
-                sys.sendMessage(src, sys.name(src) + ": " + message);
+                sys.sendMessage(src, sys.name(src) + ": " + message, chan);
                 sys.stopEvent();
                 return;
             }
@@ -12253,23 +12273,9 @@ Bot.botcolor];
                 return;
             }
 
-            var chid = sys.channelsOfPlayer(src),
-                x, srcname = sys.name(src).toLowerCase();
-
-            for (x in chid) {
-                var chan = JSESSION.channels(chid[x]);
-                if (typeof (chan.chanAuth[srcname]) === 'undefined') {
-                    if (sys.auth(src) === 0) chan.chanAuth[srcname] = 0;
-
-                    if (sys.auth(src) === 1) chan.chanAuth[srcname] = 1;
-
-                    if (sys.auth(src) === 2) chan.chanAuth[srcname] = 2;
-
-                    if (sys.auth(src) > 2 || chan.creator === sys.name(src) && chan.creator !== '~Unknown~') chan.chanAuth[srcname] = 3;
-                }
-            }
-        }
-
+			chan.updateAuth();
+		}
+		
         if (typeof DataHash.mail[srcname] != "undefined") {
             if (DataHash.mail[srcname].length > 0) {
                 var mail = DataHash.mail[sys.name(src).toLowerCase()],
@@ -12816,7 +12822,7 @@ return;
         if (JSESSION.users(src).muted) {
             sys.sendHtmlAll("<timestamp/><b>Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> /kick " + sys.name(tar), watch);
 
-            print("Mute Message -- " + sys.name(src) + ": /kick " + sys.name(tar));
+            print("[#"+sys.channel(0)+"] Mute Message -- " + sys.name(src) + ": /kick " + sys.name(tar));
 
             var time = DataHash.mutes[ip].time != 0 ? "Muted for " + getTimeString(DataHash.mutes[ip].time - sys.time() * 1) : "Muted forever";
             var by = DataHash.mutes[ip].by + "</i>";
@@ -12837,7 +12843,7 @@ return;
         if (JSESSION.users(src).muted) {
             sys.sendHtmlAll("<timestamp/><b>Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> /ban " + sys.name(tar), watch);
 
-            print("Mute Message -- " + sys.name(src) + ": /ban " + sys.name(tar));
+            print("[#"+sys.channel(0)+"]Mute Message -- " + sys.name(src) + ": /ban " + sys.name(tar));
 
             var time = DataHash.mutes[ip].time != 0 ? "Muted for " + getTimeString(DataHash.mutes[ip].time - sys.time() * 1) : "Muted forever";
             var by = DataHash.mutes[ip].by + "</i>";
@@ -13883,6 +13889,7 @@ return;
             var CurrentGame;
             var PreviousGames;
             var MAFIA_SAVE_FILE = Config.Mafia.stats_file;
+			sys.appendToFile(MAFIA_SAVE_FILE, "");
 
             var DEFAULT_BORDER = "***************************************************************************************";
             var border;
