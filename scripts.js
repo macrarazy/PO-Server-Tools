@@ -14,6 +14,9 @@
 || # Script Version:                                       # ||
 || # 2.2.50 Pre-Stable                                     # ||
 || #                                                       # ||
+|| # Server Requirements:                                  # ||
+|| # 1.0.53                                                # ||
+|| #                                                       # ||
 || ######################################################### ||
 || #                                                       # ||
 || # Default Styles and Rank Icons Credit:                 # ||
@@ -12276,9 +12279,10 @@ Bot.botcolor];
 			chan.updateAuth();
 		}
 		
+		var srcname = sys.name(src).toLowerCase();
         if (typeof DataHash.mail[srcname] != "undefined") {
             if (DataHash.mail[srcname].length > 0) {
-                var mail = DataHash.mail[sys.name(src).toLowerCase()],
+                var mail = DataHash.mail[srcname],
                     p, count = 0;
 
                 for (p in mail) {
@@ -13781,28 +13785,36 @@ return;
             4: "SDef",
             5: "Spd"
         };
-        var hiddenPowerNum = sys.moveNum("Hidden Power")
+        var hiddenPowerNum = sys.moveNum("Hidden Power");
         var gen = sys.gen(tar);
         var t = new Template();
 
         t.register(style.header);
         t.register("<font color=" + script.namecolor(tar) + "><b>" + sys.name(tar) + "</b></font>'s Gen " + gen + " Team<br/>");
 
-        for (var i = 0; i < 6; i += 1) {
-            var color = colori[sys.pokeType1(sys.teamPoke(tar, i), gen)]
-            if (sys.teamPoke(tar, i) == 0) {
+		var i, color, gender, pokeId, nick, item, level, evstr, w, evtable,
+		dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs,
+		b, hp, t_, hptype, type;
+		
+        for (i = 0; i < 6; i++) {
+            color = colori[sys.pokeType1(sys.teamPoke(tar, i), gen)]
+            pokeId = sys.teamPoke(tar, i);
+			
+            if (pokeId === 0) {
                 continue;
             }
 
-            var gender = genderi[sys.teamPokeGender(tar, i)]
+            gender = genderi[sys.teamPokeGender(tar, i)];
+			shinyPoke = sys.teamPokeShine(tar, i);
 
-            t.register("<img src='pokemon:num=" + sys.teamPoke(tar, i) + "&gen=" + gen + "&back=false&gender=" + gender + "'>" + "<img src='pokemon:num=" + sys.teamPoke(tar, i) + "&gen=" + gen + "&back=true&gender=" + gender + "'>");
+            t.register("<img src='pokemon:num=" + pokeId+ "&gen=" + gen + "&back=false&shiny="+shinyPoke+"&gender=" + gender + "'>" + "<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=true&shiny="+shinyPoke+"&gender=" + gender + "'>");
 
-            var nick = sys.teamPokeNick(tar, i) + " (" + sys.pokemon(sys.teamPoke(tar, i)) + ")"
+            nick = sys.teamPokeNick(tar, i) + " (" + sys.pokemon(sys.teamPoke(tar, i)) + ")"
             if (sys.teamPokeNick(tar, i) == sys.pokemon(sys.teamPoke(tar, i))) {
                 nick = sys.pokemon(sys.teamPoke(tar, i));
             }
-            var item = "<img src='item:" + sys.teamPokeItem(tar, i) + "'>";
+			
+            item = "<img src='item:" + sys.teamPokeItem(tar, i) + "'>";
             if (sys.item(sys.teamPokeItem(tar, i)) == "(No Item)") {
                 item = "";
             }
@@ -13813,64 +13825,70 @@ return;
                 t.register("<font color=" + color + "><b>Trait:</b></font> " + sys.ability(sys.teamPokeAbility(tar, i)));
             }
 
-            var level = sys.teamPokeLevel(tar, i);
+            level = sys.teamPokeLevel(tar, i);
 
-            if (level != 100) t.register('<b><font color="+color+">Level:</b></font> ' + level);
+            if (level != 100) {
+			t.register('<b><font color='+color+'>Level:</b></font> ' + level);
+            }
+			
+            evstr = [];
 
-            var evstr = [];
-
-            for (var w = 0; w < 6; w++) {
-                var evtable = evtablei[w];
+            for (w = 0; w < 6; w++) {
+                evtable = evtablei[w];
                 if (sys.teamPokeEV(tar, i, w) != 0 || gen == 2 && sys.teamPokeDV(tar, i, q) != 255) {
                     evstr.push(sys.teamPokeEV(tar, i, w) + " " + evtable);
                 }
             }
 
-            if (evstr.length != 0) t.register("<font color=" + color + "><b>EVs:</b></font> " + evstr.join(" / "));
-            var dvstr = [];
-            for (var q = 0; q < 6; q++) {
-                var dvtable = evtablei[q];
-                if (sys.teamPokeDV(tar, i, q) != 31 || gen == 2 && sys.teamPokeDW(tar, i, q) != 15) {
-                    dvstr.push(sys.teamPokeDV(tar, i, q) + " " + dvtable);
+            if (evstr.length != 0) {
+			t.register("<font color=" + color + "><b>EVs:</b></font> " + evstr.join(" / "));
+            }
+			
+			dvstr = [];
+            for (w = 0; w < 6; w++) {
+                dvtable = evtablei[w];
+                if (sys.teamPokeDV(tar, i, w) != 31 || gen == 2 && sys.teamPokeDW(tar, i, w) != 15) {
+                    dvstr.push(sys.teamPokeDV(tar, i, w) + " " + dvtable);
                 }
             }
 
-            if (dvstr.length != 0) t.register("<font color=" + color + "><b>IVs:</b></font> " + dvstr.join(" / "));
-
+            if (dvstr.length != 0) {
+			t.register("<font color=" + color + "><b>IVs:</b></font> " + dvstr.join(" / "));
+			}
+			
             if (gen > 2) {
-                var nature = naturei[sys.teamPokeNature(tar, i)];
+                nature = naturei[sys.teamPokeNature(tar, i)];
                 t.register("<b><font color=" + color + ">" + nature + "</font></b>");
             }
 
-            for (var j = 0; j < 4; j++) {
+            for (j = 0; j < 4; j++) {
 
-                var moveNum = sys.teamPokeMove(tar, i, j);
-                var moveStr = "<b><font color=" + color + ">" + sys.move(moveNum) + "</font></b>";
-                var moveName = sys.move(moveNum);
+                moveNum = sys.teamPokeMove(tar, i, j);
+                moveName = sys.move(moveNum);
+				moveStr = "<b><font color=" + colori[sys.moveType(moveNum)] + ">" + moveName + "</font></b>";
 
                 if (moveNum == 0) {
                     continue;
                 }
 
                 if (moveNum == hiddenPowerNum) {
-                    var hpdvs = [];
+                    hpdvs = [];
 
-                    for (var n = 0; n < 6; n++) {
-                        hpdvs.push(sys.teamPokeDV(src, i, n));
+                    for (w = 0; w < 6; w++) {
+                        hpdvs.push(sys.teamPokeDV(src, i, w));
                     }
 
-                    var b = hpdvs;
-                    var hp = sys.hiddenPowerType(gen, b[0], b[1], b[2], b[3], b[4], b[5], b[6]);
-                    var t_ = sys.type(hp);
+                    b = hpdvs;
+                    hp = sys.hiddenPowerType(gen, b[0], b[1], b[2], b[3], b[4], b[5], b[6]);
+                    t_ = sys.type(hp);
 
-                    var hptype = "<font color=" + colori[hp] + "><b>" + t_ + "</b></font>";
-                    moveStr = "<font color=" + color + "><b>Hidden Power</b></font> [" + hptype + "]";
-                    moveNum = hp;
+                    hptype = "<font color=" + colori[hp] + "><b>" + t_ + "</b></font>";
+                    moveStr = "<font color=" + colori[hp] + "><b>Hidden Power</b></font> [" + hptype + "]";
                 }
 
-                /* var type = "<img src='Themes/Classic/types/type"+sys.moveType(moveNum)+"'>"; */
+                type = "<img src='Themes/Classic/types/type"+sys.moveType(moveNum)+"' width='40'>";
 
-                t.register('- ' + moveStr);
+                t.register(type+' ' + moveStr);
             }
         }
 
