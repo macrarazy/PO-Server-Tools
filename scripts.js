@@ -2127,36 +2127,6 @@ JSESSION.registerGlobal(POGlobal);
 JSESSION.refill();
 
 ({
-    customAbilityBans: function (src, e, tier) {
-        if (!tier) tier = sys.tier(src);
-        var ltier = tier.toLowerCase();
-        var valid = true;
-        var bans = DataHash.bannedAbilities;
-        for (var i = 0; i < 6; ++i) {
-
-            var ability = sys.ability(sys.teamPokeAbility(src, i));
-            var lability = ability.toLowerCase();
-            var poke = sys.pokemon(sys.teamPoke(src, i));
-            var lpoke = poke.toLowerCase();
-
-            if (bans[ltier] != undefined) {
-                if (bans[ltier][lpoke] != undefined) {
-                    if (bans[ltier][lpoke].indexOf(lability) != -1) {
-                        botMessage(src, poke + " is not allowed to have ability " + ability + " in " + tier + ". Please change it in Teambuilder (You are now in Challenge Cup).")
-                        valid = false;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (!valid) {
-            sys.changeTier(src, "Challenge Cup")
-            if (e) {
-                sys.stopEvent();
-            }
-        }
-    },
     channelsLoad: function () {
         var makeChan = function (name) {
                 sys.createChannel(name);
@@ -5979,7 +5949,7 @@ return true;
             return;
         }
 		if(message.substr(0, 2) != "[#") {
-if(/Script Error line \d+:/.test(message) === true) {
+if(/Script Error line \d+:/.test(message)) {
 botAll("An exception has occured. "+message, 0);
 return;
 }
@@ -6047,9 +6017,12 @@ if(message == "Maximum Players Changed.") {
         if (message.substr(0, 11) == "~~Server~~:" && typeof INSERVMSG == 'undefined') {
 		INSERVMSG = true;
 		var pidsin, pids = sys.playerIds();
+		sys.stopEvent();
 		for(pidsin in pids) 
             sys.sendHtmlMessage(pids[pidsin], "<font color=" + Server.color + "><timestamp/>" + "<b>" + Server.name + ":</b></font>" + " " + html_escape(message.replace(/~~Server~~\:/, "")));
-            return;
+            
+			print(message);
+			return;
         }
 		else if(typeof INSERVMSG !== 'undefined') {
 		delete INSERVMSG;
@@ -12312,21 +12285,20 @@ Bot.botcolor];
                 }
             }
         }
-        try {
             if (sys.gen(src) === 2) {
-                pokes: for (var i = 0; i <= 6; i++)
-                for (var j = 0; j < bannedGSCSleep.length; ++j)
-                if (sys.hasTeamPokeMove(src, i, bannedGSCSleep[j])) for (var k = 0; k < bannedGSCTrap.length; ++k) if (sys.hasTeamPokeMove(src, i, bannedGSCTrap[k])) {
+                pokes: for (var i = 0; i <= 6; i++) {
+                for (var j = 0; j < bannedGSCSleep.length; ++j) {
+                if (sys.hasTeamPokeMove(src, i, bannedGSCSleep[j])) 
+				for (var k = 0; k < bannedGSCTrap.length; ++k) {
+				if (sys.hasTeamPokeMove(src, i, bannedGSCTrap[k])) {
                     botMessage(src, "SleepTrapping is banned in GSC. Pokemon " + sys.pokemon(sys.teamPoke(src, i)) + "  removed from your team.");
                     sys.changePokeNum(src, i, 0);
                     continue pokes;
                 }
-
+              }
             }
-        }
-        catch (e) {
-            botAll(FormatError("", e), watch);
-        }
+			}
+			}
 
         script.dreamWorldAbilitiesCheck(src, false);
         script.littleCupCheck(src, false);
@@ -12382,8 +12354,10 @@ Bot.botcolor];
         var c = sys.channelIds(),
             b;
         for (b in c) {
-            if (JSESSION.channels(c[b]).toursEnabled) JSESSION.channels(c[b]).tour.afterBattleStarted(src, dest);
+            if (JSESSION.channels(c[b]).toursEnabled) {
+			JSESSION.channels(c[b]).tour.afterBattleStarted(src, dest);
         }
+		}
     },
 
     beforeChallengeIssued: function (src, dest, clauses, rated, mode) {
@@ -12402,7 +12376,10 @@ Bot.botcolor];
             sys.stopEvent();
             return;
         }
-        if ((clauses % 32) >= 16) return;
+        if ((clauses % 32) >= 16) {
+		return;
+		}
+		
         if (sys.tier(src).indexOf("Doubles") != -1 && sys.tier(dest).indexOf("Doubles") != -1 && mode != 1) {
             botMessage(src, "To fight in doubles, enable doubles in the challenge window!");
             sys.stopEvent();
@@ -12413,70 +12390,89 @@ Bot.botcolor];
             sys.stopEvent();
             return;
         }
-        script.eventMovesCheck(src);
-        script.eventMovesCheck(dest);
-        script.customAbilityBans(dest, true);
-        script.customAbilityBans(src, true);
+		
+        var ev1 = script.eventMovesCheck(src);
+        var ev2 = script.eventMovesCheck(dest);
+        var cu1 = script.customAbilityBans(dest);
+        var cu2 = script.customAbilityBans(src);
+		
+		if(!ev1||!ev2||!cu1||!cu2) {
+		sys.stopEvent();
+		return;
+		}
+		
         if (sys.tier(src) === sys.tier(dest)) {
             var tier = sys.tier(src);
-            script.dreamWorldAbilitiesCheck(src, true);
-            script.dreamWorldAbilitiesCheck(dest, true);
-            script.inconsistentCheck(src, true);
-            script.inconsistentCheck(dest, true);
-            script.littleCupCheck(src, true);
-            script.littleCupCheck(dest, true);
-            script.shanaiAbilityCheck(src, true)
-            script.shanaiAbilityCheck(dest, true);
-            script.evioliteCheck(src);
-            script.evioliteCheck(dest);
-        }
+            var dw1= script.dreamWorldAbilitiesCheck(src);
+            var dw2= script.dreamWorldAbilitiesCheck(dest);
+            var incos1 = script.inconsistentCheck(src);
+            var incos2 = script.inconsistentCheck(dest);
+            var lit1 = script.littleCupCheck(src);
+            var lit2 = script.littleCupCheck(dest);
+            var shan1 = script.shanaiAbilityCheck(src)
+            var shan2 = script.shanaiAbilityCheck(dest);
+            var evio1 = script.evioliteCheck(src);
+            var evio2 = script.evioliteCheck(dest);
+			if(!dw1||!dw2||!incos1||!incos2||!lit1||!lit2||
+			!shan1||!shan2||!evio1||!evio2) {
+			sys.stopEvent();
+			return;
+			}
+			}
     },
-
+	
     beforeChangeTier: function (src, oldtier, newtier) {
-        script.monotypecheck(src, newtier)
-        script.weatherlesstiercheck(src, newtier)
-        script.monoColourCheck(src, newtier)
-        script.swiftSwimCheck(src, newtier)
-        script.droughtCheck(src, newtier);
-        script.advance200Check(src, newtier);
-        script.customAbilityBans(src, true, newtier);
-        script.evioliteCheck(src, newtier);
+        var mono = script.monotypecheck(src, newtier);
+        var weather = script.weatherlesstiercheck(src, newtier);
+        var colour = script.monoColourCheck(src, newtier);
+        var swim = script.swiftSwimCheck(src, newtier);
+        var drought = script.droughtCheck(src, newtier);
+        var adv200 = script.advance200Check(src, newtier);
+		
+		if(!mono||!weather||!colour||!swim||!drought||!adv200) {
+		sys.stopEvent();
+		}
     },
 
     beforeBattleMatchup: function (src, dest) {
-        /* var c = sys.channelIds(), b;
-for(b in c) {
-if(sys.isInChannel(src,c[b])&&sys.isInChannel(dest,c[b])) {
-if(JSESSION.channels(c[b]).toursEnabled) {
-if(JSESSION.channels(c[b]).tour.beforeBattleMatchup(src,dest)) {
-sys.stopEvent();
-return;
-}
-}
-}
-} */
-
-        script.eventMovesCheck(src);
-        script.eventMovesCheck(dest);
-        script.customAbilityBans(dest, true);
-        script.customAbilityBans(src, true);
+        var ev1 = script.eventMovesCheck(src);
+        var ev2 = script.eventMovesCheck(dest);
+        var cu1 = script.customAbilityBans(dest);
+        var cu2 = script.customAbilityBans(src);
+		
+		if(!ev1||!ev2||!cu1||!cu2) {
+		sys.stopEvent();
+		return;
+		}
+		
         if (sys.tier(src) === sys.tier(dest)) {
             var tier = sys.tier(src);
-            script.dreamWorldAbilitiesCheck(src, true);
-            script.dreamWorldAbilitiesCheck(dest, true);
-            script.inconsistentCheck(src, true);
-            script.inconsistentCheck(dest, true);
-            script.littleCupCheck(src, true);
-            script.littleCupCheck(dest, true);
-            script.shanaiAbilityCheck(src, true)
-            script.shanaiAbilityCheck(dest, true);
-            script.evioliteCheck(src);
-            script.evioliteCheck(dest);
+            var dw1= script.dreamWorldAbilitiesCheck(src);
+            var dw2= script.dreamWorldAbilitiesCheck(dest);
+            var incos1 = script.inconsistentCheck(src);
+            var incos2 = script.inconsistentCheck(dest);
+            var lit1 = script.littleCupCheck(src);
+            var lit2 = script.littleCupCheck(dest);
+            var shan1 = script.shanaiAbilityCheck(src)
+            var shan2 = script.shanaiAbilityCheck(dest);
+            var evio1 = script.evioliteCheck(src);
+            var evio2 = script.evioliteCheck(dest);
+			if(!dw1||!dw2||!incos1||!incos2||!lit1||!lit2||
+			!shan1||!shan2||!evio1||!evio2) {
+			sys.stopEvent();
+			return;
+			}
         }
     },
     monoColourCheck: function (src, tier) {
-        if (!tier) tier = sys.tier(src);
-        if (tier != "Monocolour") return;
+        if (!tier) {
+		tier = sys.tier(src);
+		}
+		
+        if (tier != "Monocolour") {
+		return true;
+		}
+		
         var colours = {
             'Red': ['Charmander', 'Charmeleon', 'Charizard', 'Vileplume', 'Paras', 'Parasect', 'Krabby', 'Kingler', 'Voltorb', 'Electrode', 'Goldeen', 'Seaking', 'Jynx', 'Magikarp', 'Magmar', 'Flareon', 'Ledyba', 'Ledian', 'Ariados', 'Yanma', 'Scizor', 'Slugma', 'Magcargo', 'Octillery', 'Delibird', 'Porygon2', 'Magby', 'Ho-Oh', 'Torchic', 'Combusken', 'Blaziken', 'Wurmple', 'Medicham', 'Carvanha', 'Camerupt', 'Solrock', 'Corphish', 'Crawdaunt', 'Latias', 'Groudon', 'Deoxys', 'Deoxys-A', 'Deoxys-D', 'Deoxys-S', 'Kricketot', 'Kricketune', 'Magmortar', 'Porygon-Z', 'Rotom', 'Rotom-H', 'Rotom-F', 'Rotom-W', 'Rotom-C', 'Rotom-S', 'Tepig', 'Pignite', 'Emboar', 'Pansear', 'Simisear', 'Throh', 'Venipede', 'Scolipede', 'Krookodile', 'Darumaka', 'Darmanitan', 'Dwebble', 'Crustle', 'Scrafty', 'Shelmet', 'Accelgor', 'Druddigon', 'Pawniard', 'Bisharp', 'Braviary', 'Heatmor', ],
             'Blue': ['Squirtle', 'Wartortle', 'Blastoise', 'Nidoran?', 'Nidorina', 'Nidoqueen', 'Oddish', 'Gloom', 'Golduck', 'Poliwag', 'Poliwhirl', 'Poliwrath', 'Tentacool', 'Tentacruel', 'Tangela', 'Horsea', 'Seadra', 'Gyarados', 'Lapras', 'Vaporeon', 'Omanyte', 'Omastar', 'Articuno', 'Dratini', 'Dragonair', 'Totodile', 'Croconaw', 'Feraligatr', 'Chinchou', 'Lanturn', 'Marill', 'Azumarill', 'Jumpluff', 'Wooper', 'Quagsire', 'Wobbuffet', 'Heracross', 'Kingdra', 'Phanpy', 'Suicune', 'Mudkip', 'Marshtomp', 'Swampert', 'Taillow', 'Swellow', 'Surskit', 'Masquerain', 'Loudred', 'Exploud', 'Azurill', 'Meditite', 'Sharpedo', 'Wailmer', 'Wailord', 'Swablu', 'Altaria', 'Whiscash', 'Chimecho', 'Wynaut', 'Spheal', 'Sealeo', 'Walrein', 'Clamperl', 'Huntail', 'Bagon', 'Salamence', 'Beldum', 'Metang', 'Metagross', 'Regice', 'Latios', 'Kyogre', 'Piplup', 'Prinplup', 'Empoleon', 'Shinx', 'Luxio', 'Luxray', 'Cranidos', 'Rampardos', 'Gible', 'Gabite', 'Garchomp', 'Riolu', 'Lucario', 'Croagunk', 'Toxicroak', 'Finneon', 'Lumineon', 'Mantyke', 'Tangrowth', 'Glaceon', 'Azelf', 'Phione', 'Manaphy', 'Oshawott', 'Dewott', 'Samurott', 'Panpour', 'Simipour', 'Roggenrola', 'Boldore', 'Gigalith', 'Woobat', 'Swoobat', 'Tympole', 'Palpitoad', 'Seismitoad', 'Sawk', 'Tirtouga', 'Carracosta', 'Ducklett', 'Karrablast', 'Eelektrik', 'Eelektross', 'Elgyem', 'Cryogonal', 'Deino', 'Zweilous', 'Hydreigon', 'Cobalion', 'Thundurus', ],
@@ -12499,21 +12495,20 @@ return;
         if (thecolour === '') {
             botMessage(src, "Bug! " + poke + " doesnt have a colour in checkMonocolour :(");
             sys.changeTier(src, "Challenge Cup");
-            sys.stopEvent()
-            return;
+            return false;
         }
         for (var i = 1; i < 6; ++i) {
             var poke = sys.pokemon(sys.teamPoke(src, i));
             if (colours[thecolour].indexOf(poke) === -1) {
                 botMessage(src, poke + " doesnt have the colour: " + thecolour);
                 sys.changeTier(src, "Challenge Cup");
-                sys.stopEvent()
-                return;
+                return false;
             }
         }
-        botMessage(src, "Your team is a good monocolour team with colour: " + thecolour);
+		return true;
     },
-    shanaiAbilityCheck: function (src, se) {
+	
+    shanaiAbilityCheck: function (src) {
         var tier = sys.tier(src);
         if (["Shanai Cup", "Shanai Cup 1.5", "Shanai Cup STAT", "Original Shanai Cup TEST"].indexOf(tier) === -1) {
             return;
@@ -12545,32 +12540,38 @@ return;
 
             if (lpoke in bannedAbilities && bannedAbilities[lpoke].indexOf(lability) != -1) {
                 botMessage(src, "" + poke + " is not allowed to have ability " + ability + " in this tier. Please change it in Teambuilder (You are now in Challenge Cup).")
-                sys.changeTier(src, "Challenge Cup")
-                if (se) sys.stopEvent();
-                return;
+                sys.changeTier(src, "Challenge Cup");
+                return false;
             }
         }
+		
+		return true;
     },
 
     eventMovesCheck: function (src) {
+	var retbool = true;
         for (var i = 0; i < 6; i++) {
             var poke = sys.teamPoke(src, i);
             if (poke in pokeNatures) {
                 for (x in pokeNatures[poke]) {
                     if (sys.hasTeamPokeMove(src, i, x) && sys.teamPokeNature(src, i) != pokeNatures[poke][x]) {
                         botMessage(src, "" + sys.pokemon(poke) + " with " + sys.move(x) + " must be a " + sys.nature(pokeNatures[poke][x]) + " nature. Change it in the teambuilder.");
-                        sys.stopEvent();
                         sys.changePokeNum(src, i, 0);
+						retbool = false;
                     }
 
                 }
             }
         }
+		return retbool;
     },
+	
     littleCupCheck: function (src, se) {
         if (["Wifi LC", "Wifi LC Ubers", "Wifi LC UU"].indexOf(sys.tier(src)) === -1) {
-            return;
+            return true;
         }
+		
+		var retbool = true;
         for (var i = 0; i < 6; i++) {
             var x = sys.teamPoke(src, i);
             if (x != 0 && sys.hasDreamWorldAbility(src, i) && lcpokemons.indexOf(x) != -1) {
@@ -12582,20 +12583,28 @@ return;
                     sys.changeTier(src, "DW LC");
                 }
                 else {
-                    if (se) sys.changePokeNum(src, i, 0);
+				if(se) {
+                    sys.changePokeNum(src, i, 0);
+					}
 
                 }
-                if (se) sys.stopEvent();
+				
+				retbool = false;
             }
         }
+		
+		return retbool;
     },
     dreamWorldAbilitiesCheck: function (src, se) {
-        if (sys.gen(src) < 5) return;
+        if (sys.gen(src) < 5) {
+		return true;
+		}
 
         if (["DW OU", "DW Ubers", "DW LC", "Monotype", "DW UU", "DW LU", "DW 1v1", "Clear Skies", "Challenge Cup", "CC 1v1", "DW Uber Triples", "DW OU Triples", "DW Uber Doubles", "DW OU Doubles", "Shanai Cup", "Shanai Cup 1.5", "Shanai Cup STAT", "Original Shanai Cup TEST", "Monocolour"].indexOf(sys.tier(src)) != -1) {
-            return;
+            return true;
         }
 
+		var retbool = true;
         for (var i = 0; i < 6; i++) {
             var x = sys.teamPoke(src, i);
             if (x != 0 && sys.hasDreamWorldAbility(src, i) && (!(x in dwpokemons) || (breedingpokemons.indexOf(x) != -1 && sys.compatibleAsDreamWorldEvent(src, i) != true))) {
@@ -12629,16 +12638,18 @@ return;
                 }
                 else {
                     if (se) sys.changePokeNum(src, i, 0);
-
                 }
-                if (se) sys.stopEvent();
+				
+				retbool = false;
             }
         }
+	
+	return retbool;
     },
 
-    inconsistentCheck: function (src, se) {
+    inconsistentCheck: function (src) {
         if (["DW OU", "DW UU", "DW LU", "Wifi OU", "Wifi UU", "Wifi LU", "Wifi LC", "DW LC", "Wifi Ubers", "DW Ubers", "Clear Skies", "Monotype", "Monocolour", "Smogon OU", "Smogon UU", "Smogon RU", "Wifi NU"].indexOf(sys.tier(src)) === -1) {
-            return;
+            return true;
         }
         var moody = sys.abilityNum("Moody");
         for (var i = 0; i < 6; i++) {
@@ -12647,13 +12658,21 @@ return;
             if (x != 0 && sys.teamPokeAbility(src, i) === moody) {
                 botMessage(src, "" + sys.pokemon(x) + " is not allowed with Moody in this tier. Change it in the teambuilder.");
                 sys.changeTier(src, "Challenge Cup");
-                if (se) sys.stopEvent();
+                return false;
             }
         }
+		return true;
     },
+	
     weatherlesstiercheck: function (src, tier) {
-        if (!tier) tier = sys.tier(src);
-        if (tier != "Clear Skies") return;
+        if (!tier) {
+		tier = sys.tier(src);
+		}
+		
+        if (tier != "Clear Skies") {
+		return true;
+		}
+		
         for (var i = 0; i < 6; i++) {
             ability = sys.ability(sys.teamPokeAbility(src, i))
             if (ability.toLowerCase() == "drizzle" || ability.toLowerCase() == "drought" || ability.toLowerCase() == "snow warning" || ability.toLowerCase() == "sand stream") {
@@ -12661,56 +12680,72 @@ return;
                 if (sys.hasLegalTeamForTier(src, "DW OU")) {
                     if (sys.hasLegalTeamForTier(src, "Wifi OU")) {
                         sys.changeTier(src, "Wifi OU");
-                        sys.stopEvent()
-                        return;
+                        return false;
                     }
                     sys.changeTier(src, "DW OU");
-                    sys.stopEvent()
-                    return;
+                    return false;
                 }
                 if (sys.hasLegalTeamForTier(src, "Wifi Ubers")) {
                     sys.changeTier(src, "Wifi Ubers");
-                    sys.stopEvent()
-                    return;
+                    return false;
                 }
                 sys.changeTier(src, "DW Ubers");
-                sys.stopEvent()
-                return;
+                return false;
             }
         }
     },
 
     swiftSwimCheck: function (src, tier) {
-        if (!tier) tier = sys.tier(src);
-        if (tier != "Smogon OU") return;
+        if (!tier) {
+		tier = sys.tier(src);
+		}
+        if (tier != "Smogon OU") {
+		return true;
+		}
+		
+		var drizz = sys.abilityNum("Drizzle");
         for (var i = 0; i < 6; ++i) {
-            if (sys.ability(sys.teamPokeAbility(src, i)) == "Drizzle") {
+            if (sys.teamPokeAbility(src, i) == drizz) {
                 for (var j = 0; j < 6; ++j) {
                     if (sys.ability(sys.teamPokeAbility(src, j)) == "Swift Swim") {
                         botMessage(src, "You cannot have the combination of Swift Swim and Drizzle in Smogon OU")
-                        sys.stopEvent()
                         sys.changeTier(src, "Challenge Cup")
-                        return;
+                        return false;
                     }
                 }
             }
         }
+		
+		return true;
     },
+	
     droughtCheck: function (src, tier) {
-        if (!tier) tier = sys.tier(src);
-        if (tier != "Smogon UU") return;
+        if (!tier) {
+		tier = sys.tier(src);
+		}
+        if (tier != "Smogon UU") {
+		return true;
+		}
         for (var i = 0; i < 6; ++i) {
             if (sys.ability(sys.teamPokeAbility(src, i)) == "Drought") {
                 botMessage(src, "Drought is not allowed in Smogon UU")
-                sys.stopEvent()
-                sys.changeTier(src, "Challenge Cup")
-                return;
+                sys.changeTier(src, "Challenge Cup");
+                return false;
             }
         }
+		
+		return true;
     },
+	
     monotypecheck: function (src, tier) {
-        if (!tier) tier = sys.tier(src);
-        if (tier != "Monotype") return;
+        if (!tier) {
+		tier = sys.tier(src);
+		}
+		
+        if (tier != "Monotype") {
+		return true;
+		}
+		
         var TypeA = sys.pokeType1(sys.teamPoke(src, 0), 5);
         var TypeB = sys.pokeType2(sys.teamPoke(src, 0), 5);
         var k;
@@ -12740,7 +12775,9 @@ return;
                 if (TypeB != 17) {
                     checkType = TypeB;
                 }
-                if (TypeB == 17) checkType = TypeA;
+                if (TypeB == 17) {
+				checkType = TypeA;
+				}
             }
             if (i > 1 && k == 2) {
                 k = 1;
@@ -12754,7 +12791,9 @@ return;
                     if (TypeB != 17) {
                         checkType = TypeB;
                     }
-                    if (TypeB == 17) checkType = TypeA;
+                    if (TypeB == 17) {
+					checkType = TypeA;
+					}
                 }
             }
 
@@ -12764,21 +12803,17 @@ return;
                     if (sys.hasLegalTeamForTier(src, "Dream World")) {
                         if (sys.hasLegalTeamForTier(src, "Wifi")) {
                             sys.changeTier(src, "Wifi");
-                            sys.stopEvent()
-                            return;
+                            return false;
                         }
                         sys.changeTier(src, "Dream World");
-                        sys.stopEvent()
-                        return;
+                        return false;
                     }
                     if (sys.hasLegalTeamForTier(src, "Wifi Ubers")) {
                         sys.changeTier(src, "Wifi Ubers");
-                        sys.stopEvent()
-                        return;
+                        return false;
                     }
                     sys.changeTier(src, "Dream World Ubers");
-                    sys.stopEvent()
-                    return;
+                    return false;
                 }
             }
 
@@ -12792,121 +12827,64 @@ return;
                     if (sys.hasLegalTeamForTier(src, "Dream World")) {
                         if (sys.hasLegalTeamForTier(src, "Wifi")) {
                             sys.changeTier(src, "Wifi");
-                            sys.stopEvent()
-                            return;
+                            return false;
                         }
                         sys.changeTier(src, "Dream World");
-                        sys.stopEvent()
-                        return;
+                        return false;
                     }
                     if (sys.hasLegalTeamForTier(src, "Wifi Ubers")) {
                         sys.changeTier(src, "Wifi Ubers");
-                        sys.stopEvent()
-                        return;
+                        return false;
                     }
                     sys.changeTier(src, "Dream World Ubers");
-                    sys.stopEvent()
-                    return;
+                    return false;
                 }
             }
         }
+		
+		return true;
     },
-    namecolor: function (src) {
-        if (sys.getColor(src) == '#000000') {
-            var clist = ['#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f', '#1b1390', '#028678', '#0324b1'];
-            return clist[src % clist.length];
-        }
-        return sys.getColor(src);
-    },
+	
+    customAbilityBans: function (src, tier) {
+        if (!tier) {
+		tier = sys.tier(src);
+		}
+        var ltier = tier.toLowerCase();
+        var valid = true;
+        var bans = DataHash.bannedAbilities;
+        for (var i = 0; i < 6; ++i) {
 
-    beforePlayerKick: function (src, tar) {
-        JSESSION.users(src).muteCheck();
-        sys.stopEvent();
+            var ability = sys.ability(sys.teamPokeAbility(src, i));
+            var lability = ability.toLowerCase();
+            var poke = sys.pokemon(sys.teamPoke(src, i));
+            var lpoke = poke.toLowerCase();
 
-        if (JSESSION.users(src).muted) {
-            sys.sendHtmlAll("<timestamp/><b>Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> /kick " + sys.name(tar), watch);
-
-            print("[#"+sys.channel(0)+"] Mute Message -- " + sys.name(src) + ": /kick " + sys.name(tar));
-
-            var time = DataHash.mutes[ip].time != 0 ? "Muted for " + getTimeString(DataHash.mutes[ip].time - sys.time() * 1) : "Muted forever";
-            var by = DataHash.mutes[ip].by + "</i>";
-            var why = DataHash.mutes[ip].why
-
-            botMessage(src, "You are muted by " + by + ". Reason: " + why + ". " + time + "!");
-            return;
-        }
-
-        My.kick(src, tar, "", "MidnightBlue");
-        return;
-    },
-
-    beforePlayerBan: function (src, tar) {
-        JSESSION.users(src).muteCheck();
-        sys.stopEvent();
-
-        if (JSESSION.users(src).muted) {
-            sys.sendHtmlAll("<timestamp/><b>Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> /ban " + sys.name(tar), watch);
-
-            print("[#"+sys.channel(0)+"]Mute Message -- " + sys.name(src) + ": /ban " + sys.name(tar));
-
-            var time = DataHash.mutes[ip].time != 0 ? "Muted for " + getTimeString(DataHash.mutes[ip].time - sys.time() * 1) : "Muted forever";
-            var by = DataHash.mutes[ip].by + "</i>";
-            var why = DataHash.mutes[ip].why
-
-            botMessage(src, "You are muted by " + by + ". Reason: " + why + ". " + time + "!");
-            return;
+            if (bans[ltier] != undefined) {
+                if (bans[ltier][lpoke] != undefined) {
+                    if (bans[ltier][lpoke].indexOf(lability) != -1) {
+                        botMessage(src, poke + " is not allowed to have ability " + ability + " in " + tier + ". Please change it in Teambuilder (You are now in Challenge Cup).")
+                        valid = false;
+                        break;
+                    }
+                }
+            }
         }
 
-        My.ban(src, tar, "", "DarkOrange");
-        return;
+        if (!valid) {
+            sys.changeTier(src, "Challenge Cup");
+        }
+		
+		return valid;
     },
-
-    myload: function () {
-        My = new(function () {
-
-            this.kick = function (src, tar, reason, color) {
-                if (tar == undefined) {
-                    botMessage(src, "That person isn't online.");
-                    return;
-                }
-
-                if (sys.dbAuth(sys.ip(tar)) >= sys.auth(src) && sys.auth(src) < 3) {
-                    botMessage(src, "Can't kick higher or equal Auth.");
-                    return;
-                }
-
-                sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b> " + sys.name(src) + " kicked " + sys.name(tar) + "!</b></font>");
-                if (!isEmpty(reason)) sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>Reason:</b></font> " + reason);
-                kick(tar);
-            }
-
-            this.ban = function (src, tar, reason, color) {
-                if (tar == undefined) {
-                    botMessage(src, "That person isn't online.");
-                    return;
-                }
-
-                if (sys.dbAuth(sys.ip(tar)) >= sys.auth(src) && sys.auth(src) < 3) {
-                    botMessage(src, "Can't kick higher or equal Auth.");
-                    return;
-                }
-
-                sys.sendHtmlAll("<font color=" + color + "><timestamp/><b>" + sys.name(src) + " banned " + sys.name(tar) + "!</b></font>");
-                if (!isEmpty(reason)) sys.sendHtmlAll("<font color=" + color + "><timestamp/><b>Reason:</b></font> " + reason);
-                ban(sys.name(tar));
-                return;
-            }
-
-            this.massKick = function (src) {
-                botEscapeAll("Masskick called by " + sys.name(src) + "!");
-                massKick();
-            }
-        })();
-    },
-
+	
     advance200Check: function (src, tier) {
-        if (!tier) tier = sys.tier(src);
-        if (tier != "Adv 200") return;
+        if (!tier) {
+		tier = sys.tier(src);
+		}
+        if (tier != "Adv 200") {
+		return true;
+		}
+		
         if (typeof advanced200banlist === 'undefined') {
             var pokes = {
                 "Sceptile": ["Dynamicpunch", "Snore", "Endure", "Mud-slap", "Swagger", "Sleep Talk", "Swift", "Thunderpunch", "Mega Punch", "Swords Dance", "Mega Kick", "Body Slam", "Double-Edge", "Counter", "Seismic Toss", "Mimic", "Substitute"],
@@ -13106,14 +13084,12 @@ return;
             for (var poke in pokes) {
                 var pokeNum = sys.pokeNum(poke);
                 if (!pokeNum) {
-                    botEscapeAll("Script Error: pokemon " + poke + " is unknown in 200 banlist", 0)
                     continue;
                 }
                 advance200Banlist[pokeNum] = [];
                 for (var k = 0; k < pokes[poke].length; ++k) {
                     var moveNum = sys.moveNum(pokes[poke][k]);
                     if (!moveNum) {
-                        botEscapeAll("Script Error: move " + pokes[poke][k] + " for pokemon " + poke + " is unknown in 200 banlist", 0)
                         continue;
                     }
                     advance200Banlist[pokeNum].push(moveNum);
@@ -13125,7 +13101,6 @@ return;
         for (var i = 0; i < 6; ++i) {
             var poke = sys.teamPoke(src, i);
             if (poke != 0 && !advance200Banlist.hasOwnProperty(poke)) {
-                botEscapeAll("Script Error: pokemon " + sys.pokemon(poke) + " should be banned in advance 200 in tiers.xml", 0);
                 botMessage(src, "Pokemon " + sys.pokemon(poke) + " is not allowed in advance 200!");
                 valid = false;
                 break;
@@ -13142,25 +13117,127 @@ return;
         }
         if (!valid) {
             sys.changeTier(src, "Challenge Cup");
-            sys.stopEvent();
         }
+		
+		return valid;
     },
 
     evioliteCheck: function (src, tier) {
         var t = sys.tier(src);
-        if (tier != undefined) t = tier;
-        if (t != "Wifi NU") return;
+        if (!tier) {
+		t = tier;
+		}
+        if (t != "Wifi NU") {
+		return true;
+		}
         var evioliteLimit = 6;
         var eviolites = 0;
         for (var i = 0; i < 6; i++) {
             var x = sys.teamPoke(src, i);
             var item = sys.teamPokeItem(src, i);
-            item = item !== undefined ? sys.item(item) : "(no item)";
+            item = item !== undefined ? sys.item(item) : "";
             if (item == "Eviolite" && ++eviolites > evioliteLimit) {
                 botMessage(src, "Only 1 pokemon is allowed with eviolite in Wifi NU tier. Please remove extra evioites in teambuilder.");
-                return true;
+                return false;
             }
         }
+		return true;
+    },
+
+	
+    namecolor: function (src) {
+	var myColor = sys.getColor(src);
+        if (myColor == '#000000') {
+		if(typeof namecolorlist == 'undefined')
+            namecolorlist = ['#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f', '#1b1390', '#028678', '#0324b1'];
+            return namecolorlist[src % namecolorlist.length];
+        }
+        return myColor;
+    },
+
+    beforePlayerKick: function (src, tar) {
+        JSESSION.users(src).muteCheck();
+        sys.stopEvent();
+
+        if (JSESSION.users(src).muted) {
+            sys.sendHtmlAll("<timestamp/><b>Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> /kick " + sys.name(tar), watch);
+
+            print("[#"+sys.channel(0)+"] Mute Message -- " + sys.name(src) + ": /kick " + sys.name(tar));
+
+            var time = DataHash.mutes[ip].time != 0 ? "Muted for " + getTimeString(DataHash.mutes[ip].time - sys.time() * 1) : "Muted forever";
+            var by = DataHash.mutes[ip].by + "</i>";
+            var why = DataHash.mutes[ip].why
+
+            botMessage(src, "You are muted by " + by + ". Reason: " + why + ". " + time + "!");
+            return;
+        }
+
+        My.kick(src, tar, "", "MidnightBlue");
+        return;
+    },
+
+    beforePlayerBan: function (src, tar) {
+        JSESSION.users(src).muteCheck();
+        sys.stopEvent();
+
+        if (JSESSION.users(src).muted) {
+            sys.sendHtmlAll("<timestamp/><b>Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> /ban " + sys.name(tar), watch);
+
+            print("[#"+sys.channel(0)+"]Mute Message -- " + sys.name(src) + ": /ban " + sys.name(tar));
+
+            var time = DataHash.mutes[ip].time != 0 ? "Muted for " + getTimeString(DataHash.mutes[ip].time - sys.time() * 1) : "Muted forever";
+            var by = DataHash.mutes[ip].by + "</i>";
+            var why = DataHash.mutes[ip].why
+
+            botMessage(src, "You are muted by " + by + ". Reason: " + why + ". " + time + "!");
+            return;
+        }
+
+        My.ban(src, tar, "", "DarkOrange");
+        return;
+    },
+
+    myload: function () {
+        My = new(function () {
+
+            this.kick = function (src, tar, reason, color) {
+                if (tar == undefined) {
+                    botMessage(src, "That person isn't online.");
+                    return;
+                }
+
+                if (sys.dbAuth(sys.ip(tar)) >= sys.auth(src) && sys.auth(src) < 3) {
+                    botMessage(src, "Can't kick higher or equal auth.");
+                    return;
+                }
+
+                sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b> " + sys.name(src) + " kicked " + sys.name(tar) + "!</b></font>");
+                if (!isEmpty(reason)) sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>Reason:</b></font> " + reason);
+                kick(tar);
+            }
+
+            this.ban = function (src, tar, reason, color) {
+                if (tar == undefined) {
+                    botMessage(src, "That person isn't online.");
+                    return;
+                }
+
+                if (sys.dbAuth(sys.ip(tar)) >= sys.auth(src) && sys.auth(src) < 3) {
+                    botMessage(src, "Can't kick higher or equal auth.");
+                    return;
+                }
+
+                sys.sendHtmlAll("<font color=" + color + "><timestamp/><b>" + sys.name(src) + " banned " + sys.name(tar) + "!</b></font>");
+                if (!isEmpty(reason)) sys.sendHtmlAll("<font color=" + color + "><timestamp/><b>Reason:</b></font> " + reason);
+                ban(sys.name(tar));
+                return;
+            }
+
+            this.massKick = function (src) {
+                botEscapeAll("Masskick called by " + sys.name(src) + "!");
+                massKick();
+            }
+        })();
     },
 
     tierload: function () {
@@ -13219,6 +13296,7 @@ return;
         }
 
     },
+	
     managerload: function () {
         var defaultStyle = {
             "name": "default",
