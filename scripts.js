@@ -20,7 +20,7 @@
 || ######################################################### ||
 || #                                                       # ||
 || # Default Styles and Rank Icons Credit:                 # ||
-|| # TheUnknownOne, Lutra, Intel_iX, person6445            # ||
+|| # Lutra, Intel_iX, person6445                           # ||
 || #                                                       # ||
 || ######################################################### ||
 || #                                                       # ||
@@ -73,6 +73,11 @@
 || - If auth may use superimp. This can be a security risk.  ||
 || - true = yes. false = no                                  ||
 ===============================================================
+|| @ FixChallenges:                                          ||
+|| - If you have issues with no challenges being sent, turn  ||
+|| - this on.                                                ||
+|| - true = yes. false = no                                  ||
+===============================================================
 || @ ClearLogsAt:                                            ||
 || - If file size of logs.txt is higher than given size      ||
 || - Cleans all data. Gets checked every hour. 0 = off       ||
@@ -103,7 +108,8 @@ Config = {
     DWAbilityCheck: true,
     AutoChannelJoin: true,
     WelcomeMessages: false,
-	Superimping: false,
+    Superimping: false,
+	FixChallenges: false,
 
     ClearLogsAt: 36700160,
     HighPermission: {
@@ -113,13 +119,12 @@ Config = {
 }
 
 // Beyond this, you should not edit anything if you don't know what you're doing!
-
 VERSION = function (v, data) {
     this.version = v;
     if (data == null || typeof data != "string") {
-	data = "";
-	}
-	
+        data = "";
+    }
+
     this.additionalData = data;
 }
 
@@ -127,16 +132,16 @@ VERSION.prototype.toString = function () {
     return this.version + " " + this.additionalData;
 }
 
-if(typeof RECOVERY_BACKUP !== "undefined") {
+if (typeof RECOVERY_BACKUP !== "undefined") {
     delete RECOVERY_BACKUP;
-}	
+}
 
 RECOVERY_BACKUP = {};
 
 if (typeof script != "undefined") {
     for (var x in script) {
-    RECOVERY_BACKUP[x] = script[x];
-	}
+        RECOVERY_BACKUP[x] = script[x];
+    }
 }
 
 if (typeof Bot == 'undefined') {
@@ -158,9 +163,9 @@ ScriptVersion = new VERSION(ScriptVerData[0], ScriptVerData[1]);
 /*** BOTS ***/
 botEscapeMessage = function (src, message, channel) {
     if (typeof Bot == 'undefined') {
-	return;
-	}
-	
+        return;
+    }
+
     var color = Bot.botcolor;
     var name = Bot.bot;
     if (typeof channel != "undefined") {
@@ -173,8 +178,8 @@ botEscapeMessage = function (src, message, channel) {
 
 botMessage = function (src, message, channel) {
     if (typeof Bot == 'undefined') {
-	return;
-	}
+        return;
+    }
 
     var color = Bot.botcolor;
     var name = Bot.bot;
@@ -188,8 +193,8 @@ botMessage = function (src, message, channel) {
 
 botEscapeAll = function (message, channel) {
     if (typeof Bot == 'undefined') {
-	return;
-	}
+        return;
+    }
 
     var color = Bot.botcolor;
     var name = Bot.bot;
@@ -203,9 +208,9 @@ botEscapeAll = function (message, channel) {
 
 botAll = function (message, channel) {
     if (typeof Bot == 'undefined') {
-	return;
-	}
-	
+        return;
+    }
+
     var color = Bot.botcolor;
     var name = Bot.bot;
     if (typeof channel != "undefined") {
@@ -218,23 +223,24 @@ botAll = function (message, channel) {
 
 /* Invalid Command Messages */
 invalidCommandMessage = function (src, command, chan) {
-botEscapeMessage(src, "The command "+command+" doesn't exist.", chan);
+    botEscapeMessage(src, "The command " + command + " doesn't exist.", chan);
 }
 
 noPermissionMessage = function (src, command, chan) {
-botEscapeMessage(src, "You may not use the "+command+" command.", chan);
+    botEscapeMessage(src, "You may not use the " + command + " command.", chan);
 }
 
 FormatError = function (mess, e) {
     if (typeof mess != "string") {
-	mess = "";
-	}
+        mess = "";
+    }
 
-	var lastChar = mess[mess.length - 1], lineData = "";
+    var lastChar = mess[mess.length - 1],
+        lineData = "";
     if (mess !== "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
-	mess += ".";
-	}
-	
+        mess += ".";
+    }
+
     if (typeof e.format !== 'undefined') {
         return mess + " Custom Error: " + e;
     }
@@ -244,9 +250,9 @@ FormatError = function (mess, e) {
     }
 
     var name = e.name,
-    msg = e.message,
-	str = name + lineData + ": " + msg;
-	
+        msg = e.message,
+        str = name + lineData + ": " + msg;
+
     str += lastChar == "." ? "" : ".";
 
     return mess + " " + str;
@@ -254,9 +260,9 @@ FormatError = function (mess, e) {
 
 ChannelLink = function (channel) {
     if (sys.channelId(channel) == undefined) {
-	return "";
-	}
-	
+        return "";
+    }
+
     return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
 }
 
@@ -304,12 +310,12 @@ addChannelLinks = function (line2) {
 }
 
 var capsMessage = function (mess) {
-        return /[QWERTYUIOPASDFGHJKLZXCVBNM]/.test(mess);
-    }
+    return /[QWERTYUIOPASDFGHJKLZXCVBNM]/.test(mess);
+}
 
 var normalLetter = function (l) {
-        return /[qwertyuiopasdfghjklzxcvbnm]/.test(l);
-    }
+    return /[qwertyuiopasdfghjklzxcvbnm]/.test(l);
+}
 
 fileLen = function (file) {
     var f = sys.getFileContent(file).length;
@@ -336,15 +342,16 @@ clearlogs = function () {
     if (len > l) {
         botAll("The file logs.txt contains " + sTB(len) + ", which is more than given maximum (" + sTB(l) + "). Clearing file.", 0);
         sys.writeToFile("logs.txt", "");
-		gc(); // Garbage Collector
+        gc(); // Garbage Collector
     }
 }
 
 function POUser(id) {
-var my_name = sys.name(id), mn_lc = my_name.toLowerCase();
-if(my_name == undefined) {
-return;
-}
+    var my_name = sys.name(id),
+        mn_lc = my_name.toLowerCase();
+    if (my_name == undefined) {
+        return;
+    }
     this.id = id;
     this.impersonation = undefined;
     this.ip = sys.ip(id);
@@ -360,8 +367,7 @@ return;
     this.isAutoAFK = false;
     this.teamChanges = 0;
 
-    if (typeof DataHash == "undefined") {
-	/* Shouldn't matter. */
+    if (typeof DataHash == "undefined") { /* Shouldn't matter. */
         this.muted = false;
         this.megauser = false;
         this.icon = "";
@@ -426,14 +432,14 @@ POUser.prototype.addFlood = function () {
 
 POUser.prototype.capsMute = function (message) {
     if (typeof hpAuth != 'undefined' && hpAuth(this.id) > 0) {
-	return false;
-	}
-	
+        return false;
+    }
+
     if (typeof AutoMute != 'undefined' && !AutoMute) {
-	return false;
-	}
-	
-	var newCapsAmount = 0;
+        return false;
+    }
+
+    var newCapsAmount = 0;
     for (var z in message) {
         if (capsMessage(message[z])) {
             newCapsAmount += 1;
@@ -480,7 +486,7 @@ function POChannel(id) {
     this.topicsetter = '';
     this.toursEnabled = false;
 
-    if (typeof (channels) != "undefined" && channels.indexOf(id) != -1 || typeof (channels) == "undefined") {
+    if (typeof(channels) != "undefined" && channels.indexOf(id) != -1 || typeof(channels) == "undefined") {
         this.perm = true;
         this.tour = new Tours(this.id);
         this.toursEnabled = true;
@@ -500,32 +506,32 @@ function POChannel(id) {
 
 POChannel.prototype.giveTourAuth = function (name) {
     if (this.tourAuth[name.toLowerCase()] !== undefined) {
-	return;
-	}
-	
+        return;
+    }
+
     this.tourAuth[name.toLowerCase()] = {
         'name': name.name()
     };
-	
-	if(typeof cData == 'undefined') {
-	return;
-	}
-	
-	cData.changeTourAuth(this.id, this.tourAuth);
+
+    if (typeof cData == 'undefined') {
+        return;
+    }
+
+    cData.changeTourAuth(this.id, this.tourAuth);
 }
 
 POChannel.prototype.takeTourAuth = function (name) {
     if (this.tourAuth[name.toLowerCase()] == undefined) {
-	return;
+        return;
     }
-	
-	delete this.tourAuth[name.toLowerCase()];
-	
-	if(typeof cData == 'undefined') {
-	return;
-	}
-	
-	cData.changeTourAuth(this.id, this.tourAuth);
+
+    delete this.tourAuth[name.toLowerCase()];
+
+    if (typeof cData == 'undefined') {
+        return;
+    }
+
+    cData.changeTourAuth(this.id, this.tourAuth);
 }
 
 POChannel.prototype.toString = function () {
@@ -553,7 +559,7 @@ POChannel.prototype.changeTopic = function (source, topic, fullCommand) {
     }
 
     if (!this.isChanMod(source)) {
-                        noPermissionMessage(source, fullCommand, this.id);
+        noPermissionMessage(source, fullCommand, this.id);
         return;
     }
 
@@ -573,64 +579,65 @@ POChannel.prototype.changeTopic = function (source, topic, fullCommand) {
 }
 
 POChannel.prototype.updateAuth = function () {
-if(typeof sys == 'undefined' || typeof cData == 'undefined') {
-return;
-}
+    if (typeof sys == 'undefined' || typeof cData == 'undefined') {
+        return;
+    }
 
-var x, update = false, cauth = this.chanAuth, authlist = sys.dbAuths(),
-cauthcur, curauth;
+    var x, update = false,
+        cauth = this.chanAuth,
+        authlist = sys.dbAuths(),
+        cauthcur, curauth;
 
-for(x in authlist) {
-authlistcur = authlist[x];
-cauthcur = cauth[authlistcur];
-curauth = sys.dbAuth(authlistcur);
+    for (x in authlist) {
+        authlistcur = authlist[x];
+        cauthcur = cauth[authlistcur];
+        curauth = sys.dbAuth(authlistcur);
 
-if(curauth > 3)
-curauth = 3;
+        if (curauth > 3) curauth = 3;
 
-if(cauthcur == undefined
-|| curauth > cauthcur) {
-cauth[authlistcur] = curauth;
-update = true;
-}
-}
+        if (cauthcur == undefined || curauth > cauthcur) {
+            cauth[authlistcur] = curauth;
+            update = true;
+        }
+    }
 
-if (update) {
-cData.changeChanAuth(this.id, cauth);
-}
+    if (update) {
+        cData.changeChanAuth(this.id, cauth);
+    }
 }
 
 POChannel.prototype.clearUsers = function () {
-if(typeof cData == 'undefined') {
-return;
-}
+    if (typeof cData == 'undefined') {
+        return;
+    }
 
-var x, update = false, authlist	= this.chanAuth;	
-for(x in authlist) {
-if(authlist[x] == 0) {
-delete authlist[x];
-update = true;
-}
-}
-		
-if (update) {
-cData.changeChanAuth(this.id, authlist);
-}
+    var x, update = false,
+        authlist = this.chanAuth;
+    for (x in authlist) {
+        if (authlist[x] == 0) {
+            delete authlist[x];
+            update = true;
+        }
+    }
+
+    if (update) {
+        cData.changeChanAuth(this.id, authlist);
+    }
 }
 
 POChannel.prototype.changeAuth = function (name, newauth) {
     if (this.chanAuth == undefined) {
-	this.chanAuth = {};
-	}
-	
+        this.chanAuth = {};
+    }
+
     var nh = typeof name == "number" ? sys.name(name).toLowerCase() : name.toLowerCase();
-    
-	if(newauth == 0 && nh in this.chanAuth) {
-	delete this.chanAuth[nh];
-	return;
-	}
-	
-	this.chanAuth[nh] = newauth;
+
+    if (newauth == 0 && nh in this.chanAuth) {
+        delete this.chanAuth[nh];
+        return;
+    }
+
+    this.chanAuth[nh] = newauth;
 }
 
 POChannel.prototype.canIssue = function (src, tar) {
@@ -639,8 +646,8 @@ POChannel.prototype.canIssue = function (src, tar) {
         return false;
     }
     if (typeof hpAuth == 'undefined') {
-	return false;
-	}
+        return false;
+    }
 
     var selfName = sys.name(src);
     targetName = sys.name(tar);
@@ -651,29 +658,29 @@ POChannel.prototype.canIssue = function (src, tar) {
         srcID = sys.id(src);
     }
     else {
-	selfName = selfName.toLowerCase();
-	}
+        selfName = selfName.toLowerCase();
+    }
 
     if (typeof tar == 'string') {
-	targetName = tar.toLowerCase();
-	}
+        targetName = tar.toLowerCase();
+    }
     else {
-	targetName = targetName.toLowerCase();
-	}
+        targetName = targetName.toLowerCase();
+    }
 
     if (this.chanAuth[targetName] == undefined || sys.dbIp(targetName) == undefined) {
-	return true;
-	}
-	
+        return true;
+    }
+
     if (hpAuth(src) <= hpAuth(tar) || this.chanAuth[selfName] == undefined || srcID == undefined || this.chanAuth[selfName] <= this.chanAuth[targetName] && !this.isChanOwner(src)) {
-	return false;
-	}
+        return false;
+    }
 
     return true;
 }
 
 POChannel.prototype.isBannedInChannel = function (srcip) {
-    if (typeof (this.banlist) == "undefined") {
+    if (typeof(this.banlist) == "undefined") {
         this.banlist = {};
     }
 
@@ -682,8 +689,8 @@ POChannel.prototype.isBannedInChannel = function (srcip) {
 
 POChannel.prototype.isMutedInChannel = function (ip) {
     if (this.mutelist == undefined) {
-	this.mutelist = {};
-	}
+        this.mutelist = {};
+    }
     return typeof this.mutelist[ip] == "object";
 }
 
@@ -731,17 +738,17 @@ _JSESSION = function () {
 _JSESSION.prototype.toString = function () {
     var str = "JSESSION Information\r\n";
     if (this.UsesUser) {
-	str += " Uses User; User contains " + objLength(this.UserData) + " values;"
+        str += " Uses User; User contains " + objLength(this.UserData) + " values;"
     }
-	if (this.UsesChannel) {
-	str += " Uses Channel; Channel contains " + objLength(this.ChannelData) + " values;"
+    if (this.UsesChannel) {
+        str += " Uses Channel; Channel contains " + objLength(this.ChannelData) + " values;"
     }
-	if (this.UsesGlobal) {
-	str += " Uses Global;"
-	}
+    if (this.UsesGlobal) {
+        str += " Uses Global;"
+    }
     if (this.ScriptID != undefined) {
-	str += " Has Script ID";
-	}
+        str += " Has Script ID";
+    }
 
     return str;
 }
@@ -752,8 +759,8 @@ _JSESSION.prototype.refill = function () {
     if (this.UsesUser) {
         for (x in users) {
             if (this.users(users[x]) == undefined) {
-			this.createUser(users[x]);
-			}
+                this.createUser(users[x]);
+            }
         }
     }
 
@@ -764,46 +771,46 @@ _JSESSION.prototype.refill = function () {
             }
         }
     }
-	
-	if (this.UsesGlobal) {
-	if(this.global() == undefined) {
-	this.GlobalData = new this.GlobalFunc();
-	}
-	}
+
+    if (this.UsesGlobal) {
+        if (this.global() == undefined) {
+            this.GlobalData = new this.GlobalFunc();
+        }
+    }
 }
 
 _JSESSION.prototype.users = function (id) {
     if (!this.UsesUser) {
-	return undefined;
-	}
+        return undefined;
+    }
 
     if (typeof this.UserData[id] == 'undefined') {
-	return undefined;
-	}
+        return undefined;
+    }
 
     return this.UserData[id];
 }
 
 _JSESSION.prototype.channels = function (id) {
     if (!this.UsesChannel) {
-	return undefined;
-	}
+        return undefined;
+    }
 
     if (typeof this.ChannelData[id] == 'undefined') {
-	return undefined;
-	}
+        return undefined;
+    }
 
     return this.ChannelData[id];
 }
 
 _JSESSION.prototype.global = function () {
     if (!this.UsesGlobal) {
-	return undefined;
-	}
+        return undefined;
+    }
 
     if (typeof this.GlobalData == 'undefined') {
-	return undefined;
-	}
+        return undefined;
+    }
 
     return this.GlobalData;
 }
@@ -817,8 +824,8 @@ _JSESSION.prototype.identifyScriptAs = function (script) {
 
 _JSESSION.prototype.registerUser = function (func) {
     if (typeof func != "function") {
-	return;
-	}
+        return;
+    }
 
     this.UserFunc = func;
     this.UsesUser = true;
@@ -826,8 +833,8 @@ _JSESSION.prototype.registerUser = function (func) {
 
 _JSESSION.prototype.registerChannel = function (func) {
     if (typeof func != "function") {
-	return;
-	}
+        return;
+    }
 
     this.ChannelFunc = func;
     this.UsesChannel = true;
@@ -836,8 +843,8 @@ _JSESSION.prototype.registerChannel = function (func) {
 
 _JSESSION.prototype.registerGlobal = function (func) {
     if (typeof func != "function") {
-	return;
-	}
+        return;
+    }
 
     this.GlobalFunc = func;
     this.UsesGlobal = true;
@@ -846,16 +853,16 @@ _JSESSION.prototype.registerGlobal = function (func) {
 
 _JSESSION.prototype.createChannel = function (id) {
     if (!this.UsesChannel) {
-	return false;
-	}
+        return false;
+    }
 
     if (typeof this.ChannelData[id] != "undefined") {
-	return false;
-	}
+        return false;
+    }
 
     if (sys.channel(id) == undefined) {
-	return false;
-	}
+        return false;
+    }
 
     this.ChannelData[id] = new this.ChannelFunc(id);
 
@@ -869,15 +876,15 @@ _JSESSION.prototype.createChannel = function (id) {
 
 _JSESSION.prototype.destroyChannel = function (id) {
     if (!this.UsesChannel) {
-	return false;
-	}
+        return false;
+    }
     if (id == 0) {
-	return false;
-	}
+        return false;
+    }
 
     if (typeof this.ChannelData[id] == "undefined") {
-	return false;
-	}
+        return false;
+    }
 
     delete this.ChannelData[id];
     return true;
@@ -885,16 +892,16 @@ _JSESSION.prototype.destroyChannel = function (id) {
 
 _JSESSION.prototype.createUser = function (id) {
     if (!this.UsesUser) {
-	return false;
-	}
+        return false;
+    }
 
     if (typeof this.UserData[id] != "undefined") {
-	return false;
-	}
+        return false;
+    }
 
     if (sys.name(id) == undefined) {
-	return false;
-	}
+        return false;
+    }
 
     this.UserData[id] = new this.UserFunc(id);
     return true;
@@ -902,15 +909,15 @@ _JSESSION.prototype.createUser = function (id) {
 
 _JSESSION.prototype.destroyUser = function (id) {
     if (!this.UsesUser) {
-	return false;
-	}
+        return false;
+    }
     if (typeof this.UserData[id] != "undefined") {
-	return false;
-	}
+        return false;
+    }
     if (sys.name(id) == undefined) {
-	return false;
-	}
-	
+        return false;
+    }
+
     delete this.UserData[id];
     return true;
 }
@@ -942,7 +949,7 @@ cut = function (array, entry, join) {
     return array.splice(entry).join(join);
 }
 
-function Tours (id) {
+function Tours(id) {
     this.id = id;
     this.tourmode = 0;
     this.tourstarter = "";
@@ -960,7 +967,7 @@ function Tours (id) {
     this.couples = {};
     this.players = {};
     this.roundplayers = 0;
-	this.startTime = 0;
+    this.startTime = 0;
 }
 
 Tours.prototype.border = function () {
@@ -972,33 +979,39 @@ Tours.prototype.white = function () {
 }
 
 Tours.prototype.roundStatusGenerate = function () {
-var rethash = {'winLose': {}, 'idleBattles': {}, 'ongoingBattles': {}};
+    var rethash = {
+        'winLose': {},
+        'idleBattles': {},
+        'ongoingBattles': {}
+    };
 
-return rethash;
+    return rethash;
 }
 
 Tours.prototype.idleBattler = function (name) {
-var hash = this.roundStatus.idleBattles, x, chash;
-for(x in hash) {
-chash = hash[x];
-if(chash[0] === name || chash[1] === name) {
-return x;
-}
-}
+    var hash = this.roundStatus.idleBattles,
+        x, chash;
+    for (x in hash) {
+        chash = hash[x];
+        if (chash[0] === name || chash[1] === name) {
+            return x;
+        }
+    }
 
-return false;
+    return false;
 }
 
 Tours.prototype.isBattling = function (name) {
-var hash = this.roundStatus.ongoingBattles, x, chash;
-for(x in hash) {
-chash = hash[x];
-if(chash[0] === name || chash[1] === name) {
-return x;
-}
-}
+    var hash = this.roundStatus.ongoingBattles,
+        x, chash;
+    for (x in hash) {
+        chash = hash[x];
+        if (chash[0] === name || chash[1] === name) {
+            return x;
+        }
+    }
 
-return false;
+    return false;
 }
 
 Tours.prototype.identify = function (test) {
@@ -1124,8 +1137,7 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
     }
 
     botEscapeAll(sys.name(src) + " left the tournament!", 0);
-    if (this.tourmode == 2 && this.players[name2].couplesid != -1) 
-	this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
+    if (this.tourmode == 2 && this.players[name2].couplesid != -1) this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
 
     delete this.players[name2];
 
@@ -1139,21 +1151,23 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         botMessage(src, "You are unable to view the round because a tournament is not currently running or is in signing up phase.", this.id);
         return;
     }
-	
-	var chan = this.id;
-	
+
+    var chan = this.id;
+
     sys.sendMessage(src, "", chan);
     sys.sendHtmlMessage(src, style.header, chan);
     sys.sendMessage(src, "", chan);
-	
-	var battleHash = this.roundStatus, idleBattles = battleHash.idleBattles, 
-	ongoingBattles = battleHash.ongoingBattles, winLose = battleHash.winLose, 
-	anyFinishedBattles = objLength(winLose) > 0, x;
-	
-	var roundInfoStr = "Round "+this.roundnumber;
-	if(this.finals) 
-	roundInfoStr = "Finals";
-	
+
+    var battleHash = this.roundStatus,
+        idleBattles = battleHash.idleBattles,
+        ongoingBattles = battleHash.ongoingBattles,
+        winLose = battleHash.winLose,
+        anyFinishedBattles = objLength(winLose) > 0,
+        x;
+
+    var roundInfoStr = "Round " + this.roundnumber;
+    if (this.finals) roundInfoStr = "Finals";
+
     botMessage(src, roundInfoStr + " " + this.tourtier + " tournament:", chan);
     if (anyFinishedBattles) {
         sys.sendMessage(src, "", chan);
@@ -1165,7 +1179,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
 
         sys.sendMessage(src, "", chan);
     }
-	
+
     if (objLength(ongoingBattles) > 0) {
         sys.sendMessage(src, "", chan);
         botMessage(src, "Ongoing battles:", chan);
@@ -1176,7 +1190,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
 
         sys.sendMessage(src, "", chan);
     }
-	
+
     if (objLength(idleBattles) > 0) {
         sys.sendMessage(src, "", chan);
         botMessage(src, "Yet to start battles:", chan);
@@ -1193,16 +1207,17 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         sys.sendMessage(src, "", chan);
 
         var str = "";
-		for(x in winLose) {
-		str += winLose[x][0]+", ";
-		}
-		
-		str = str.substr(0, str.lastIndexOf(","));
-		
+        for (x in winLose) {
+            str += winLose[x][0] + ", ";
+        }
+
+        str = str.substr(0, str.lastIndexOf(","));
+
         botMessage(src, str, chan);
         sys.sendMessage(src, "", chan);
     }
 
+	sys.sendMessage(src, chan);
     sys.sendHtmlMessage(src, style.footer, chan);
     return;
 }
@@ -1252,7 +1267,7 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
     }
 
     var parts = commandData.split(':');
-	parts[1] = parts[1].toLowerCase();
+    parts[1] = parts[1].toLowerCase();
     if (!this.isInTourney(parts[0]) || sys.id(parts[1]) == undefined) {
         botMessage(src, "The players need to exist!", this.id);
         return;
@@ -1263,20 +1278,19 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
     }
 
     var obj = this.players[parts[0].toLowerCase()];
-	var playerN = parts[0].name(), switchN = parts[1].name();
-	var indexOfIdle = this.idleBattler(playerN);
-	var indexThingy, pNum;
-	
-	if(indexOfIdle !== false) {
-	indexThingy = this.roundStatus.idleBattles[indexOfIdle];
-	pNum = indexThingy[0] == playerN;
-	delete this.roundStatus.idleBattlers[indexOfIdle];
-	if(pNum)
-	this.roundStatus.idleBattlers[indexOfIdle] = [swittchN, indexThingy[1]];
-	else
-	this.roundStatus.idleBattlers[indexOfIdle] = [indexThingy[0], switchN];
-	}
-	
+    var playerN = parts[0].name(),
+        switchN = parts[1].name();
+    var indexOfIdle = this.idleBattler(playerN);
+    var indexThingy, pNum;
+
+    if (indexOfIdle !== false) {
+        indexThingy = this.roundStatus.idleBattles[indexOfIdle];
+        pNum = indexThingy[0] == playerN;
+        delete this.roundStatus.idleBattlers[indexOfIdle];
+        if (pNum) this.roundStatus.idleBattlers[indexOfIdle] = [swittchN, indexThingy[1]];
+        else this.roundStatus.idleBattlers[indexOfIdle] = [indexThingy[0], switchN];
+    }
+
     this.players[parts[1]] = obj;
     this.players[parts[1]].name = switchN;
     delete this.players[parts[0].toLowerCase()];
@@ -1367,12 +1381,12 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
     }
     var startername = sys.id(name) != undefined ? sys.name(sys.id(name)) : name.name();
     var bIndex = this.isBattling(startername);
-	if (bIndex === false) {
+    if (bIndex === false) {
         botMessage(src, "Either this player is through the next round, or his/her battle hasn't begon yet.", this.id);
         return;
     }
     delete this.roundStatus.startedBattles[bIndex];
-	
+
     if (display == 1) {
         this.border();
         this.white();
@@ -1392,7 +1406,7 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
         noPermissionMessage(src, fullCommand, this.id);
         return;
     }
-    if (typeof (this.tourmode) != "undefined" && this.tourmode > 0) {
+    if (typeof(this.tourmode) != "undefined" && this.tourmode > 0) {
         botMessage(src, "You are unable to start a tournament because one is still currently running.", this.id);
         return;
     }
@@ -1404,8 +1418,7 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
 
     var cp = parseInt(commandpart[2]);
     if (this.identify(cp) == "Unknown Mode") {
-        cp = 1;
-        /* set to Single Elimination */
+        cp = 1; /* set to Single Elimination */
     }
 
     this.battlemode = cp;
@@ -1478,8 +1491,8 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
         var prize = !isEmpty(this.prize) ? '<b>Prize:</b> ' + this.prize + '<br>' : ''
         sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "A Tournament was started by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!<br>" + "<b>Players:</b> " + this.tournumber + " <br>" + "<b>Type:</b> " + this.identify(cp) + " <br>" + "<b>Tier:</b> " + this.tourtier + " <br>" + prize + "Type <b style='color:green'>/Join</b> to join the Tournament!" + "</center>" + "<hr width='300'>" + "</td>" + "</tr>" + "</table>", this.id);
     }
-	
-	this.startTime = sys.time() * 1;
+
+    this.startTime = sys.time() * 1;
     this.tourstarter = sys.name(src);
 }
 
@@ -1578,11 +1591,11 @@ Tours.prototype.clearVariables = function () {
     this.battlemode = 0;
 
     this.couples = {};
-	this.roundStatus = this.roundStatusGenerate();
+    this.roundStatus = this.roundStatusGenerate();
     this.winners = [];
     this.players = {};
     this.roundplayers = 0;
-	this.startTime = 0;
+    this.startTime = 0;
 }
 
 Tours.prototype.cleanRoundVariables = function () {
@@ -1720,12 +1733,12 @@ Tours.prototype.roundPairing = function () {
         }
     }
 
-	var plr = this.players, x;
-	for(x in plr) {
-	if(plr[x] == "")
-	delete plr[x];
-	}
-	
+    var plr = this.players,
+        x;
+    for (x in plr) {
+        if (plr[x] == "") delete plr[x];
+    }
+
     this.finals = objLength(this.players) == 2;
     if (!this.finals) {
         this.border();
@@ -1749,13 +1762,14 @@ Tours.prototype.roundPairing = function () {
 
     var a;
 
-	if(this.tagteam_tour()) {
-    var team = "<b><font color=blue>[Team Blue]</font></b>",
-        team2 = "<b><font color=red>[Team Red]</font></b>";
-		}
+    if (this.tagteam_tour()) {
+        var team = "<b><font color=blue>[Team Blue]</font></b>",
+            team2 = "<b><font color=red>[Team Red]</font></b>";
+    }
 
     else {
-        var team = "", team2 = "";
+        var team = "",
+            team2 = "";
     }
 
     for (a in p) {
@@ -1871,8 +1885,8 @@ Tours.prototype.afterBattleStarted = function (src, dest) {
                 n2 = sys.name(dest);
             if (sys.tier(src) == sys.tier(dest) && cmp(sys.tier(src), this.tourtier)) {
                 var idleBattleIndex = this.idleBattler(n1);
-				delete this.roundStatus.idleBattles[idleBattleIndex];
-                this.roundStatus.startedBattles[objLength(this.roundStatus.startedBattles)-1] = [n1, n2];
+                delete this.roundStatus.idleBattles[idleBattleIndex];
+                this.roundStatus.startedBattles[objLength(this.roundStatus.startedBattles) - 1] = [n1, n2];
                 if (!this.finals) botAll("Round " + this.roundnumber + " Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
                 else botAll("Final Round Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
             }
@@ -1890,9 +1904,9 @@ Tours.prototype.tie = function (src, dest) {
         sys.forceBattle(src, dest, sys.getClauses(this.tourtier), 0, false);
     }
     else {
-                var startedBattleIndex = this.isBattling(s);
-				delete this.roundStatus.startedBattles[startedBattleIndex];
-                this.roundStatus.idleBattles[objLength(this.roundStatus.idleBattles)-1] = [s, d];
+        var startedBattleIndex = this.isBattling(s);
+        delete this.roundStatus.startedBattles[startedBattleIndex];
+        this.roundStatus.idleBattles[objLength(this.roundStatus.idleBattles) - 1] = [s, d];
     }
 }
 
@@ -1915,12 +1929,11 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
     var destTL = dest.toLowerCase();
 
     if (this.battlemode == 1 || this.battlemode == 4 || rush) {
-	var stuff = this.roundStatus;
-	var stuffSBIndex = this.isBattling(src);
-	stuff.winLose[objLength(stuff.winLose)-1] = [src, dest];
-	if(stuffSBIndex !== false)
-	delete stuff.startedBattles[stuffSBIndex];
-	
+        var stuff = this.roundStatus;
+        var stuffSBIndex = this.isBattling(src);
+        stuff.winLose[objLength(stuff.winLose) - 1] = [src, dest];
+        if (stuffSBIndex !== false) delete stuff.startedBattles[stuffSBIndex];
+
         delete this.players[destTL];
         delete this.couples[this.players[srcTL].couplesid];
         this.players[srcTL].couplesid = -1;
@@ -1974,12 +1987,11 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
                 loserTL = src.toLowerCase()
             }
 
-	var stuff = this.roundStatus;
-	var stuffSBIndex = this.isBattling(src);
-	stuff.winLose[objLength(stuff.winLose)-1] = [src, dest];
-	if(stuffSBIndex !== false)
-	delete stuff.startedBattles[stuffSBIndex];
-	
+            var stuff = this.roundStatus;
+            var stuffSBIndex = this.isBattling(src);
+            stuff.winLose[objLength(stuff.winLose) - 1] = [src, dest];
+            if (stuffSBIndex !== false) delete stuff.startedBattles[stuffSBIndex];
+
             delete this.players[loserTL];
             delete this.couples[this.players[winnerTL].couplesid];
             this.players[winnerTL].couplesid = -1;
@@ -2125,12 +2137,12 @@ function Mail(sender, text, title) {
 
 String.prototype.reverse = function () {
     var strThis = this;
-	var strThisArr = strThis.split("");
-	strThisArr.reverse();
-	strThisArr.join("");
+    var strThisArr = strThis.split("");
+    strThisArr.reverse();
+    strThisArr.join("");
 
     this = strThisArr;
-	return this;
+    return this;
 }
 /* Example usage:
 "reverseME".reverse() returns "EMesrever"
@@ -2144,13 +2156,13 @@ String.prototype.contains = function (string) {
 String.prototype.name = function () {
     var str = this;
     if (typeof DataHash.names == "undefined") {
-	return str;
-	}
-	
+        return str;
+    }
+
     if (typeof DataHash.names[str.toLowerCase()] != "undefined") {
         str = DataHash.names[str.toLowerCase()];
     }
-	
+
     return str;
 }
 
@@ -2169,19 +2181,19 @@ String.prototype.format = function () {
 // Returns: Hello, someone
 String.prototype.midRef = function (position, n) { // QStringRef QString::midRef
     if (n == null || typeof n != "number") {
-	n = -1;
-	}
+        n = -1;
+    }
 
     var str = this;
     var strlen = str.length - 1;
     if (position > strlen) {
-	return "";
-	}
+        return "";
+    }
 
     var substri = str.substr(position);
     if (n > strlen || n == -1) {
-	return substri;
-	}
+        return substri;
+    }
 
     return substri.substr(0, n);
 }
@@ -2196,16 +2208,15 @@ String.prototype.replaceBetween = function (pos1, pos2, replace) {
 }
 
 String.prototype.fontsize = function (size) {
-var str = this;
+    var str = this;
 
-return "<font size='"+size+"'>"+str+"</font>";
+    return "<font size='" + size + "'>" + str + "</font>";
 }
 
 String.prototype.scramble = function () {
-var thisString = this.split("");
-   for(var i = thisString.length, j, k; i; j = parseInt( Math.random() * i ),
-    k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k ) {}
-   return thisString.join("");
+    var thisString = this.split("");
+    for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
+    return thisString.join("");
 }
 
 JSESSION.identifyScriptAs("JSESSION Original");
@@ -2222,48 +2233,51 @@ JSESSION.refill();
     },
 
     loadAll: function () {
-	if (typeof run === 'undefined') {
-        run = function (f) {
-            try {
-                script[f]();
-            }
-            catch (e) {
-                print(FormatError("Runtime Error: Could not call script." + f + "!", e));
+        if (typeof run === 'undefined') {
+            run = function (f) {
+                try {
+                    script[f]();
+                }
+                catch (e) {
+                    print(FormatError("Runtime Error: Could not call script." + f + "!", e));
+                }
             }
         }
-		}
 
-        var configFile = sys.getFileContent("config").split("\n"), x, c_conf, serv = /server_name=/, desc = /server_description=/, ann = /server_announcement=/;
+        var configFile = sys.getFileContent("config").split("\n"),
+            x, c_conf, serv = /server_name=/,
+            desc = /server_description=/,
+            ann = /server_announcement=/;
         servername = "";
-		
+
         for (x in configFile) {
-		c_conf = configFile[x];
+            c_conf = configFile[x];
             if (serv.test(c_conf) && !ann.test(c_conf) && !desc.test(c_conf)) {
                 servername = c_conf.substring(12, c_conf.length).replace(/\\xe9/i, "é").replace(/\\xa2/i, "¢").trim();
-				break;
+                break;
             }
         }
-		
+
         run("requiredUtilitiesLoad");
-		run("loadCache");
-		
+        run("loadCache");
+
         run("utilitiesLoad");
         run("loadPruneUtilities");
-		run("loadChannelUtilities");
-		
+        run("loadChannelUtilities");
+
         run("loadTrivia");
         run("loadMafia");
 
         run("loadTierData");
         run("loadStyles");
-		run("loadRankicons");
-		run("loadPokemonStats");
+        run("loadRankicons");
+        run("loadPokemonStats");
 
         run("loadTemplateUtility");
         run("loadIfyUtility");
         run("loadDataImportUtility");
 
-        createFile("CommandStats.txt", "{\"startTime\": "+sys.time() * 1+"}");
+        createFile("CommandStats.txt", "{\"startTime\": " + sys.time() * 1 + "}");
 
         initCommandStats = function () {
             try {
@@ -2294,19 +2308,20 @@ JSESSION.refill();
         }
 
         displayCommandStats = function (src, chan, limit) {
-            var cmdS = [], name, totalstats  = 0;
+            var cmdS = [],
+                name, totalstats = 0;
             for (name in commandStats) {
-            cmdS.push([name, commandStats[name].stat, commandStats[name].lastuser]);
+                cmdS.push([name, commandStats[name].stat, commandStats[name].lastuser]);
             }
-			
-			cmdS.sort(function (a, b) {
+
+            cmdS.sort(function (a, b) {
                 return b[1] - a[1];
             });
-			
+
             if (!limit) {
-			limit = 3000;
-			}
-			
+                limit = 3000;
+            }
+
             var msg = limit === 3000 ? "%1 Commands used in total" : "%1 Commands were used in the top " + limit;
             var msg2 = limit === 3000 ? "Command Usage Statistics for " + servername + ":" : "Command Usage Statistics for the top " + limit + ":"
             botMessage(src, msg2, chan);
@@ -2326,14 +2341,14 @@ JSESSION.refill();
             }
 
             botEscapeMessage(src, msg.format(totalstats), chan);
-			
+
             if (commandStats.startTime == undefined) {
                 commandStats.startTime = parseInt(sys.time()) + 1;
             }
             if (commandStats.lastCommandUse == undefined) {
                 commandStats.lastCommandUse = parseInt(sys.time()) + 1;
             }
-			
+
             botMessage(src, "Started counting command usage " + getTimeString(sys.time() * 1 - commandStats.startTime) + " ago. Last command used " + getTimeString(sys.time() * 1 - commandStats.lastCommandUse) + " ago.", chan);
 
         }
@@ -2362,11 +2377,11 @@ JSESSION.refill();
         }
 
         loadOldPoll();
-		
+
         if (typeof DataHash.spammers == "undefined") {
             DataHash.spammers = {};
         }
-		
+
         if (typeof DataHash.teamSpammers == "undefined") {
             DataHash.teamSpammers = {};
         }
@@ -2377,21 +2392,21 @@ JSESSION.refill();
         Clantag.fullTextLower = Clantag.fullText.toLowerCase();
 
         delete ScriptLength_Full;
-		delete ScriptLength_Lines;
-		
+        delete ScriptLength_Lines;
+
         var date = String(new Date());
         cache.write("Script_LastLoad", date);
         cache.save("Script_Registered", date);
     },
-	
+
     attemptToSpectateBattle: function (src, srcbattler, tarbattler) {
         var c = sys.channelIds(),
             b;
         for (b in c) {
             var chan = JSESSION.channels(c[b]);
             if (!chan.toursEnabled) {
-			continue;
-			}
+                continue;
+            }
             if (chan.tour.tourmode == 2 && chan.tour.finals) {
                 botMessage(src, "Enjoy the finals!", chan.id);
                 return "allow"; // disallow specs :(
@@ -2407,20 +2422,20 @@ JSESSION.refill();
 
     beforeChannelJoin: function (src, c) {
         if (JSESSION.users(src) == undefined) {
-		JSESSION.createUser(src);
-		}
+            JSESSION.createUser(src);
+        }
         if (JSESSION.channels(c) == undefined) {
-		JSESSION.createChannel(c);
-		}
+            JSESSION.createChannel(c);
+        }
 
         var chan = JSESSION.channels(c);
         var srcname = sys.name(src).toLowerCase();
         var user = JSESSION.users(src);
-		chan.updateAuth();
+        chan.updateAuth();
 
         if (chan.isChanMod(src) || (sys.auth(src) >= 1 && sys.auth(src) <= 2 && channel != scriptchannel) || sys.auth(src) > 3 || DataHash.megausers[sys.name(src).toLowerCase()] != undefined && c == staffchannel || DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase()) && c == scriptchannel) {
-		return;
-		}
+            return;
+        }
 
         var ip = sys.ip(src);
         if (chan.isBannedInChannel(ip)) {
@@ -2488,11 +2503,11 @@ JSESSION.refill();
             return;
         }
 
-		if (typeof stepCounter == "undefined") {
-		stepCounter = 0;
-		}
-		
-		stepCounter++;
+        if (typeof stepCounter == "undefined") {
+            stepCounter = 0;
+        }
+
+        stepCounter++;
 
         if (AutoStartTours) {
             if (stepCounter % 300 === 0) { /* 60*5 */
@@ -2504,21 +2519,21 @@ JSESSION.refill();
                     if (max > 51) max = 51;
                     else if (max < 4) max = 4;
 
-					var battleMode = sys.rand(1, 7);
-					var tourNumber, tourTier;
+                    var battleMode = sys.rand(1, 7);
+                    var tourNumber, tourTier;
                     if (max != 4) {
                         tourNumber = sys.rand(3, max);
-						if(battleMode > 3) {
-						while (tourNumber % 2 != 0) {
-						tourNumber = sys.rand(4, max);
-						}
-						}
+                        if (battleMode > 3) {
+                            while (tourNumber % 2 != 0) {
+                                tourNumber = sys.rand(4, max);
+                            }
+                        }
                     }
                     else {
                         tourNumber = 3;
-						if(battleMode > 3) {
-						tourNumber++;
-						}
+                        if (battleMode > 3) {
+                            tourNumber++;
+                        }
                     }
 
                     if (tourTiers.length == 1) {
@@ -2530,7 +2545,7 @@ JSESSION.refill();
 
                     mainChan.tour.tournumber = tourNumber;
                     mainChan.tour.tourtier = tourTier;
-					mainChan.tour.startTime = sys.time() * 1;
+                    mainChan.tour.startTime = sys.time() * 1;
                     mainChan.tour.battlemode = battleMode;
 
                     mainChan.tour.prize = "";
@@ -2559,7 +2574,7 @@ JSESSION.refill();
             }
         }
 
-        /*
+/*
 if(typeof Trivia != "undefined") {
 if(!Trivia.isGameGoingOn()&&stepCounter % 300 === 0) {
 Trivia.start();
@@ -2584,12 +2599,17 @@ Trivia.start();
     },
 
     beforeChannelCreated: function (name, cid, src) {
+        if (typeof ChannelsAllowed != 'undefined' && ChannelsAllowed === false && src) {
+            botMessage(src, "You cannot create channels at the moment.");
+            sys.stopEvent();
+            return;
+        }
         if (unicodeAbuse(src, name) && src) {
-		
-					if (!sys.loggedIn(src)) {
-					return;
-					}
-					sys.sendHtmlMessage(src, "<i>Error while sending socket to server -- Received error n°5: The server could not handle your request</i>");
+
+            if (!sys.loggedIn(src)) {
+                return;
+            }
+            sys.sendHtmlMessage(src, "<i>Error while sending socket to server -- Received error n°5: The server could not handle your request</i>");
             sys.stopEvent();
             return;
         }
@@ -2598,22 +2618,23 @@ Trivia.start();
 
     beforeLogIn: function (src) {
         script.hostAuth(src);
-		var myIp = sys.ip(src), myName = sys.name(src);
+        var myIp = sys.ip(src),
+            myName = sys.name(src);
         DataHash.names[myIp] = myName;
         DataHash.names[myName.toLowerCase()] = myName
 
         cache.write("names", JSON.stringify(DataHash.names));
         if (isHost(src)) sys.unban(myName);
-		
-		script.resolveLocation(src, myIp, false);
+
+        script.resolveLocation(src, myIp, false);
 
         if (script.testName(src)) {
             testNameKickedPlayer = src;
             sys.stopEvent();
             return;
         }
-},
-	
+    },
+
     beforeChannelLeave: function (src, channel) {
         var getColor = script.namecolor(src);
         sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(channel)) + "]Left Channel</b> -- <font color=" + getColor + "><b>" + sys.name(src) + "</b></font>", watch);
@@ -2648,12 +2669,12 @@ Trivia.start();
         botMessage(src, "Type in <b><font color=green>/Commands</font></b> to see the commands and <b><font color=green>/Rules</font></b> to see the rules.", 0);
 
         if (sys.numPlayers() > maxPlayersOnline) {
-		maxPlayersOnline = sys.numPlayers();
-		}
+            maxPlayersOnline = sys.numPlayers();
+        }
 
         if (maxPlayersOnline > cache.get("MaxPlayersOnline")) {
-		cache.write("MaxPlayersOnline", maxPlayersOnline);
-		}
+            cache.write("MaxPlayersOnline", maxPlayersOnline);
+        }
 
         botMessage(src, "Current number of players online is: <B>" + sys.numPlayers() + "</B>. Max number of players online was <B>" + maxPlayersOnline + "</B>.", 0);
 
@@ -2667,18 +2688,18 @@ Trivia.start();
         var poChan = JSESSION.channels(0);
 
         var border = function () {
-                return sys.sendHtmlMessage(src, tour, 0);
-            }
+            return sys.sendHtmlMessage(src, tour, 0);
+        }
         var white = function () {
-                return sys.sendMessage(src, "", 0);
-            }
+            return sys.sendMessage(src, "", 0);
+        }
 
-			var startTime = getTimeString(sys.time() * 1 - poChan.tour.startTime);
+        var startTime = getTimeString(sys.time() * 1 - poChan.tour.startTime);
         if (poChan.tour.tourmode == 1) {
 
             white();
             border();
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + " "+startTime+" ago! </b></font>", 0);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + " " + startTime + " ago! </b></font>", 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>PLAYERS:</font></b> " + poChan.tour.tournumber, 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>TYPE:</b></font> Single Elimination", 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>TIER:</b></font> " + poChan.tour.tourtier, 0);
@@ -2695,7 +2716,7 @@ Trivia.start();
         else if (poChan.tour.tourmode == 2) {
             white();
             border();
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + " "+startTime+" ago! </b></font>", 0);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + " " + startTime + " ago! </b></font>", 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + poChan.tour.tournumber, 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + poChan.tour.identify(), 0);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + poChan.tour.tourtier, 0);
@@ -2712,7 +2733,7 @@ Trivia.start();
         sys.sendHtmlMessage(src, "", 0);
 
         if (Config.AutoChannelJoin) {
-            var ChanIds = [mafiachan/*, trivia*/];
+            var ChanIds = [mafiachan /*, trivia*/ ];
 
             if (sys.auth(src) > 0 || JSESSION.channels(watch).isChanMod(src)) {
                 ChanIds.push(watch);
@@ -2725,11 +2746,11 @@ Trivia.start();
             if (sys.auth(src) > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.hasOwnProperty(srcToLower)) {
                 ChanIds.push(scriptchannel);
             }
-			/*
+/*
             if (sys.auth(src) > 1 || JSESSION.channels(trivreview).isChanMod(src)) {
                 ChanIds.push(trivreview);
             }*/
-			
+
             putInMultipleChannels(src, ChanIds);
         }
 
@@ -2745,7 +2766,7 @@ Trivia.start();
         ify.afterLogIn(src);
         script.afterChangeTeam(src, true);
     },
-	
+
     afterChannelJoin: function (src, channel) {
         var getColor = script.namecolor(src);
         sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(channel)) + "]Joined Channel</b> -- <font color=" + getColor + "><b>" + sys.name(src) + "</b></font>", watch);
@@ -2761,7 +2782,7 @@ Trivia.start();
             sys.sendHtmlMessage(src, code, channel);
         }
 
-        if (typeof (chan.topic) == 'undefined' || chan.topic == '') {
+        if (typeof(chan.topic) == 'undefined' || chan.topic == '') {
             chan.topic = "Welcome to " + ChannelLink(sys.channel(channel)) + "!";
             chan.defaultTopic = true;
             cData.changeTopic(chan, chan.topic, "", true);
@@ -2796,29 +2817,29 @@ Trivia.start();
         }
 
         if (chan.isChanMod(src) && chan.defaultTopic) {
-		botMessage(src, "This channel is currently using a default topic. Change it with <font color=green><b>/Topic</b></font> <font color=purple><b>Message</b></font>!", channel);
-		}
-		
+            botMessage(src, "This channel is currently using a default topic. Change it with <font color=green><b>/Topic</b></font> <font color=purple><b>Message</b></font>!", channel);
+        }
+
         if (Poll.mode) {
-		botMessage(src, "A poll is going on! Use <font color=green><b>/viewpoll</b></font> for more information.", channel);
-		}
-		
+            botMessage(src, "A poll is going on! Use <font color=green><b>/viewpoll</b></font> for more information.", channel);
+        }
+
         if (chan.toursEnabled) {
             if (channel != 0) {
 
                 var border = function () {
-                        return sys.sendHtmlMessage(src, tour, channel);
-                    }
+                    return sys.sendHtmlMessage(src, tour, channel);
+                }
 
                 var white = function () {
-                        return sys.sendMessage(src, "", channel);
-                    }
-			    var startTime = getTimeString(sys.time() * 1 - chan.tour.startTime);
+                    return sys.sendMessage(src, "", channel);
+                }
+                var startTime = getTimeString(sys.time() * 1 - chan.tour.startTime);
 
                 if (chan.tour.tourmode == 1) {
                     white();
                     border();
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + " "+startTime+" ago! </b></font>", channel);
+                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + " " + startTime + " ago! </b></font>", channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + chan.tour.tournumber, channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + chan.tour.identify(), channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + chan.tour.tourtier, channel);
@@ -2835,7 +2856,7 @@ Trivia.start();
                 else if (chan.tour.tourmode == 2) {
                     white();
                     border();
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + " "+startTime+" ago! </b></font>", channel);
+                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + " " + startTime + " ago! </b></font>", channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + chan.tour.tournumber, channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + chan.tour.identify(), channel);
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + chan.tour.tourtier, channel);
@@ -2852,18 +2873,20 @@ Trivia.start();
                 }
             }
         }
-		
-		if (channel === trivreview) {
-		var triv_rev_count = Trivia.reviewCount(), s = "are", s2 = "s";
-		if (triv_rev_count != 0) {
-		if (triv_rev_count === 1) {
-		s = "is";
-		s2 = "";
-		}
-		botMessage(src, "There "+s+" "+triv_rev_count+" question"+s2+" to review. Type /review for a full list.");
-		}
-		}
-		
+
+        if (channel === trivreview) {
+            var triv_rev_count = Trivia.reviewCount(),
+                s = "are",
+                s2 = "s";
+            if (triv_rev_count != 0) {
+                if (triv_rev_count === 1) {
+                    s = "is";
+                    s2 = "";
+                }
+                botMessage(src, "There " + s + " " + triv_rev_count + " question" + s2 + " to review. Type /review for a full list.");
+            }
+        }
+
     },
 
     beforeNewMessage: function (message) {
@@ -2871,15 +2894,15 @@ Trivia.start();
             sys.stopEvent();
             return;
         }
-		
-		if (message.replace(/\[#(.*?)\]/, "") == " ") {
-		sys.stopEvent();
-		return;
-		}
-		
-		if (message.substring(0, 14) == "Script Warning") {
+
+        if (message.replace(/\[#(.*?)\]/, "") == " ") {
             sys.stopEvent();
-			botAll(message, watch);
+            return;
+        }
+
+        if (message.substring(0, 14) == "Script Warning") {
+            sys.stopEvent();
+            botAll(message, watch);
             return;
         }
 
@@ -2888,14 +2911,14 @@ Trivia.start();
             sys.stopEvent();
             return;
         }
-		if(message.substr(0, 2) != "[#") {
-if(/Script Error line \d+:/.test(message)) {
-botAll(message, watch);
-return;
-}
-}
+        if (message.substr(0, 2) != "[#") {
+            if (/Script Error line \d+:/.test(message)) {
+                botAll(message, watch);
+                return;
+            }
+        }
 
-        /*
+/*
 if(message == "Safe scripts setting changed") {
 if(message == "Logging changed") {
 if(message == "Proxy Servers setting changed") {
@@ -2906,51 +2929,51 @@ if(message == "Maximum Players Changed.") {
         if (message == "Main channel name changed") {
             if (JSESSION.channels(0).defaultTopic || JSESSION.channels(0).topicsetter == '') {
                 var update = function () {
-                        JSESSION.channels(0).topic = "Welcome to " + sys.channel(0) + "!";
-                        cData.changeTopic(0, JSESSION.channels(0).topic, '', true);
-                    }
+                    JSESSION.channels(0).topic = "Welcome to " + sys.channel(0) + "!";
+                    cData.changeTopic(0, JSESSION.channels(0).topic, '', true);
+                }
                 sys.delayedCall(update, 1); // since it's before.
             }
             return;
         }
 
         if (message == "Script Check: OK") {
-            script.loadAll();			
-			
-			var startingUp = false;
-			if (typeof StartUp !== 'undefined') {
-			startingUp = true;
-			}
-			
+            script.loadAll();
+
+            var startingUp = false;
+            if (typeof StartUp !== 'undefined') {
+                startingUp = true;
+            }
+
             ScriptUpdateMessage();
 
-			
-			if (startingUp) {
-            print("Type !importdata to import data from widely used scripts. Supports the following scripts:");
-            print("Lutra's Script, PO's Scripts.");
-			}
-			
+
+            if (startingUp) {
+                print("Type !importdata to import data from widely used scripts. Supports the following scripts:");
+                print("Lutra's Script, PO's Scripts.");
+            }
+
             RECOVERY_BACKUP = {};
             for (var x in script)
             RECOVERY_BACKUP[x] = script[x];
 
-			var today = String(new Date());
-			var timestamp = today.replace(/\((.*?)\)/g, "").replace(/\)/g, "").replace(/\+/, "").replace(/:/g, "-").trim();
-			sys.writeToFile("backups/script_"+timestamp+".js", sys.getFileContent("scripts.js"));
-			return;
+            var today = String(new Date());
+            var timestamp = today.replace(/\((.*?)\)/g, "").replace(/\)/g, "").replace(/\+/, "").replace(/:/g, "-").trim();
+            sys.writeToFile("backups/script_" + timestamp + ".js", sys.getFileContent("scripts.js"));
+            return;
         }
-		
+
         if (message == "Announcement changed.") {
-		var pidsin, pids = sys.playerIds();
-		for(pidsin in pids) 
+            var pidsin, pids = sys.playerIds();
+            for (pidsin in pids)
             sys.sendMessage(pids[pidsin], "~~Server~~: Announcement was changed.");
             return;
         }
 
         if (message == "The description of the server was changed.") {
-		var pidsin, pids = sys.playerIds();
-		for(pidsin in pids) 
-		sys.sendAll(pids[pidsin], "~~Server~~: Description of the server was changed.");
+            var pidsin, pids = sys.playerIds();
+            for (pidsin in pids)
+            sys.sendAll(pids[pidsin], "~~Server~~: Description of the server was changed.");
             return;
         }
 
@@ -2963,79 +2986,80 @@ if(message == "Maximum Players Changed.") {
         }
 
         if (message.substr(0, 11) == "~~Server~~:" && typeof INSERVMSG == 'undefined') {
-		INSERVMSG = true;
-		var pidsin, pids = sys.playerIds();
-		sys.stopEvent();
-		for(pidsin in pids) 
+            INSERVMSG = true;
+            var pidsin, pids = sys.playerIds();
+            sys.stopEvent();
+            for (pidsin in pids)
             sys.sendHtmlMessage(pids[pidsin], "<font color=" + Server.color + "><timestamp/>" + "<b>" + Server.name + ":</b></font>" + " " + message.replace(/~~Server~~\:/, ""));
-            
-			print(message);
-			return;
+
+            print(message);
+            return;
         }
-		else if(typeof INSERVMSG !== 'undefined') {
-		delete INSERVMSG;
-		}
-				
-		if(message.substr(0, 2) == "[#") {
-			var htmesc = html_strip(message, true), status_HTML_MSG_ACTIVE = typeof SERVER_HTML_MSG_ACTIVE;
-			if (htmesc != message && status_HTML_MSG_ACTIVE == 'undefined') {
-				SERVER_HTML_MSG_ACTIVE = true;
-				print(htmesc.replace(/\s{2,}/g, ' '));
-				sys.stopEvent();
-			} 
-			else if (status_HTML_MSG_ACTIVE != 'undefined') {
-				delete SERVER_HTML_MSG_ACTIVE;
-			}
-			}
+        else if (typeof INSERVMSG !== 'undefined') {
+            delete INSERVMSG;
+        }
+
+        if (message.substr(0, 2) == "[#") {
+            var htmesc = html_strip(message, true),
+                status_HTML_MSG_ACTIVE = typeof SERVER_HTML_MSG_ACTIVE;
+            if (htmesc != message && status_HTML_MSG_ACTIVE == 'undefined') {
+                SERVER_HTML_MSG_ACTIVE = true;
+                print(htmesc.replace(/\s{2,}/g, ' '));
+                sys.stopEvent();
+            }
+            else if (status_HTML_MSG_ACTIVE != 'undefined') {
+                delete SERVER_HTML_MSG_ACTIVE;
+            }
+        }
     },
 
     beforeChatMessage: function (src, message, chan) {
         if (chan == undefined) {
-		sys.stopEvent();
-		return "Quit: Unknown Channel";
-		}
-		
-		if (!sys.loggedIn(src)) { /* /future */
-		return "Quit: Player not online.";
-		}
-		
-		if (!sys.isInChannel(src, chan)) {
-		botAll("ID "+src+" is not in channel "+chan+". Msg: "+message, watch);
-		sys.stopEvent();
-		return "Quit: Player not in channel.";
-		}
+            sys.stopEvent();
+            return "Quit: Unknown Channel";
+        }
+
+        if (!sys.loggedIn(src)) { /* /future */
+            return "Quit: Player not online.";
+        }
+
+        if (!sys.isInChannel(src, chan)) {
+            sys.stopEvent();
+            return "Quit: Player not in channel.";
+        }
 
         var host = isHost(src);
         var poChan = JSESSION.channels(chan);
         var poUser = JSESSION.users(src);
         var chatcolor = ChatColorRandomizers.hasOwnProperty(chan);
         var voice = poUser.voice;
-        var macro = poUser.macro, macroX, macroRegExp, macroXNum;
-		
+        var macro = poUser.macro,
+            macroX, macroRegExp, macroXNum;
+
         if (poUser.floodCount == 'kicked') {
             sys.stopEvent();
-			
-			if (sys.loggedIn(src)) {
-			kick(src);
-			}
-			
+
+            if (sys.loggedIn(src)) {
+                kick(src);
+            }
+
             return "Quit: Kick";
         }
-		
-		if(typeof macro == 'string') {
-		var newArrayIs = ["%m1", "%m2", "%m3", "%m4", "%m5"];
-		macro = newArrayIs;
-		poUser.macro = newArrayIs;
-		delete newArrayIs;
-		}
-				
-		for(macroX in macro) {
-		macroXNum = macroX *1 + 1;
-		macroRegExp = new RegExp("%m"+macroXNum, "g");
-        message = message.replace(macroRegExp, macro[macroX]);
-		}
-		
-		delete macroX, macroRegExp, macroXNum;
+
+        if (typeof macro == 'string') {
+            var newArrayIs = ["%m1", "%m2", "%m3", "%m4", "%m5"];
+            macro = newArrayIs;
+            poUser.macro = newArrayIs;
+            delete newArrayIs;
+        }
+
+        for (macroX in macro) {
+            macroXNum = macroX * 1 + 1;
+            macroRegExp = new RegExp("%m" + macroXNum, "g");
+            message = message.replace(macroRegExp, macro[macroX]);
+        }
+
+        delete macroX, macroRegExp, macroXNum;
 
         if (sys.auth(src) < 3) {
             script.hostAuth(src);
@@ -3061,7 +3085,7 @@ if(message == "Maximum Players Changed.") {
             DataHash.spammers[ip] += 1;
 
             if (DataHash.spammers[ip] >= 5 && !ip in DataHash.tempbans) {
-                var bantime = stringToTime('d', 1);
+                var bantime = stringToTime('d', 5);
                 var thetime = sys.time() * 1 + bantime;
                 DataHash.tempbans[ip] = {
                     "by": Bot.bot + "</i>",
@@ -3070,7 +3094,7 @@ if(message == "Maximum Players Changed.") {
                     "time": thetime
                 };
                 cache.write("tempbans", JSON.stringify(DataHash.tempbans));
-                botAll(sys.name(src) + " was banned for 1 day by " + Bot.bot + "</i> for spamming.", 0);
+                botAll(sys.name(src) + " was banned for 5 days by " + Bot.bot + "</i> for spamming.", 0);
                 delete DataHash.spammers[ip];
                 kick(src);
                 return;
@@ -3094,7 +3118,7 @@ if(message == "Maximum Players Changed.") {
             var mute = !poUser.muted && AutoMute ? " and muted for 5 minutes" : ""
             botEscapeAll(sys.name(src) + " was kicked" + mute + " for flood!", 0);
 
-            sys.callLater('if(DataHash.spammers[' + ip + '] > 0) { DataHash.spammers[' + ip + ']--; }; else { delete DataHash.spammers[' + ip + ']; };', 60 * 60 * 3);
+            sys.callLater('if(DataHash.spammers[' + ip + '] > 0) { DataHash.spammers[' + ip + ']--; }; else { delete DataHash.spammers[' + ip + ']; };', 60 * 60 * 5);
             if (AutoMute) {
                 var bantime = stringToTime('m', 5);
                 if (DataHash.mutes.hasOwnProperty(ip)) {
@@ -3115,7 +3139,7 @@ if(message == "Maximum Players Changed.") {
             return;
         }
 
-        /*
+/*
 if(!sys.dbRegistered(srcname)) {
 if(poUser.lastMsg+2-sys.time()*1 > 0&&!poChan.isChanMod(src)&&sys.auth(src) < 1&&poUser.lastMsg != 0) {
 
@@ -3154,11 +3178,11 @@ poUser.lastMsg = sys.time()*1;
         if (message.length >= parseInt(MaxMessageLength) && sys.auth(src) < 1) {
             botMessage(src, 'You can\'t use that amount of characters in your message. Maximum: ' + MaxMessageLength + '. Current: ' + message.length, chan);
             if (!unicodeAbuse(src, message)) {
-			sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Huge Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print('[#'+sys.channel(chan)+'] Massive Message by ' + sys.name(src) + ': ' + message);
+                sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Huge Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
+                print('[#' + sys.channel(chan) + '] Massive Message by ' + sys.name(src) + ': ' + message);
             }
-			
-			sys.stopEvent();
+
+            sys.stopEvent();
             return;
         }
 
@@ -3166,7 +3190,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("[#"+sys.channel(chan)+"] Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#" + sys.channel(chan) + "] Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -3174,7 +3198,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("[#"+sys.channel(chan)+"] Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#" + sys.channel(chan) + "] Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -3182,7 +3206,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Super Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("[#"+sys.channel(chan)+"] Super Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#" + sys.channel(chan) + "] Super Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -3190,7 +3214,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Super Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("[#"+sys.channel(chan)+"] Super Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#" + sys.channel(chan) + "] Super Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -3198,7 +3222,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Mega Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("[#"+sys.channel(chan)+"] Mega Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#" + sys.channel(chan) + "] Mega Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -3206,7 +3230,7 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Mega Silence Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-            print("[#"+sys.channel(chan)+"] Mega Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
+            print("[#" + sys.channel(chan) + "] Mega Silence Message[" + sys.channel(chan) + "] -- " + sys.name(src) + ": " + message);
             return;
         }
 
@@ -3220,17 +3244,19 @@ poUser.lastMsg = sys.time()*1;
 
                 sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
 
-                print("[#"+sys.channel(chan)+"]Mute Message -- " + sys.name(src) + ": " + message);
+                print("[#" + sys.channel(chan) + "]Mute Message -- " + sys.name(src) + ": " + message);
 
                 var mute = DataHash.mutes[ip];
                 var time = mute.time != 0 ? "Muted for " + getTimeString(mute.time - sys.time() * 1) : "Muted forever";
                 var by = mute.by + "</i>";
-                var why = mute.why, lastChar = why[why.length-1], lastChars = [".", "?", "!", ";", ","];
-				
-				if (lastChars.indexOf(lastChar) == -1) {
-				why += ".";
-				}
-				
+                var why = mute.why,
+                    lastChar = why[why.length - 1],
+                    lastChars = [".", "?", "!", ";", ","];
+
+                if (lastChars.indexOf(lastChar) == -1) {
+                    why += ".";
+                }
+
                 botMessage(src, "You are muted by " + by + ". Reason: " + why + " " + time + ".", chan);
                 return;
             }
@@ -3244,7 +3270,7 @@ poUser.lastMsg = sys.time()*1;
             else {
                 sys.stopEvent();
                 sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Channel Mute Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
-                print("[#"+sys.channel(chan)+"] Mute Message(" + sys.channel(chan) + ") -- " + sys.name(src) + ": " + message);
+                print("[#" + sys.channel(chan) + "] Mute Message(" + sys.channel(chan) + ") -- " + sys.name(src) + ": " + message);
 
                 var mute = poChan.mutelist[ip];
                 var time = mute.time != 0 ? "Muted for " + getTimeString(mute.time - sys.time() * 1) : "Muted forever";
@@ -3257,7 +3283,7 @@ poUser.lastMsg = sys.time()*1;
             }
         }
 
-        if (allowicon && typeof (allowicon) != 'undefined') {
+        if (allowicon && typeof(allowicon) != 'undefined') {
             var auth = sys.auth(src);
             var rankico = '';
             if (!isEmpty(poUser.icon)) {
@@ -3289,7 +3315,7 @@ poUser.lastMsg = sys.time()*1;
             }
         }
 
-        if (allowicon && typeof (allowicon) != 'undefined') {
+        if (allowicon && typeof(allowicon) != 'undefined') {
             var namestr = '<font color=' + script.namecolor(src) + '><timestamp/><b>' + rankico + html_escape(sys.name(src)) + ':</font></b> ' + format(src, html_escape(message))
         }
 
@@ -3313,7 +3339,7 @@ poUser.lastMsg = sys.time()*1;
             var pos = message.indexOf(' ');
 
             if (pos != -1) {
-			    fullCommand = message.substring(1, pos);
+                fullCommand = message.substring(1, pos);
                 command = fullCommand.toLowerCase();
 
                 commandData = message.substr(pos + 1);
@@ -3324,7 +3350,7 @@ poUser.lastMsg = sys.time()*1;
                 tar = sys.id(mcmd[0]);
             }
             else {
-			    fullCommand = message.substring(1);
+                fullCommand = message.substring(1);
                 command = fullCommand.toLowerCase();
             }
 
@@ -3335,12 +3361,12 @@ poUser.lastMsg = sys.time()*1;
             }
 
             if (command != "spam" && command != "sendmail") {
-                print("[#"+sys.channel(chan)+"] Command -- " + sys.name(src) + ": " + message);
+                print("[#" + sys.channel(chan) + "] Command -- " + sys.name(src) + ": " + message);
                 sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Command</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
             }
 
             if (command == "spam") {
-                print("[#"+sys.channel(chan)+"]"+sys.name(src) + " spammed " + sys.name(tar));
+                print("[#" + sys.channel(chan) + "]" + sys.name(src) + " spammed " + sys.name(tar));
             }
 
             poTar = JSESSION.users(tar);
@@ -3373,8 +3399,7 @@ poUser.lastMsg = sys.time()*1;
             var ownerCommands = new Object();
 
             /* -- User Commands: Start -- */
-            userCommands = ({
-                /* -- User Templates: Commands -- */
+            userCommands = ({ /* -- User Templates: Commands -- */
                 commands: function () {
                     var ct = new Command_Templater('Commands');
                     ct.register("arglist", "Displays the argument descriptions.");
@@ -3384,23 +3409,23 @@ poUser.lastMsg = sys.time()*1;
                     ct.register("iconcommands", "Displays the Rank Icon commands.");
                     ct.register("channelcommands", "Displays the Channel commands.");
                     if (poChan.toursEnabled) {
-					ct.register("tourcommands", "Displays the Tournament commands.");
+                        ct.register("tourcommands", "Displays the Tournament commands.");
                     }
-					ct.register("triviacommands", "Displays the Trivia Commands.");
-                    
-					if (!noPermission(src, 1)) {
-					ct.register(removespaces(ModName).toLowerCase() + "commands", "Displays the " + ModName + " commands.");
+                    ct.register("triviacommands", "Displays the Trivia Commands.");
+
+                    if (!noPermission(src, 1)) {
+                        ct.register(removespaces(ModName).toLowerCase() + "commands", "Displays the " + ModName + " commands.");
                     }
-					
-					if (!noPermission(src, 2)) {
-					ct.register(removespaces(AdminName).toLowerCase() + "commands", "Displays the " + AdminName + " commands.");
+
+                    if (!noPermission(src, 2)) {
+                        ct.register(removespaces(AdminName).toLowerCase() + "commands", "Displays the " + AdminName + " commands.");
                     }
-					
-					if (!noPermission(src, 3)) {
-					ct.register(removespaces(OwnerName).toLowerCase() + "commands", "Displays the " + OwnerName + " commands.");
+
+                    if (!noPermission(src, 3)) {
+                        ct.register(removespaces(OwnerName).toLowerCase() + "commands", "Displays the " + OwnerName + " commands.");
                     }
-					
-					ct.register(style.footer);
+
+                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -3545,8 +3570,8 @@ poUser.lastMsg = sys.time()*1;
 
                 arglist: function () {
                     var arg = function (c, m) {
-                            return "<font color=" + c + "><b>" + c + "</b></font> colored arguments: " + m + ".";
-                        }
+                        return "<font color=" + c + "><b>" + c + "</b></font> colored arguments: " + m + ".";
+                    }
 
                     var t = new Templater('Argument List');
                     t.register("Arguments are used in <b>almost every</b> command list.");
@@ -3567,11 +3592,11 @@ poUser.lastMsg = sys.time()*1;
 
                 bbcodes: function () {
                     var formatBB = function (m) {
-                            return "• " + m + " <b>-</b> " + format(0, m)
-                        }
+                        return "• " + m + " <b>-</b> " + format(0, m)
+                    }
                     var formatEvalBB = function (m, code) {
-                            return "• " + m + " <b>-</b> " + eval(code);
-                        }
+                        return "• " + m + " <b>-</b> " + eval(code);
+                    }
 
                     var t = new Templater('BB Codes');
                     t.register(formatBB("[b]Bold[/b]"))
@@ -3604,18 +3629,18 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 pokedex: function () {
-				var formeIndex = commandData.indexOf("-");
-				if (formeIndex != -1) {
-				commandData = commandData.substr(0, formeIndex);
-				}
-				
+                    var formeIndex = commandData.indexOf("-");
+                    if (formeIndex != -1) {
+                        commandData = commandData.substr(0, formeIndex);
+                    }
+
                     if (sys.pokeNum(commandData) == undefined) {
                         commandData = parseInt(commandData);
                         if (sys.pokemon(commandData) != undefined) {
                             commandData = sys.pokemon(commandData);
                         }
                     }
-					
+
                     else {
                         commandData = sys.pokemon(sys.pokeNum(commandData)); // Correcting case.
                     }
@@ -3633,8 +3658,9 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 channels: function () {
-                    var channels = sys.channelIds(), x, pl;
-					
+                    var channels = sys.channelIds(),
+                        x, pl;
+
                     var t = new Templater('Channels');
                     t.register("<i>Information works in the following way:</i> <br><b><font color=blue>Name</font></b> [<font color=green><b>ID</font></b>/<b><font color=blue>NumPlayers of <b><u>Name</u></b></font></b></font></b>]<br>");
 
@@ -3650,17 +3676,17 @@ poUser.lastMsg = sys.time()*1;
 
                 players: function () {
                     var members = sys.playerIds().sort(function (a, b) {
-					return sys.auth(b) - sys.auth(a);
-					}),
+                        return sys.auth(b) - sys.auth(a);
+                    }),
                         x, name;
                     var t = new Templater('Players');
 
                     for (x in members) {
-					name = sys.name(members[x]);
-					if(name == undefined) name = "~Unknown~";
-					
-					t.register(playerInfo(name));
-					}
+                        name = sys.name(members[x]);
+                        if (name == undefined) name = "~Unknown~";
+
+                        t.register(playerInfo(name));
+                    }
 
                     t.register("<br><b><font color=blueviolet>Total Number of Players:</b></font> " + sys.numPlayers());
                     t.register(style.footer);
@@ -3684,8 +3710,8 @@ poUser.lastMsg = sys.time()*1;
                         mode = sess.tourmode == 1 ? "In Signups" : "Running";
                         prize = isEmpty(sess.prize) ? "None" : sess.prize;
                         round = sess.roundnumber ? sess.roundnumber : "1";
-						type = sess.identify();
-                        t.register(ChannelLink(sys.channel(ids[x])).bold() + " " + mode + " "+type+" [<font color=green><b>" + sess.tournumber + "</b></font>/<font color=blue><b>" + round + "</b></font>/<b><font color=blue>" + sess.remaining + "</font></b>/<font color=purple><b>" + prize + "</b></font>]");
+                        type = sess.identify();
+                        t.register(ChannelLink(sys.channel(ids[x])).bold() + " " + mode + " " + type + " [<font color=green><b>" + sess.tournumber + "</b></font>/<font color=blue><b>" + round + "</b></font>/<b><font color=blue>" + sess.remaining + "</font></b>/<font color=purple><b>" + prize + "</b></font>]");
                         count++;
                     }
 
@@ -3713,8 +3739,8 @@ poUser.lastMsg = sys.time()*1;
                         elite0 = false;
                     }
 
-					var x;
-					
+                    var x;
+
                     for (x in DataHash.league.gym) {
                         t.register(playerInfo(DataHash.league.gym[x]));
                     }
@@ -3736,8 +3762,8 @@ poUser.lastMsg = sys.time()*1;
                     t.span("Champion");
 
                     if (!isEmpty(cha)) {
-                 t.register(playerInfo(cha));
-                           }
+                        t.register(playerInfo(cha));
+                    }
 
                     t.register(style.footer);
                     t.render(src, chan);
@@ -3745,45 +3771,48 @@ poUser.lastMsg = sys.time()*1;
 
                 scriptinfo: function () {
                     var user = Object.keys(userCommands).sort(),
-					channel = Object.keys(channelCommands).sort(),
-                    tour = Object.keys(tourCommands).sort(),
-					mod = Object.keys(modCommands).sort(),
-                    admin = Object.keys(adminCommands).sort(),
-                    owner = Object.keys(ownerCommands).sort();
-					
+                        channel = Object.keys(channelCommands).sort(),
+                        tour = Object.keys(tourCommands).sort(),
+                        mod = Object.keys(modCommands).sort(),
+                        admin = Object.keys(adminCommands).sort(),
+                        owner = Object.keys(ownerCommands).sort();
+
                     admin.splice(admin.indexOf("spam"), 1);
 
-                    var userlength = user.length, chanlength = channel.length,
-					tourlength = tour.length, modlength = mod.length,
-					adminlength = admin.length, ownerlength = owner.length;
+                    var userlength = user.length,
+                        chanlength = channel.length,
+                        tourlength = tour.length,
+                        modlength = mod.length,
+                        adminlength = admin.length,
+                        ownerlength = owner.length;
 
                     var t = new Templater('Script Information');
-					
+
                     t.register("Script Version: " + ScriptVersion.toString().bold());
                     t.register("Server Version: " + sys.serverVersion().bold() + "<br/>");
-                    
-					t.register("<font size=5><b>Commands</b></font><br/>");
-					
+
+                    t.register("<font size=5><b>Commands</b></font><br/>");
+
                     t.register("<font size=4 color=green><b>" + UserName + " Commands</b></font>");
                     t.register("<small>" + user.join(", ") + ".</small>");
                     t.register("<b><font color=green>User Commands Total:</font></b> " + userlength + "<br/>");
-					
+
                     t.register("<font size=4 color=purple><b>Channel Commands</b></font>");
                     t.register("<small>" + channel.join(", ") + ".</small>");
                     t.register("<b><font color=purple>Channel Commands Total:</font></b> " + chanlength + "<br/>");
-					
+
                     t.register("<font size=4 color=darkred><b>Tournament Commands</b></font>");
                     t.register("<small>" + tour.join(", ") + ".</small>");
                     t.register("<b><font color=darkred>Tournament Commands Total:</font></b> " + tourlength + "<br/>");
-					
+
                     t.register("<font size=4 color=blue><b>" + ModName + " Commands</b></font>");
                     t.register("<small>" + mod.join(", ") + ".</small>");
                     t.register("<b><font color=blue>Moderator Commands Total:</font></b> " + modlength + "<br/>");
-					
+
                     t.register("<font size=4 color=orange><b>" + AdminName + " Commands</b></font>");
                     t.register("<small>" + admin.join(", ") + ".</small>");
                     t.register("<b><font color=orange>Administrator Commands Total:</font></b> " + adminlength + "<br/>");
-					
+
                     t.register("<font size=4 color=red><b>" + OwnerName + " Commands</b></font>");
                     t.register("<small>" + owner.join(", ") + ".</small>");
                     t.register("<b><font color=red>Owner Commands Total:</font></b> " + ownerlength + "<br/>");
@@ -3800,31 +3829,32 @@ poUser.lastMsg = sys.time()*1;
                         nullvar = [],
                         arrvar = [];
 
-						var thisObj = this,
-						vars = Object.getOwnPropertyNames(thisObj),
-						thisObjArr = [], i, toO, thisObjCur;
-					
-					for(i in vars) {
-					thisObjCur = thisObj[vars[i]];
-					toO = typeof thisObjCur;
+                    var thisObj = this,
+                        vars = Object.getOwnPropertyNames(thisObj),
+                        thisObjArr = [],
+                        i, toO, thisObjCur;
+
+                    for (i in vars) {
+                        thisObjCur = thisObj[vars[i]];
+                        toO = typeof thisObjCur;
                         if (Array.isArray(thisObjCur)) {
                             toO = "array";
                         }
-						else if (toO === null) {
-						toO = "undefined";
-						}
-						
-						else if (thisObjCur instanceof Object && toO !== "function") {
+                        else if (toO === null) {
+                            toO = "undefined";
+                        }
+
+                        else if (thisObjCur instanceof Object && toO !== "function") {
                             toO = "object";
                         }
-						
-					thisObjArr.push(toO);
-					}
-					
+
+                        thisObjArr.push(toO);
+                    }
+
                     for (i in vars) {
                         var y = thisObjArr[i];
-						i = vars[i];
-						
+                        i = vars[i];
+
                         if (y === "boolean") {
                             boolvar.push(i);
                         }
@@ -3843,7 +3873,7 @@ poUser.lastMsg = sys.time()*1;
                         else if (y == "array") {
                             arrvar.push(i);
                         }
-						else {
+                        else {
                             nullvar.push(i);
                         }
                     }
@@ -3852,95 +3882,95 @@ poUser.lastMsg = sys.time()*1;
                     numvar.sort();
                     boolvar.sort();
                     arrvar.sort();
-					objvar.sort();
+                    objvar.sort();
                     funvar.sort();
                     nullvar.sort();
 
                     t.register("<font size=5><b>Global Variables</b></font><br>");
-					
-					if (strvar.length !== 0) {
-                    t.register("<font size=4 color=red><b>String Variables</b></font>");
-					
-                    var stringStr = "<font size=2>"+strvar.join(", ")+".</font>";
-					
-					t.register(stringStr);				
-                    t.register("<b><font color=red>String Variables Total:</font></b> " + strvar.length + "<br>");
+
+                    if (strvar.length !== 0) {
+                        t.register("<font size=4 color=red><b>String Variables</b></font>");
+
+                        var stringStr = "<font size=2>" + strvar.join(", ") + ".</font>";
+
+                        t.register(stringStr);
+                        t.register("<b><font color=red>String Variables Total:</font></b> " + strvar.length + "<br>");
                     }
-					
-					if (numvar.length !== 0) {
-					t.register("<font size=4 color=blue><b>Number Variables</b></font>");
 
-                    var numberString = "<font size=2>"+numvar.join(", ")+".</font>";
+                    if (numvar.length !== 0) {
+                        t.register("<font size=4 color=blue><b>Number Variables</b></font>");
 
-					t.register(numberString);				
-                    t.register("<b><font color=blue>Number Variables Total:</font></b> " + numvar.length + "<br>");
+                        var numberString = "<font size=2>" + numvar.join(", ") + ".</font>";
+
+                        t.register(numberString);
+                        t.register("<b><font color=blue>Number Variables Total:</font></b> " + numvar.length + "<br>");
                     }
-					
-					if (boolvar.length !== 0) {
-					t.register("<font size=4 color=purple><b>Boolean Variables</b></font>");
-					
-                    var booleanString = "<font size=2>"+boolvar.join(", ")+".</font>";
 
-					t.register(booleanString);			
-                    t.register("<b><font color=purple>Boolean Variables Total:</font></b> " + boolvar.length + "<br>");
+                    if (boolvar.length !== 0) {
+                        t.register("<font size=4 color=purple><b>Boolean Variables</b></font>");
+
+                        var booleanString = "<font size=2>" + boolvar.join(", ") + ".</font>";
+
+                        t.register(booleanString);
+                        t.register("<b><font color=purple>Boolean Variables Total:</font></b> " + boolvar.length + "<br>");
                     }
-					
-					if (arrvar.length !== 0) {
-					t.register("<font size=4 color=midnightblue><b>Array Variables</b></font>")
 
-                    var arrayString = "<font size=2>"+arrvar.join(", ")+".</font>";
+                    if (arrvar.length !== 0) {
+                        t.register("<font size=4 color=midnightblue><b>Array Variables</b></font>")
 
-					t.register(arrayString);
-                    t.register("<b><font color=midnightblue>Array Variables Total:</font></b> " + arrvar.length + "<br>");
+                        var arrayString = "<font size=2>" + arrvar.join(", ") + ".</font>";
+
+                        t.register(arrayString);
+                        t.register("<b><font color=midnightblue>Array Variables Total:</font></b> " + arrvar.length + "<br>");
                     }
-					
-					if (objvar.length !== 0) {
-					t.register("<font size=4 color=goldenrod><b>Object Variables</b></font>")
 
-                    var objectString = "<font size=2>"+objvar.join(", ")+".</font>";
+                    if (objvar.length !== 0) {
+                        t.register("<font size=4 color=goldenrod><b>Object Variables</b></font>")
 
-					t.register(objectString);
-                    t.register("<b><font color=goldenrod>Object Variables Total:</font></b> " + objvar.length + "<br>");
+                        var objectString = "<font size=2>" + objvar.join(", ") + ".</font>";
+
+                        t.register(objectString);
+                        t.register("<b><font color=goldenrod>Object Variables Total:</font></b> " + objvar.length + "<br>");
                     }
-					
-					if (funvar.length !== 0) {
-					t.register("<font size=4 color=green><b>Function Variables</b></font>");
 
-                    var functionString = "<font size=2>"+funvar.join(", ")+".</font>";
+                    if (funvar.length !== 0) {
+                        t.register("<font size=4 color=green><b>Function Variables</b></font>");
 
-					t.register(functionString);
-                    t.register("<b><font color=green>Function Variables Total:</font></b> " + funvar.length + "<br>");
+                        var functionString = "<font size=2>" + funvar.join(", ") + ".</font>";
+
+                        t.register(functionString);
+                        t.register("<b><font color=green>Function Variables Total:</font></b> " + funvar.length + "<br>");
                     }
-					
-					if (nullvar.length !== 0) {
-					t.register("<font size=4 color=grey><b>Undefined Variables</b></font>");
 
-                    var undefinedVar = "<font size=2>"+nullvar.join(", ")+".</font>";
+                    if (nullvar.length !== 0) {
+                        t.register("<font size=4 color=grey><b>Undefined Variables</b></font>");
 
-					t.register(undefinedVar);
-                    t.register("<b><font color=grey>Undefined Variables Total:</font></b> " + nullvar.length + "<br>");
+                        var undefinedVar = "<font size=2>" + nullvar.join(", ") + ".</font>";
+
+                        t.register(undefinedVar);
+                        t.register("<b><font color=grey>Undefined Variables Total:</font></b> " + nullvar.length + "<br>");
                     }
-					
-					t.register("<b><font color=blueviolet>Global Variables Total:</b> " + vars.length + "</font><br/>");
 
-					var scriptKeys = Object.keys(script).sort();
+                    t.register("<b><font color=blueviolet>Global Variables Total:</b> " + vars.length + "</font><br/>");
+
+                    var scriptKeys = Object.keys(script).sort();
                     var scriptStr = scriptKeys.join(", ");
 
                     t.register("<font size=5><b>Events</b></font><br/>");
                     t.register("<small>" + scriptStr + ".</small>");
                     t.register("<b><font color=blueviolet>Events Total:</font></b> " + scriptKeys.length + " <br/>");
-					
+
                     if (typeof ScriptLength_Lines == 'undefined') {
-                      var servscript = sys.getFileContent("scripts.js");
-				ScriptLength_Lines = servscript.split("\n").length;
+                        var servscript = sys.getFileContent("scripts.js");
+                        ScriptLength_Lines = servscript.split("\n").length;
                         ScriptLength_Full = servscript.length;
                     }
 
                     t.register("<b><font size=4 color=forestgreen>Characters:</b></font> Estimated " + ScriptLength_Full);
                     t.register("<b><font size=4 color=darkblue>Lines:</b></font> " + ScriptLength_Lines + "<br/>");
                     t.register("<font color=green><b>Script:</b></font> © TheUnknownOne: <a href='" + ScriptURL + "'>" + ScriptURL + "</a></font>");
-                    
-					t.register("<b>Script Registered Date:</b></font> " + cache.get("Script_Registered"));
+
+                    t.register("<b>Script Registered Date:</b></font> " + cache.get("Script_Registered"));
                     t.register("<b>Script Last Loaded Date:</b></font> " + cache.get("Script_LastLoad"));
 
                     t.register("<br/>Created and Maintained by <b>TheUnknownOne</b>.");
@@ -3949,8 +3979,8 @@ poUser.lastMsg = sys.time()*1;
                     t.register("Styles and Rank Icons created by <b>TheUnknownOne</b>, <b>Lutra</b>, <b>Intel_iX</b>, <b>person6445</b>, <b>Rigas</b>.");
                     t.register("<br/>This script is available under the <a href='http://creativecommons.org/licenses/by-nc-sa/3.0/'>Creative Commons Attribution-ShareAlike License 3.0</a>.");
                     t.register("<small>Thanks to the PO Dev Team for making Pokemon Online!</small>");
-                    
-					t.register(style.footer);
+
+                    t.register(style.footer);
                     t.render(src, chan);
                 },
 
@@ -3958,12 +3988,12 @@ poUser.lastMsg = sys.time()*1;
                     var t = new Templater('Script Settings');
 
                     var g = function (str) {
-                            return "<font color='green'><b>" + str + "</b></font>";
-                        }
+                        return "<font color='green'><b>" + str + "</b></font>";
+                    }
 
                     var r = function (str) {
-                            return "<font color='red'><b>" + str + "</b></font>";
-                        }
+                        return "<font color='red'><b>" + str + "</b></font>";
+                    }
 
                     if (AutoStartTours) t.register("AutoStartTours is " + g("on") + ".");
                     else t.register("AutoStartTours is " + r("off") + ".");
@@ -4062,19 +4092,20 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 tourauthlist: function () {
-				var authlist = DataHash.megausers;                    
-				var count = objLength(authlist), x;
+                    var authlist = DataHash.megausers;
+                    var count = objLength(authlist),
+                        x;
 
                     if (count == 0) {
                         botMessage(src, "No " + sLetter(Tour1) + " at the moment!", chan);
                         return;
                     }
-					
+
                     var t = new Templater(sLetter(Tour1));
                     t.register('');
 
                     for (x in authlist) {
-					t.register(playerInfo(x));
+                        t.register(playerInfo(x));
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of " + sLetter(Tour1) + ":</font></b> " + count);
@@ -4088,36 +4119,42 @@ poUser.lastMsg = sys.time()*1;
                         botMessage(src, "Sorry, no authority at the moment!", chan);
                         return;
                     }
-                    var x, c_auth, c_authname, authlists = {'invis': [], 'owner': [], 'admin': [], 'mod': []};
-					
-					for(x in authList) {
-					c_authname = authList[x];
-					c_auth = sys.dbAuth(c_authname);
-					
-					if(c_auth > 3) {
-					authlists.invis.push(c_authname);
-					}
-					else if(c_auth == 3) {
-					authlists.owner.push(c_authname);
-					}
-					else if(c_auth == 2) {
-					authlists.admin.push(c_authname);
-					}
-					else {
-					authlists.mod.push(c_authname);
-					}
-					}
-					
-					authlists.invis.sort();
-					authlists.owner.sort();
-					authlists.admin.sort();
-					authlists.mod.sort();
-					
+                    var x, c_auth, c_authname, authlists = {
+                        'invis': [],
+                        'owner': [],
+                        'admin': [],
+                        'mod': []
+                    };
+
+                    for (x in authList) {
+                        c_authname = authList[x];
+                        c_auth = sys.dbAuth(c_authname);
+
+                        if (c_auth > 3) {
+                            authlists.invis.push(c_authname);
+                        }
+                        else if (c_auth == 3) {
+                            authlists.owner.push(c_authname);
+                        }
+                        else if (c_auth == 2) {
+                            authlists.admin.push(c_authname);
+                        }
+                        else {
+                            authlists.mod.push(c_authname);
+                        }
+                    }
+
+                    authlists.invis.sort();
+                    authlists.owner.sort();
+                    authlists.admin.sort();
+                    authlists.mod.sort();
+
                     var t = new Templater('Server Authority');
-					var a = authlists, c;
+                    var a = authlists,
+                        c;
 
                     if (sys.auth(src) > 2) {
-					c = a.invis;
+                        c = a.invis;
                         if (c.length != 0) {
 
                             t.register("<font color=black size=4><b>" + sLetter(InvisName) + " (" + c.length + ")</b></font><br/>")
@@ -4125,66 +4162,67 @@ poUser.lastMsg = sys.time()*1;
                             for (x in c) {
                                 t.register(playerInfo(c[x]));
                             }
-							
+
                             t.register("");
                         }
                     }
 
-					c = a.owner;
-					
+                    c = a.owner;
+
                     if (c.length != 0) {
                         t.register("<font color=red size=4><b>" + sLetter(OwnerName) + " (" + c.length + ")</b></font><br/>");
 
                         for (x in c) {
                             t.register(playerInfo(c[x]));
                         }
-						
+
                         t.register("");
                     }
 
-					c = a.admin;
-					
+                    c = a.admin;
+
                     if (c.length != 0) {
                         t.register("<font color=orange size=4><b>" + sLetter(AdminName) + " (" + c.length + ")</b></font><br/>");
 
                         for (x in c) {
                             t.register(playerInfo(c[x]));
                         }
-						
+
                         t.register("");
                     }
 
-					c = a.mod;
-					
+                    c = a.mod;
+
                     if (c.length != 0) {
                         t.register("<font color=blue size=4><b>" + sLetter(ModName) + " (" + c.length + ")</b></font><br/>");
-                        
-						for (x in c) {
+
+                        for (x in c) {
                             t.register(playerInfo(c[x]));
                         }
-						
+
                         t.register("");
                     }
-					
+
                     t.register("<b><font color=blueviolet>Total Number of Authorities:</font></b> " + sendAuthLength(src));
                     t.register(style.footer);
                     t.render(src, chan);
                 },
-				
+
                 autoidles: function () {
-				var authlist = DataHash.idles;                    
-				var count = objLength(authlist), x;
+                    var authlist = DataHash.idles;
+                    var count = objLength(authlist),
+                        x;
 
                     if (count == 0) {
                         botMessage(src, "No one has Auto Idle.", chan);
                         return;
                     }
-					
+
                     var t = new Templater("Auto Idles");
                     t.register('');
 
                     for (x in authlist) {
-					t.register(playerInfo(x));
+                        t.register(playerInfo(x));
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of Auto Idles:</font></b> " + count);
@@ -4193,19 +4231,20 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 voices: function () {
-                    var authlist = DataHash.voices;                    
-				var count = objLength(authlist), x;
+                    var authlist = DataHash.voices;
+                    var count = objLength(authlist),
+                        x;
 
                     if (count == 0) {
                         botMessage(src, "No one has Auto Idle.", chan);
                         return;
                     }
-					
+
                     var t = new Templater("Voices");
                     t.register('');
 
                     for (x in authlist) {
-					t.register(playerInfo(x));
+                        t.register(playerInfo(x));
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of Voices:</font></b> " + count);
@@ -4214,19 +4253,20 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 evalops: function () {
-                    var authlist = DataHash.evalops;                    
-				var count = objLength(authlist), x;
+                    var authlist = DataHash.evalops;
+                    var count = objLength(authlist),
+                        x;
 
                     if (count == 0) {
                         botMessage(src, "No one is Eval Operator.", chan);
                         return;
                     }
-					
+
                     var t = new Templater("Eval Operators");
                     t.register('');
 
                     for (x in authlist) {
-					t.register(playerInfo(x));
+                        t.register(playerInfo(x));
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of Eval Operators:</font></b> " + count);
@@ -4347,10 +4387,10 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     if (unicodeAbuse(src, mcmd[1])) {
-					if (!sys.loggedIn(src)) {
-					return;
-					}
-					botMessage(src, "Ping sent to " + sys.name(tar) + "!", chan);
+                        if (!sys.loggedIn(src)) {
+                            return;
+                        }
+                        botMessage(src, "Ping sent to " + sys.name(tar) + "!", chan);
                         return;
                     }
 
@@ -4415,32 +4455,31 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- User Commands: Macro -- */
                 macro: function () {
-				mcmd[1] = cut(mcmd, 1, ':');
-				
+                    mcmd[1] = cut(mcmd, 1, ':');
+
                     if (isEmpty(mcmd[1])) {
                         botMessage(src, "Your macros are: " + poUser.macro.join(", "), chan);
                         return;
                     }
 
-					mcmd[1] = html_escape(mcmd[1]);
-					var num = Math.round(mcmd[0] * 1);
-					if(num > 5 || num < 1) {
-					botMessage(src, "Specify a range of 1-5", chan);
-					return;
-					}
-					
-                    poUser.macro[num-1] = mcmd[1];
+                    mcmd[1] = html_escape(mcmd[1]);
+                    var num = Math.round(mcmd[0] * 1);
+                    if (num > 5 || num < 1) {
+                        botMessage(src, "Specify a range of 1-5", chan);
+                        return;
+                    }
+
+                    poUser.macro[num - 1] = mcmd[1];
                     var toL = sys.name(src).toLowerCase();
-					if(typeof DataHash.macros[toL] != "object")
-					DataHash.macros[toL] = ["%m1", "%m2", "%m3", "%m4", "%m5"];
-					
+                    if (typeof DataHash.macros[toL] != "object") DataHash.macros[toL] = ["%m1", "%m2", "%m3", "%m4", "%m5"];
+
                     DataHash.macros[toL] = poUser.macro;
 
-                    botMessage(src, "You changed macro "+num+" to: " + mcmd[1], chan);
+                    botMessage(src, "You changed macro " + num + " to: " + mcmd[1], chan);
                 },
 
                 /* -- User Commands: Fun -- */
-				'catch': function () {
+                'catch': function () {
                     if (!CommandsEnabled._catch_) {
                         botMessage(src, "/catch is turned off!", chan);
                         return;
@@ -4505,11 +4544,11 @@ poUser.lastMsg = sys.time()*1;
                     var getcolor = script.namecolor(tar);
 
                     if (unicodeAbuse(src, commandData)) {
-                        
-					if (!sys.loggedIn(src)) {
-					return;
-					}
-					botMessage(src, "<font color=" + getColor + "><b>" + html_escape(sys.name(src)) + "</b></font></font> has used " + attack + " on <b><font color=" + getcolor + ">" + html_escape(commandData) + "</font></b>!", chan);
+
+                        if (!sys.loggedIn(src)) {
+                            return;
+                        }
+                        botMessage(src, "<font color=" + getColor + "><b>" + html_escape(sys.name(src)) + "</b></font></font> has used " + attack + " on <b><font color=" + getcolor + ">" + html_escape(commandData) + "</font></b>!", chan);
                         return;
                     }
 
@@ -4572,11 +4611,11 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
 
-                    if (typeof (DataHash.mail[mcmd[0].toLowerCase()]) == "undefined") {
+                    if (typeof(DataHash.mail[mcmd[0].toLowerCase()]) == "undefined") {
                         DataHash.mail[mcmd[0].toLowerCase()] = [];
                     }
 
-                    if (typeof (DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
+                    if (typeof(DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
                         DataHash.mail["SENT_" + sys.name(src).toLowerCase()] = [];
                     }
 
@@ -4594,7 +4633,7 @@ poUser.lastMsg = sys.time()*1;
                     cache.write("mail", JSON.stringify(DataHash.mail));
                 },
                 sentmails: function () {
-                    if (typeof (DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
+                    if (typeof(DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
                         DataHash.mail["SENT_" + sys.name(src).toLowerCase()] = [];
                         cache.write("mail", JSON.stringify(DataHash.mail));
                     }
@@ -4620,7 +4659,7 @@ poUser.lastMsg = sys.time()*1;
                     sys.sendHtmlMessage(src, arr.join("<br>"), chan);
                 },
                 deletesent: function () {
-                    if (typeof (DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
+                    if (typeof(DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
                         DataHash.mail["SENT_" + sys.name(src).toLowerCase()] = [];
                         cache.write("mail", JSON.stringify(DataHash.mail));
                     }
@@ -4635,12 +4674,12 @@ poUser.lastMsg = sys.time()*1;
                     cache.write("mail", JSON.stringify(DataHash.mail));
                 },
                 readmail: function () {
-                    if (typeof (DataHash.mail[sys.name(src).toLowerCase()]) == "undefined") {
+                    if (typeof(DataHash.mail[sys.name(src).toLowerCase()]) == "undefined") {
                         DataHash.mail[sys.name(src).toLowerCase()] = [];
                         cache.write("mail", JSON.stringify(DataHash.mail));
                     }
 
-                    if (typeof (DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
+                    if (typeof(DataHash.mail["SENT_" + sys.name(src).toLowerCase()]) == "undefined") {
                         DataHash.mail["SENT_" + sys.name(src).toLowerCase()] = [];
                         cache.write("mail", JSON.stringify(DataHash.mail));
                     }
@@ -4680,7 +4719,7 @@ poUser.lastMsg = sys.time()*1;
                     sys.sendHtmlMessage(src, arr.join("<br>"), chan);
                 },
                 deletemail: function () {
-                    if (typeof (DataHash.mail[sys.name(src).toLowerCase()]) == "undefined") {
+                    if (typeof(DataHash.mail[sys.name(src).toLowerCase()]) == "undefined") {
                         DataHash.mail[sys.name(src).toLowerCase()] = [];
                         cache.write("mail", JSON.stringify(DataHash.mail));
                     }
@@ -4691,7 +4730,8 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     DataHash.mail[sys.name(src).toLowerCase()] = [];
-                    botMessage(src, "Mail deleted!", chan);F
+                    botMessage(src, "Mail deleted!", chan);
+                    F
                     cache.write("mail", JSON.stringify(DataHash.mail));
                 },
 
@@ -4804,12 +4844,12 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     if (unicodeAbuse(src, commandData)) {
-                        
-					if (!sys.loggedIn(src)) {
-					return;
-					}
-					
-					sys.sendHtmlMessage(src, "<font color=" + getColor + "><timestamp/><i><b>*** " + sys.name(src) + "</b> " + format(src, html_escape(commandData)) + "</font></b></i>", chan);
+
+                        if (!sys.loggedIn(src)) {
+                            return;
+                        }
+
+                        sys.sendHtmlMessage(src, "<font color=" + getColor + "><timestamp/><i><b>*** " + sys.name(src) + "</b> " + format(src, html_escape(commandData)) + "</font></b></i>", chan);
                         return;
                     }
 
@@ -4826,8 +4866,8 @@ poUser.lastMsg = sys.time()*1;
                     var h = mcmd[0].toLowerCase();
 
                     var l = function (v) {
-                            return String(v).toLowerCase();
-                        }
+                        return String(v).toLowerCase();
+                    }
 
                     if (h != "1" && h != "2" && h != "3" && h != l(ModName) && h != l(AdminName) && h != l(OwnerName)) {
                         botMessage(src, "Please select an auth level or auth name for the /callauth", chan);
@@ -4877,15 +4917,15 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
 
-                    if (unicodeAbuse(src,commandData)) {
-					
-					if (!sys.loggedIn(src)) {
-					return;
-					}
-					sendFailWhale(src, chan);
-						if(sys.auth(src) < 1) {
-						kick(src);
-						}
+                    if (unicodeAbuse(src, commandData)) {
+
+                        if (!sys.loggedIn(src)) {
+                            return;
+                        }
+                        sendFailWhale(src, chan);
+                        if (sys.auth(src) < 1) {
+                            kick(src);
+                        }
                         return;
                     }
 
@@ -5027,8 +5067,7 @@ poUser.lastMsg = sys.time()*1;
             }
 
             /* -- Channel Commands: Start */
-            channelCommands = ({
-                /* -- Channel Templates: Commands */
+            channelCommands = ({ /* -- Channel Templates: Commands */
                 channelcommands: function () {
                     var ct = new Command_Templater('Channel Commands', true);
 
@@ -5080,10 +5119,6 @@ poUser.lastMsg = sys.time()*1;
                     if (poChan.isChanOwner(src) || !noPermission(src, 2)) {
                         ct.span(ChanOwner + " Commands");
 
-                        if (noPermission(src, 1)) {
-                            ct.register("perm", ["{b On/Off}"], "Makes the channel permanent or temporal.");
-                        }
-
                         if (noPermission(src, 2)) {
                             ct.register("destroychannel", "Destroys the channel.");
                         }
@@ -5100,8 +5135,9 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Channel Templates: Normal */
                 ctourauthlist: function () {
-                    var authlist = poChan.tourAuth, count = objLength(authlist);
-					if (count === 0) {
+                    var authlist = poChan.tourAuth,
+                        count = objLength(authlist);
+                    if (count === 0) {
                         botMessage(src, "No " + sLetter(ChanTour1) + " at the moment!", chan);
                         return;
                     }
@@ -5110,7 +5146,7 @@ poUser.lastMsg = sys.time()*1;
                     t.register("");
 
                     for (x in authlist) {
-					t.register(playerInfo(x));
+                        t.register(playerInfo(x));
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of " + sLetter(ChanTour1) + ":</font></b> " + count);
@@ -5122,12 +5158,12 @@ poUser.lastMsg = sys.time()*1;
                     var t = new Templater('Channel Settings');
 
                     var g = function (str) {
-                            return "<font color='green'><b>" + str + "</b></font>";
-                        }
+                        return "<font color='green'><b>" + str + "</b></font>";
+                    }
 
                     var r = function (str) {
-                            return "<font color='red'><b>" + str + "</b></font>";
-                        }
+                        return "<font color='red'><b>" + str + "</b></font>";
+                    }
 
                     if (poChan.perm) t.register("The Channel is " + g("permanent") + ".");
                     else t.register("The Channel is " + r("temporal") + ".");
@@ -5145,8 +5181,8 @@ poUser.lastMsg = sys.time()*1;
                     else t.register("The Channel has " + r("chat color disabled") + ".");
 
                     if (poChan.toursEnabled) {
-                        if (poChan.tour.AutoStartBattles) t.register("AutoStartBattles for this channel is " + g("on") + ".");
-                        else t.register("AutoStartBattles for this channel is " + r("off") + ".<br/>");
+                        if (poChan.tour.AutoStartBattles) t.register("Auto Start Battles for this channel is " + g("on") + ".");
+                        else t.register("Auto Start Battles for this channel is " + r("off") + ".<br/>");
                     }
 
                     if (poChan.creator != '' && poChan.creator != '~Unknown~') {
@@ -5170,63 +5206,68 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 cauth: function () {
-				poChan.updateAuth();
-				poChan.clearUsers();
-				
-				var authList = poChan.chanAuth, x, cauth, auths = {'mods': [], 'admins': [], 'owners': []};
+                    poChan.updateAuth();
+                    poChan.clearUsers();
+
+                    var authList = poChan.chanAuth,
+                        x, cauth, auths = {
+                            'mods': [],
+                            'admins': [],
+                            'owners': []
+                        };
                     var authTotal = objLength(authList);
                     if (authTotal == 0) {
                         botMessage(src, "No channel authority at the moment!", chan);
                         return;
                     }
-					
 
-				for(x in authList) {
-				cauth = authList[x];
-				if(cauth === 3) {
-				auths.owners.push(x);
-				} else if(cauth === 2) {
-				auths.admins.push(x);
-				}
-				else {
-				auths.mods.push(x);
-				}
-				}	
+
+                    for (x in authList) {
+                        cauth = authList[x];
+                        if (cauth === 3) {
+                            auths.owners.push(x);
+                        } else if (cauth === 2) {
+                            auths.admins.push(x);
+                        }
+                        else {
+                            auths.mods.push(x);
+                        }
+                    }
                     var t = new Templater("Channel Authority");
-					
-					var c = auths.owners;
+
+                    var c = auths.owners;
                     if (c.length != 0) {
                         t.register("<font color=red size=4><strong>" + sLetter(ChanOwner) + " (" + c.length + ")</strong></font>");
                         t.register("");
 
                         for (x in c) {
-						t.register(playerInfo(c[x]));
-						}
-						
+                            t.register(playerInfo(c[x]));
+                        }
+
                         t.register("");
                     }
 
-					c = auths.admins;
+                    c = auths.admins;
                     if (c.length != 0) {
                         t.register("<font color=orange size=4><strong>" + sLetter(ChanAdmin) + " (" + c.length + ")</strong></font>");
                         t.register("");
 
                         for (x in c) {
-						t.register(playerInfo(c[x]));
-						}
-						
+                            t.register(playerInfo(c[x]));
+                        }
+
                         t.register("");
                     }
 
-					c = auths.mods;
+                    c = auths.mods;
                     if (c.length != 0) {
                         t.register("<font color=blue size=4><strong>" + sLetter(ChanMod) + " (" + c.length + ")</strong></font>");
                         t.register("");
 
                         for (x in c) {
-						t.register(playerInfo(c[x]));
-						}
-						
+                            t.register(playerInfo(c[x]));
+                        }
+
                         t.register("");
                     }
 
@@ -5241,7 +5282,7 @@ poUser.lastMsg = sys.time()*1;
                         noPermissionMessage(src, fullCommand, chan);
                         return;
                     }
-					
+
                     prune_channel_bans(chan);
                     var list = poChan.banlist;
                     if (objLength(list) === 0) {
@@ -5324,8 +5365,8 @@ poUser.lastMsg = sys.time()*1;
                         noPermissionMessage(src, fullCommand, chan);
                         return;
                     }
-					
-					var color = script.namecolor(src);
+
+                    var color = script.namecolor(src);
                     var srcname = sys.name(src)
 
                     sys.sendHtmlAll(border2 + "<br>", chan);
@@ -5339,8 +5380,8 @@ poUser.lastMsg = sys.time()*1;
                         noPermissionMessage(src, fullCommand, chan);
                         return;
                     }
-					
-					var color = script.namecolor(src);
+
+                    var color = script.namecolor(src);
                     var srcname = sys.name(src)
 
                     sys.sendHtmlAll(border2 + "<br>", chan);
@@ -5506,11 +5547,10 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Channel Commands: Perm */
                 perm: function () {
-                    if (!poChan.isChanOwner(src) && noPermission(src, 1)) {
+                    if (noPermission(src, 1)) {
                         noPermissionMessage(src, fullCommand, chan);
                         return;
                     }
-
                     var cmdlc = cmdData
                     if (cmdlc != 'on' && cmdlc != 'off') {
                         botMessage(src, "Pick either on or off", chan);
@@ -5561,10 +5601,10 @@ poUser.lastMsg = sys.time()*1;
 
                     var players = sys.playersOfChannel(chan);
                     delete cData.channelData[sys.channel(chan)];
-					cData.save();
-					
-					poChan.perm = false;
-					
+                    cData.save();
+
+                    poChan.perm = false;
+
                     for (x in players) {
                         sys.kick(players[x], chan)
                         if (sys.isInChannel(players[x], 0) != true) {
@@ -5682,8 +5722,8 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     if (poChan.tour == undefined && poChan.toursEnabled) {
-					poChan.toursEnabled = false;
-					}
+                        poChan.toursEnabled = false;
+                    }
 
                     if (!poChan.toursEnabled) {
                         botMessage(src, "Tours are not installed!", chan);
@@ -5873,8 +5913,7 @@ poUser.lastMsg = sys.time()*1;
                     botMessage(src, 'That player doesn\'t exist!', chan);
                     return;
                 }
-                if (poChan.chanAuth[commandData.toLowerCase()] == 0
-				|| poChan.chanAuth[commandData.toLowerCase()] == undefined) {
+                if (poChan.chanAuth[commandData.toLowerCase()] == 0 || poChan.chanAuth[commandData.toLowerCase()] == undefined) {
                     botEscapeMessage(src, "That person is already " + ChanUser + "!", chan);
                     return;
                 }
@@ -5903,7 +5942,7 @@ poUser.lastMsg = sys.time()*1;
                     botMessage(src, "You can't deauth higher auth!", chan);
                     return;
                 }
-				
+
                 botEscapeAll(commandData + " was made " + ChanMod + " by " + sys.name(src) + ".", chan);
                 poChan.changeAuth(commandData.toLowerCase(), 1);
                 putInAuthChan(commandData, "cauth", chan);
@@ -5950,8 +5989,7 @@ poUser.lastMsg = sys.time()*1;
             }
 
             /* -- Tour Commands: Start */
-            tourCommands = ({
-                /* -- Tour Templates: Commands */
+            tourCommands = ({ /* -- Tour Templates: Commands */
                 tourcommands: function () {
                     var ct = new Command_Templater("Tournament Commands", true);
                     ct.span("Tournament " + ChanTour0 + " Commands");
@@ -6051,8 +6089,8 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 /* -- Tour Commands: Switch -- */
-				
-				'switch': function () {
+
+                'switch': function () {
                     poChan.tour.command_switch(src, commandData, fullCommand);
                 },
 
@@ -6113,8 +6151,7 @@ poUser.lastMsg = sys.time()*1;
             });
 
             /* -- Mod Commands: Start */
-            modCommands = ({
-                /* -- Mod Templates: Commands */
+            modCommands = ({ /* -- Mod Templates: Commands */
                 cmdcommands: function () {
                     var ct = new Command_Templater("Command Commands", true);
                     ct.span("Command " + ModName + " Commands");
@@ -6138,10 +6175,10 @@ poUser.lastMsg = sys.time()*1;
                         ct.span("Command Founder Commands");
                         ct.register("evallock", "Locks eval for everyone but you and evalops.");
                         ct.register("evalunlock", "Unlocks eval.");
-					}
-                   
+                    }
 
-				    ct.register(style.footer);
+
+                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -6184,13 +6221,13 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     ct.register("unimp", ["{r Person}"], "Removes someones Impersonation.");
-                    
-					if (Config.Superimping) {
-					ct.register("superimp", ["{p Thing}"], "Changes your name to ~<b>Thing</b>~.");
-					ct.register("superimpoff", "Restores your name.");
-					}
-					
-					ct.register(style.footer);
+
+                    if (Config.Superimping) {
+                        ct.register("superimp", ["{p Thing}"], "Changes your name to ~<b>Thing</b>~.");
+                        ct.register("superimpoff", "Restores your name.");
+                    }
+
+                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -6305,7 +6342,7 @@ poUser.lastMsg = sys.time()*1;
 
                     var color = "N/A",
                         id = "N/A",
-                    var laston = "N/A",
+                        var laston = "N/A",
                         lastname = "N/A";
                     var aliases = sys.aliases(ip);
                     var reg = sys.dbRegistered(commandData) ? "yes" : "no"
@@ -6315,7 +6352,7 @@ poUser.lastMsg = sys.time()*1;
                     for (banned in banlist) {
                         if (cmdData == banlist[banned]) {
                             ban = 'yes';
-							break;
+                            break;
                         }
                     }
 
@@ -6349,11 +6386,11 @@ poUser.lastMsg = sys.time()*1;
                         color = script.namecolor(tar);
                     }
 
-					script.resolveLocation(0, dbIp, true);
-					var loc = hash.locations[dbIp];
-					var hostname = loc.hostname;
-					var country = loc.country_name;
-					
+                    script.resolveLocation(0, dbIp, true);
+                    var loc = hash.locations[dbIp];
+                    var hostname = loc.hostname;
+                    var country = loc.country_name;
+
                     var tt = new Table_Templater("Information of " + name, "orange", "2")
                     tt.register(["Name", "IP", "Range IP", "Last On At", "With Name", "Registered", "Auth Level", "Aliases"], true);
                     tt.register([name, ip, range, laston, lastname, reg, auth, "<small>" + aliases + "</small>"], false);
@@ -6573,40 +6610,40 @@ poUser.lastMsg = sys.time()*1;
                     botAll(n + " resigned from auth!", 0);
                 },
 
-				
-				passauth: function () {
-				if(dbIp == undefined || dbIp != sys.ip(src)) {
-				botMessage(src, "That player doesn't have your ip or does not exist.", chan);
-				return;
-				}
-				
-				var myAuth = sys.auth(src), trgtAuth = sys.dbAuth(commandData);
-				if(myAuth <= trgtAuth) {
-				botMessage(src, "That alias has either equal or higher auth!", chan);
-				return;
-				}
-				
-				if(!sys.dbRegistered(commandData)) {
-				botMessage(src, "That alias is not registered. Please register it before passing auth.", chan);
-				return;
-				}
-				
-				
-				var myID = src;
-				
-				with (sys) {
-				var tarId = id(commandData);
-				
-				changeDbAuth(commandData, myAuth);
-				if(tarId)
-				changeAuth(tarId, myAuth);
-				
-				changeAuth(myID, 0);
-				}
-				
-				botMessage(src, "You passed your auth to "+commandData.name()+"!", chan);
-				},
-				
+
+                passauth: function () {
+                    if (dbIp == undefined || dbIp != sys.ip(src)) {
+                        botMessage(src, "That player doesn't have your ip or does not exist.", chan);
+                        return;
+                    }
+
+                    var myAuth = sys.auth(src),
+                        trgtAuth = sys.dbAuth(commandData);
+                    if (myAuth <= trgtAuth) {
+                        botMessage(src, "That alias has either equal or higher auth!", chan);
+                        return;
+                    }
+
+                    if (!sys.dbRegistered(commandData)) {
+                        botMessage(src, "That alias is not registered. Please register it before passing auth.", chan);
+                        return;
+                    }
+
+
+                    var myID = src;
+
+                    with(sys) {
+                        var tarId = id(commandData);
+
+                        changeDbAuth(commandData, myAuth);
+                        if (tarId) changeAuth(tarId, myAuth);
+
+                        changeAuth(myID, 0);
+                    }
+
+                    botMessage(src, "You passed your auth to " + commandData.name() + "!", chan);
+                },
+
                 /* -- Mod Commands: Poll -- */
                 poll: function () {
 
@@ -6816,7 +6853,7 @@ poUser.lastMsg = sys.time()*1;
                         botMessage(src, "This person is not online or doesn't exist.", chan);
                         return;
                     }
-					
+
                     if (self(src, tar)) {
                         botMessage(src, "Can't kick yourself!", chan);
                         return;
@@ -6866,17 +6903,17 @@ poUser.lastMsg = sys.time()*1;
                     botMessage(src, "<small><b>" + alias.join("</b>, <b>") + "</b></small>", chan);
                     botMessage(src, temp.length + " aliases in total.", chan);
                 },
-				
-				/* -- Mod Commands: Hostname Lookup -- */
-				hostname: function () {
-				if(dbIp == undefined) {
-				botMessage(src, "That player does not exist.", chan);
-				return;
-				}
-				
-				script.resolveLocation(0, dbIp, true);
-				botMessage(src, "The hostname of "+commandData.name().bold()+" is: "+DataHash.locations[dbIp].hostname, chan);
-				},
+
+                /* -- Mod Commands: Hostname Lookup -- */
+                hostname: function () {
+                    if (dbIp == undefined) {
+                        botMessage(src, "That player does not exist.", chan);
+                        return;
+                    }
+
+                    script.resolveLocation(0, dbIp, true);
+                    botMessage(src, "The hostname of " + commandData.name().bold() + " is: " + DataHash.locations[dbIp].hostname, chan);
+                },
 
             })
 
@@ -6892,44 +6929,42 @@ poUser.lastMsg = sys.time()*1;
                 ct.register("cmdcommands", "Displays Command Commands.");
                 ct.register("moderatecommands", "Displays Moderation Commands.");
                 ct.register("aliases", ["{p IP}"], "Displays Aliases of an IP.");
-				ct.register("hostname", ["{or Person}"], "Displays the hostname of someone.");
+                ct.register("hostname", ["{or Person}"], "Displays the hostname of someone.");
                 ct.register("passauth", ["{or Person}"], "Passes your auth to another alias. The alias must be registered and under your ip.");
-				ct.register(style.footer);
+                ct.register(style.footer);
                 ct.render(src, chan);
             }
-			
-			if(Config.Superimping) {
-			modCommands["superimp"] = function () { 
-			if(commandData == "") {
-			botMessage(src, "Specify a name to imp.", chan);
-			return;
-			}
-			if(commandData.length > 20) {
-			botMessage(src, "Specify a shorter name.", chan);
-			return;
-			}
-			
-			if(poUser.superimp == undefined)
-			poUser.superimp = sys.name(src);
-			
-			botAll(sys.name(src)+" superimped "+commandData+"!", 0);
-			sys.changeName(src, "~"+commandData+"~");
-			}
-			
-			modCommands["superimpoff"] = function () {
-			if(poUser.superimp == undefined) {
-			botMessage(src, "You aren't superimping!", chan);
-			return;
-			}
-			
-			sys.changeName(src, poUser.superimp);
-			botAll(sys.name(src)+" changed their name back!", 0);
-			}
-			}
-			
-			/* -- Admin Commands: Start -- */
-            adminCommands = ({
-                /* -- Admin Commands: Command Templates */
+
+            if (Config.Superimping) {
+                modCommands["superimp"] = function () {
+                    if (commandData == "") {
+                        botMessage(src, "Specify a name to imp.", chan);
+                        return;
+                    }
+                    if (commandData.length > 20) {
+                        botMessage(src, "Specify a shorter name.", chan);
+                        return;
+                    }
+
+                    if (poUser.superimp == undefined) poUser.superimp = sys.name(src);
+
+                    botAll(sys.name(src) + " superimped " + commandData + "!", 0);
+                    sys.changeName(src, "~" + commandData + "~");
+                }
+
+                modCommands["superimpoff"] = function () {
+                    if (poUser.superimp == undefined) {
+                        botMessage(src, "You aren't superimping!", chan);
+                        return;
+                    }
+
+                    sys.changeName(src, poUser.superimp);
+                    botAll(sys.name(src) + " changed their name back!", 0);
+                }
+            }
+
+            /* -- Admin Commands: Start -- */
+            adminCommands = ({ /* -- Admin Commands: Command Templates */
                 leaguecommands: function () {
                     var ct = new Command_Templater("League Commands");
                     ct.register("changegl", ["{o Number}", "{or Person}"], "Changes a Gym Leader Spot. Number can be 1-16.");
@@ -6971,9 +7006,9 @@ poUser.lastMsg = sys.time()*1;
                 spam: function () {
                     if (mcmd[1] === undefined || tar === undefined || sys.auth(tar) > 0) {
                         invalidCommandMessage(src, command, chan);
-						return;
+                        return;
                     }
-					
+
                     mcmd[1] = cut(mcmd, 1, ':');
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Target:</b></font> " + sys.name(tar) + " ", chan)
                     sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>Spam:</b></font> " + html_escape(mcmd[1]) + " ", chan)
@@ -7160,16 +7195,17 @@ poUser.lastMsg = sys.time()*1;
                         botMessage(src, "Can't do that to higher or equal auth!", chan);
                         return;
                     }
-					
-                    var banlist = sys.banList(), a;
-					var toBan = mcmd[0].toLowerCase();
+
+                    var banlist = sys.banList(),
+                        a;
+                    var toBan = mcmd[0].toLowerCase();
                     for (a in banlist) {
                         if (banlist[a] === toBan) {
                             botMessage(src, "That person is already banned!", chan);
                             return;
                         }
                     }
-					
+
                     var srcname = sys.name(src);
                     var name = mcmd[0].name();
 
@@ -7227,12 +7263,12 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Admin Commands: Kick -- */
                 masskick: function () {
-				botAll(sys.name(src)+" is masskicking the server!");
-				massKick();
+                    botAll(sys.name(src) + " is masskicking the server!");
+                    massKick();
                 },
 
                 /* -- Admin Commands: Ify -- */
-				'ify': function () {
+                'ify': function () {
                     ify.command_ify(src, commandData, chan);
                 },
 
@@ -7315,7 +7351,7 @@ poUser.lastMsg = sys.time()*1;
                     Bot.bot = commandData;
                     cache.write("Bot", JSON.stringify(Bot));
                 },
-				
+
                 botcolor: function () {
                     if (commandData === undefined) {
                         botMessage(src, "Specify a name for the bot color!", chan);
@@ -7358,8 +7394,8 @@ poUser.lastMsg = sys.time()*1;
                     cache.write("Server", JSON.stringify(Server));
                 },
 
-				/* -- Admin Commands: Message Manipulation -- */
-				
+                /* -- Admin Commands: Message Manipulation -- */
+
                 talk: function () {
                     if (commandData === "") {
                         botMessage(src, "Specify a message.", chan);
@@ -7574,7 +7610,7 @@ poUser.lastMsg = sys.time()*1;
                 if (tar != undefined) {
                     botEscapeAll(sys.name(tar) + " has been made " + Tour0 + " by " + sys.name(src) + ".", 0);
                     tari.megauser = false;
-					sys.kick(tar, staffchannel);
+                    sys.kick(tar, staffchannel);
                     return;
                 }
                 botEscapeAll(mcmd[0].name() + " has been made " + Tour0 + " by " + sys.name(src) + ".", 0);
@@ -7595,26 +7631,25 @@ poUser.lastMsg = sys.time()*1;
                     botMessage(src, "That person is already " + Tour1 + "!", chan);
                     return;
                 }
-				
+
                 DataHash.megausers[h] = {
                     "name": h.name()
                 }
-				
+
                 cache.write("megausers", JSON.stringify(DataHash.megausers));
 
                 if (tar != undefined) {
                     botEscapeAll(sys.name(tar) + " has been made " + Tour1 + " by " + sys.name(src) + ".", 0);
                     tari.megauser = true;
-				putInAuthChan(mcmd[0], "mu");
-				return;
+                    putInAuthChan(mcmd[0], "mu");
+                    return;
                 }
-				
+
                 botEscapeAll(mcmd[0].name() + " has been made " + Tour1 + " by " + sys.name(src) + ".", 0);
             }
 
             /* -- Owner Commands: Start -- */
-            ownerCommands = ({
-                /* -- Owner Commands: Command Templates -- */
+            ownerCommands = ({ /* -- Owner Commands: Command Templates -- */
                 dbcommands: function () {
                     var ct = new Command_Templater("Database Commands");
 
@@ -7635,6 +7670,7 @@ poUser.lastMsg = sys.time()*1;
                     ct.register("messagelimit", ["{o Number}"], "Sets a Character Limit for Players under the " + sLetter(AdminName) + " Authority Level.");
                     ct.register("autokick", ["{b On/Off}"], "Turns automatic kicks on or off. Also turns off flood mute and flood ban.");
                     ct.register("automute", ["{b On/Off}"], "Turns automatic mutes on or off.");
+                    ct.register("allowchannels", ["{b On/Off}"], "To allow or disallow the creation of non-script channels.");
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -7717,82 +7753,82 @@ poUser.lastMsg = sys.time()*1;
                     var x, pl = sys.playerIds(),
                         cur, curn;
                     var randomUser = function () {
-                            var ret = Math.round(pl.length * Math.random());
-                            if (ret === 0) {
-							ret = Server.name;
-							}
-                            else {
-                                ret = sys.name(ret);
-                                if (ret === undefined) {
-								ret = randomUser();
-								}
-                            }
-                            return ret;
+                        var ret = Math.round(pl.length * Math.random());
+                        if (ret === 0) {
+                            ret = Server.name;
                         }
-						
-					var rCmdList = ["rangeban", "ban", "mute", "kick", "tempban"],
-					reasons = ["Existance", "Spam", "None. I'm just abusive.",
-					"pro", "STFU!"];
-										
-					var randomCommand = function () {
-					var ret = Math.ceil(rCmdList.length * Math.random());
-					
-					if (ret === undefined || ret === "undefined") {
-					ret = randomCommand();
-					}
-					
-					return rCmdList[ret];
-					}
+                        else {
+                            ret = sys.name(ret);
+                            if (ret === undefined) {
+                                ret = randomUser();
+                            }
+                        }
+                        return ret;
+                    }
 
-					var randomReason = function () {
-					var ret = Math.ceil(reasons.length * Math.random());
-					
-					if (ret === undefined || ret === "undefined") {
-					ret = randomReason();
-					}
-					
-					return reasons[ret];
-					}
-					
-                    var min = parseInt(commandData), currentRand;
+                    var rCmdList = ["rangeban", "ban", "mute", "kick", "tempban"],
+                        reasons = ["Existance", "Spam", "None. I'm just abusive.", "pro", "STFU!"];
+
+                    var randomCommand = function () {
+                        var ret = Math.ceil(rCmdList.length * Math.random());
+
+                        if (ret === undefined || ret === "undefined") {
+                            ret = randomCommand();
+                        }
+
+                        return rCmdList[ret];
+                    }
+
+                    var randomReason = function () {
+                        var ret = Math.ceil(reasons.length * Math.random());
+
+                        if (ret === undefined || ret === "undefined") {
+                            ret = randomReason();
+                        }
+
+                        return reasons[ret];
+                    }
+
+                    var min = parseInt(commandData),
+                        currentRand;
 
                     if (isNaN(min) || min > 75) {
                         min = 30;
                     }
-					
+
                     for (x in pl) {
                         cur = pl[x];
-						currentRand = sys.rand(1, min + 1);
-						while (currentRand != 0) {
-                        curn = sys.name(cur) == undefined ? Server.name : sys.name(cur);
-                        spam_user.push(curn);
-                        spam_color.push(script.namecolor(cur));
+                        currentRand = sys.rand(1, min + 1);
+                        while (currentRand != 0) {
+                            curn = sys.name(cur) == undefined ? Server.name : sys.name(cur);
+                            spam_user.push(curn);
+                            spam_color.push(script.namecolor(cur));
 
-                        spam_array.push("STOP RIGHT THERE " + curn.toUpperCase() + " YOU FUCKER");
-                        spam_array.push("This is bad. I'm blaming " + curn + "!");
-                        spam_array.push("Do you have some spare change " + curn + "???");
-                        spam_array.push(curn + " was banned by " + randomUser() + "!");
-						spam_array.push("\\"+randomCommand()+" "+randomUser());
-						currentRand--;
-						}
+                            spam_array.push("STOP RIGHT THERE " + curn.toUpperCase() + " YOU FUCKER");
+                            spam_array.push("This is bad. I'm blaming " + curn + "!");
+                            spam_array.push("Do you have some spare change " + curn + "???");
+                            spam_array.push(curn + " was banned by " + randomUser() + "!");
+                            spam_array.push("\\" + randomCommand() + " " + randomUser());
+                            currentRand--;
+                        }
                     }
 
-					spam_array.sort(function () {
-					return 0.5 - Math.random();
-					});
-					
-					spam_user.sort(function () {
-					return 0.5 - Math.random();
-					});
-					
-					spam_color.sort(function () {
-					return 0.5 - Math.random();
-					});
-					
+                    spam_array.sort(function () {
+                        return 0.5 - Math.random();
+                    });
+
+                    spam_user.sort(function () {
+                        return 0.5 - Math.random();
+                    });
+
+                    spam_color.sort(function () {
+                        return 0.5 - Math.random();
+                    });
+
                     var y, sal = spam_array.length,
                         sul = spam_user.length,
                         scl = spam_color.length,
-						random_spam = '',
+                        random_spam = '',
                         random_color = '',
                         random_user = '';
 
@@ -7807,7 +7843,7 @@ poUser.lastMsg = sys.time()*1;
                         }
                         if (random_spam.contains("was banned by") && !random_user.contains("was banned by")) {
                             sys.sendHtmlAll("<font color=DarkOrange><timestamp/><b>" + random_spam + "</b></font>", 0);
-                            sys.sendHtmlAll("<font color=DarkOrange><timestamp/><b>Reason:</b></font> "+randomReason(), 0);
+                            sys.sendHtmlAll("<font color=DarkOrange><timestamp/><b>Reason:</b></font> " + randomReason(), 0);
                             continue;
                         }
 
@@ -7868,7 +7904,7 @@ poUser.lastMsg = sys.time()*1;
                         botMessage(src, "Identical Script ID.", chan);
                         return;
                     }
-					
+
                     JSESSION.identifyScriptAs(mcmd[0]);
                     JSESSION.refill();
                     botAll(src, sys.name(src) + " changed the Script ID and resetted all JSESSION data!", 0);
@@ -8051,7 +8087,7 @@ poUser.lastMsg = sys.time()*1;
                     var LoadScript = sys.getFileContent("scripts.js");
                     try {
                         sys.changeScript(LoadScript);
-                        script.beforeChatMessage(src, "/randomspam 1", chan);
+                        script.beforeChatMessage(src, "Hooray! New scripts :D", chan);
                     }
                     catch (e) {
                         botMessage(src, FormatError("Error occured.", e), chan);
@@ -8068,24 +8104,24 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     var isValidIP = function (ipz, codeat) {
-                            var i = ipz.split('.');
-                            if ((i[codeat] < 0 || i[codeat] > 255) && i !== undefined) {
-                                return false;
-                            }
+                        var i = ipz.split('.');
+                        if ((i[codeat] < 0 || i[codeat] > 255) && i !== undefined) {
+                            return false;
+                        }
 
-                            for (var z = 0; z < 3; z++) {
-                                if (i[z] != undefined) {
-                                    if (i[z].length > 3) {
-                                        return false;
-                                    }
+                        for (var z = 0; z < 3; z++) {
+                            if (i[z] != undefined) {
+                                if (i[z].length > 3) {
+                                    return false;
                                 }
                             }
-
-                            if (i[3] != undefined) {
-                                return false;
-                            }
-                            return true;
                         }
+
+                        if (i[3] != undefined) {
+                            return false;
+                        }
+                        return true;
+                    }
 
                     var c = mcmd[0];
                     if (!isValidIP(c, 0) || !isValidIP(c, 1) || !isValidIP(c, 2)) {
@@ -8146,7 +8182,7 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Owner Commands: Eval */
                 eval: function () {
-                    var isEOp = DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase());
+                    var isEOp = DataHash.evalops[sys.name(src).toLowerCase()] != undefined;
                     if (evallock && !host && !isEOp) {
                         botMessage(src, 'Eval has been blocked by the host!', chan);
                         return;
@@ -8196,8 +8232,8 @@ poUser.lastMsg = sys.time()*1;
                     mcmd[2] = cut(mcmd, 2, ':');
                     var d = removespaces(mcmd[2]).toLowerCase()
                     var inObj = function (variable, obj) {
-                            return variable in obj;
-                        }
+                        return variable in obj;
+                    }
 
                     if (inObj(d, userCommands) || inObj(d, channelCommands) || inObj(d, tourCommands) || inObj(d, modCommands) || inObj(d, adminCommands) || inObj(d, ownerCommands) || inObj(d, founderCommands)) {
                         botMessage(src, "That name already exists in a command!", chan);
@@ -8337,6 +8373,28 @@ poUser.lastMsg = sys.time()*1;
                     botAll("Auto Mute was turned " + cmdData + " by " + sys.name(src) + "!", 0);
                 },
 
+                /* -- Owner Commands: Channels -- */
+                allowchannels: function () {
+                    if (cmdData != "on" && cmdData != "off") {
+                        botMessage(src, "Use 'on' or 'off'.", chan);
+                        return;
+                    }
+
+                    if (!ChannelsAllowed && cmdData == "on") {
+                        ChannelsAllowed = true;
+                    }
+                    else if (ChannelsAllowed && cmdData == "off") {
+                        ChannelsAllowed = false;
+                    }
+                    else {
+                        botMessage(src, "Channels are already " + cmdData + ".", chan);
+                        return;
+                    }
+
+                    cache.write("ChannelsAllowed", ChannelsAllowed);
+                    botAll("Channels were turned " + cmdData + " by " + sys.name(src) + "!", 0);
+                },
+
                 /* -- Owner Commands: Player -- */
                 deleteplayer: function () {
                     if (dbIp === undefined) {
@@ -8400,7 +8458,7 @@ poUser.lastMsg = sys.time()*1;
                         o;
                     for (x in d) {
                         if (c > 250) {
-                            o = objLength(Strings)++; 
+                            o = objLength(Strings)++;
                             Strings[o - 1] = cstr;
                             Strings[o] = "";
                             cstr = Strings[o];
@@ -8410,8 +8468,8 @@ poUser.lastMsg = sys.time()*1;
                         cstr += d[x].name() + ", ";
                         c++;
                     }
-					
-					Strings[objLength(Strings)] = cstr;
+
+                    Strings[objLength(Strings)] = cstr;
 
                     botMessage(src, "The following players are in the members database:", chan);
                     for (x in Strings) {
@@ -8451,27 +8509,26 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Owner Commands: Pointers */
                 pointercommand: function () {
-                    if (isEmpty(mcmd[0])||isEmpty(mcmd[1])) {
+                    if (isEmpty(mcmd[0]) || isEmpty(mcmd[1])) {
                         botMessage(src, "Specify a command.", chan);
                         return;
                     }
-					
+
                     mcmd[1] = cut(mcmd, 1, ':');
 
                     var pointer = mcmd[0].toLowerCase(),
                         command = mcmd[1].toLowerCase(),
-                    rmPoint = removespaces(pointer),
-					rmCmd = removespaces(command);
-					
-                    if (rmPoint == "!!/reverse/!!"
-					|| hasCommandStart(rmPoint)) {
+                        rmPoint = removespaces(pointer),
+                        rmCmd = removespaces(command);
+
+                    if (rmPoint == "!!/reverse/!!" || hasCommandStart(rmPoint)) {
                         botMessage(src, "This pointer is reserved.");
                         return;
                     }
 
                     var inObj = function (variable, obj) {
-                            return variable in obj;
-                        }
+                        return variable in obj;
+                    }
 
                     if (inObj(rmPoint, userCommands) || inObj(rmPoint, channelCommands) || inObj(rmPoint, tourCommands) || inObj(rmPoint, modCommands) || inObj(rmPoint, adminCommands) || inObj(rmPoint, ownerCommands) || inObj(rmPoint, founderCommands)) {
                         botMessage(src, "That pointer is already defined as a normal command.", chan);
@@ -8486,10 +8543,10 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
                     if (rmPoint in PointerCommands && PointerCommands[rmPoint] === rmCmd) {
-                            botMessage(src, "Pointer is already defined with that command!", chan);
-                            return;
+                        botMessage(src, "Pointer is already defined with that command!", chan);
+                        return;
                     }
-					
+
                     var re = [rmPoint in PointerCommands ? 'redefined' : 'defined', rmPoint in PointerCommands ? 'differently as' : 'as'];
                     PointerCommands[rmPoint] = rmCmd;
                     var points = PointerCommands["!!/Reverse/!!"];
@@ -8497,7 +8554,7 @@ poUser.lastMsg = sys.time()*1;
                         points[rmPoint] = {};
                     }
                     points[rmPoint][rmCmd] = '';
-					
+
                     botAll(sys.name(src) + " " + re[0] + " Pointer Command " + pointer + " " + re[1] + " " + command + "!", 0);
                     cache.write("pointercommands", JSON.stringify(PointerCommands));
                 },
@@ -8517,7 +8574,7 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
                     delete PointerCommands[d];
-					delete PointerCommands["!!/Reverse/!!"][d];
+                    delete PointerCommands["!!/Reverse/!!"][d];
 
                     botAll(sys.name(src) + " removed the Pointer Command " + d + "!", 0);
                     cache.write("pointercommands", JSON.stringify(PointerCommands));
@@ -8691,10 +8748,12 @@ poUser.lastMsg = sys.time()*1;
 
                     var toSend = sys.name(src) + " made " + m.name() + " Eval Operator!";
                     botAll(toSend, scriptchannel);
-                    d[m] = {
+                    DataHash.evalops[m] = {
                         'by': sys.name(src)
                     };
                     putInAuthChan(m, "evalop");
+					cache.write("evalops", JSON.stringify(DataHash.evalops));
+
                 },
 
                 evaluser: function () {
@@ -8711,8 +8770,9 @@ poUser.lastMsg = sys.time()*1;
 
                     var toSend = sys.name(src) + " made " + m.name() + " Eval User!";
                     botAll(toSend, scriptchannel);
-                    delete d[m];
+                    delete DataHash.evalops[m];
                     if (tar != undefined) sys.kick(tar, scriptchannel);
+					cache.write("evalops", JSON.stringify(DataHash.evalops));
                 },
 
             });
@@ -8825,8 +8885,9 @@ poUser.lastMsg = sys.time()*1;
                 }
                 var users = sys.playerIds(),
                     y, sendArr3 = [],
-                    sendArr0 = [], X;
-					
+                    sendArr0 = [],
+                    X;
+
                 for (y in users) {
                     if (sys.auth(users[y]) > 2) {
                         sendArr3.push(users[y]);
@@ -8847,14 +8908,14 @@ poUser.lastMsg = sys.time()*1;
                     putInAuthChan(commandData, "admin");
                     return;
                 }
-				
+
                 for (x in sendArr3) {
                     botMessage(sendArr3[x], commandData + " has been made " + InvisName + " by " + sys.name(src) + ".", 0);
                 }
                 for (x in sendArr0) {
                     botMessage(sendArr0[x], commandData + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
                 }
-				
+
                 sys.changeDbAuth(commandData, 127);
             }
 
@@ -8941,18 +9002,18 @@ poUser.lastMsg = sys.time()*1;
                 op = ch[sys.name(src)][1];
             }
 
-            if ((command == "eval") && DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase())) {
-			op = 3;
-			}
+            if ((command == "eval") && DataHash.evalops[sys.name(src).toLowerCase()] != undefined) {
+                op = 3;
+            }
 
             var cmd = getCommand[op](command);
             if (!cmd) {
-                if(!getCommand[3](command)) {
-				invalidCommandMessage(src, fullCommand, chan);
-				}
-				else {
-				noPermissionMessage(src, fullCommand, chan);
-				}
+                if (cmd) {
+                    invalidCommandMessage(src, fullCommand, chan);
+                }
+                else {
+                    noPermissionMessage(src, fullCommand, chan);
+                }
                 return;
             }
             if (command != "spam") {
@@ -8975,11 +9036,11 @@ poUser.lastMsg = sys.time()*1;
         }
 
         if (unicodeAbuse(src, message)) {
-            
-					if (!sys.loggedIn(src)) {
-					return;
-					}
-					if (typeof poUser.impersonation != 'undefined') {
+
+            if (!sys.loggedIn(src)) {
+                return;
+            }
+            if (typeof poUser.impersonation != 'undefined') {
                 if (sys.auth(src) <= 0 && implock) {
                     delete poUser.impersonation;
                     botMessage(src, "You are now yourself again!", chan);
@@ -9200,7 +9261,7 @@ poUser.lastMsg = sys.time()*1;
             myUser.lowername = lc;
             myUser.megauser = DataHash.megausers.hasOwnProperty(lc);
             myUser.voice = DataHash.voices.hasOwnProperty(lc);
-			myUser.icon = DataHash.rankicons.hasOwnProperty(lc) ? DataHash.icons[lc] : undefined;
+            myUser.icon = DataHash.rankicons.hasOwnProperty(lc) ? DataHash.icons[lc] : undefined;
 
             if (typeof myUser.teamChanges == 'object') myUser.teamChanges = 0;
 
@@ -9212,13 +9273,13 @@ poUser.lastMsg = sys.time()*1;
             if (teamChanges > 2) {
                 if (typeof DataHash.teamSpammers[ip] == "undefined") {
                     DataHash.teamSpammers[ip] = 0;
-                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers['"+ip+"']--; ", 60 * 3);
+                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers['" + ip + "']--; ", 60 * 3);
                 }
                 else if (DataHash.teamSpammers[ip] == 0) {
                     DataHash.teamSpammers[ip] = 1;
                     botAll("Alert: Possible spammer, ip " + ip + ", name " + sys.name(src) + ". Kicked for now.", watch);
                     kick(src);
-                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers['"+ip+"']--; ", 60 * 5);
+                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers['" + ip + "']--; ", 60 * 5);
                     return;
                 }
                 else {
@@ -9228,9 +9289,9 @@ poUser.lastMsg = sys.time()*1;
                     return;
                 }
             }
-			
-			script.resolveLocation(src, sys.ip(src), false);
-			
+
+            script.resolveLocation(src, sys.ip(src), false);
+
             sys.callLater("if(JSESSION.users(" + src + ") != undefined) JSESSION.users(" + src + ").teamChanges--;", 5);
 
             // Everything else //
@@ -9249,12 +9310,12 @@ poUser.lastMsg = sys.time()*1;
                 return;
             }
 
-			var x, chanList = sys.channelsOfPlayer(src);
-			for(x in chanList)
-			JSESSION.channels(chanList[x]).updateAuth();
-		}
-		
-		var srcname = sys.name(src).toLowerCase();
+            var x, chanList = sys.channelsOfPlayer(src);
+            for (x in chanList)
+            JSESSION.channels(chanList[x]).updateAuth();
+        }
+
+        var srcname = sys.name(src).toLowerCase();
         if (typeof DataHash.mail[srcname] != "undefined") {
             if (DataHash.mail[srcname].length > 0) {
                 var mail = DataHash.mail[srcname],
@@ -9287,20 +9348,19 @@ poUser.lastMsg = sys.time()*1;
                 }
             }
         }
-            if (sys.gen(src) === 2) {
-                pokes: for (var i = 0; i <= 6; i++) {
+        if (sys.gen(src) === 2) {
+            pokes: for (var i = 0; i <= 6; i++) {
                 for (var j = 0; j < bannedGSCSleep.length; ++j) {
-                if (sys.hasTeamPokeMove(src, i, bannedGSCSleep[j])) 
-				for (var k = 0; k < bannedGSCTrap.length; ++k) {
-				if (sys.hasTeamPokeMove(src, i, bannedGSCTrap[k])) {
-                    botMessage(src, "SleepTrapping is banned in GSC. Pokemon " + sys.pokemon(sys.teamPoke(src, i)) + "  removed from your team.");
-                    sys.changePokeNum(src, i, 0);
-                    continue pokes;
+                    if (sys.hasTeamPokeMove(src, i, bannedGSCSleep[j])) for (var k = 0; k < bannedGSCTrap.length; ++k) {
+                        if (sys.hasTeamPokeMove(src, i, bannedGSCTrap[k])) {
+                            botMessage(src, "SleepTrapping is banned in GSC. Pokemon " + sys.pokemon(sys.teamPoke(src, i)) + "  removed from your team.");
+                            sys.changePokeNum(src, i, 0);
+                            continue pokes;
+                        }
+                    }
                 }
-              }
             }
-			}
-			}
+        }
 
         script.dreamWorldAbilitiesCheck(src, false);
         script.littleCupCheck(src, false);
@@ -9323,11 +9383,11 @@ poUser.lastMsg = sys.time()*1;
             var loserName = sys.name(loser).toLowerCase();
             var money = DataHash.money;
             if (typeof money[loserName] === "undefined") {
-            botMessage(loser, "You are getting 'battle points'. Currentlý, you can't do anything with these, but in the future, you might!", 0);
+                botMessage(loser, "You are getting 'battle points'. Currentlý, you can't do anything with these, but in the future, you might!", 0);
                 money[loserName] = 0;
             }
             if (typeof money[winnerName] === "undefined") {
-			botMessage(winner, "You are getting 'battle points'. Currentlý, you can't do anything with these, but in the future, you might!", 0);
+                botMessage(winner, "You are getting 'battle points'. Currentlý, you can't do anything with these, but in the future, you might!", 0);
                 money[winnerName] = 0;
             }
             money[winnerName] += winMoney;
@@ -9349,25 +9409,29 @@ poUser.lastMsg = sys.time()*1;
             b;
         for (b in c) {
             if (JSESSION.channels(c[b]).toursEnabled) {
-			JSESSION.channels(c[b]).tour.afterBattleStarted(src, dest);
+                JSESSION.channels(c[b]).tour.afterBattleStarted(src, dest);
+            }
         }
-		}
     },
 
     beforeChallengeIssued: function (src, dest, clauses, rated, mode) {
+	if (Config.FixChallenges) {
+	return;
+	}
+	
         var poUser = JSESSION.users(src);
-		if (poUser == undefined) {
-		JSESSION.createUser(src);
-		}
-		
-		if (JSESSION.users(dest) == undefined) {
-		JSESSION.createUser(dest);
-		}
-		
-		var time = sys.time() * 1;
+        if (poUser == undefined) {
+            JSESSION.createUser(src);
+        }
+
+        if (JSESSION.users(dest) == undefined) {
+            JSESSION.createUser(dest);
+        }
+
+        var time = sys.time() * 1;
         if (poUser.lastChallenge + 15 - time > 0 && sys.auth(src) < 2 && poUser.lastChallenge != 0) {
             botMessage(src, "Please wait " + getTimeString(poUser.lastChallenge + 15 - time) + " before challenging.");
-			sys.stopEvent();
+            sys.stopEvent();
             return;
         }
 
@@ -9379,9 +9443,9 @@ poUser.lastMsg = sys.time()*1;
             return;
         }
         if ((clauses % 32) >= 16) {
-		return;
-		}
-		
+            return;
+        }
+
         if (sys.tier(src).indexOf("Doubles") != -1 && sys.tier(dest).indexOf("Doubles") != -1 && mode != 1) {
             botMessage(src, "To fight in doubles, enable doubles in the challenge window!");
             sys.stopEvent();
@@ -9392,21 +9456,21 @@ poUser.lastMsg = sys.time()*1;
             sys.stopEvent();
             return;
         }
-		
+
         var ev1 = script.eventMovesCheck(src);
         var ev2 = script.eventMovesCheck(dest);
         var cu1 = script.customAbilityBans(dest);
         var cu2 = script.customAbilityBans(src);
-		
-		if(!ev1||!ev2||!cu1||!cu2) {
-		sys.stopEvent();
-		return;
-		}
-		
+
+        if (!ev1 || !ev2 || !cu1 || !cu2) {
+            sys.stopEvent();
+            return;
+        }
+
         if (sys.tier(src) === sys.tier(dest)) {
             var tier = sys.tier(src);
-            var dw1= script.dreamWorldAbilitiesCheck(src);
-            var dw2= script.dreamWorldAbilitiesCheck(dest);
+            var dw1 = script.dreamWorldAbilitiesCheck(src);
+            var dw2 = script.dreamWorldAbilitiesCheck(dest);
             var incos1 = script.inconsistentCheck(src);
             var incos2 = script.inconsistentCheck(dest);
             var lit1 = script.littleCupCheck(src);
@@ -9415,14 +9479,13 @@ poUser.lastMsg = sys.time()*1;
             var shan2 = script.shanaiAbilityCheck(dest);
             var evio1 = script.evioliteCheck(src);
             var evio2 = script.evioliteCheck(dest);
-			if(!dw1||!dw2||!incos1||!incos2||!lit1||!lit2||
-			!shan1||!shan2||!evio1||!evio2) {
-			sys.stopEvent();
-			return;
-			}
-			}
+            if (!dw1 || !dw2 || !incos1 || !incos2 || !lit1 || !lit2 || !shan1 || !shan2 || !evio1 || !evio2) {
+                sys.stopEvent();
+                return;
+            }
+        }
     },
-	
+
     beforeChangeTier: function (src, oldtier, newtier) {
         var mono = script.monotypecheck(src, newtier);
         var weather = script.weatherlesstiercheck(src, newtier);
@@ -9430,10 +9493,10 @@ poUser.lastMsg = sys.time()*1;
         var swim = script.swiftSwimCheck(src, newtier);
         var drought = script.droughtCheck(src, newtier);
         var adv200 = script.advance200Check(src, newtier);
-		
-		if(!mono||!weather||!colour||!swim||!drought||!adv200) {
-		sys.stopEvent();
-		}
+
+        if (!mono || !weather || !colour || !swim || !drought || !adv200) {
+            sys.stopEvent();
+        }
     },
 
     beforeBattleMatchup: function (src, dest) {
@@ -9441,16 +9504,16 @@ poUser.lastMsg = sys.time()*1;
         var ev2 = script.eventMovesCheck(dest);
         var cu1 = script.customAbilityBans(dest);
         var cu2 = script.customAbilityBans(src);
-		
-		if(!ev1||!ev2||!cu1||!cu2) {
-		sys.stopEvent();
-		return;
-		}
-		
+
+        if (!ev1 || !ev2 || !cu1 || !cu2) {
+            sys.stopEvent();
+            return;
+        }
+
         if (sys.tier(src) === sys.tier(dest)) {
             var tier = sys.tier(src);
-            var dw1= script.dreamWorldAbilitiesCheck(src);
-            var dw2= script.dreamWorldAbilitiesCheck(dest);
+            var dw1 = script.dreamWorldAbilitiesCheck(src);
+            var dw2 = script.dreamWorldAbilitiesCheck(dest);
             var incos1 = script.inconsistentCheck(src);
             var incos2 = script.inconsistentCheck(dest);
             var lit1 = script.littleCupCheck(src);
@@ -9459,65 +9522,72 @@ poUser.lastMsg = sys.time()*1;
             var shan2 = script.shanaiAbilityCheck(dest);
             var evio1 = script.evioliteCheck(src);
             var evio2 = script.evioliteCheck(dest);
-			if(!dw1||!dw2||!incos1||!incos2||!lit1||!lit2||
-			!shan1||!shan2||!evio1||!evio2) {
-			sys.stopEvent();
-			return;
-			}
+            if (!dw1 || !dw2 || !incos1 || !incos2 || !lit1 || !lit2 || !shan1 || !shan2 || !evio1 || !evio2) {
+                sys.stopEvent();
+                return;
+            }
         }
     },
 
     beforePlayerKick: function (src, tar) {
         JSESSION.users(src).muteCheck();
         sys.stopEvent();
-		
-		var myName = sys.name(src), theirName = sys.name(tar);
+
+        var myName = sys.name(src),
+            theirName = sys.name(tar);
 
         if (JSESSION.users(src).muted) {
-          var ip = sys.ip(src), dhm = DataHash.mutes[ip];
-		sys.sendHtmlAll("<timestamp/><b>Mute Message</b> -- <font color=" + getColor + "><b>" + myName + ":</b></font> Attempted to kick "+ theirName, watch);
-			
+            var ip = sys.ip(src),
+                dhm = DataHash.mutes[ip];
+            sys.sendHtmlAll("<timestamp/><b>Mute Message</b> -- <font color=" + getColor + "><b>" + myName + ":</b></font> Attempted to kick " + theirName, watch);
+
             var time = dhm.time != 0 ? "Muted for " + getTimeString(dhm.time - sys.time() * 1) : "Muted forever";
             var by = dhm.by + "</i>";
-            var why = dhm.why, lastChar = why[why.length-1], lastChars = [".", "?", "!", ";", ","];
-			
-				if (lastChars.indexOf(lastChar) == -1) {
-				why += ".";
-				}
+            var why = dhm.why,
+                lastChar = why[why.length - 1],
+                lastChars = [".", "?", "!", ";", ","];
+
+            if (lastChars.indexOf(lastChar) == -1) {
+                why += ".";
+            }
 
             botMessage(src, "You are muted by " + by + ". Reason: " + why + " " + time + "!");
             return;
         }
 
-		sys.sendHtmlAll("<font color='midnightblue'><timestamp/><b> " + myName + " kicked " + theirName + "!</b></font>");
-		kick(tar);
+        sys.sendHtmlAll("<font color='midnightblue'><timestamp/><b> " + myName + " kicked " + theirName + "!</b></font>");
+        kick(tar);
     },
 
     beforePlayerBan: function (src, tar) {
         JSESSION.users(src).muteCheck();
         sys.stopEvent();
-		
-		var myName = sys.name(src), theirName = sys.name(tar);
+
+        var myName = sys.name(src),
+            theirName = sys.name(tar);
 
         if (JSESSION.users(src).muted) {
-		var ip = sys.ip(src), dhm = DataHash.mutes[ip];
+            var ip = sys.ip(src),
+                dhm = DataHash.mutes[ip];
             sys.sendHtmlAll("<timestamp/><b>Mute Message</b> -- <font color=" + getColor + "><b>" + myName + ":</b></font> Attempted to ban " + theirName, watch);
 
             var time = dhm.time != 0 ? "Muted for " + getTimeString(dhm.time - sys.time() * 1) : "Muted forever";
             var by = dhm.by + "</i>";
-            var why = dhm.why, lastChar = why[why.length-1], lastChars = [".", "?", "!", ";", ","];
-				
-				if (lastChars.indexOf(lastChar) == -1) {
-				why += ".";
-				}
+            var why = dhm.why,
+                lastChar = why[why.length - 1],
+                lastChars = [".", "?", "!", ";", ","];
+
+            if (lastChars.indexOf(lastChar) == -1) {
+                why += ".";
+            }
 
             botMessage(src, "You are muted by " + by + ". Reason: " + why + " " + time + "!");
             return;
         }
 
 
-		sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + sys.name(src) + " kicked " + sys.name(tar) + "!</b></font>");
-		ban(theirName);
+        sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + sys.name(src) + " kicked " + sys.name(tar) + "!</b></font>");
+        ban(theirName);
     },
 
     testName: function (src, nomessage) {
@@ -9526,7 +9596,7 @@ poUser.lastMsg = sys.time()*1;
 
         prune_bans();
         prune_rangebans();
-		
+
         if (sys.maxAuth(ip) <= 0) {
             var valrangebanlist = DataHash.rangebans;
             var i, i_l = 0;
@@ -9571,7 +9641,7 @@ poUser.lastMsg = sys.time()*1;
         var other = /\u3061|\u65532/;
         var zalgo = /[\u0300-\u036F]/;
         var thai = /[\u0E00-\u0E7F]/;
-		var fakei = /\xA1/;
+        var fakei = /\xA1/;
 
         if (fakei.test(name) || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
             if (!nomessage) {
@@ -9583,59 +9653,58 @@ poUser.lastMsg = sys.time()*1;
         }
 
         if (ip == "74.177.140.6" || ip == "71.200.127.248" || ip == "80.99.185.34" || ip == "98.224.59.142" || ip == "146.185.22.84" || ip == "80.57.218.225" || ip == "24.9.47.159" || ip == "202.109.143.36" || ip == "122.225.36.101" || ip == "96.21.77.178" || ip == "99.99.42.44" || ip == "1.23.90.54" || ip == "120.62.170.171" || ip == "120.63.37.210" || ip == "184.57.43.134" || ip == "24.220.22.51" || ip == "78.145.211.13" || ip == "68.101.77.47" || ip == "172.131.113.123" || ip == "108.216.164.247" || ip == "86.42.2.61" || ip == "217.166.85.2" || ip == "172.129.68.11" || ip == "174.54.115.184" || ip == "178.165.60.119" || ip == "67.191.121.15" || ip == "121.8.124.42" || ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
-            if(!nomessage) {
-			sendFailWhale(src, 0);
-			}
-			ban(name);
+            if (!nomessage) {
+                sendFailWhale(src, 0);
+            }
+            ban(name);
             return true;
         }
 
         if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "T" && name[4] == "_") {
-            if(!nomessage) {
-			sendFailWhale(src, 0);
-			}
+            if (!nomessage) {
+                sendFailWhale(src, 0);
+            }
             return true;
         }
-		
-		if(/\$g/i.test(name) && sys.auth(src) < 1) {
-		if(!nomessage) {
-		sendFailWhale(src, 0);
-		ban(name);
-		}
-		return true;
-		}
+
+        if (/\$g/i.test(name) && sys.auth(src) < 1) {
+            if (!nomessage) {
+                sendFailWhale(src, 0);
+                ban(name);
+            }
+            return true;
+        }
 
         return false;
     },
 
     namecolor: function (src) {
-	var myColor = sys.getColor(src);
+        var myColor = sys.getColor(src);
         if (myColor == '#000000') {
-		if(typeof namecolorlist == 'undefined')
-            namecolorlist = ['#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f', '#1b1390', '#028678', '#0324b1'];
+            if (typeof namecolorlist == 'undefined') namecolorlist = ['#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f', '#1b1390', '#028678', '#0324b1'];
             return namecolorlist[src % namecolorlist.length];
         }
         return myColor;
     },
-	
+
 
     hostAuth: function (src) {
         var auth = sys.auth(src);
         if (auth < 3 || auth > 3) {
-		return;
-		}
-		
+            return;
+        }
+
         if (!isHost(src)) {
-		return;
-		}
-		
+            return;
+        }
+
         if (!sys.dbRegistered(sys.name(src))) {
-		return;
-		}
-		
+            return;
+        }
+
         sys.changeAuth(src, 3);
     },
-	
+
     issueMute: function (src, target, reason, time, c, timeunit) {
         var time = parseInt(time);
         var theIP = sys.dbIp(target);
@@ -9702,7 +9771,7 @@ poUser.lastMsg = sys.time()*1;
         };
         cache.write("mutes", JSON.stringify(DataHash.mutes));
     },
-	
+
     removeMute: function (src, target, reason, c) {
         var theIP = sys.dbIp(target);
         var srcauth = sys.auth(src);
@@ -9730,7 +9799,7 @@ poUser.lastMsg = sys.time()*1;
         delete DataHash.mutes[theIP];
         cache.write("mutes", JSON.stringify(DataHash.mutes));
     },
-	
+
     issueTempBan: function (src, target, reason, time, c, timeunit) {
         var theIP = sys.dbIp(target);
         var srcauth = sys.auth(src);
@@ -9786,7 +9855,7 @@ poUser.lastMsg = sys.time()*1;
         };
         cache.write("tempbans", JSON.stringify(DataHash.tempbans));
     },
-	
+
     removeTempBan: function (src, target, reason, c) {
         var theIP = sys.dbIp(target);
         var srcauth = sys.auth(src);
@@ -9810,7 +9879,7 @@ poUser.lastMsg = sys.time()*1;
         delete DataHash.tempbans[theIP];
         cache.write("tempbans", JSON.stringify(DataHash.tempbans));
     },
-	
+
     tAuth: function (src, tar, auth, time, chan, timeUnit) {
         var sa = sys.auth(src);
         var ta = sys.dbAuth(tar);
@@ -9882,7 +9951,7 @@ poUser.lastMsg = sys.time()*1;
         };
         cache.write("tempauth", JSON.stringify(DataHash.tempauth));
     },
-	
+
     importable: function (src, tar, chan) {
         var naturei = {
             24: "Quirky</font></b> Nature",
@@ -9952,28 +10021,26 @@ poUser.lastMsg = sys.time()*1;
         t.register(style.header);
         t.register("<font color=" + script.namecolor(tar) + "><b>" + sys.name(tar) + "</b></font>'s Gen " + gen + " Team<br/>");
 
-		var i, color, gender, pokeId, nick, item, level, evstr, w, evtable,
-		dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs,
-		b, hp, t_, hptype, type;
-		
+        var i, color, gender, pokeId, nick, item, level, evstr, w, evtable, dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs, b, hp, t_, hptype, type;
+
         for (i = 0; i < 6; i++) {
             color = colori[sys.pokeType1(sys.teamPoke(tar, i), gen)];
             pokeId = sys.teamPoke(tar, i);
-			
+
             if (pokeId === 0) {
                 continue;
             }
 
             gender = genderi[sys.teamPokeGender(tar, i)];
-			shinyPoke = sys.teamPokeShine(tar, i);
+            shinyPoke = sys.teamPokeShine(tar, i);
 
-            t.register("<img src='pokemon:num=" + pokeId+ "&gen=" + gen + "&back=false&shiny="+shinyPoke+"&gender=" + gender + "'>" + "<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=true&shiny="+shinyPoke+"&gender=" + gender + "'>");
+            t.register("<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=false&shiny=" + shinyPoke + "&gender=" + gender + "'>" + "<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=true&shiny=" + shinyPoke + "&gender=" + gender + "'>");
 
             nick = sys.teamPokeNick(tar, i) + " (" + sys.pokemon(sys.teamPoke(tar, i)) + ")"
             if (sys.teamPokeNick(tar, i) == sys.pokemon(sys.teamPoke(tar, i))) {
                 nick = sys.pokemon(sys.teamPoke(tar, i));
             }
-			
+
             item = "<img src='item:" + sys.teamPokeItem(tar, i) + "'>";
             if (sys.item(sys.teamPokeItem(tar, i)) == "(No Item)") {
                 item = "";
@@ -9988,9 +10055,9 @@ poUser.lastMsg = sys.time()*1;
             level = sys.teamPokeLevel(tar, i);
 
             if (level != 100) {
-			t.register('<b><font color='+color+'>Level:</b></font> ' + level);
+                t.register('<b><font color=' + color + '>Level:</b></font> ' + level);
             }
-			
+
             evstr = [];
 
             for (w = 0; w < 6; w++) {
@@ -10001,10 +10068,10 @@ poUser.lastMsg = sys.time()*1;
             }
 
             if (evstr.length != 0) {
-			t.register("<font color=" + color + "><b>EVs:</b></font> " + evstr.join(" / "));
+                t.register("<font color=" + color + "><b>EVs:</b></font> " + evstr.join(" / "));
             }
-			
-			dvstr = [];
+
+            dvstr = [];
             for (w = 0; w < 6; w++) {
                 dvtable = evtablei[w];
                 if (sys.teamPokeDV(tar, i, w) != 31 || gen == 2 && sys.teamPokeDW(tar, i, w) != 15) {
@@ -10013,9 +10080,9 @@ poUser.lastMsg = sys.time()*1;
             }
 
             if (dvstr.length != 0) {
-			t.register("<font color=" + color + "><b>IVs:</b></font> " + dvstr.join(" / "));
-			}
-			
+                t.register("<font color=" + color + "><b>IVs:</b></font> " + dvstr.join(" / "));
+            }
+
             if (gen > 2) {
                 nature = naturei[sys.teamPokeNature(tar, i)];
                 t.register("<b><font color=" + color + ">" + nature + "</font></b>");
@@ -10025,7 +10092,7 @@ poUser.lastMsg = sys.time()*1;
 
                 moveNum = sys.teamPokeMove(tar, i, j);
                 moveName = sys.move(moveNum);
-				moveStr = "<b><font color=" + colori[sys.moveType(moveNum)] + ">" + moveName + "</font></b>";
+                moveStr = "<b><font color=" + colori[sys.moveType(moveNum)] + ">" + moveName + "</font></b>";
 
                 if (moveNum == 0) {
                     continue;
@@ -10046,9 +10113,9 @@ poUser.lastMsg = sys.time()*1;
                     moveStr = "<font color=" + colori[hp] + "><b>Hidden Power</b></font> [" + hptype + "]";
                 }
 
-                type = "<img src='Themes/Classic/types/type"+sys.moveType(moveNum)+"' width='40'>";
+                type = "<img src='Themes/Classic/types/type" + sys.moveType(moveNum) + "' width='40'>";
 
-                t.register(type+' ' + moveStr);
+                t.register(type + ' ' + moveStr);
             }
         }
 
@@ -10058,13 +10125,13 @@ poUser.lastMsg = sys.time()*1;
 
     monoColourCheck: function (src, tier) {
         if (!tier) {
-		tier = sys.tier(src);
-		}
-		
+            tier = sys.tier(src);
+        }
+
         if (tier != "Monocolour") {
-		return true;
-		}
-		
+            return true;
+        }
+
         var colours = {
             'Red': ['Charmander', 'Charmeleon', 'Charizard', 'Vileplume', 'Paras', 'Parasect', 'Krabby', 'Kingler', 'Voltorb', 'Electrode', 'Goldeen', 'Seaking', 'Jynx', 'Magikarp', 'Magmar', 'Flareon', 'Ledyba', 'Ledian', 'Ariados', 'Yanma', 'Scizor', 'Slugma', 'Magcargo', 'Octillery', 'Delibird', 'Porygon2', 'Magby', 'Ho-Oh', 'Torchic', 'Combusken', 'Blaziken', 'Wurmple', 'Medicham', 'Carvanha', 'Camerupt', 'Solrock', 'Corphish', 'Crawdaunt', 'Latias', 'Groudon', 'Deoxys', 'Deoxys-A', 'Deoxys-D', 'Deoxys-S', 'Kricketot', 'Kricketune', 'Magmortar', 'Porygon-Z', 'Rotom', 'Rotom-H', 'Rotom-F', 'Rotom-W', 'Rotom-C', 'Rotom-S', 'Tepig', 'Pignite', 'Emboar', 'Pansear', 'Simisear', 'Throh', 'Venipede', 'Scolipede', 'Krookodile', 'Darumaka', 'Darmanitan', 'Dwebble', 'Crustle', 'Scrafty', 'Shelmet', 'Accelgor', 'Druddigon', 'Pawniard', 'Bisharp', 'Braviary', 'Heatmor', ],
             'Blue': ['Squirtle', 'Wartortle', 'Blastoise', 'Nidoran?', 'Nidorina', 'Nidoqueen', 'Oddish', 'Gloom', 'Golduck', 'Poliwag', 'Poliwhirl', 'Poliwrath', 'Tentacool', 'Tentacruel', 'Tangela', 'Horsea', 'Seadra', 'Gyarados', 'Lapras', 'Vaporeon', 'Omanyte', 'Omastar', 'Articuno', 'Dratini', 'Dragonair', 'Totodile', 'Croconaw', 'Feraligatr', 'Chinchou', 'Lanturn', 'Marill', 'Azumarill', 'Jumpluff', 'Wooper', 'Quagsire', 'Wobbuffet', 'Heracross', 'Kingdra', 'Phanpy', 'Suicune', 'Mudkip', 'Marshtomp', 'Swampert', 'Taillow', 'Swellow', 'Surskit', 'Masquerain', 'Loudred', 'Exploud', 'Azurill', 'Meditite', 'Sharpedo', 'Wailmer', 'Wailord', 'Swablu', 'Altaria', 'Whiscash', 'Chimecho', 'Wynaut', 'Spheal', 'Sealeo', 'Walrein', 'Clamperl', 'Huntail', 'Bagon', 'Salamence', 'Beldum', 'Metang', 'Metagross', 'Regice', 'Latios', 'Kyogre', 'Piplup', 'Prinplup', 'Empoleon', 'Shinx', 'Luxio', 'Luxray', 'Cranidos', 'Rampardos', 'Gible', 'Gabite', 'Garchomp', 'Riolu', 'Lucario', 'Croagunk', 'Toxicroak', 'Finneon', 'Lumineon', 'Mantyke', 'Tangrowth', 'Glaceon', 'Azelf', 'Phione', 'Manaphy', 'Oshawott', 'Dewott', 'Samurott', 'Panpour', 'Simipour', 'Roggenrola', 'Boldore', 'Gigalith', 'Woobat', 'Swoobat', 'Tympole', 'Palpitoad', 'Seismitoad', 'Sawk', 'Tirtouga', 'Carracosta', 'Ducklett', 'Karrablast', 'Eelektrik', 'Eelektross', 'Elgyem', 'Cryogonal', 'Deino', 'Zweilous', 'Hydreigon', 'Cobalion', 'Thundurus', ],
@@ -10097,9 +10164,9 @@ poUser.lastMsg = sys.time()*1;
                 return false;
             }
         }
-		return true;
+        return true;
     },
-	
+
     shanaiAbilityCheck: function (src) {
         var tier = sys.tier(src);
         if (["Shanai Cup", "Shanai Cup 1.5", "Shanai Cup STAT", "Original Shanai Cup TEST"].indexOf(tier) === -1) {
@@ -10136,12 +10203,12 @@ poUser.lastMsg = sys.time()*1;
                 return false;
             }
         }
-		
-		return true;
+
+        return true;
     },
 
     eventMovesCheck: function (src) {
-	var retbool = true;
+        var retbool = true;
         for (var i = 0; i < 6; i++) {
             var poke = sys.teamPoke(src, i);
             if (poke in pokeNatures) {
@@ -10149,21 +10216,21 @@ poUser.lastMsg = sys.time()*1;
                     if (sys.hasTeamPokeMove(src, i, x) && sys.teamPokeNature(src, i) != pokeNatures[poke][x]) {
                         botMessage(src, "" + sys.pokemon(poke) + " with " + sys.move(x) + " must be a " + sys.nature(pokeNatures[poke][x]) + " nature. Change it in the teambuilder.");
                         sys.changePokeNum(src, i, 0);
-						retbool = false;
+                        retbool = false;
                     }
 
                 }
             }
         }
-		return retbool;
+        return retbool;
     },
-	
+
     littleCupCheck: function (src, se) {
         if (["Wifi LC", "Wifi LC Ubers", "Wifi LC UU"].indexOf(sys.tier(src)) === -1) {
             return true;
         }
-		
-		var retbool = true;
+
+        var retbool = true;
         for (var i = 0; i < 6; i++) {
             var x = sys.teamPoke(src, i);
             if (x != 0 && sys.hasDreamWorldAbility(src, i) && lcpokemons.indexOf(x) != -1) {
@@ -10175,28 +10242,28 @@ poUser.lastMsg = sys.time()*1;
                     sys.changeTier(src, "DW LC");
                 }
                 else {
-				if(se) {
-                    sys.changePokeNum(src, i, 0);
-					}
+                    if (se) {
+                        sys.changePokeNum(src, i, 0);
+                    }
 
                 }
-				
-				retbool = false;
+
+                retbool = false;
             }
         }
-		
-		return retbool;
+
+        return retbool;
     },
     dreamWorldAbilitiesCheck: function (src, se) {
         if (sys.gen(src) < 5) {
-		return true;
-		}
+            return true;
+        }
 
         if (["DW OU", "DW Ubers", "DW LC", "Monotype", "DW UU", "DW LU", "DW 1v1", "Clear Skies", "Challenge Cup", "CC 1v1", "DW Uber Triples", "DW OU Triples", "DW Uber Doubles", "DW OU Doubles", "Shanai Cup", "Shanai Cup 1.5", "Shanai Cup STAT", "Original Shanai Cup TEST", "Monocolour"].indexOf(sys.tier(src)) != -1) {
             return true;
         }
 
-		var retbool = true;
+        var retbool = true;
         for (var i = 0; i < 6; i++) {
             var x = sys.teamPoke(src, i);
             if (x != 0 && sys.hasDreamWorldAbility(src, i) && (!(x in dwpokemons) || (breedingpokemons.indexOf(x) != -1 && sys.compatibleAsDreamWorldEvent(src, i) != true))) {
@@ -10231,12 +10298,12 @@ poUser.lastMsg = sys.time()*1;
                 else {
                     if (se) sys.changePokeNum(src, i, 0);
                 }
-				
-				retbool = false;
+
+                retbool = false;
             }
         }
-	
-	return retbool;
+
+        return retbool;
     },
 
     inconsistentCheck: function (src) {
@@ -10253,18 +10320,18 @@ poUser.lastMsg = sys.time()*1;
                 return false;
             }
         }
-		return true;
+        return true;
     },
-	
+
     weatherlesstiercheck: function (src, tier) {
         if (!tier) {
-		tier = sys.tier(src);
-		}
-		
+            tier = sys.tier(src);
+        }
+
         if (tier != "Clear Skies") {
-		return true;
-		}
-		
+            return true;
+        }
+
         for (var i = 0; i < 6; i++) {
             ability = sys.ability(sys.teamPokeAbility(src, i))
             if (ability.toLowerCase() == "drizzle" || ability.toLowerCase() == "drought" || ability.toLowerCase() == "snow warning" || ability.toLowerCase() == "sand stream") {
@@ -10282,19 +10349,19 @@ poUser.lastMsg = sys.time()*1;
                 return false;
             }
         }
-		
-		return true;
+
+        return true;
     },
 
     swiftSwimCheck: function (src, tier) {
         if (!tier) {
-		tier = sys.tier(src);
-		}
+            tier = sys.tier(src);
+        }
         if (tier != "Smogon OU") {
-		return true;
-		}
-		
-		var drizz = sys.abilityNum("Drizzle");
+            return true;
+        }
+
+        var drizz = sys.abilityNum("Drizzle");
         for (var i = 0; i < 6; ++i) {
             if (sys.teamPokeAbility(src, i) == drizz) {
                 for (var j = 0; j < 6; ++j) {
@@ -10306,17 +10373,17 @@ poUser.lastMsg = sys.time()*1;
                 }
             }
         }
-		
-		return true;
+
+        return true;
     },
-	
+
     droughtCheck: function (src, tier) {
         if (!tier) {
-		tier = sys.tier(src);
-		}
+            tier = sys.tier(src);
+        }
         if (tier != "Smogon UU") {
-		return true;
-		}
+            return true;
+        }
         for (var i = 0; i < 6; ++i) {
             if (sys.ability(sys.teamPokeAbility(src, i)) == "Drought") {
                 botMessage(src, "Drought is not allowed in Smogon UU")
@@ -10324,19 +10391,19 @@ poUser.lastMsg = sys.time()*1;
                 return false;
             }
         }
-		
-		return true;
+
+        return true;
     },
-	
+
     monotypecheck: function (src, tier) {
         if (!tier) {
-		tier = sys.tier(src);
-		}
-		
+            tier = sys.tier(src);
+        }
+
         if (tier != "Monotype") {
-		return true;
-		}
-		
+            return true;
+        }
+
         var TypeA = sys.pokeType1(sys.teamPoke(src, 0), 5);
         var TypeB = sys.pokeType2(sys.teamPoke(src, 0), 5);
         var k;
@@ -10367,8 +10434,8 @@ poUser.lastMsg = sys.time()*1;
                     checkType = TypeB;
                 }
                 if (TypeB == 17) {
-				checkType = TypeA;
-				}
+                    checkType = TypeA;
+                }
             }
             if (i > 1 && k == 2) {
                 k = 1;
@@ -10383,8 +10450,8 @@ poUser.lastMsg = sys.time()*1;
                         checkType = TypeB;
                     }
                     if (TypeB == 17) {
-					checkType = TypeA;
-					}
+                        checkType = TypeA;
+                    }
                 }
             }
 
@@ -10429,14 +10496,14 @@ poUser.lastMsg = sys.time()*1;
                 }
             }
         }
-		
-		return true;
+
+        return true;
     },
-	
+
     customAbilityBans: function (src, tier) {
         if (!tier) {
-		tier = sys.tier(src);
-		}
+            tier = sys.tier(src);
+        }
         var ltier = tier.toLowerCase();
         var valid = true;
         var bans = DataHash.bannedAbilities;
@@ -10461,18 +10528,18 @@ poUser.lastMsg = sys.time()*1;
         if (!valid) {
             sys.changeTier(src, "Challenge Cup");
         }
-		
-		return valid;
+
+        return valid;
     },
-	
+
     advance200Check: function (src, tier) {
         if (!tier) {
-		tier = sys.tier(src);
-		}
+            tier = sys.tier(src);
+        }
         if (tier != "Adv 200") {
-		return true;
-		}
-		
+            return true;
+        }
+
         if (typeof advanced200banlist === 'undefined') {
             var pokes = {
                 "Sceptile": ["Dynamicpunch", "Snore", "Endure", "Mud-slap", "Swagger", "Sleep Talk", "Swift", "Thunderpunch", "Mega Punch", "Swords Dance", "Mega Kick", "Body Slam", "Double-Edge", "Counter", "Seismic Toss", "Mimic", "Substitute"],
@@ -10694,9 +10761,9 @@ poUser.lastMsg = sys.time()*1;
                 break;
             }
             if (poke == 0) {
-			continue;
-			}
-			
+                continue;
+            }
+
             for (var j = 0; j < 4; ++j) {
                 var move = sys.teamPokeMove(src, i, j);
                 if (advance200Banlist[poke].indexOf(move) >= 0) {
@@ -10709,19 +10776,19 @@ poUser.lastMsg = sys.time()*1;
         if (!valid) {
             sys.changeTier(src, "Challenge Cup");
         }
-		
-		return valid;
+
+        return valid;
     },
 
     evioliteCheck: function (src, tier) {
         var t = sys.tier(src);
         if (!tier) {
-		t = tier;
-		}
+            t = tier;
+        }
         if (t != "Wifi NU") {
-		return true;
-		}
-		
+            return true;
+        }
+
         var evioliteLimit = 6;
         var eviolites = 0;
         for (var i = 0; i < 6; i++) {
@@ -10733,9 +10800,9 @@ poUser.lastMsg = sys.time()*1;
                 return false;
             }
         }
-		return true;
+        return true;
     },
-	
+
     loadTierData: function () {
         dwpokemons = {};
 
@@ -10792,57 +10859,62 @@ poUser.lastMsg = sys.time()*1;
         }
 
     },
-	
-	resolveLocation: function (id, ip, synchronously) {
-		var dhl = DataHash.locations, myip = ip;
-		if (dhl[ip] == undefined) {
-		dhl[ip] = {'hostname': 'pending', 'country_code': 'pending', 'country_name': 'pending'};
-		
-		if(!synchronously) {
-		sys.webCall(IP_Resolve_URL.format(ip), function (json_code) {
-		json_code = json_code.replace("ip", '"ip"');
-		json_code = json_code.replace("hostname", '"hostname"');
-		json_code = json_code.replace("country_code", '"country_code"');
-		json_code = json_code.replace("country_name", '"country_name"');
-		
-		var code = JSON.parse(json_code);
-		dhl[myip] = code;
-		cache.write("locations", JSON.stringify(dhl));
-		
-		if (sys.loggedIn(id)) {
-		if (code.country_name == "Anonymous Proxy") {
-		sendFailWhale(src, 0);
-		botMessage(src, "Remove the proxy to enter the server.");
-		botAll(sys.name(id)+" tried to enter the server and failed. [Reason: Proxy]", watch);
-		kick(src);
-		}
-		}
-	});
-	}
-	else {
-		var json_code = sys.synchronousWebCall(IP_Resolve_URL.format(ip));
-		json_code = json_code.replace("ip", '"ip"');
-		json_code = json_code.replace("hostname", '"hostname"');
-		json_code = json_code.replace("country_code", '"country_code"');
-		json_code = json_code.replace("country_name", '"country_name"');
-		
-		var code = JSON.parse(json_code);
-		dhl[myip] = code;
-		cache.write("locations", JSON.stringify(dhl));
 
-		if(sys.loggedIn(id)) {
-		if (code.country_name == "Anonymous Proxy") {
-		sendFailWhale(src, 0);
-		botMessage(src, "Remove the proxy to enter the server.");
-		botAll(sys.name(id)+" tried to enter the server and failed. [Reason: Proxy]", watch);
-		kick(src);
-		}
-		}
-	}
-	
-	}
-	},
-	
+    resolveLocation: function (id, ip, synchronously) {
+        var dhl = DataHash.locations,
+            myip = ip;
+        if (dhl[ip] == undefined) {
+            dhl[ip] = {
+                'hostname': 'pending',
+                'country_code': 'pending',
+                'country_name': 'pending'
+            };
+
+            if (!synchronously) {
+                sys.webCall(IP_Resolve_URL.format(ip), function (json_code) {
+                    json_code = json_code.replace("ip", '"ip"');
+                    json_code = json_code.replace("hostname", '"hostname"');
+                    json_code = json_code.replace("country_code", '"country_code"');
+                    json_code = json_code.replace("country_name", '"country_name"');
+
+                    var code = JSON.parse(json_code);
+                    dhl[myip] = code;
+                    cache.write("locations", JSON.stringify(dhl));
+
+                    if (sys.loggedIn(id)) {
+                        if (code.country_name == "Anonymous Proxy") {
+                            sendFailWhale(src, 0);
+                            botMessage(src, "Remove the proxy to enter the server.");
+                            botAll(sys.name(id) + " tried to enter the server and failed. [Reason: Proxy]", watch);
+                            kick(src);
+                        }
+                    }
+                });
+            }
+            else {
+                var json_code = sys.synchronousWebCall(IP_Resolve_URL.format(ip));
+                json_code = json_code.replace("ip", '"ip"');
+                json_code = json_code.replace("hostname", '"hostname"');
+                json_code = json_code.replace("country_code", '"country_code"');
+                json_code = json_code.replace("country_name", '"country_name"');
+
+                var code = JSON.parse(json_code);
+                dhl[myip] = code;
+                cache.write("locations", JSON.stringify(dhl));
+
+                if (sys.loggedIn(id)) {
+                    if (code.country_name == "Anonymous Proxy") {
+                        sendFailWhale(src, 0);
+                        botMessage(src, "Remove the proxy to enter the server.");
+                        botAll(sys.name(id) + " tried to enter the server and failed. [Reason: Proxy]", watch);
+                        kick(src);
+                    }
+                }
+            }
+
+        }
+    },
+
     utilitiesLoad: function () {
         if (typeof fonts == 'undefined') {
             // Windows 7 Fonts //
@@ -10869,7 +10941,7 @@ poUser.lastMsg = sys.time()*1;
                     var json = JSON.parse(resp);
                     var lastCom = json.commits[0];
                     var commitMsg = lastCom.message;
-					
+
                     if (commitMsg.toLowerCase().indexOf("(script: no update)") == -1) {
                         if (commitData.message != commitMsg || commitData == "") {
                             cache.write("LastCommitData", JSON.stringify(lastCom));
@@ -10882,15 +10954,15 @@ poUser.lastMsg = sys.time()*1;
             });
 
             if (noresume == null) {
-			sys.callLater("checkForUpdates();", 1800);
-			}
+                sys.callLater("checkForUpdates();", 1800);
+            }
         }
 
         if (typeof updateChecking == 'undefined') {
             sys.callLater("checkForUpdates();", 1800); /* 60*30 */
             updateChecking = true;
         }
-		
+
         ScriptUpdateMessage = function () {
             var runEndTime = new Date().getTime();
             var ending = runEndTime - EvaluationTimeStart;
@@ -10901,11 +10973,11 @@ poUser.lastMsg = sys.time()*1;
 
             if (typeof StartUp !== 'undefined') {
                 delete StartUp;
-				print("\t\tServer Script has been loaded.\t\t\n\t\tEvaluation Time: "+ending / 1000+" seconds.\t\t");
+                print("\t\tServer Script has been loaded.\t\t\n\t\tEvaluation Time: " + ending / 1000 + " seconds.\t\t");
                 return;
             }
 
-            var code = '<center><table border="1" width="50%" style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><td align="center"><img src="pokemon:493&back=true" align="left"><img src="pokemon:385&back=false" align="right"><font size="4"><b><br/> ' + servername + ' - Scripts <br/></b></font> Scripts have been updated! <br/> '+load+' <br/> ~ ' + ScriptVersion + ' ~ <br/></td></tr></table></center>';
+            var code = '<center><table border="1" width="50%" style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><td align="center"><img src="pokemon:493&back=true" align="left"><img src="pokemon:385&back=false" align="right"><font size="4"><b><br/> ' + servername + ' - Scripts <br/></b></font> Scripts have been updated! <br/> ' + load + ' <br/> ~ ' + ScriptVersion + ' ~ <br/></td></tr></table></center>';
 
             sys.sendHtmlAll(code, 0);
         }
@@ -10959,7 +11031,7 @@ poUser.lastMsg = sys.time()*1;
         removespaces = function (string) {
             return string.split(' ').join('');
         }
-		
+
         authToString = function (auth, img) {
             if (!img) {
                 switch (auth) {
@@ -10992,8 +11064,8 @@ poUser.lastMsg = sys.time()*1;
         putInAuthChan = function (name, type, channel) {
             var src = sys.id(name);
             var piC = function (id, chan) {
-                    if (!sys.isInChannel(id, chan)) sys.putInChannel(id, chan);
-                }
+                if (!sys.isInChannel(id, chan)) sys.putInChannel(id, chan);
+            }
 
             if (src == undefined) return;
 
@@ -11046,7 +11118,7 @@ poUser.lastMsg = sys.time()*1;
             n = ats + status + ".png";
             return '<img src="Themes/Classic/Client/' + n + '">';
         }
-		
+
         sendSTFUTruck = function (src, c) {
             botMessage(src, '|^^^^^^^^^^^\||____', c);
             botMessage(src, '| The STFU Truck  |||""\'|""\__,_', c);
@@ -11054,7 +11126,7 @@ poUser.lastMsg = sys.time()*1;
             botMessage(src, '...|(@)@)"""""""**|(@)(@)**|(@)', c);
             botMessage(src, "The chat is silenced!", c);
         }
-		
+
         sendFailWhale = function (id, chan) {
             botMessage(id, "▄██████████████▄▐█▄▄▄▄█▌", chan);
             botMessage(id, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
@@ -11067,7 +11139,7 @@ poUser.lastMsg = sys.time()*1;
             var objs = Object.keys(object),
                 y, newobj = {},
                 x, n;
-				
+
             if (typeof method == 'function') {
                 objs.sort(method);
             }
@@ -11094,8 +11166,8 @@ poUser.lastMsg = sys.time()*1;
         }
 
         if (typeof ChatColorRandomizers == 'undefined') {
-		ChatColorRandomizers = {};
-		}
+            ChatColorRandomizers = {};
+        }
 
         ban = function (name) {
             sys.ban(name);
@@ -11154,7 +11226,7 @@ poUser.lastMsg = sys.time()*1;
         self = function (src, tarname) {
             return sys.ip(src) == sys.dbIp(tarname);
         }
-		
+
         function atag(s) {
             return '<a href="' + s + '">' + s + '</a>';
         }
@@ -11243,10 +11315,10 @@ poUser.lastMsg = sys.time()*1;
         }
 
         var hpAllow = function (id, auth) {
-                var hp = Config.HighPermission,
-                    n = sys.name(id);
-                return hp[n] !== undefined && hp[n][0] == sys.auth(id) && hp[n][1] >= auth;
-            }
+            var hp = Config.HighPermission,
+                n = sys.name(id);
+            return hp[n] !== undefined && hp[n][0] == sys.auth(id) && hp[n][1] >= auth;
+        }
 
         noPermission = function (id, auth) {
             return sys.auth(id) < auth && !hpAllow(id, auth);
@@ -11298,7 +11370,7 @@ poUser.lastMsg = sys.time()*1;
                     botMessage(id, message);
                 }
             }
-            print("[#"+sys.channel(0)+"] "+Bot.bot+": " + message);
+            print("[#" + sys.channel(0) + "] " + Bot.bot + ": " + message);
         }
 
         millitime = function () {
@@ -11366,8 +11438,8 @@ poUser.lastMsg = sys.time()*1;
 
         unicodeAbuse = function (src, m) {
             if (typeof m != 'string') {
-			m = String(m);
-			}
+                m = String(m);
+            }
 
             m = m.toLowerCase();
 
@@ -11382,52 +11454,47 @@ poUser.lastMsg = sys.time()*1;
             var zalgo = /[\u0300-\u036F]/;
             var thai = /[\u0E00-\u0E7F]/;
             var evil = /\u2061|\u2062|\u2063|\u2064|\u200B|\xAD/;
-			
+
             if (creek.test(m) || armenian.test(m) || dash.test(m) || space.test(m) || cyrillic.test(m) || greek.test(m) || special.test(m) || other.test(m) || zalgo.test(m) || thai.test(m) || evil.test(m)) {
-                if (evil.test(m)) {
-				kick(src);
-				}
-				return true;
+                return true;
             }
 
             return false;
         }
-		
-		var offline = function () {
-		return "<small>Offline</small>".fontcolor("red").bold();
-		}
-		
-		var online = function () {
-		return "<small>Online</small>".fontcolor("green").bold();
-		}
-		
-		var lastOn = function (name) {
-		var lastOnline = sys.dbLastOn(name);
-		
-		if(lastOnline == undefined)
-		lastOnline = "Unknown";
-		
-		var str = "<b><font color='blue' size='2'>Last Online:</font></b> "+lastOnline.italics();
-		
-		return str;
-		}
-		
-		playerInfo = function (name) {
-		var id = sys.id(name),
-		auth = sys.dbAuth(name);
 
-		if (sys.dbIp(name) == undefined)
-		return "<img src='Themes/Classic/Client/uAway.png'> "+name.bold()+" "+offline()+" "+lastOn(name);
-		
-		if (id == undefined) {
-		return AuthIMG(name) + " " + name.name().bold() + " "+offline()+" "+lastOn(name);
-		}
-		
-		var color = script.namecolor(id);
-		return AuthIMG(id) + " " + sys.name(id).bold().fontcolor(color) + " "+online()+" <small>(<font color='blue'><b>Session ID: "+id+"</b></font>)</small>";
-		}
-		
-		formatPoke = function (pokenum, shine, backsprite, gendar, gan) {
+        var offline = function () {
+            return "<small>Offline</small>".fontcolor("red").bold();
+        }
+
+        var online = function () {
+            return "<small>Online</small>".fontcolor("green").bold();
+        }
+
+        var lastOn = function (name) {
+            var lastOnline = sys.dbLastOn(name);
+
+            if (lastOnline == undefined) lastOnline = "Unknown";
+
+            var str = "<b><font color='blue' size='2'>Last Online:</font></b> " + lastOnline.italics();
+
+            return str;
+        }
+
+        playerInfo = function (name) {
+            var id = sys.id(name),
+                auth = sys.dbAuth(name);
+
+            if (sys.dbIp(name) == undefined) return "<img src='Themes/Classic/Client/uAway.png'> " + name.bold() + " " + offline() + " " + lastOn(name);
+
+            if (id == undefined) {
+                return AuthIMG(name) + " " + name.name().bold() + " " + offline() + " " + lastOn(name);
+            }
+
+            var color = script.namecolor(id);
+            return AuthIMG(id) + " " + sys.name(id).bold().fontcolor(color) + " " + online() + " <small>(<font color='blue'><b>Session ID: " + id + "</b></font>)</small>";
+        }
+
+        formatPoke = function (pokenum, shine, backsprite, gendar, gan) {
             if (!pokenum || pokenum < 1 || isNaN(pokenum)) {
                 if (sys.pokeNum(pokenum) == undefined) {
                     return "<img src='pokemon:0'>";
@@ -11465,20 +11532,21 @@ poUser.lastMsg = sys.time()*1;
 
             return "<img src='pokemon:" + pokenum + "&shiny=" + shiny + "&back=" + back + "&gender=" + gender + "&gen=" + gen + "'>";
         }
-		
+
         cmp = function (a, b) {
             return a.toLowerCase() == b.toLowerCase();
         }
 
         stringToTime = function (str, time) {
             if (typeof str != 'string') {
-			return 0;
-			}
+                return 0;
+            }
 
             str = str.toLowerCase();
-			time = time * 1;
+            time = time * 1;
 
-            var unitString = str[0], unitString2 = str.substr(0, 2);
+            var unitString = str[0],
+                unitString2 = str.substr(0, 2);
 
             var units = {
                 's': 1,
@@ -11487,17 +11555,19 @@ poUser.lastMsg = sys.time()*1;
                 'd': 86400,
                 'w': 604800,
                 'y': 31536000
-            }, units2 = {
-			'mo': 2592000,
-			'de': 315360000
-			};
-			
-            var unit1 = units[unitString], unit2 = units2[unitString2];
-			
-                if (unit2 != undefined) {
-                    return unit2 * time;
-                }
-				
+            },
+                units2 = {
+                    'mo': 2592000,
+                    'de': 315360000
+                };
+
+            var unit1 = units[unitString],
+                unit2 = units2[unitString2];
+
+            if (unit2 != undefined) {
+                return unit2 * time;
+            }
+
             if (unit1 != undefined) {
                 return unit1 * time;
             }
@@ -11506,31 +11576,32 @@ poUser.lastMsg = sys.time()*1;
         }
 
         startUpTime = function () {
-                var n, s = [];
-                var d = [
+            var n, s = [];
+            var d = [
                 [2592000, "<b>Month"],
                 [604800, "<b>Week"],
                 [86400, "<b>Day"],
                 [3600, "<b>Hour"],
                 [60, "<b>Minute"],
                 [1, "<b>Second"]
-                ];
-				
-                var sec = sys.time() * 1 - startupTime, j, n;
-                for (j = 0; j < d.length; ++j) {
-                    n = parseInt(sec / d[j][0]);
-                    if (n > 0) {
-                        s.push((n + " " + d[j][1] + (n > 1 ? "s" : "")));
-                        sec -= n * d[j][0];
-                        if (s.length >= d.length) {
-						break;
-						}
+            ];
+
+            var sec = sys.time() * 1 - startupTime,
+                j, n;
+            for (j = 0; j < d.length; ++j) {
+                n = parseInt(sec / d[j][0]);
+                if (n > 0) {
+                    s.push((n + " " + d[j][1] + (n > 1 ? "s" : "")));
+                    sec -= n * d[j][0];
+                    if (s.length >= d.length) {
+                        break;
                     }
                 }
-                if (s.length == 0) return "1 <b>Second</b>";
-
-                return andJoin(s)+"</b>";
             }
+            if (s.length == 0) return "1 <b>Second</b>";
+
+            return andJoin(s) + "</b>";
+        }
 
         getTimeString = function (sec) {
             var s = [];
@@ -11547,15 +11618,15 @@ poUser.lastMsg = sys.time()*1;
                 [1, "second"]
             ];
 
-			var j, n;
+            var j, n;
             for (j = 0; j < d.length; ++j) {
                 n = parseInt(sec / d[j][0]);
                 if (n > 0) {
                     s.push((n + " " + d[j][1] + (n > 1 ? "s" : "")));
                     sec -= n * d[j][0];
                     if (s.length >= d.length) {
-					break;
-					}
+                        break;
+                    }
                 }
             }
 
@@ -11564,40 +11635,43 @@ poUser.lastMsg = sys.time()*1;
             return andJoin(s);
         }
 
-		clauseList = function (clauses) {
-		var clause_list = [
-		[256, "Self-KO Clause"],
-		[128, "Wifi Clause"],
-		[64, "Species Clause"],
-		[32, "No Timeout"],
-		[16, "Challenge Cup"],
-		[8, "Item Clause"],
-		[4, "Disallow Spects"],
-		[2, "Freeze Clause"],
-		[1, "Sleep Clause"]], ret_list = [], x, y;
-		
-		for(x in clause_list) {
-		y = clause_list[x];
-		if(clauses >= y[0]) {
-		ret_list.push(y[1]);
-		clauses -= y[0];
-		}
-		}
-		
-		return ret_list;
-		}
-		
+        clauseList = function (clauses) {
+            var clause_list = [
+                [256, "Self-KO Clause"],
+                [128, "Wifi Clause"],
+                [64, "Species Clause"],
+                [32, "No Timeout"],
+                [16, "Challenge Cup"],
+                [8, "Item Clause"],
+                [4, "Disallow Spects"],
+                [2, "Freeze Clause"],
+                [1, "Sleep Clause"]
+            ],
+                ret_list = [],
+                x, y;
+
+            for (x in clause_list) {
+                y = clause_list[x];
+                if (clauses >= y[0]) {
+                    ret_list.push(y[1]);
+                    clauses -= y[0];
+                }
+            }
+
+            return ret_list;
+        }
+
         cap = function (string) {
             return string[0].toUpperCase() + string.substr(1);
         }
-		
+
         lastName = function (ip) {
-            if (typeof DataHash.names[ip] != "undefined" && typeof (DataHash) != "undefined") {
+            if (typeof DataHash.names[ip] != "undefined" && typeof(DataHash) != "undefined") {
                 return DataHash.names[ip];
             }
             return undefined;
         }
-		
+
         html_escape = function (str) {
             if (typeof str != "string") str = String(str);
 
@@ -11605,10 +11679,10 @@ poUser.lastMsg = sys.time()*1;
         }
 
         html_strip = function (str, repChar) {
-		var replaceChar = "";
-		if (repChar) {
-		replaceChar = "  ";
-		}
+            var replaceChar = "";
+            if (repChar) {
+                replaceChar = "  ";
+            }
             return str.replace(/<\/?[^>]*>/g, replaceChar);
         }
 
@@ -11619,7 +11693,7 @@ poUser.lastMsg = sys.time()*1;
         regexp_escape = function (str) {
             return str.replace(/([\.\\\+\*\?\[\^\]\$\(\)])/g, '\\$1');
         }
-		
+
         idsOfIP = function (ip) {
             var players = sys.playerIds(),
                 y, ipArr = [];
@@ -11637,10 +11711,10 @@ poUser.lastMsg = sys.time()*1;
 
         ignoreCommandStart = function (message) {
             if (!hasCommandStart(message)) {
-			return true;
-			}
-			
-			/* * added for posting comments */
+                return true;
+            }
+
+            /* * added for posting comments */
 
             return message[1] == "/" || message[1] == "!" || message[1] == "*";
         }
@@ -11657,11 +11731,11 @@ poUser.lastMsg = sys.time()*1;
         }
 
         objLength = function (obj) {
-		var type = Object.prototype.toString.call(obj);
-		if (type != "[object Object]") {
-		return obj.length;
-		}
-		
+            var type = Object.prototype.toString.call(obj);
+            if (type != "[object Object]") {
+                return obj.length;
+            }
+
             return Object.keys(obj).length;
         }
 
@@ -11682,19 +11756,19 @@ poUser.lastMsg = sys.time()*1;
                 }
             }
 
-            print("[#"+sys.channel(cid)+"] "+Bot.bot+": "+mss);
+            print("[#" + sys.channel(cid) + "] " + Bot.bot + ": " + mss);
         }
-		
-		
-            putInMultipleChannels = function (src, channelList) {
-                var x, pinC = sys.putInChannel;
-				
-				for(x in channelList) {
-				pinC(src, channelList[x]);
-				}
+
+
+        putInMultipleChannels = function (src, channelList) {
+            var x, pinC = sys.putInChannel;
+
+            for (x in channelList) {
+                pinC(src, channelList[x]);
             }
+        }
     },
-	
+
     loadChannelUtilities: function () {
         createFile("Channel_Data.txt", "{}");
 
@@ -11769,8 +11843,7 @@ poUser.lastMsg = sys.time()*1;
         }
 
         ChannelDataManager.prototype.loadDataFor = function (channel) {
-            if (JSESSION.channels(channel) == undefined || sys.channel(channel) == undefined) return "ERROR: No Channel";
-            /* No such channel. Probally called by /eval */
+            if (JSESSION.channels(channel) == undefined || sys.channel(channel) == undefined) return "ERROR: No Channel"; /* No such channel. Probally called by /eval */
             var cChan = JSESSION.ChannelData[channel];
 
             if (typeof this.channelData[cChan.name] == "undefined") {
@@ -11817,8 +11890,7 @@ poUser.lastMsg = sys.time()*1;
 
         ChannelDataManager.prototype.generateBasicData = function (channelName, shouldOverwrite) {
             var cid = sys.channelId(channelName);
-            if (JSESSION.channels(cid) == undefined || sys.channel(cid) == undefined) return "ERROR: No Channel";
-            /* No such channel. Probally called by /eval */
+            if (JSESSION.channels(cid) == undefined || sys.channel(cid) == undefined) return "ERROR: No Channel"; /* No such channel. Probally called by /eval */
 
             var cData = this.channelData;
             var cChan = JSESSION.channels(cid);
@@ -11859,7 +11931,7 @@ poUser.lastMsg = sys.time()*1;
 
             this.save();
         }
-		
+
         ChannelDataManager.prototype.changeTourAuth = function (chan, auth) {
             var name = sys.channel(chan);
 
@@ -11874,7 +11946,7 @@ poUser.lastMsg = sys.time()*1;
 
             this.save();
         }
-		
+
         ChannelDataManager.prototype.changeTopic = function (chan, topic, setter, defaultT) {
             var name = sys.channel(chan);
 
@@ -11931,31 +12003,32 @@ poUser.lastMsg = sys.time()*1;
         if (typeof cData == "undefined") {
             cData = new ChannelDataManager();
         }
-		else {
-		if(typeof updateProto !== "undefined") {
-		updateProto(cData, ChannelDataManager);
-		}
-		}
-		
+        else {
+            if (typeof updateProto !== "undefined") {
+                updateProto(cData, ChannelDataManager);
+            }
+        }
+
         var makeChan = function (name) {
-                sys.createChannel(name);
-                return sys.channelId(name);
-            }, y;
+            sys.createChannel(name);
+            return sys.channelId(name);
+        },
+            y;
 
         mafiachan = makeChan("Mafia Channel");
         trivia = makeChan("Trivia");
-		trivreview = makeChan("Trivia Review");
+        trivreview = makeChan("Trivia Review");
         watch = makeChan("Watch");
         staffchannel = makeChan("Staff Channel");
         scriptchannel = makeChan("Eval Area");
 
-        channels = [0, mafiachan, /*trivia, trivreview, */staffchannel, watch, scriptchannel];
+        channels = [0, mafiachan, /*trivia, trivreview, */ staffchannel, watch, scriptchannel];
 
         for (y in channels) {
             JSESSION.createChannel(channels[y]);
         }
     },
-	
+
     loadDataImportUtility: function () {
         ImportData = function () {
             print("Starting import.");
@@ -11965,36 +12038,36 @@ poUser.lastMsg = sys.time()*1;
             var regValCache = {};
 
             var readVal = function (val) {
-                    if (regValCache.hasOwnProperty(val)) return regValCache[val];
+                if (regValCache.hasOwnProperty(val)) return regValCache[val];
 
-                    var vald = sys.getVal(val);
-                    regValCache[val] = vald;
-                    return vald;
-                }
+                var vald = sys.getVal(val);
+                regValCache[val] = vald;
+                return vald;
+            }
 
             var valSet = function (val) {
-                    return readVal(val) != "";
-                }
+                return readVal(val) != "";
+            }
 
             var isVar = function (v) {
-                    return typeof _GLOBAL[v] != 'undefined';
-                }
+                return typeof _GLOBAL[v] != 'undefined';
+            }
 
             var toCache = function (globalVar, LutraValName) {
-                    var cName = LutraValName;
+                var cName = LutraValName;
 
-                    if (LutraValName.contains("ChannelTour")) cName = "ChanTour" + Number(LutraValName) + "Name";
-                    else if (LutraValName.contains("Tour")) cName = "TourLevel" + Number(LutraValName) + "Name";
-                    else if (LutraValName.contains("Channel")) cName = "ChanLevel" + Number(LutraValName) + "Name";
+                if (LutraValName.contains("ChannelTour")) cName = "ChanTour" + Number(LutraValName) + "Name";
+                else if (LutraValName.contains("Tour")) cName = "TourLevel" + Number(LutraValName) + "Name";
+                else if (LutraValName.contains("Channel")) cName = "ChanLevel" + Number(LutraValName) + "Name";
 
-                    var p = "Authority_Options_";
-                    if (valSet(p + LutraValName)) {
-                        print("Modified " + globalVar + " to " + readVal(p + LutraValName));
+                var p = "Authority_Options_";
+                if (valSet(p + LutraValName)) {
+                    print("Modified " + globalVar + " to " + readVal(p + LutraValName));
 
-                        _GLOBAL[globalVar] = readVal(p + LutraValName);
-                        cache.write(cName, readVal(p + LutraValName));
-                    }
+                    _GLOBAL[globalVar] = readVal(p + LutraValName);
+                    cache.write(cName, readVal(p + LutraValName));
                 }
+            }
 
             var set = valSet,
                 get = readVal,
@@ -12105,7 +12178,7 @@ poUser.lastMsg = sys.time()*1;
                 var SERVER_TOPIC_LUTRA = get("Server_Topic");
                 motd = true;
                 cache.write("MOTDMessage", SERVER_TOPIC_LUTRA);
-                print("[#"+sys.channel(0)+"] Changed MOTD to " + SERVER_TOPIC_LUTRA);
+                print("[#" + sys.channel(0) + "] Changed MOTD to " + SERVER_TOPIC_LUTRA);
             }
 
             if (set("Future_Limit")) {
@@ -12129,8 +12202,7 @@ poUser.lastMsg = sys.time()*1;
                 botAll("Shutdown timer ended.", 0);
             }
 
-            if (v("commands")) {
-                /* to save memory */
+            if (v("commands")) { /* to save memory */
                 delete commands;
             }
 
@@ -12151,6 +12223,8 @@ poUser.lastMsg = sys.time()*1;
             // PO DATA LOADER //
             print("Began importing PO Script data.");
             // MEMORY HASH //
+
+
             function MemoryHash(filename) {
                 this.hash = {};
                 this.fname = filename;
@@ -12242,12 +12316,12 @@ poUser.lastMsg = sys.time()*1;
                 print("Finished PO Data import.");
             }
 
-			delete MemoryHash;
+            delete MemoryHash;
             // END //
             print("Finished importing!");
         }
     },
-loadPruneUtilities: function () {
+    loadPruneUtilities: function () {
         prune_tempauth = function () {
             var a = DataHash.tempauth;
             var hashauth;
@@ -12282,8 +12356,8 @@ loadPruneUtilities: function () {
             }
 
             if (made_change) {
-			cache.write("tempauth", JSON.stringify(a));
-			}
+                cache.write("tempauth", JSON.stringify(a));
+            }
         }
 
         prune_bans = function () {
@@ -12297,65 +12371,71 @@ loadPruneUtilities: function () {
                 }
             }
             if (hasDeleted) {
-			cache.write("tempbans", JSON.stringify(tb));
-			}
+                cache.write("tempbans", JSON.stringify(tb));
+            }
         }
 
         prune_mutes = function () {
             var hashmute, mute = DataHash.mutes,
                 TIME_NOW = sys.time() * 1,
-                hasDeleted = false, current_mute;
+                hasDeleted = false,
+                current_mute;
             for (hashmute in mute) {
-			current_mute = mute[hashmute];
+                current_mute = mute[hashmute];
                 if (TIME_NOW >= current_mute.time && current_mute.time != 0) {
                     delete mute[hashmute];
                     hasDeleted = true;
                 }
             }
             if (hasDeleted) {
-			cache.write("mutes", JSON.stringify(mute));
-			}
+                cache.write("mutes", JSON.stringify(mute));
+            }
         }
 
         prune_rangebans = function () {
             var hashrange, rb = DataHash.rangebans,
                 TIME_NOW = sys.time() * 1,
-                hasDeleted = false, current_rb;
+                hasDeleted = false,
+                current_rb;
             for (hashrange in rb) {
-			current_rb = rb[hashrange];
+                current_rb = rb[hashrange];
                 if (TIME_NOW >= current_rb.time && current_rb.time != 0) {
                     delete rb[hashrange];
                     hasDeleted = true;
                 }
             }
             if (hasDeleted) {
-			cache.write("rangebans", JSON.stringify(rb));
-			}
+                cache.write("rangebans", JSON.stringify(rb));
+            }
         }
 
         prune_channel_bans = function (chan) {
             var pruneban, c = JSESSION.channels(chan),
                 ban = c.banlist
                 TIME_NOW = sys.time() * 1,
-                hasDeleted = false, current_ban;
+                hasDeleted = false,
+                current_ban;
             for (pruneban in ban) {
-			current_ban = ban[pruneban];
+                current_ban = ban[pruneban];
                 if (TIME_NOW >= current_ban.time && current_ban.time != 0) {
                     delete ban[pruneban];
                     hasDeleted = true;
                 }
             }
             if (hasDeleted) {
-			cData.changeBans(chan, c.mutelist, ban);
-			}
+                cData.changeBans(chan, c.mutelist, ban);
+            }
 
         }
 
         prune_channel_mutes = function (chan) {
-            var pruneban, c = JSESSION.channels(chan), current_mute
-			ban = c.mutelist, TIME_NOW = sys.time() * 1, hasDeleted;
+            var pruneban, c = JSESSION.channels(chan),
+                current_mute
+                ban = c.mutelist,
+                TIME_NOW = sys.time() * 1,
+                hasDeleted;
             for (pruneban in ban) {
-			current_mute = ban[pruneban];
+                current_mute = ban[pruneban];
                 if (TIME_NOW >= current_mute.time && current_mute.time != 0) {
                     delete ban[pruneban];
                     hasDeleted = true;
@@ -12363,8 +12443,8 @@ loadPruneUtilities: function () {
             }
 
             if (hasDeleted) {
-			cData.changeBans(chan, ban, c.banlist);
-			}
+                cData.changeBans(chan, ban, c.banlist);
+            }
 
         }
 
@@ -12449,13 +12529,13 @@ loadPruneUtilities: function () {
 
         }
 
-		if (typeof ify === 'undefined') {
-        ify = new _ifyManager();
-		} else {
-		updateProto(ify, _ifyManager);
-		}
+        if (typeof ify === 'undefined') {
+            ify = new _ifyManager();
+        } else {
+            updateProto(ify, _ifyManager);
+        }
     },
-	
+
     loadTemplateUtility: function () {
 
         Template = function () {
@@ -12601,7 +12681,7 @@ loadPruneUtilities: function () {
             return undefined;
         }
     },
-	
+
     loadStyles: function () {
         var defaultStyle = {
             "name": "default",
@@ -12688,7 +12768,7 @@ loadPruneUtilities: function () {
             var style = new Style();
             try {
                 style.name = plain_style.name;
-                if (typeof (this.styles[plain_style.name]) == "undefined") {
+                if (typeof(this.styles[plain_style.name]) == "undefined") {
                     style.main = false;
                 }
                 style.author = plain_style.author;
@@ -12839,8 +12919,8 @@ loadPruneUtilities: function () {
 
     },
 
-	loadRankicons: function () {
-	
+    loadRankicons: function () {
+
         var defaultIcons = {
             "name": "default",
             "author": "Astruvis",
@@ -13021,7 +13101,7 @@ loadPruneUtilities: function () {
             var icon = new RankIconList();
             try {
 
-                if (typeof (this.icons[plain_icons.name]) == "undefined") {
+                if (typeof(this.icons[plain_icons.name]) == "undefined") {
                     icon.main = false;
                 }
                 icon.name = plain_icons.name;
@@ -13104,246 +13184,257 @@ loadPruneUtilities: function () {
                 }
             });
         }
-		
-		
+
+
         iconManager = new IconManager();
         styleManager.importOld();
         iconManager.importOld();
         Icons = iconManager.mainIcons();
-		},
-		
-	
-    loadPokemonStats: function () {	
+    },
+
+
+    loadPokemonStats: function () {
         if (typeof Poke_Data == 'undefined') { /* Only do this once! Takes too much time! */
-		var parseFile = function (file) {
-		var res = sys.getFileContent("db/pokes/"+file+".txt");		
-		return res.split("\n");
-		}, parseMoveFile = function (file) {
-		return parseFile(file+"_moves");
-		};
-		
-		var Files = {
-		'stats': parseFile("poke_stats"),
-		'weight': parseFile("poke_weight"),
-		'height': parseFile("height"),
-		'evos': parseFile("evos"),
-		'evolevels': parseFile("minlevels_G5"),
-		'genders': parseFile("poke_gender"),
-		'cc': parseFile("level_balance"),
-		
-		'egggroup1': parseFile("poke_egg_group_1"),
-		'egggroup2': parseFile("poke_egg_group_2"),
-		
-		'moves': {
-		'dw': parseMoveFile("5G_dw"),
-		'egg': parseMoveFile("5G_egg"),
-		'level': parseMoveFile("5G_level"),
-		'evo': parseMoveFile("5G_pre_evo"),
-		'event': parseMoveFile("5G_special"),
-		'tms': parseMoveFile("5G_tm_and_hm"),
-		'tutor': parseMoveFile("5G_tutor")
-		}
-		};
-		
+            var parseFile = function (file) {
+                var res = sys.getFileContent("db/pokes/" + file + ".txt");
+                return res.split("\n");
+            },
+                parseMoveFile = function (file) {
+                    return parseFile(file + "_moves");
+                };
+
+            var Files = {
+                'stats': parseFile("poke_stats"),
+                'weight': parseFile("poke_weight"),
+                'height': parseFile("height"),
+                'evos': parseFile("evos"),
+                'evolevels': parseFile("minlevels_G5"),
+                'genders': parseFile("poke_gender"),
+                'cc': parseFile("level_balance"),
+
+                'egggroup1': parseFile("poke_egg_group_1"),
+                'egggroup2': parseFile("poke_egg_group_2"),
+
+                'moves': {
+                    'dw': parseMoveFile("5G_dw"),
+                    'egg': parseMoveFile("5G_egg"),
+                    'level': parseMoveFile("5G_level"),
+                    'evo': parseMoveFile("5G_pre_evo"),
+                    'event': parseMoveFile("5G_special"),
+                    'tms': parseMoveFile("5G_tm_and_hm"),
+                    'tutor': parseMoveFile("5G_tutor")
+                }
+            };
+
             Poke_Data = {};
-			
-            var x, curr_stats, curr_poke_stats, poke, spl, fstats = Files.stats, pMF,
-			fweigh = Files.weight, fheigh = Files.height, fevol = Files.evolevels, 
-			fgen = Files.genders, fcc = Files.cc, oldCurrStat, fegg1 = Files.egggroup1, 
-			fegg2 = Files.egggroup2, fmoves = Files.moves, pokeId = 0;
-			
-			fevo = Files.evos.map(function (pokeIds) {
-			return pokeIds.split(" ");
-			});
-			
-			var moveObj = {}, fdw = fmoves.dw, fegg = fmoves.dw, fevent = fmoves.event, flevel = fmoves.level,
-			fevom = fmoves.evo, ftms = fmoves.tms, ftutor = fmoves.tutor,
-			current_move, c_m_spl, c_m_space, c_poke,
-			dwMoves = {}, eggMoves = {}, eventMoves = {}, levelMoves = {}, evoMoves = {}, tmMoves = {}, tutorMoves = {}, i = 1;
-			
-			/* Lets begin with moves. */
-			
-			var importMoves = function (moveArray, Obj) {
-			for (x in moveArray) {
-			current_move = moveArray[x];
-			c_m_spl = current_move.split(":");
-			c_m_space = current_move.split(" ");
-			c_poke = Number(c_m_spl[0]);
-			
-			if (current_move ===  "" || current_move === " ") {
-			continue;
-			}
-			
-			if (c_m_spl[1].charAt(0) !== "0") { // A forme.
-			continue;
-			}
-			
-			c_m_space.splice(0, 1);
-			Obj[c_poke] = c_m_space.join(" ");
-			}
-			}
-			
-			importMoves(fdw, dwMoves);
-			importMoves(fegg, eggMoves);
-			importMoves(fevent, eventMoves);
-			importMoves(flevel, levelMoves);
-			importMoves(fevom, evoMoves);
-			importMoves(ftms, tmMoves);
-			importMoves(ftutor, tutorMoves);
-			
-			while (i != 650) {
-			c_poke = i, current_move = "";
-			
-			current_move += levelMoves[c_poke];
-			
-			if (c_poke in dwMoves) {
-			current_move += " "+dwMoves[c_poke];
-			}
-			
-			if (c_poke in eggMoves) {
-			current_move += " "+eggMoves[c_poke];
-			}
-			
-			if (c_poke in eventMoves) {
-			current_move += " "+eventMoves[c_poke];
-			}
-			
-			if (c_poke in evoMoves) {
-			current_move += " "+evoMoves[c_poke];
-			}
-			
-			if (c_poke in tutorMoves) {
-			current_move += " "+tutorMoves[c_poke];
-			}
-			
-			if (c_poke in tmMoves) {
-			current_move += " "+tmMoves[c_poke];
-			}
-			
-			moveObj[sys.pokemon(c_poke)] = current_move;
-			i++;
-			}
-				
-				/* Double checks for multiple moves */
+
+            var x, curr_stats, curr_poke_stats, poke, spl, fstats = Files.stats,
+                pMF, fweigh = Files.weight,
+                fheigh = Files.height,
+                fevol = Files.evolevels,
+                fgen = Files.genders,
+                fcc = Files.cc,
+                oldCurrStat, fegg1 = Files.egggroup1,
+                fegg2 = Files.egggroup2,
+                fmoves = Files.moves,
+                pokeId = 0;
+
+            fevo = Files.evos.map(function (pokeIds) {
+                return pokeIds.split(" ");
+            });
+
+            var moveObj = {},
+                fdw = fmoves.dw,
+                fegg = fmoves.dw,
+                fevent = fmoves.event,
+                flevel = fmoves.level,
+                fevom = fmoves.evo,
+                ftms = fmoves.tms,
+                ftutor = fmoves.tutor,
+                current_move, c_m_spl, c_m_space, c_poke, dwMoves = {},
+                eggMoves = {},
+                eventMoves = {},
+                levelMoves = {},
+                evoMoves = {},
+                tmMoves = {},
+                tutorMoves = {},
+                i = 1;
+
+            /* Lets begin with moves. */
+
+            var importMoves = function (moveArray, Obj) {
+                for (x in moveArray) {
+                    current_move = moveArray[x];
+                    c_m_spl = current_move.split(":");
+                    c_m_space = current_move.split(" ");
+                    c_poke = Number(c_m_spl[0]);
+
+                    if (current_move === "" || current_move === " ") {
+                        continue;
+                    }
+
+                    if (c_m_spl[1].charAt(0) !== "0") { // A forme.
+                        continue;
+                    }
+
+                    c_m_space.splice(0, 1);
+                    Obj[c_poke] = c_m_space.join(" ");
+                }
+            }
+
+            importMoves(fdw, dwMoves);
+            importMoves(fegg, eggMoves);
+            importMoves(fevent, eventMoves);
+            importMoves(flevel, levelMoves);
+            importMoves(fevom, evoMoves);
+            importMoves(ftms, tmMoves);
+            importMoves(ftutor, tutorMoves);
+
+            while (i != 650) {
+                c_poke = i, current_move = "";
+
+                current_move += levelMoves[c_poke];
+
+                if (c_poke in dwMoves) {
+                    current_move += " " + dwMoves[c_poke];
+                }
+
+                if (c_poke in eggMoves) {
+                    current_move += " " + eggMoves[c_poke];
+                }
+
+                if (c_poke in eventMoves) {
+                    current_move += " " + eventMoves[c_poke];
+                }
+
+                if (c_poke in evoMoves) {
+                    current_move += " " + evoMoves[c_poke];
+                }
+
+                if (c_poke in tutorMoves) {
+                    current_move += " " + tutorMoves[c_poke];
+                }
+
+                if (c_poke in tmMoves) {
+                    current_move += " " + tmMoves[c_poke];
+                }
+
+                moveObj[sys.pokemon(c_poke)] = current_move;
+                i++;
+            }
+
+            /* Double checks for multiple moves */
             var mTA, doneMoves, c_mTA;
             for (x in moveObj) {
-			doneMoves = [];
-            current_move = moveObj[x];
-mTA = current_move.split(" ");
+                doneMoves = [];
+                current_move = moveObj[x];
+                mTA = current_move.split(" ");
 
-for(i in mTA) {
-c_mTA = sys.move(Number(mTA[i]));
-if (doneMoves.indexOf(c_mTA) !== -1) {
-mTA.splice(i, 3);
-continue;
-}
+                for (i in mTA) {
+                    c_mTA = sys.move(Number(mTA[i]));
+                    if (doneMoves.indexOf(c_mTA) !== -1) {
+                        mTA.splice(i, 3);
+                        continue;
+                    }
 
-doneMoves.push(c_mTA);
-}
-
-moveObj[x] = mTA.join(" ");
-}
-			
-			
-			/* We check CC later, as it's a little messy.
-			We also will check evos later as some pokes don't have one. */
-			
-            for (x in fstats) {
-			x = Number(x);
-			pokeId++;
-			
-			/* Put stuff into an array here. */
-			
-                curr_stats = [fstats[x].split(" ")];
-				oldCurrStat = curr_stats[0];
-				spl = fstats[x].split(":");
-
-				/* First is for formes. Second is missingno check. */
-                if (spl[1][0] != "0" || spl[0] == "0") {
-				pokeId--;
-					continue;
+                    doneMoves.push(c_mTA);
                 }
-				
-				curr_stats = [
-				oldCurrStat,
-				fweigh[pokeId].split(" "),
-				fheigh[pokeId].split(" "),
-				fgen[pokeId].split(" "),
-				fevol[pokeId].split(" "),
-				fegg1[pokeId].split(" "),
-				fegg2[pokeId].split(" ")
-				];
-				
-                poke = sys.pokemon(spl[0]);
-				curr_poke_stats = curr_stats[0];
-				/* Egg Groups */
-				curr_stats[5][1] = cut(curr_stats[5], 1, ' ');
-				curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
-				
-                Poke_Data[poke] = {
-				"stats": {
-                    'HP': curr_poke_stats[1],
-                    'ATK': curr_poke_stats[2],
-                    'DEF': curr_poke_stats[3],
-                    'SPATK': curr_poke_stats[4],
-                    'SPDEF': curr_poke_stats[5],
-                    'SPD': curr_poke_stats[6]
-				},
-				
-				"weight": curr_stats[1][1],
-				"height": curr_stats[2][1],
-                "minlvl": Number(curr_stats[4][1].split("/")[0]),
-				"genders": curr_stats[3][1],
-                "egg": [curr_stats[5][1], curr_stats[6][1]],
-				"moves": moveObj[poke]
-                };
-				
-				/* Done! */
-            }
-				
-			/* Parsing evos */
-var pArr = Files.evos.map(function (a) {
-    return a.split(" ");
-}), c_entry, next_entry, c_poke;
 
-for (x in pArr) {
-    c_entry = pArr[x];
-	next_entry = pArr[Number(x) + 1];
-	c_poke = sys.pokemon(c_entry[0]);
-	
-    if (next_entry !== undefined && Number(c_entry[1]) == Number(next_entry[0])) {
-	Poke_Data[c_poke].evos = [c_entry[1], next_entry[1]];
-    } 
-	else if (c_entry.length === 3 && c_entry[1] === c_entry[2]) {
-	/* Feebas evo bug. */
-	Poke_Data[c_poke].evos = [c_entry[1]];
-	}
-	else if (c_entry.length !== 2) {
-        c_entry.splice(0, 1);
-		Poke_Data[c_poke].evos = c_entry;
-    }
-	else if (Number(c_entry[0]) + 1 === Number(c_entry[1])){
-	Poke_Data[c_poke].evos = [c_entry[1]];
-	}
-	}
-	
-	/* Done! */
-	
-	/* Checking CC levels */
-	for (x in fcc) {
-	c_entry = fcc[x];
-	spl = c_entry.split(":");
-	c_m_space = c_entry.split(" ");
-	c_poke = sys.pokemon(Number(spl[0]));
-	
-	if (c_poke == undefined || c_poke == "Missingno" || spl[1][0] !== "0") { // Formes. Missingno.
-	continue;
-	}
-	
-	Poke_Data[c_poke].cc = Number(c_m_space[1]);
-	}
-}
-	   
+                moveObj[x] = mTA.join(" ");
+            }
+
+
+/* We check CC later, as it's a little messy.
+			We also will check evos later as some pokes don't have one. */
+
+            for (x in fstats) {
+                x = Number(x);
+                pokeId++;
+
+                /* Put stuff into an array here. */
+
+                curr_stats = [fstats[x].split(" ")];
+                oldCurrStat = curr_stats[0];
+                spl = fstats[x].split(":");
+
+                /* First is for formes. Second is missingno check. */
+                if (spl[1][0] != "0" || spl[0] == "0") {
+                    pokeId--;
+                    continue;
+                }
+
+                curr_stats = [
+                oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" "), fegg1[pokeId].split(" "), fegg2[pokeId].split(" ")];
+
+                poke = sys.pokemon(spl[0]);
+                curr_poke_stats = curr_stats[0]; /* Egg Groups */
+                curr_stats[5][1] = cut(curr_stats[5], 1, ' ');
+                curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
+
+                Poke_Data[poke] = {
+                    "stats": {
+                        'HP': curr_poke_stats[1],
+                        'ATK': curr_poke_stats[2],
+                        'DEF': curr_poke_stats[3],
+                        'SPATK': curr_poke_stats[4],
+                        'SPDEF': curr_poke_stats[5],
+                        'SPD': curr_poke_stats[6]
+                    },
+
+                    "weight": curr_stats[1][1],
+                    "height": curr_stats[2][1],
+                    "minlvl": Number(curr_stats[4][1].split("/")[0]),
+                    "genders": curr_stats[3][1],
+                    "egg": [curr_stats[5][1], curr_stats[6][1]],
+                    "moves": moveObj[poke]
+                };
+
+                /* Done! */
+            }
+
+            /* Parsing evos */
+            var pArr = Files.evos.map(function (a) {
+                return a.split(" ");
+            }),
+                c_entry, next_entry, c_poke;
+
+            for (x in pArr) {
+                c_entry = pArr[x];
+                next_entry = pArr[Number(x) + 1];
+                c_poke = sys.pokemon(c_entry[0]);
+
+                if (next_entry !== undefined && Number(c_entry[1]) == Number(next_entry[0])) {
+                    Poke_Data[c_poke].evos = [c_entry[1], next_entry[1]];
+                }
+                else if (c_entry.length === 3 && c_entry[1] === c_entry[2]) { /* Feebas evo bug. */
+                    Poke_Data[c_poke].evos = [c_entry[1]];
+                }
+                else if (c_entry.length !== 2) {
+                    c_entry.splice(0, 1);
+                    Poke_Data[c_poke].evos = c_entry;
+                }
+                else if (Number(c_entry[0]) + 1 === Number(c_entry[1])) {
+                    Poke_Data[c_poke].evos = [c_entry[1]];
+                }
+            }
+
+            /* Done! */
+
+            /* Checking CC levels */
+            for (x in fcc) {
+                c_entry = fcc[x];
+                spl = c_entry.split(":");
+                c_m_space = c_entry.split(" ");
+                c_poke = sys.pokemon(Number(spl[0]));
+
+                if (c_poke == undefined || c_poke == "Missingno" || spl[1][0] !== "0") { // Formes. Missingno.
+                    continue;
+                }
+
+                Poke_Data[c_poke].cc = Number(c_m_space[1]);
+            }
+        }
+
         formatStat = function (poke, stat) {
             var stat = Poke_Data[poke].stats[stat];
             var string = stat.bold(),
@@ -13356,10 +13447,10 @@ for (x in pArr) {
                     return string.fontcolor(colors[y]);
                 }
             }
-			
-			return string.fontcolor(colors[colors.length-1]);
+
+            return string.fontcolor(colors[colors.length - 1]);
         }
-		
+
         statsOf = function (poke) {
             var stat = Poke_Data[poke].stats;
             var ret = [],
@@ -13372,8 +13463,8 @@ for (x in pArr) {
 
         formatStatsOf = function (poke) {
             var stats = ["HP", "ATK", "DEF", "SPATK", "SPDEF", "SPD"];
-            var ret = "", z,
-                stt;
+            var ret = "",
+                z, stt;
             for (z in stats) {
                 stt = stats[z];
                 if (stt != "SPD") {
@@ -13386,26 +13477,26 @@ for (x in pArr) {
 
             return ret;
         }
-		
-		movesOf = function (poke) {
-		var moves = Poke_Data[poke].moves.split(" ").map(function (move) {
-		return Number(move);
-		}).sort(function (a, b) {
-		return sys.moveType(b) - sys.moveType(a);
-		});
-		
-		return moves;
-		}
-		
-		evosOf = function (poke) {
-		var PD = Poke_Data[poke];
-		if (PD.evos === undefined) {
-		return [];
-		}
-		
-		return PD.evos;
-		}
-		
+
+        movesOf = function (poke) {
+            var moves = Poke_Data[poke].moves.split(" ").map(function (move) {
+                return Number(move);
+            }).sort(function (a, b) {
+                return sys.moveType(b) - sys.moveType(a);
+            });
+
+            return moves;
+        }
+
+        evosOf = function (poke) {
+            var PD = Poke_Data[poke];
+            if (PD.evos === undefined) {
+                return [];
+            }
+
+            return PD.evos;
+        }
+
         var moveColours = {
             0: "#a8a878",
             1: "#c03028",
@@ -13425,35 +13516,38 @@ for (x in pArr) {
             15: "#7038f8",
             16: "#705848"
         };
-		
-		formatEvosOf = function (poke) {
-		var evos = evosOf(poke), y, retString = [];
-		
-		for (y in evos) {
-		retString.push(sys.pokemon(evos[y]).fontcolor(moveColours[sys.pokeType1(evos[y])]).bold());
-		}
-		
-		return andJoin(retString);
-		}
-		
-		formatMovesOf = function (poke) {
-		var moves = movesOf(poke), y, retString = "", ml = moves.length-1;
-		
-		for (y in moves) {
-		retString += sys.move(moves[y]).fontcolor(moveColours[sys.moveType(moves[y])]).bold().fontsize(2);
-		if (ml != y) {
-		retString += ", ";
-		}
-		}
-		
-		return retString+ ".";
-		}
+
+        formatEvosOf = function (poke) {
+            var evos = evosOf(poke),
+                y, retString = [];
+
+            for (y in evos) {
+                retString.push(sys.pokemon(evos[y]).fontcolor(moveColours[sys.pokeType1(evos[y])]).bold());
+            }
+
+            return andJoin(retString);
+        }
+
+        formatMovesOf = function (poke) {
+            var moves = movesOf(poke),
+                y, retString = "",
+                ml = moves.length - 1;
+
+            for (y in moves) {
+                retString += sys.move(moves[y]).fontcolor(moveColours[sys.moveType(moves[y])]).bold().fontsize(2);
+                if (ml != y) {
+                    retString += ", ";
+                }
+            }
+
+            return retString + ".";
+        }
 
         baseStatTotal = function (poke) {
             var poke = Poke_Data[poke].stats;
             var retnum = 0,
                 y;
-				
+
             for (y in poke) {
                 retnum += Number(poke[y]);
             }
@@ -13495,23 +13589,23 @@ for (x in pArr) {
 
         firstGen = function (poke) {
             poke = sys.pokeNum(poke);
-			
+
             if (poke < 152) {
-			return 1;
-			}
-			
+                return 1;
+            }
+
             else if (poke < 252) {
-			return 2;
-			}
-			
+                return 2;
+            }
+
             else if (poke < 387) {
-			return 3;
-			}
-			
+                return 3;
+            }
+
             else if (poke < 494) {
-			return 4;
-			}
-			
+                return 4;
+            }
+
             return 5;
         }
 
@@ -13530,93 +13624,96 @@ for (x in pArr) {
             }
             return ret;
         }
-		
-pokeGender = function (poke) {
-var pD = Number(Poke_Data[poke].genders);
 
-if (pD === 3) {
-return "<img src='Themes/Classic/genders/gender1.png'> <img src='Themes/Classic/genders/gender2.png'>";
-}
+        pokeGender = function (poke) {
+            var pD = Number(Poke_Data[poke].genders);
 
-else if (pD === 2) {
-return "<img src='Themes/Classic/genders/gender2.png'>";
-}
+            if (pD === 3) {
+                return "<img src='Themes/Classic/genders/gender1.png'> <img src='Themes/Classic/genders/gender2.png'>";
+            }
 
-else if (pD === 1) {
-return "<img src='Themes/Classic/genders/gender1.png'>";
-}
+            else if (pD === 2) {
+                return "<img src='Themes/Classic/genders/gender2.png'>";
+            }
 
-return "<img src='Themes/Classic/genders/gender0.png'>";
-}
+            else if (pD === 1) {
+                return "<img src='Themes/Classic/genders/gender1.png'>";
+            }
+
+            return "<img src='Themes/Classic/genders/gender0.png'>";
+        }
 
         randPoke = function () {
             return sys.pokemon(sys.rand(1, 650));
         }
-		
+
         pokedex = function (src, chan, pokemon, source) {
             var t = new Templater("Pokedex - " + pokemon.fontcolor(moveColours[sys.pokeType1(sys.pokeNum(pokemon))]));
 
-			var n = sys.pokeNum(pokemon), PD = Poke_Data[pokemon],
-			s = sys.pokeType2(n) == 17 ? '' : 's',
-			s2 = sys.pokeAbility(n, 1) == 0 && sys.pokeAbility(n, 2) == 0 ? 'y' : 'ies',
-			gender = pokeGender(pokemon), eggs = PD.egg, eggstr = "", evoS = "";
-			
-			t.register("<img src='pokemon:num=" + n + "'> <img src='pokemon:num=" + n + "&back=true'> <img src='pokemon:num=" + n + "&shiny=true'> <img src='pokemon:num=" + n + "&shiny=true&back=true'><br/>");
-			t.register("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+gender);
+            var n = sys.pokeNum(pokemon),
+                PD = Poke_Data[pokemon],
+                s = sys.pokeType2(n) == 17 ? '' : 's',
+                s2 = sys.pokeAbility(n, 1) == 0 && sys.pokeAbility(n, 2) == 0 ? 'y' : 'ies',
+                gender = pokeGender(pokemon),
+                eggs = PD.egg,
+                eggstr = "",
+                evoS = "";
+
+            t.register("<img src='pokemon:num=" + n + "'> <img src='pokemon:num=" + n + "&back=true'> <img src='pokemon:num=" + n + "&shiny=true'> <img src='pokemon:num=" + n + "&shiny=true&back=true'><br/>");
+            t.register("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + gender);
             t.register("National Dex Number: " + String(n).bold() + ".");
             t.register("Generation " + String(firstGen(pokemon)).bold() + " Pokemon. ");
-			
-			if ((PD.evos !== undefined || (PD.minlvl !== 1
-			&& PD.minlvl !== 100))) {
-			t.register("");
-			}
-			
-			if (PD.evos !== undefined) {
-			if (PD.evos.length !== 1) {
-			evoS = "s";
-			}
-			t.register("Evolution"+evoS+": "+formatEvosOf(pokemon));
-			}
-			
-			if (PD.minlvl !== 1 && PD.minlvl !== 100) {
-			t.register("Minimum Level: <b>"+PD.minlvl+"</b>");
-			}
-			
-			t.register("Level in Challenge Cup: <b>"+PD.cc+"</b><br/>");
-			
-			if (!isEmpty(PD.egg[0])) {
-			eggstr += PD.egg[0].bold();
-			}
-			
-			if (!isEmpty(PD.egg[1])) {
-			eggstr += " and "+PD.egg[1].bold();
-			}
-			
+
+            if ((PD.evos !== undefined || (PD.minlvl !== 1 && PD.minlvl !== 100))) {
+                t.register("");
+            }
+
+            if (PD.evos !== undefined) {
+                if (PD.evos.length !== 1) {
+                    evoS = "s";
+                }
+                t.register("Evolution" + evoS + ": " + formatEvosOf(pokemon));
+            }
+
+            if (PD.minlvl !== 1 && PD.minlvl !== 100) {
+                t.register("Minimum Level: <b>" + PD.minlvl + "</b>");
+            }
+
+            t.register("Level in Challenge Cup: <b>" + PD.cc + "</b><br/>");
+
+            if (!isEmpty(PD.egg[0])) {
+                eggstr += PD.egg[0].bold();
+            }
+
+            if (!isEmpty(PD.egg[1])) {
+                eggstr += " and " + PD.egg[1].bold();
+            }
+
             t.register("Type" + s + ": " + pokeType(pokemon));
-            
-			if (eggstr != "") {
-			if (eggstr.indexOf("and ") === -1) {
-			t.register("Egg Group: "+eggstr);
-			} else {
-			t.register("Egg Groups: "+eggstr);
-			}
-			}
-			
-			t.register("Abilit" + s2 + ": " + pokeAbilities(pokemon) + "<br/>");
-            
-			t.register("Weight: <b>"+PD.weight+" kg</b>");
-			t.register("Height <b>"+ PD.height+" m</b><br/>");
-			
-			t.register(formatStatsOf(pokemon));
+
+            if (eggstr != "") {
+                if (eggstr.indexOf("and ") === -1) {
+                    t.register("Egg Group: " + eggstr);
+                } else {
+                    t.register("Egg Groups: " + eggstr);
+                }
+            }
+
+            t.register("Abilit" + s2 + ": " + pokeAbilities(pokemon) + "<br/>");
+
+            t.register("Weight: <b>" + PD.weight + " kg</b>");
+            t.register("Height <b>" + PD.height + " m</b><br/>");
+
+            t.register(formatStatsOf(pokemon));
             t.register("Base Stat Total: " + formatBaseStatTotal(pokemon));
-        
-			if (pokemon.toLowerCase() !== "smeargle") { // Smeargle crashes.
-			t.register("<br/> "+formatMovesOf(pokemon));
-			} else {
-			t.register("<br/> Smeargle learns all moves.");
-			}
-			
-			t.register(style.footer);
+
+            if (pokemon.toLowerCase() !== "smeargle") { // Smeargle crashes.
+                t.register("<br/> " + formatMovesOf(pokemon));
+            } else {
+                t.register("<br/> Smeargle learns all moves.");
+            }
+
+            t.register(style.footer);
             if (!source) {
                 t.render(src, chan);
                 return;
@@ -13626,7 +13723,7 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
         }
 
     },
-	
+
     requiredUtilitiesLoad: function () {
         RECOVERY = function () {
             if (typeof script.message != 'undefined' && typeof script.step == 'undefined') {
@@ -13653,40 +13750,41 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
             }
         }
 
-		andJoin = function (array) {
-		var x, retstr = '', arrlen = array.length;
-		
-		if(arrlen === 0 || arrlen === 1) {
-		return array.join("");
-		}
-		
-		arrlen--;
-		
-		for(x in array) {
-		if(Number(x) === arrlen) {
-		retstr = retstr.substr(0, retstr.lastIndexOf(","));
-		retstr += " and "+array[x];
-		
-		return retstr;
-		}
-		
-		retstr += array[x]+", ";
-		}
-		
-		return "";
-		}
-		
+        andJoin = function (array) {
+            var x, retstr = '',
+                arrlen = array.length;
+
+            if (arrlen === 0 || arrlen === 1) {
+                return array.join("");
+            }
+
+            arrlen--;
+
+            for (x in array) {
+                if (Number(x) === arrlen) {
+                    retstr = retstr.substr(0, retstr.lastIndexOf(","));
+                    retstr += " and " + array[x];
+
+                    return retstr;
+                }
+
+                retstr += array[x] + ", ";
+            }
+
+            return "";
+        }
+
         updateProtoForJSESSION = function (Proto) {
             var p = Proto.prototype;
             if (p == undefined) {
-			return;
-			}
+                return;
+            }
 
             if (Proto == POUser) {
                 sys.playerIds().forEach(function (id) {
                     if (sys.loggedIn(id) && JSESSION.users(id).__proto__ != p) {
-					JSESSION.users(id).__proto__ = p;
-					}
+                        JSESSION.users(id).__proto__ = p;
+                    }
                 });
             }
             else if (Proto == POChannel || Proto == Tours) {
@@ -13696,8 +13794,8 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
                     if (sys.existChannel(sys.channel(id))) {
                         if (PROTOTOUR) {
                             if (JSESSION.channels(id).toursEnabled && JSESSION.channels(id).tour.__proto__ != p) {
-							JSESSION.channels(id).tour.__proto__ = p;
-							}
+                                JSESSION.channels(id).tour.__proto__ = p;
+                            }
                         }
                         else {
                             if (JSESSION.channels(id).__proto__ != p) {
@@ -13767,13 +13865,13 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
 
         }
     },
-	
+
     loadCache: function () {
         _Cache_ = function (file) {
-            this.file = file+".txt";
+            this.file = file + ".txt";
             this.sics = 0;
             createFile(this.file, "{}");
-			
+
             try {
                 this.hash = JSON.parse(sys.getFileContent(this.file));
             }
@@ -13787,7 +13885,7 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
             if (isEmpty(a) || isEmpty(b)) {
                 return;
             }
-            if (typeof (this.hash[a]) == "undefined") {
+            if (typeof(this.hash[a]) == "undefined") {
                 this.hash[a] = b;
                 this.save();
             }
@@ -13829,20 +13927,20 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
         }
 
         _Cache_.prototype.sic = function (a, b) {
-            if (typeof (this.hash[a]) == "undefined") {
+            if (typeof(this.hash[a]) == "undefined") {
                 this.hash[a] = b;
                 this.sics++;
             }
         }
 
         if (typeof cache == 'undefined') {
-		cache = new _Cache_("RegVals");
-		}
-		
+            cache = new _Cache_("RegVals");
+        }
+
         if (typeof TrivCache == 'undefined') {
-		TrivCache = new _Cache_("Trivia_Data");
-		}
-				
+            TrivCache = new _Cache_("Trivia_Data");
+        }
+
         cache.sic("ClanTag", "None");
         cache.sic("AuthLevel0Name", "User");
         cache.sic("AuthLevel1Name", "Mod");
@@ -13871,6 +13969,7 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
         cache.sic("AutoStartTours", false);
         cache.sic("AutoKick", true);
         cache.sic("AutoMute", true);
+        cache.sic("ChannelsAllowed", true);
 
         cache.sic("mutes", "{}");
         cache.sic("tempbans", "{}");
@@ -13884,21 +13983,23 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
         cache.sic("tempauth", "{}");
         cache.sic("idles", "{}");
         cache.sic("voices", "{}");
-		cache.sic("evalops", "{}");
-		cache.sic("locations", "{}");
-		
+        cache.sic("evalops", "{}");
+        cache.sic("locations", "{}");
+
         var BOT_JSON = {
             "bot": "~Server~",
             "botcolor": "red"
-        }, SERVER_JSON = {
-            "name": "~~Server~~",
-            "color": "blue"
-        }, LEAGUE_JSON = {
-            "Champion": "",
-            "gym": {},
-            "elite": {}
-        };
-		
+        },
+            SERVER_JSON = {
+                "name": "~~Server~~",
+                "color": "blue"
+            },
+            LEAGUE_JSON = {
+                "Champion": "",
+                "gym": {},
+                "elite": {}
+            };
+
         cache.sic("Bot", JSON.stringify(BOT_JSON));
         cache.sic("Server", JSON.stringify(SERVER_JSON));
         cache.sic("CommandsEnabled", "{'me':true,'_catch_':true,'attack':true,'roulette':true}");
@@ -13927,6 +14028,7 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
         AutoStartTours = cache.get("AutoStartTours");
         AutoKick = cache.get("AutoKick");
         AutoMute = cache.get("AutoMute");
+        ChannelsAllowed = cache.get("ChannelsAllowed");
 
         MaxMessageLength = cache.get("MaxMessageLength");
         maxPlayersOnline = cache.get("MaxPlayersOnline");
@@ -13938,16 +14040,16 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
 
         if (cache.sics > 0) {
             cache.savec();
-			cache.sics = 0;
+            cache.sics = 0;
         }
-		
-		
-        if (typeof (DataHash) == "undefined") {
+
+
+        if (typeof(DataHash) == "undefined") {
             DataHash = {};
         }
 
-		var dHash = DataHash, 
-		defineDataProp = function (name) {
+        var dHash = DataHash,
+            defineDataProp = function (name) {
                 if (!dHash.hasOwnProperty(name)) {
                     dHash[name] = {};
                     var CVAL = cache.get(name);
@@ -13962,7 +14064,7 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
                 }
             }
 
-        defineDataProp("mutes");
+            defineDataProp("mutes");
         defineDataProp("voices");
         defineDataProp("evalops");
         defineDataProp("names");
@@ -13977,28 +14079,24 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
         defineDataProp("idles");
         defineDataProp("tempbans");
         defineDataProp("macros");
-		defineDataProp("locations");
+        defineDataProp("locations");
 
         var ids = sys.playerIds(),
-            x, n, l, madeAChange = false;
+            x, n, l;
         for (x in ids) {
             n = sys.name(ids[x]);
             l = n.toLowerCase();
             dHash.names[l] = n;
         }
-		
-		if (madeAChange) {
-		cache.write("names", JSON.stringify(dHash.names));
-		}
 
-        if (typeof (CommandsEnabled) == "undefined") {
+        if (typeof(CommandsEnabled) == "undefined") {
             CommandsEnabled = {
                 'me': true,
                 '_catch_': true,
                 'attack': true,
                 'roulette': true
             };
-			
+
             if (cache.get("CommandsEnabled") != "") {
                 try {
                     CommandsEnabled = JSON.parse(cache.get("CommandsEnabled"));
@@ -14012,7 +14110,7 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
             }
         }
 
-        if (typeof (PointerCommands) == "undefined") {
+        if (typeof(PointerCommands) == "undefined") {
             PointerCommands = {};
             if (cache.get("pointercommands") != "") {
                 try {
@@ -14085,15 +14183,15 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
             "unevalop": "evaluser",
             "evalopoff": "evaluser",
             "tempunban": "untempban",
-			"deletepointercommand": "delpointercommand",
-			"removepointercommand": "delpointercommand",
-			"delpointer": "delpointercommand",
-			"removepointer": "delpointercommand",
-			"evl": "eval",
-			"evval": "eval",
-			"eeval": "eval",
-			"code": "eval",
-			"run": "eval"
+            "deletepointercommand": "delpointercommand",
+            "removepointercommand": "delpointercommand",
+            "delpointer": "delpointercommand",
+            "removepointer": "delpointercommand",
+            "evl": "eval",
+            "evval": "eval",
+            "eeval": "eval",
+            "code": "eval",
+            "run": "eval"
         };
 
         var c = false,
@@ -14110,16 +14208,16 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
             PointerCommands["!!/Reverse/!!"] = {};
         }
 
-		var y;
+        var y;
         for (y in pc) {
             if (y == "!!/Reverse/!!") {
-			break;
-			}
+                break;
+            }
 
             cur = pc["!!/Reverse/!!"][pc[y]];
             if (typeof cur != "object") {
                 cur = {};
-				pc["!!/Reverse/!!"][pc[y]] = {};
+                pc["!!/Reverse/!!"][pc[y]] = {};
             }
 
             if (!cur.hasOwnProperty(y)) {
@@ -14127,617 +14225,652 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
                 c = true;
             }
         }
-		
+
         if (c) {
-		cache.write("pointercommands", JSON.stringify(pc));
-		}
+            cache.write("pointercommands", JSON.stringify(pc));
+        }
 
     },
 
     loadTrivia: function () {
-	return;
-	
-	if (typeof Trivia === 'undefined' || !Trivia.loaded) {
-        Trivia = new
-        function () {		
-            this.qNum = function () {
-                var quest = objLength(this.questions);
-                return quest;
-            }
-			
-			this.freeId = this.qNum;
+        return;
 
-			this.sendAll = function (msg, type) {
-			if(type) {
-			sys.sendHtmlAll(msg, trivia);
-			return;
-			}
-			
-			botAll(msg, trivia);
-			}
-			
-			this.sendMessage = function (id, msg, type) {
-			if(type) {
-			sys.sendHtmlMessage(id, msg, trivia);
-			return;
-			}
-			
-			botMessage(id, msg, trivia);
-			}
-			
-			this.escSM = function (id, msg) {
-			botEscapeMessage(id, msg, trivia);
-			}
-			
-            this.questionInfo = function () {
-			/* No escaping on purpose; admins should review well */
-			
-			var qs = this.currentQuestion;
-			var quest = qs.display_question;
-			
-			this.sendAll("<hr width='450'/><center><b>Category:</b> "+qs.category+" <br/> <b>Question</b>: " + quest +" </center><hr width='450'/>", true);
-            }
+        if (typeof Trivia === 'undefined' || !Trivia.loaded) {
+            Trivia = new
 
-            this.leaderboardDisplay = function (src, match) {
-                var scores = this.leaderboard;
-                if (objLength(scores) === 0) {
-                    this.sendMessage(src, "No leaderboard data available.");
-                    return;
+            function () {
+                this.qNum = function () {
+                    var quest = objLength(this.questions);
+                    return quest;
                 }
 
-                if (isEmpty(match) || scores[match] === undefined) {
-                    var l = [], i, num;
-                    for (i in scores) {
-                    l.push([i, scores[i]]);
-					}
+                this.freeId = this.qNum;
 
-                    l.sort(function (a, b) {
-                        return b[1] - a[1];
-                    });
-					
-                    this.sendMessage(src, "<font size='4'>Trivia Leaderboard</font>");
-                    
-					for (i in l) {
-                        num = Number(i) + 1;
-                        this.escSM(src, num + ". Player " + l[i][0] + " with " + l[i][1] + " game wins.");
+                this.sendAll = function (msg, type) {
+                    if (type) {
+                        sys.sendHtmlAll(msg, trivia);
+                        return;
                     }
-                    return;
-                }
-                this.sendMessage(src, "<font size='4'>Leaderboard for " + html_escape(match) + "</font>");
-                this.escSM(src, "Player " + match + " with " + scores[match] + " game wins.");
-            }
 
-            this.clearVariables = function (inLoad) {
-			if(inLoad && this.loaded) {
-			return;
-			}
-			
-			this.mode = -1;
-			
-			/* Modes:
+                    botAll(msg, trivia);
+                }
+
+                this.sendMessage = function (id, msg, type) {
+                    if (type) {
+                        sys.sendHtmlMessage(id, msg, trivia);
+                        return;
+                    }
+
+                    botMessage(id, msg, trivia);
+                }
+
+                this.escSM = function (id, msg) {
+                    botEscapeMessage(id, msg, trivia);
+                }
+
+                this.questionInfo = function () { /* No escaping on purpose; admins should review well */
+
+                    var qs = this.currentQuestion;
+                    var quest = qs.display_question;
+
+                    this.sendAll("<hr width='450'/><center><b>Category:</b> " + qs.category + " <br/> <b>Question</b>: " + quest + " </center><hr width='450'/>", true);
+                }
+
+                this.leaderboardDisplay = function (src, match) {
+                    var scores = this.leaderboard;
+                    if (objLength(scores) === 0) {
+                        this.sendMessage(src, "No leaderboard data available.");
+                        return;
+                    }
+
+                    if (isEmpty(match) || scores[match] === undefined) {
+                        var l = [],
+                            i, num;
+                        for (i in scores) {
+                            l.push([i, scores[i]]);
+                        }
+
+                        l.sort(function (a, b) {
+                            return b[1] - a[1];
+                        });
+
+                        this.sendMessage(src, "<font size='4'>Trivia Leaderboard</font>");
+
+                        for (i in l) {
+                            num = Number(i) + 1;
+                            this.escSM(src, num + ". Player " + l[i][0] + " with " + l[i][1] + " game wins.");
+                        }
+                        return;
+                    }
+                    this.sendMessage(src, "<font size='4'>Leaderboard for " + html_escape(match) + "</font>");
+                    this.escSM(src, "Player " + match + " with " + scores[match] + " game wins.");
+                }
+
+                this.clearVariables = function (inLoad) {
+                    if (inLoad && this.loaded) {
+                        return;
+                    }
+
+                    this.mode = -1;
+
+/* Modes:
 			-1: No game.
 			0: Signups. 60 Sec delay.
 			1: Question
 			2: Delay time between questions
 			*/
-			
-			this.currentQuestion = {};
-			/* Current Question data (for this.questionInfo()) */
-			
-			this.players = {};
-			
-			/* Struct players:
+
+                    this.currentQuestion = {}; /* Current Question data (for this.questionInfo()) */
+
+                    this.players = {};
+
+/* Struct players:
 			nameToLower => "name", "points", "actionTime" 
 			(Correct case, points earned, time (in millisecs) of the /a if q was correct)
 			defaults: NULL, 0, -1
 			*/
-			
-			this.gamePoints = -1;
-			
-			/* Amount of points required */
-			
-			this.roundWrongAnswers = [];
-			/* Incorrect answers. */
-			
-			if (typeof this.questions === 'undefined') {
-			this.questionsLoad();
-			}
-			if (typeof this.leaderboard === 'undefined') {
-			this.leaderboardLoad();
-			}
-			
-			if (typeof this.review == 'undefined') {
-			this.reviewLoad();
-			}
-			
-			this.loaded = true;
-            }
 
-            this.randomQ = function () {
-                var list = Object.keys(this.questions), len = list.length;
-				
-				if (len == 0) {
-				return "no questions available";
-				}
-				
-                var rand = Math.ceil(len * Math.random());
-                var result = this.questions[list[rand]], resn = result.name;
-				
-				while (result === undefined) {
-                rand = Math.ceil(len * Math.random());
-                result = this.questions[list[rand]], resn = result.name;
-				}
-				
-				this.currentQuestion = result;
-            }
+                    this.gamePoints = -1;
 
-            this.isQuestion = function (name) {
-                var x, Q = this.questions;
-				for(x in Q) {
-				if (Q[x].question === name) {
-				return true;
-				}
-				}
-				
-				return false;
-            }
+                    /* Amount of points required */
 
-            this.questionsLoad = function () {
-                try {
-                    this.questions = JSON.parse(TrivCache.get("Questions"));
-                }
-                catch (e) {
-                    this.questions = {};
-                }
-				
-				if (TrivCache.get("init_pokes_done") == "") {
-				var nums = 1, poke, randchance, q = this.questions, scrambled;
-				for(; nums < 650; nums++) {
-				poke = sys.pokemon(nums);
-				randchance = sys.rand(0, 3) == 1 ? '&shiny=true' : '';	
-				scrambled = poke.scrambled;
-                
-                q[this.freeId()] = {'by': '*Automatic Generate*', 'answers': [poke], 'question': 'Who is this Pokémon? <br/> <img src="pokemon:'+nums+randchance+'&gen=5">','category': 'Pokémon'};
-                q[this.freeId()] = {'by': '*Automatic Generate*', 'answers': [poke], 'question': 'Who is this Pokemon? - '+poke, 'display_question': 'What is the correct Pokémon name? <br/> '+scrambled.bold(), 'category': 'Pokémon'};
-				};
-TrivCache.write("init_pokes_done", true);
-this.saveQuestions();
-			}
-			}
+                    this.roundWrongAnswers = []; /* Incorrect answers. */
 
-            this.leaderboardLoad = function () {
-                try {
-                    this.leaderboard = JSON.parse(TrivCache.get("LeaderBoard"));
-                }
-                catch (e) {
-                    this.leaderboard = {};
-                }
-            }
-			
-this.reviewLoad = function () {
-                try {
-                    this.review = JSON.parse(TrivCache.get("Review"));
-                }
-                catch (e) {
-                    this.review = {};
-                }
-				
-            }
-			
-            this.saveQuestions = function () {
-                TrivCache.write("Questions", JSON.stringify(this.questions));
-            }
-
-            this.saveBoard = function () {
-                TrivCache.write("LeaderBoard", JSON.stringify(this.leaderboard));
-            }
-			
-			this.saveReview = function () {
-			TrivCache.write("Reviews", JSON.stringify(this.review));
-			}
-
-            this.saveLeaderboard = function (user) {
-			user = user.toLowerCase();
-			
-                var num = this.leaderboard[user] === undefined ? 1 : this.leaderboard[user] + 1;
-                this.leaderboard[user] = num;
-                this.saveBoard();
-            }
-
-            this.command_start = function (src, points) {
-                var name = src ? sys.name(src) : Bot.bot + "</i>"
-                if (this.isGameGoingOn()) {
-                    if (src) {
-                        this.sendMessage(src, "A Trivia game is already going on.");
+                    if (typeof this.questions === 'undefined') {
+                        this.questionsLoad();
                     }
-                    return;
-                }
-                if (this.qNum() == 0) {
-                    if (src) {
-                        this.sendMessage(src, "No questions exist.");
+                    if (typeof this.leaderboard === 'undefined') {
+                        this.leaderboardLoad();
                     }
-                    return;
+
+                    if (typeof this.review == 'undefined') {
+                        this.reviewLoad();
+                    }
+
+                    this.loaded = true;
                 }
-				
-				points = parseInt(points);
-				
-				if (points < 30) {
-				this.sendMessage(src, "Specify atleast 30 points for this game.");
-				return;
-				}
-				
-				if (points > 200) {
-				this.sendMessage(src, "Specify less than 200 points for this game.");
-				return;
-				}
-				
-			this.mode = 0;
-			this.gamePoints = points;
 
-      			botAll("A new trivia game was started by " + name + "! It will start in 60 seconds. Go to <a href='po:join/"+sys.channel(trivia)+"'>#Trivia</a> and type /join to join it! First to get "+points+" points or more wins!", 0);
-                this.sendAll("A new trivia game was started by " + name + "! It will start in 60 seconds. Type /join to join the game! First to get "+points+" points or more wins! <ping/>");
-                sys.callLater("Trivia.startGame();", 60);
-            }
+                this.randomQ = function () {
+                    var list = Object.keys(this.questions),
+                        len = list.length;
 
-            this.isGameGoingOn = function () {
-                return this.mode != -1;
-            }
+                    if (len == 0) {
+                        return "no questions available";
+                    }
 
-            this.durningGame_beforeChatMessage = function (src, message) {
-                /* return value bool:
+                    var rand = Math.ceil(len * Math.random());
+                    var result = this.questions[list[rand]],
+                        resn = result.name;
+
+                    while (result === undefined) {
+                        rand = Math.ceil(len * Math.random());
+                        result = this.questions[list[rand]], resn = result.name;
+                    }
+
+                    this.currentQuestion = result;
+                }
+
+                this.isQuestion = function (name) {
+                    var x, Q = this.questions;
+                    for (x in Q) {
+                        if (Q[x].question === name) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                this.questionsLoad = function () {
+                    try {
+                        this.questions = JSON.parse(TrivCache.get("Questions"));
+                    }
+                    catch (e) {
+                        this.questions = {};
+                    }
+
+                    if (TrivCache.get("init_pokes_done") == "") {
+                        var nums = 1,
+                            poke, randchance, q = this.questions,
+                            scrambled;
+                        for (; nums < 650; nums++) {
+                            poke = sys.pokemon(nums);
+                            randchance = sys.rand(0, 3) == 1 ? '&shiny=true' : '';
+                            scrambled = poke.scrambled;
+
+                            q[this.freeId()] = {
+                                'by': '*Automatic Generate*',
+                                'answers': [poke],
+                                'question': 'Who is this Pokémon? <br/> <img src="pokemon:' + nums + randchance + '&gen=5">',
+                                'category': 'Pokémon'
+                            };
+                            q[this.freeId()] = {
+                                'by': '*Automatic Generate*',
+                                'answers': [poke],
+                                'question': 'Who is this Pokemon? - ' + poke,
+                                'display_question': 'What is the correct Pokémon name? <br/> ' + scrambled.bold(),
+                                'category': 'Pokémon'
+                            };
+                        };
+                        TrivCache.write("init_pokes_done", true);
+                        this.saveQuestions();
+                    }
+                }
+
+                this.leaderboardLoad = function () {
+                    try {
+                        this.leaderboard = JSON.parse(TrivCache.get("LeaderBoard"));
+                    }
+                    catch (e) {
+                        this.leaderboard = {};
+                    }
+                }
+
+                this.reviewLoad = function () {
+                    try {
+                        this.review = JSON.parse(TrivCache.get("Review"));
+                    }
+                    catch (e) {
+                        this.review = {};
+                    }
+
+                }
+
+                this.saveQuestions = function () {
+                    TrivCache.write("Questions", JSON.stringify(this.questions));
+                }
+
+                this.saveBoard = function () {
+                    TrivCache.write("LeaderBoard", JSON.stringify(this.leaderboard));
+                }
+
+                this.saveReview = function () {
+                    TrivCache.write("Reviews", JSON.stringify(this.review));
+                }
+
+                this.saveLeaderboard = function (user) {
+                    user = user.toLowerCase();
+
+                    var num = this.leaderboard[user] === undefined ? 1 : this.leaderboard[user] + 1;
+                    this.leaderboard[user] = num;
+                    this.saveBoard();
+                }
+
+                this.command_start = function (src, points) {
+                    var name = src ? sys.name(src) : Bot.bot + "</i>"
+                    if (this.isGameGoingOn()) {
+                        if (src) {
+                            this.sendMessage(src, "A Trivia game is already going on.");
+                        }
+                        return;
+                    }
+                    if (this.qNum() == 0) {
+                        if (src) {
+                            this.sendMessage(src, "No questions exist.");
+                        }
+                        return;
+                    }
+
+                    points = parseInt(points);
+
+                    if (points < 30) {
+                        this.sendMessage(src, "Specify atleast 30 points for this game.");
+                        return;
+                    }
+
+                    if (points > 200) {
+                        this.sendMessage(src, "Specify less than 200 points for this game.");
+                        return;
+                    }
+
+                    this.mode = 0;
+                    this.gamePoints = points;
+
+                    botAll("A new trivia game was started by " + name + "! It will start in 60 seconds. Go to <a href='po:join/" + sys.channel(trivia) + "'>#Trivia</a> and type /join to join it! First to get " + points + " points or more wins!", 0);
+                    this.sendAll("A new trivia game was started by " + name + "! It will start in 60 seconds. Type /join to join the game! First to get " + points + " points or more wins! <ping/>");
+                    sys.callLater("Trivia.startGame();", 60);
+                }
+
+                this.isGameGoingOn = function () {
+                    return this.mode != -1;
+                }
+
+                this.durningGame_beforeChatMessage = function (src, message) {
+/* return value bool:
 				true = stop message from appearing
 				false = ignore this
 				
 				arg message string:
 				the message.
 				*/
-				
-                if (this.mode == 2 || this.mode == 0) {
-                    return false;
-                }
-				
-				var myName = sys.name(src).toLowerCase();
-				if(!myName in this.players) {
-				this.command_join(src);
-				}
-				
-				var myPlayer = this.players[myName];
-				
-				if (isEmpty(message)) {
-                    this.sendMessage(src, "Please specify an answer.");
+
+                    if (this.mode == 2 || this.mode == 0) {
+                        return false;
+                    }
+
+                    var myName = sys.name(src).toLowerCase();
+                    if (!myName in this.players) {
+                        this.command_join(src);
+                    }
+
+                    var myPlayer = this.players[myName];
+
+                    if (isEmpty(message)) {
+                        this.sendMessage(src, "Please specify an answer.");
+                        return true;
+                    }
+
+                    var qList = this.currentQuestion.answers.map(function (q) {
+                        return q.toLowerCase();
+                    });
+
+                    if (qList.indexOf(message.toLowerCase()) > -1) {
+                        myPlayer.actionTime = new Date().getTime();
+                    }
+                    else {
+                        myPlayer.actionTime = -1; // Wrong, reset.
+                        this.roundWrongAnswers.push(message + " (by " + sys.name(src) + ")");
+                    }
+
+
+                    this.sendMessage(src, "Your answer was submitted.");
                     return true;
                 }
 
-                var qList = this.currentQuestion.answers.map(function (q) { return q.toLowerCase(); });
-
-                if (qList.indexOf(message.toLowerCase()) > -1) {
-				myPlayer.actionTime = new Date().getTime();
-                }
-				else {
-				myPlayer.actionTime = -1; // Wrong, reset.
-				this.roundWrongAnswers.push(message+" (by "+sys.name(src)+")");
-				}
-				
-
-				this.sendMessage(src, "Your answer was submitted.");
-                return true;
-            }
-
-			this.endGame = function () {
-			this.clearVariables(false);
-			}
-			
-			this.startGame = function () {
-			var pList = Object.keys(this.players).map(function (n) { 
-			return n.name(); 
-			});
-			
-			if (pList.length != 0) {
-			this.sendAll(andJoin(pList)+" joined the game!");
-			}
-			
-			this.displayQInfo();
-			this.callNewRound();
-			}
-			
-			this.sendToTrivReview = function (src, QHash) {
-			if (sys.playersOfChannel(trivreview) != 0) {
-			sys.sendHtmlAll("<timestamp/> <i><b>"+sys.name(src)+"</b> has submit a question.</i> <ping/>", trivreview);
-			sys.sendHtmlAll("<timestamp/> <i>"+QHash.question+" | "+html_escape(QHash.category)+" | "+QHash.answers.join(" & ")+"</i>", trivreview);
-			var QContainHTML = html_strip(QHash.display_question) != QHash.display_question;
-			var QCatContainHTML = html_strip(QHash.category) != QHash.category;
-			sys.sendHtmlAll("<timestamp/> <i>Contains HTML in Question name: "+QContainHTML+" | Contains HTML in Category name: "+QCatContainHTML, trivreview);
-			}
-			}
-			
-			this.callNewRound = function () {
-			if (this.mode === -1) { /* Game ended */
-			return;
-			}
-			
-			var longestAnswer = 0, x, q = this.currentQuestion.answers;
-			for(x in q) {
-			if(q[x].length > longestAnswer) {
-			longestAnswer = q[x].length;
-			}
-			}
-			
-			if (longestAnswer > 19) {
-			longestAnswer = Math.round(longestAnswer/2);
-			}
-			
-			sys.callLater("Trivia.roundEnd("+longestAnswer+");", longestAnswer);
-			}
-			
-			this.startWait = function () {
-			var rand = sys.rand(13, 21);
-			
-			this.mode = 2;
-			this.sendAll("Have a "+rand+" second break before the next question!");
-			sys.callLater("Trivia.displayQInfo(); Trivia.callNewRound();", rand);
-			}
-			
-            this.roundEnd = function (longestAnswerLength) {
-			if (this.mode === -1) {
-			return;
-			} /* Game ended */
-			
-				var x, p = this.players, ctime = new Date().getTime(),
-				correct = [], winners = {}, cplayer, cplayertimediff, cplayeraddpoints;
-				
-				for(x in p) {
-				cplayer = p[x];
-				cplayertimediff = Math.round(ctime-cplayer.actionTime);
-				if(cplayer.actionTime != -1) {
-				cplayeraddpoints = longestAnswerLength;
-				
-			    if (cplayertimediff > longestAnswerLength/2) {
-				cplayeraddpoints = Math.round(cplayeraddpoints / 2);
-				}
-				
-				correct.push(cplayer.name);
-				cplayer.points += Math.round(Math.tan(cplayertimediff)) + cplayeraddpoints + sys.rand(-1, 2);
-				if (cplayer.points >= this.gamePoints) {
-				winners[cplayer.name] = cplayer.points;
-				}
-				}
-				}
-				
-				if (objLength(winners) != 0) {
-				var winnersList = [], win = " is";
-				
-				for (x in winners) {
-				winnersList.push(x.bold()+" ("+winners[x]+")");
-				}
-				
-				if (winnersList.length != 1) {
-				win = "s are";
-				}
-				
-				this.sendAll("The winner"+win+": "+andJoin(winnersList));
-				
-				for (x in winnersList) {
-				this.saveLeaderboard(winnersList[x]);
-				}
-				
-				this.endGame();
-				return;
-				}
-				
-				this.sendAll("Time's up!");
-				if (correct.length != 0) {
-				this.sendAll("Correct Answered: "+andJoin(correct));
-				} else {
-				this.sendAll("No one was correct!");
-				}
-				if (this.roundWrongAnswers.length != 0) {
-				this.sendAll("Incorrect answers: "+this.roundWrongAnswers.join(", "));
-				} 
-				
-				var lbArr = [], lbStr = "", i = 0, c_pl;
-				for (x in this.players) {
-				c_pl = this.players[x];
-				lbArr.push([c_pl.name, c_pl.points]);
-				i++;
-				
-				c_pl.actionTime = -1; /* Do this while we can! */
-				}
-				
-				lbArr = lbArr.sort(function (a, b) {
-				return b[1] - a[1];
-				});
-				
-				var lbArrLen = lbArr.length - 1;
-				
-				for (x in lbArr) {
-				lbStr += lbArr[x][0].bold()+" (<b>"+lbArr[x][1]+"</b>)";
-				if (x != lbArrLen) {
-				lbStr+= ", ";
-				}
-				}
-				
-				this.sendAll("Leaderboard:");
-				this.sendAll(lbStr);
-				
-				this.roundWrongAnswers = [];
-				this.startWait();
-			}
-			
-			this.getCategories = function () {
-			if (this.categoryCache !== undefined) {
-			return this.categoryCache;
-			}
-			
-			var x, quest = this.questions, catArr = [], c_quest;
-			for (x in quest) {
-			c_quest = quest[x].category;
-			if (catArr.indexOf(c_quest) === -1) {
-			catArr.push(c_quest);
-			}
-			}
-			
-			this.categoryCache = catArr;
-			return catArr;
-			}
-			
-			this.displayQInfo = function () {
-			if (this.mode === -1) { // Game ended.
-			return;
-			}
-			
-			this.randomQ();
-			this.questionInfo();
-			}
-
-            this.end = function (src) {
-                if (this.mode === -1) {
-                    this.sendMessage(src, "No game is going on.");
-                    return;
-                }
-				
-                this.sendAll("Trivia game ended by " + sys.name(src) + "!");
-                this.endGame();
-            }
-
-            this.command_questions = function (src) {
-			var qn = this.qNum();
-                if (qn == 0) {
-                    this.sendMessage(src, "No questions exist.");
-                    return;
-                }
-				
-				if (qn > 2998) {
-				this.sendMessage(src, "There are too many questions to display. You will not see them all.");
-				}
-				
-                var q = this.questions,
-                    y;
-                for (y in q) {
-                    this.escSM(src, q[y].display_question+" in category "+q[y].category);
-                }
-            }
-			
-			this.command_categories = function (src) {
-			if (this.qNum() === 0) {
-			this.sendMessage(src, "No questions exist. There can't be any categories.");
-			return;
-			}
-			
-			var catArr = this.getCategories();
-			this.sendMessage("Question Categories: "+catArr.join(", "));
-			}
-			
-            this.command_rmquestion = function (src, commandData) {
-                if (this.qNum() == 0) {
-                    botMessage(src, "No questions exist.", trivreview);
-                    return;
-                }
-                if (!this.isQuestion(html_strip)) {
-                    botMessage(src, "That question doesn't exist. For a list of questions, type /questions", trivreview);
-                    return;
-                }
-				if (objLength(this.currentQuestion) !== 0) {
-                if (this.currentQuestion.question == commandData) {
-                    botMessage(src, "A round is going on with this question. Please use /skip first.", trivreview);
-                    return;
-                }
-				}
-				
-                delete this.questions[commandData];
-				delete this.categoryCache;
-				this.saveQuestions();
-                botMessage(src, "Deleted question "+commandData+"!", trivreview);
-            }
-
-            this.command_skip = function (src) {
-                if (!this.isGameGoingOn()) {
-                    this.sendMessage(src, "No trivia game is going on.");
-                    return;
-                }
-                if (this.mode === 2) {
-                    this.sendMessage(src, "You can't skip a round durning a break.");
-                    return;
-                }
-                this.sendAll(sys.name(src) + " skipped this round!");
-				this.startWait();
-            }
-
-            this.command_qdata = function (src, commandData) {
-                if (this.qNum == 0) {
-                    this.sendMessage(src, "No questions exist.");
-                    return;
-                }
-                if (!this.questions.hasOwnProperty(commandData)) {
-                    this.sendMessage(src, "That question doesn't exist. For a list of questions, type /questions.");
-                    return;
+                this.endGame = function () {
+                    this.clearVariables(false);
                 }
 
-				var qData = this.questions[commandData];
-				
-                var question = qData.question;
-                var by = qData.by;
-				var cat = qData.category;
+                this.startGame = function () {
+                    var pList = Object.keys(this.players).map(function (n) {
+                        return n.name();
+                    });
 
-                this.sendMessage(src, "Question: " + html_escape(r));
-				this.sendMessage(src, "Category: "+ cat);
-                
-				if (by !== "*Automatic Generate*") {
-				this.sendMessage(src, "By: " + by);
-				}
-				
-                if (sys.auth(src) > 0) {
-				if (objLength(this.currentQuestion) != 0 && this.currentQuestion.question != commandData) {
-                    var answers = qData.answers;
-                    var s = answers.length == 1 ? " is" : "s are";
-					
-                    this.sendMessage(src, "The Answer" + s + ": " + answers.join(", "));
+                    if (pList.length != 0) {
+                        this.sendAll(andJoin(pList) + " joined the game!");
+                    }
+
+                    this.displayQInfo();
+                    this.callNewRound();
                 }
-            }
-			}
 
-            this.command_submit = function (src, mcmd) {
-                if (isEmpty(mcmd[0]) || isEmpty(mcmd[1]) || isEmpty(mcmd[2])) {
-                    this.sendMessage(src, "Question name, category, or answers are missing.");
-                    return;
+                this.sendToTrivReview = function (src, QHash) {
+                    if (sys.playersOfChannel(trivreview) != 0) {
+                        sys.sendHtmlAll("<timestamp/> <i><b>" + sys.name(src) + "</b> has submit a question.</i> <ping/>", trivreview);
+                        sys.sendHtmlAll("<timestamp/> <i>" + QHash.question + " | " + html_escape(QHash.category) + " | " + QHash.answers.join(" & ") + "</i>", trivreview);
+                        var QContainHTML = html_strip(QHash.display_question) != QHash.display_question;
+                        var QCatContainHTML = html_strip(QHash.category) != QHash.category;
+                        sys.sendHtmlAll("<timestamp/> <i>Contains HTML in Question name: " + QContainHTML + " | Contains HTML in Category name: " + QCatContainHTML, trivreview);
+                    }
                 }
-				
-				var q = this.questions[mcmd[0]], myName = sys.name(src);
-                if (this.isQuestion(mcmd[0]) || this.isReview(mcmd[0])) {
-				if (q.by.toLowerCase() !== myName.toLowerCase()) {
-                    this.sendMessage(src, "This question already exists!");
-                    return;
+
+                this.callNewRound = function () {
+                    if (this.mode === -1) { /* Game ended */
+                        return;
+                    }
+
+                    var longestAnswer = 0,
+                        x, q = this.currentQuestion.answers;
+                    for (x in q) {
+                        if (q[x].length > longestAnswer) {
+                            longestAnswer = q[x].length;
+                        }
+                    }
+
+                    if (longestAnswer > 19) {
+                        longestAnswer = Math.round(longestAnswer / 2);
+                    }
+
+                    sys.callLater("Trivia.roundEnd(" + longestAnswer + ");", longestAnswer);
                 }
-				}
-				
-                var answers = cut(mcmd, 2, ':').split("").map(function (q) { return html_escape(q); }).split(",");
-				if (answers.length == 0) {
-				this.sendMessage(src, "Please specify answers.");
-				return;
-				}
-				
-				var questionHash = {"question": html_strip(mcmd[0]), "display_question": mcmd[0], "category": mcmd[1], "answers": answers, "by": myName};
-                this.review[mcmd[0]] = questionHash;
-				delete this.categoryCache;
 
-                this.sendMessage(src, "Submitted question!");
-                this.questionsSave();
-				this.sendToTrivReview(src, questionHash);
-            }
-			
-			this.command_review = function (src, name) {}
+                this.startWait = function () {
+                    var rand = sys.rand(13, 21);
 
-        }();
-		}
+                    this.mode = 2;
+                    this.sendAll("Have a " + rand + " second break before the next question!");
+                    sys.callLater("Trivia.displayQInfo(); Trivia.callNewRound();", rand);
+                }
+
+                this.roundEnd = function (longestAnswerLength) {
+                    if (this.mode === -1) {
+                        return;
+                    } /* Game ended */
+
+                    var x, p = this.players,
+                        ctime = new Date().getTime(),
+                        correct = [],
+                        winners = {},
+                        cplayer, cplayertimediff, cplayeraddpoints;
+
+                    for (x in p) {
+                        cplayer = p[x];
+                        cplayertimediff = Math.round(ctime - cplayer.actionTime);
+                        if (cplayer.actionTime != -1) {
+                            cplayeraddpoints = longestAnswerLength;
+
+                            if (cplayertimediff > longestAnswerLength / 2) {
+                                cplayeraddpoints = Math.round(cplayeraddpoints / 2);
+                            }
+
+                            correct.push(cplayer.name);
+                            cplayer.points += Math.round(Math.tan(cplayertimediff)) + cplayeraddpoints + sys.rand(-1, 2);
+                            if (cplayer.points >= this.gamePoints) {
+                                winners[cplayer.name] = cplayer.points;
+                            }
+                        }
+                    }
+
+                    if (objLength(winners) != 0) {
+                        var winnersList = [],
+                            win = " is";
+
+                        for (x in winners) {
+                            winnersList.push(x.bold() + " (" + winners[x] + ")");
+                        }
+
+                        if (winnersList.length != 1) {
+                            win = "s are";
+                        }
+
+                        this.sendAll("The winner" + win + ": " + andJoin(winnersList));
+
+                        for (x in winnersList) {
+                            this.saveLeaderboard(winnersList[x]);
+                        }
+
+                        this.endGame();
+                        return;
+                    }
+
+                    this.sendAll("Time's up!");
+                    if (correct.length != 0) {
+                        this.sendAll("Correct Answered: " + andJoin(correct));
+                    } else {
+                        this.sendAll("No one was correct!");
+                    }
+                    if (this.roundWrongAnswers.length != 0) {
+                        this.sendAll("Incorrect answers: " + this.roundWrongAnswers.join(", "));
+                    }
+
+                    var lbArr = [],
+                        lbStr = "",
+                        i = 0,
+                        c_pl;
+                    for (x in this.players) {
+                        c_pl = this.players[x];
+                        lbArr.push([c_pl.name, c_pl.points]);
+                        i++;
+
+                        c_pl.actionTime = -1; /* Do this while we can! */
+                    }
+
+                    lbArr = lbArr.sort(function (a, b) {
+                        return b[1] - a[1];
+                    });
+
+                    var lbArrLen = lbArr.length - 1;
+
+                    for (x in lbArr) {
+                        lbStr += lbArr[x][0].bold() + " (<b>" + lbArr[x][1] + "</b>)";
+                        if (x != lbArrLen) {
+                            lbStr += ", ";
+                        }
+                    }
+
+                    this.sendAll("Leaderboard:");
+                    this.sendAll(lbStr);
+
+                    this.roundWrongAnswers = [];
+                    this.startWait();
+                }
+
+                this.getCategories = function () {
+                    if (this.categoryCache !== undefined) {
+                        return this.categoryCache;
+                    }
+
+                    var x, quest = this.questions,
+                        catArr = [],
+                        c_quest;
+                    for (x in quest) {
+                        c_quest = quest[x].category;
+                        if (catArr.indexOf(c_quest) === -1) {
+                            catArr.push(c_quest);
+                        }
+                    }
+
+                    this.categoryCache = catArr;
+                    return catArr;
+                }
+
+                this.displayQInfo = function () {
+                    if (this.mode === -1) { // Game ended.
+                        return;
+                    }
+
+                    this.randomQ();
+                    this.questionInfo();
+                }
+
+                this.end = function (src) {
+                    if (this.mode === -1) {
+                        this.sendMessage(src, "No game is going on.");
+                        return;
+                    }
+
+                    this.sendAll("Trivia game ended by " + sys.name(src) + "!");
+                    this.endGame();
+                }
+
+                this.command_questions = function (src) {
+                    var qn = this.qNum();
+                    if (qn == 0) {
+                        this.sendMessage(src, "No questions exist.");
+                        return;
+                    }
+
+                    if (qn > 2998) {
+                        this.sendMessage(src, "There are too many questions to display. You will not see them all.");
+                    }
+
+                    var q = this.questions,
+                        y;
+                    for (y in q) {
+                        this.escSM(src, q[y].display_question + " in category " + q[y].category);
+                    }
+                }
+
+                this.command_categories = function (src) {
+                    if (this.qNum() === 0) {
+                        this.sendMessage(src, "No questions exist. There can't be any categories.");
+                        return;
+                    }
+
+                    var catArr = this.getCategories();
+                    this.sendMessage("Question Categories: " + catArr.join(", "));
+                }
+
+                this.command_rmquestion = function (src, commandData) {
+                    if (this.qNum() == 0) {
+                        botMessage(src, "No questions exist.", trivreview);
+                        return;
+                    }
+                    if (!this.isQuestion(html_strip)) {
+                        botMessage(src, "That question doesn't exist. For a list of questions, type /questions", trivreview);
+                        return;
+                    }
+                    if (objLength(this.currentQuestion) !== 0) {
+                        if (this.currentQuestion.question == commandData) {
+                            botMessage(src, "A round is going on with this question. Please use /skip first.", trivreview);
+                            return;
+                        }
+                    }
+
+                    delete this.questions[commandData];
+                    delete this.categoryCache;
+                    this.saveQuestions();
+                    botMessage(src, "Deleted question " + commandData + "!", trivreview);
+                }
+
+                this.command_skip = function (src) {
+                    if (!this.isGameGoingOn()) {
+                        this.sendMessage(src, "No trivia game is going on.");
+                        return;
+                    }
+                    if (this.mode === 2) {
+                        this.sendMessage(src, "You can't skip a round durning a break.");
+                        return;
+                    }
+                    this.sendAll(sys.name(src) + " skipped this round!");
+                    this.startWait();
+                }
+
+                this.command_qdata = function (src, commandData) {
+                    if (this.qNum == 0) {
+                        this.sendMessage(src, "No questions exist.");
+                        return;
+                    }
+                    if (!this.questions.hasOwnProperty(commandData)) {
+                        this.sendMessage(src, "That question doesn't exist. For a list of questions, type /questions.");
+                        return;
+                    }
+
+                    var qData = this.questions[commandData];
+
+                    var question = qData.question;
+                    var by = qData.by;
+                    var cat = qData.category;
+
+                    this.sendMessage(src, "Question: " + html_escape(r));
+                    this.sendMessage(src, "Category: " + cat);
+
+                    if (by !== "*Automatic Generate*") {
+                        this.sendMessage(src, "By: " + by);
+                    }
+
+                    if (sys.auth(src) > 0) {
+                        if (objLength(this.currentQuestion) != 0 && this.currentQuestion.question != commandData) {
+                            var answers = qData.answers;
+                            var s = answers.length == 1 ? " is" : "s are";
+
+                            this.sendMessage(src, "The Answer" + s + ": " + answers.join(", "));
+                        }
+                    }
+                }
+
+                this.command_submit = function (src, mcmd) {
+                    if (isEmpty(mcmd[0]) || isEmpty(mcmd[1]) || isEmpty(mcmd[2])) {
+                        this.sendMessage(src, "Question name, category, or answers are missing.");
+                        return;
+                    }
+
+                    var q = this.questions[mcmd[0]],
+                        myName = sys.name(src);
+                    if (this.isQuestion(mcmd[0]) || this.isReview(mcmd[0])) {
+                        if (q.by.toLowerCase() !== myName.toLowerCase()) {
+                            this.sendMessage(src, "This question already exists!");
+                            return;
+                        }
+                    }
+
+                    var answers = cut(mcmd, 2, ':').split("").map(function (q) {
+                        return html_escape(q);
+                    }).split(",");
+                    if (answers.length == 0) {
+                        this.sendMessage(src, "Please specify answers.");
+                        return;
+                    }
+
+                    var questionHash = {
+                        "question": html_strip(mcmd[0]),
+                        "display_question": mcmd[0],
+                        "category": mcmd[1],
+                        "answers": answers,
+                        "by": myName
+                    };
+                    this.review[mcmd[0]] = questionHash;
+                    delete this.categoryCache;
+
+                    this.sendMessage(src, "Submitted question!");
+                    this.questionsSave();
+                    this.sendToTrivReview(src, questionHash);
+                }
+
+                this.command_review = function (src, name) {}
+
+            }();
+        }
 
         Trivia.clearVariables(true);
     },
 
     loadMafia: function () {
-            // Remember to update this if you are updating mafia
-            // Otherwise mafia game won't get reloaded
-            var version = "2012-01-21.1";
-			
-			
+        // Remember to update this if you are updating mafia
+        // Otherwise mafia game won't get reloaded
+        var version = "2012-01-21.1";
+
+
         shuffle = function (o) {
             for (var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
             return o;
@@ -14750,29 +14883,29 @@ this.reviewLoad = function () {
         }
 
         function Mafia(mafiachan) {
-		this.version = version;
+            this.version = version;
             var mafia = this;
 
             var noPlayer = '*';
             var CurrentGame;
             var PreviousGames;
             var MAFIA_SAVE_FILE = Config.Mafia.stats_file;
-			sys.appendToFile(MAFIA_SAVE_FILE, "");
+            sys.appendToFile(MAFIA_SAVE_FILE, "");
 
             var DEFAULT_BORDER = "***************************************************************************************";
             var border;
 
             var savePlayedGames = function () {
-                    sys.writeToFile(MAFIA_SAVE_FILE, JSON.stringify(PreviousGames));
-                };
+                sys.writeToFile(MAFIA_SAVE_FILE, JSON.stringify(PreviousGames));
+            };
             var loadPlayedGames = function () {
-                    try {
-                        PreviousGames = JSON.parse(sys.getFileContent(MAFIA_SAVE_FILE));
-                    }
-                    catch (e) {
-                        PreviousGames = [];
-                    }
-                };
+                try {
+                    PreviousGames = JSON.parse(sys.getFileContent(MAFIA_SAVE_FILE));
+                }
+                catch (e) {
+                    PreviousGames = [];
+                }
+            };
             loadPlayedGames();
 
             var defaultTheme = {
@@ -14780,19 +14913,24 @@ this.reviewLoad = function () {
                 sides: [{
                     "side": "mafia",
                     "translation": "Mafia"
-                }, {
+                },
+                {
                     "side": "mafia1",
                     "translation": "French Canadian Mafia"
-                }, {
+                },
+                {
                     "side": "mafia2",
                     "translation": "Italian Mafia"
-                }, {
+                },
+                {
                     "side": "village",
                     "translation": "Good people"
-                }, {
+                },
+                {
                     "side": "werewolf",
                     "translation": "WereWolf"
-                }, {
+                },
+                {
                     "side": "godfather",
                     "translation": "Godfather"
                 }],
@@ -14802,7 +14940,8 @@ this.reviewLoad = function () {
                     "side": "village",
                     "help": "You don't have any special commands during the night! Vote to remove people in the day!",
                     "actions": {}
-                }, {
+                },
+                {
                     "role": "inspector",
                     "translation": "Inspector",
                     "side": "village",
@@ -14816,7 +14955,8 @@ this.reviewLoad = function () {
                             }
                         }
                     }
-                }, {
+                },
+                {
                     "role": "bodyguard",
                     "translation": "Bodyguard",
                     "side": "village",
@@ -14832,7 +14972,8 @@ this.reviewLoad = function () {
                         },
                         "startup": "role-reveal"
                     }
-                }, {
+                },
+                {
                     "role": "mafia",
                     "translation": "Mafia",
                     "side": "mafia",
@@ -14848,7 +14989,8 @@ this.reviewLoad = function () {
                         },
                         "startup": "team-reveal"
                     }
-                }, {
+                },
+                {
                     "role": "werewolf",
                     "translation": "WereWolf",
                     "side": "werewolf",
@@ -14868,7 +15010,8 @@ this.reviewLoad = function () {
                         },
                         "avoidHax": ["kill"]
                     }
-                }, {
+                },
+                {
                     "role": "hooker",
                     "translation": "Pretty Lady",
                     "side": "village",
@@ -14882,7 +15025,8 @@ this.reviewLoad = function () {
                             }
                         }
                     }
-                }, {
+                },
+                {
                     "role": "mayor",
                     "translation": "Mayor",
                     "side": "village",
@@ -14890,7 +15034,8 @@ this.reviewLoad = function () {
                     "actions": {
                         "vote": 2
                     }
-                }, {
+                },
+                {
                     "role": "spy",
                     "translation": "Spy",
                     "side": "village",
@@ -14903,7 +15048,8 @@ this.reviewLoad = function () {
                             }
                         }
                     }
-                }, {
+                },
+                {
                     "role": "godfather",
                     "translation": "Godfather",
                     "side": "godfather",
@@ -14924,7 +15070,8 @@ this.reviewLoad = function () {
                         },
                         "avoidHax": ["kill"]
                     }
-                }, {
+                },
+                {
                     "role": "vigilante",
                     "translation": "Vigilante",
                     "side": "village",
@@ -14938,7 +15085,8 @@ this.reviewLoad = function () {
                             }
                         }
                     }
-                }, {
+                },
+                {
                     "role": "mafia1",
                     "translation": "French Canadian Mafia",
                     "side": "mafia1",
@@ -14954,7 +15102,8 @@ this.reviewLoad = function () {
                         },
                         "startup": "team-reveal"
                     }
-                }, {
+                },
+                {
                     "role": "mafia2",
                     "translation": "Italian Mafia",
                     "side": "mafia2",
@@ -14970,7 +15119,8 @@ this.reviewLoad = function () {
                         },
                         "startup": "team-reveal"
                     }
-                }, {
+                },
+                {
                     "role": "conspirator1",
                     "translation": "French Canadian Conspirator",
                     "side": "mafia1",
@@ -14981,7 +15131,8 @@ this.reviewLoad = function () {
                         },
                         "startup": "team-reveal"
                     }
-                }, {
+                },
+                {
                     "role": "conspirator2",
                     "translation": "Italian Conspirator",
                     "side": "mafia2",
@@ -14992,7 +15143,8 @@ this.reviewLoad = function () {
                         },
                         "startup": "team-reveal"
                     }
-                }, {
+                },
+                {
                     "role": "mafiaboss1",
                     "translation": "Don French Canadian Mafia",
                     "side": "mafia1",
@@ -15011,7 +15163,8 @@ this.reviewLoad = function () {
                         },
                         "startup": "team-reveal"
                     }
-                }, {
+                },
+                {
                     "role": "mafiaboss2",
                     "translation": "Don Italian Mafia",
                     "side": "mafia2",
@@ -15030,7 +15183,8 @@ this.reviewLoad = function () {
                         },
                         "startup": "team-reveal"
                     }
-                }, {
+                },
+                {
                     "role": "samurai",
                     "translation": "Samurai",
                     "side": "village",
@@ -15044,7 +15198,8 @@ this.reviewLoad = function () {
                             }
                         }
                     }
-                }, {
+                },
+                {
                     "role": "miller",
                     "translation": "Miller",
                     "side": "village",
@@ -15054,7 +15209,8 @@ this.reviewLoad = function () {
                             "revealAs": "mafia"
                         }
                     }
-                }, {
+                },
+                {
                     "role": "truemiller",
                     "translation": "Miller",
                     "side": "village",
@@ -15071,7 +15227,8 @@ this.reviewLoad = function () {
                         },
                         "onlist": "mafia"
                     }
-                }, {
+                },
+                {
                     "role": "miller1",
                     "translation": "Miller",
                     "side": "village",
@@ -15088,7 +15245,8 @@ this.reviewLoad = function () {
                         },
                         "onlist": "mafia1"
                     }
-                }, {
+                },
+                {
                     "role": "miller2",
                     "translation": "Miller",
                     "side": "village",
@@ -15111,7 +15269,7 @@ this.reviewLoad = function () {
                 villageCantLoseRoles: ["mayor", "vigilante", "samurai"]
             };
 
-            /* ThemeManager is a object taking care of saving and loading themes
+/* ThemeManager is a object taking care of saving and loading themes
              * in mafia game */
 
             function ThemeManager() {
@@ -15288,7 +15446,7 @@ this.reviewLoad = function () {
                 }
             };
 
-            /* Theme is a small helper to organize themes
+/* Theme is a small helper to organize themes
              * inside the mafia game */
 
             function Theme() {}
@@ -15569,8 +15727,7 @@ this.reviewLoad = function () {
                 }
                 return noPlayer;
             };
-            this.clearVariables = function () {
-                /* hash : playername => playerstruct */
+            this.clearVariables = function () { /* hash : playername => playerstruct */
                 this.players = {};
                 this.signups = [];
                 this.state = "blank";
@@ -15591,8 +15748,7 @@ this.reviewLoad = function () {
                     this.players[p].safeguarded = undefined;
                 }
             };
-            this.clearVariables();
-            /* callback for /start */
+            this.clearVariables(); /* callback for /start */
             this.userVote = function (src, commandData) {
                 var themeName = commandData.toLowerCase();
                 if (this.state == "blank") {
@@ -15657,8 +15813,7 @@ this.reviewLoad = function () {
                     theme: themeName,
                     who: sys.name(src)
                 };
-            };
-            /* callback for /realstart */
+            }; /* callback for /realstart */
             this.startGame = function (src, commandData) {
                 if (this.state != "blank") {
                     sys.sendMessage(src, "±Game: A game is going on. Wait until it's finished to start another one", mafiachan);
@@ -15751,8 +15906,7 @@ this.reviewLoad = function () {
                 mafia.state = "entry";
 
                 mafia.ticks = 60;
-            };
-            /* callback for /end */
+            }; /* callback for /end */
             this.endGame = function (src) {
                 if (mafia.state == "blank") {
                     sys.sendMessage(src, "±Game: No game is going on.", mafiachan);
@@ -15765,8 +15919,7 @@ this.reviewLoad = function () {
                 sys.sendAll("", mafiachan);
 
                 mafia.clearVariables();
-            };
-            /* called every second */
+            }; /* called every second */
             this.tickDown = function () {
                 if (this.ticks <= 0) {
                     return;
@@ -15834,8 +15987,7 @@ this.reviewLoad = function () {
                 for (var p in this.players) {
                     if (typeof this.players[p].role.actions.onlist === "string") list.push(this.theme.trrole(this.players[p].role.actions.onlist));
                     else list.push(this.players[p].role.translation);
-                }
-                /* Sorting to not give out the order of the roles per player */
+                } /* Sorting to not give out the order of the roles per player */
                 return list.sort().join(", ");
             };
             this.getCurrentPlayers = function () {
@@ -16144,15 +16296,15 @@ this.reviewLoad = function () {
 
                     var nightkill = false;
                     var getTeam = function (role, commonTarget) {
-                            var team = [];
-                            if (commonTarget == 'Role') {
-                                team = mafia.getPlayersForRole(role.role);
-                            }
-                            else if (commonTarget == 'Team') {
-                                team = mafia.getPlayersForTeam(role.side);
-                            }
-                            return team;
-                        };
+                        var team = [];
+                        if (commonTarget == 'Role') {
+                            team = mafia.getPlayersForRole(role.role);
+                        }
+                        else if (commonTarget == 'Team') {
+                            team = mafia.getPlayersForTeam(role.side);
+                        }
+                        return team;
+                    };
 
                     var player, names, j;
                     for (var i in mafia.theme.nightPriority) {
@@ -16174,8 +16326,7 @@ this.reviewLoad = function () {
                                 if (!mafia.isInGame(target)) continue;
                                 target = mafia.players[target];
                                 var distractMode = target.role.actions.distract;
-                                if (distractMode === undefined) {}
-                                else if (target.safeguarded) {
+                                if (distractMode === undefined) {} else if (target.safeguarded) {
                                     mafia.sendPlayer(player.name, "±Game: Your target (" + target.name + ") was guarded!");
                                 }
                                 else if (distractMode.mode == "ChangeTarget") {
@@ -16203,8 +16354,7 @@ this.reviewLoad = function () {
                                     continue;
                                 }
                                 mafia.sendPlayer(target.name, "±Game: The " + player.role.translation + " came to you last night! You were too busy being distracted!");
-                                mafia.removeTargets(target);
-                                /* warn role / teammates */
+                                mafia.removeTargets(target); /* warn role / teammates */
                                 if ("night" in target.role.actions) {
                                     for (var action in target.role.actions.night) {
                                         var team = getTeam(target.role, target.role.actions.night[action].common);
@@ -17034,16 +17184,17 @@ this.reviewLoad = function () {
                 if (command in this.commands.auth) {
                     this.commands.auth[command][0].call(this, src, commandData);
                     return;
-                }/*
+                }
+/*
                 if (!this.isMafiaSuperAdmin(src)) throw ("no valid command");*/
-				
+
                 throw ("no valid command");
             };
         };
 
         if (typeof poGlobal == 'undefined') {
-		poGlobal = JSESSION.global();
-		}
+            poGlobal = JSESSION.global();
+        }
 
         if (typeof mafia == 'undefined') {
             mafia = new Mafia(mafiachan);
