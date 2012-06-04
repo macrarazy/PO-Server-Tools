@@ -2890,7 +2890,7 @@ Trivia.start();
         }
 		if(message.substr(0, 2) != "[#") {
 if(/Script Error line \d+:/.test(message)) {
-botAll("An exception has occured. "+message, 0);
+botAll(message, watch);
 return;
 }
 }
@@ -5488,7 +5488,7 @@ poUser.lastMsg = sys.time()*1;
                     if (isEmpty(c1)) c1 = "random";
                     if (isEmpty(c2)) c2 = "random";
 
-                    ChatColorRandomizer(c1, c2, [chan]);
+                    ChatColorRandomizer(c1, c2, chan);
                 },
 
                 chatcoloroff: function () {
@@ -9212,13 +9212,13 @@ poUser.lastMsg = sys.time()*1;
             if (teamChanges > 2) {
                 if (typeof DataHash.teamSpammers[ip] == "undefined") {
                     DataHash.teamSpammers[ip] = 0;
-                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers--; ", 60 * 3);
+                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers['"+ip+"']--; ", 60 * 3);
                 }
                 else if (DataHash.teamSpammers[ip] == 0) {
                     DataHash.teamSpammers[ip] = 1;
                     botAll("Alert: Possible spammer, ip " + ip + ", name " + sys.name(src) + ". Kicked for now.", watch);
                     kick(src);
-                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers--; ", 60 * 5);
+                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers['"+ip+"']--; ", 60 * 5);
                     return;
                 }
                 else {
@@ -10918,8 +10918,7 @@ poUser.lastMsg = sys.time()*1;
 
             sys.sendHtmlAll(code, channel);
 
-            for (var y in channels)
-            ChatColorRandomizers[channels[y]] = {
+            ChatColorRandomizers[channel] = {
                 'firstColor': firstColor,
                 'secondColor': secondColor
             };
@@ -11658,6 +11657,11 @@ poUser.lastMsg = sys.time()*1;
         }
 
         objLength = function (obj) {
+		var type = Object.prototype.toString.call(obj);
+		if (type != "[object Object]") {
+		return obj.length;
+		}
+		
             return Object.keys(obj).length;
         }
 
@@ -13674,11 +13678,15 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
 		
         updateProtoForJSESSION = function (Proto) {
             var p = Proto.prototype;
-            if (p == undefined) return;
+            if (p == undefined) {
+			return;
+			}
 
             if (Proto == POUser) {
                 sys.playerIds().forEach(function (id) {
-                    if (sys.loggedIn(id) && JSESSION.users(id).__proto__ != p) JSESSION.users(id).__proto__ = p;
+                    if (sys.loggedIn(id) && JSESSION.users(id).__proto__ != p) {
+					JSESSION.users(id).__proto__ = p;
+					}
                 });
             }
             else if (Proto == POChannel || Proto == Tours) {
@@ -13687,7 +13695,9 @@ return "<img src='Themes/Classic/genders/gender0.png'>";
                 list.forEach(function (id) {
                     if (sys.existChannel(sys.channel(id))) {
                         if (PROTOTOUR) {
-                            if (JSESSION.channels(id).toursEnabled && JSESSION.channels(id).tour.__proto__ != p) JSESSION.channels(id).tour.__proto__ = p;
+                            if (JSESSION.channels(id).toursEnabled && JSESSION.channels(id).tour.__proto__ != p) {
+							JSESSION.channels(id).tour.__proto__ = p;
+							}
                         }
                         else {
                             if (JSESSION.channels(id).__proto__ != p) {
