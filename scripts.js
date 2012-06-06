@@ -34,26 +34,8 @@
 || # http://creativecommons.org/licenses/by-nc-sa/3.0/     # ||
 || #                                                       # ||
 || ######################################################### ||
-|| #               -Tier Requirements-                     # ||
-|| ######################################################### ||
-|| #                                                       # ||
-|| # The newest Pokémon Online tiers are required for      # ||
-|| # Auto Start Tour tiers.                                # ||
-|| # Link: http://pokemon-online.eu/tiers.xml              # ||
-|| # Command: /updatetiers [optional link, uses PO tiers   # ||
-|| # as default.]                                          # ||
-|| #                                                       # ||
-|| ######################################################### ||
-|| #                                                       # ||
-|| # Required tiers are:                                   # ||  
-|| # Middle Cup, Wifi 1v1 CC, Clear Skies, Wifi UU,        # ||
-|| # Wifi OU, DW OU, DW Ubers, Wifi Ubers, CC 1v1, DW UU   # ||
-|| # Clear Skies DW, Wifi LC, Challenge Cup                # ||
-|| #                                                       # ||
-|| # If you don't have these, turn Auto Start Tours off.   # ||
-|| #                                                       # ||
-\*===========================================================*/
-/*===========================================================*\
+
+===============================================================
 ||                     Config Chart                          ||
 ===============================================================
 || @ DWAbilityCheck:                                         ||
@@ -85,7 +67,7 @@
 || - /eval botMessage(src, sTB(yournumberhere));             ||
 || - Example: botMessage(src, sTB(1024*4));                  ||
 || - NOTE: Might lag. If the lag is a problem, make this 0.  ||
-|| - NOTE2: Clearing logs removes lag, so it's recommended!   ||
+|| - NOTE2: Clearing logs removes lag, so it's recommended!  ||
 ===============================================================
 || @ HighPermission users:                                   ||
 || - Can use commands with an higher auth level required.    ||
@@ -130,10 +112,6 @@ VERSION = function (v, data) {
 
 VERSION.prototype.toString = function () {
     return this.version + " " + this.additionalData;
-}
-
-if (typeof RECOVERY_BACKUP !== "undefined") {
-    delete RECOVERY_BACKUP;
 }
 
 RECOVERY_BACKUP = {};
@@ -268,8 +246,9 @@ ChannelLink = function (channel) {
 
 ChannelNames = function () {
     var channelIds = sys.channelIds(),
-        channelNames = [];
-    for (var x in channelIds) {
+        channelNames = [],
+		x;
+    for (x in channelIds) {
         channelNames.push(sys.channel(channelIds[x]));
     }
 
@@ -324,7 +303,9 @@ fileLen = function (file) {
 
 sTB = function (bytes) {
     var sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-    if (bytes == 0) return '0 bytes';
+    if (bytes == 0) {
+	return '0 bytes';
+	}
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
     if (i == 0) {
         return (bytes / Math.pow(1024, i)) + ' ' + sizes[i];
@@ -334,11 +315,16 @@ sTB = function (bytes) {
 
 clearlogs = function () {
     var l = Config.ClearLogsAt;
-    if (l == 0) return;
+    if (l == 0) {
+	return;
+	}
 
-    print("Checking logs.txt length... Might lag.");
-    botAll("Checking logs.txt length... Might lag.", watch);
     var len = fileLen("logs.txt");
+	if (len == undefined || len == 0) {
+	Config.ClearLogsAt = 0; /* Linux and Mac */
+	return;
+	}
+	
     if (len > l) {
         botAll("The file logs.txt contains " + sTB(len) + ", which is more than given maximum (" + sTB(l) + "). Clearing file.", 0);
         sys.writeToFile("logs.txt", "");
@@ -1137,7 +1123,9 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
     }
 
     botEscapeAll(sys.name(src) + " left the tournament!", 0);
-    if (this.tourmode == 2 && this.players[name2].couplesid != -1) this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
+    if (this.tourmode == 2 && this.players[name2].couplesid != -1) {
+	this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
+	}
 
     delete this.players[name2];
 
@@ -1287,8 +1275,12 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
         indexThingy = this.roundStatus.idleBattles[indexOfIdle];
         pNum = indexThingy[0] == playerN;
         delete this.roundStatus.idleBattlers[indexOfIdle];
-        if (pNum) this.roundStatus.idleBattlers[indexOfIdle] = [swittchN, indexThingy[1]];
-        else this.roundStatus.idleBattlers[indexOfIdle] = [indexThingy[0], switchN];
+        if (pNum) {
+		this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [swittchN, indexThingy[1]];
+		}
+        else {
+		this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [indexThingy[0], switchN];
+		}
     }
 
     this.players[parts[1]] = obj;
@@ -1772,8 +1764,8 @@ Tours.prototype.roundPairing = function () {
             team2 = "";
     }
 
-    for (a in p) {
-        if (objLength(tempplayers) == 1) {
+    for (a in tempplayers) {
+		if (objLength(tempplayers) == 1) {
             break;
         }
 
@@ -1786,7 +1778,7 @@ Tours.prototype.roundPairing = function () {
             x2 = this.randomPlayer(tempplayers);
             name2 = this.playerName(tempplayers, x2);
             n2tl = name2.toLowerCase();
-            delete tempplayers[n2tl];
+            delete tempplayers[n2tl];			
 
         }
         else {
@@ -1801,16 +1793,11 @@ Tours.prototype.roundPairing = function () {
             delete tempplayers[n2tl];
         }
 
-        if (name1 != "" && name2 != "") {
             this.couples[i] = [name1, name2];
             this.players[n1tl].couplesid = i;
             this.players[n2tl].couplesid = i;
             this.players[n1tl].couplenum = 0;
             this.players[n2tl].couplenum = 1;
-        }
-        else {
-            continue;
-        }
 
         if (!this.AutoStartBattles) {
             this.roundStatus.idleBattles[i] = [name1, name2];
@@ -1838,7 +1825,7 @@ Tours.prototype.roundPairing = function () {
                 if (sys.tier(sys.id(p)) == sys.tier(sys.id(op)) && cmp(sys.tier(sys.id(p)), this.tourtier)) {
                     if (!this.ongoingTourneyBattle(p) && !this.ongoingTourneyBattle(op)) {
                         sys.forceBattle(sys.id(p), sys.id(op), sys.getClauses(this.tourtier), 0, false);
-                        this.startedBattles[i] = [p.name(), op.name()];
+                        this.roundStatus.startedBattles[objLength(this.roundStatus.startedBattles)] = [p.name(), op.name()];
                     }
                 }
             }
@@ -1858,7 +1845,9 @@ Tours.prototype.isInTourneyId = function (id) {
 
 Tours.prototype.tourOpponent = function (nam) {
     var name = nam.toLowerCase();
-    if (this.players[name].couplesid == -1) return "";
+    if (this.players[name].couplesid == -1) {
+	return "";
+	}
     var namenum = this.players[name].couplenum,
         id = this.players[name].couplesid;
     namenum = namenum == 0 ? 1 : 0;
@@ -1885,8 +1874,10 @@ Tours.prototype.afterBattleStarted = function (src, dest) {
                 n2 = sys.name(dest);
             if (sys.tier(src) == sys.tier(dest) && cmp(sys.tier(src), this.tourtier)) {
                 var idleBattleIndex = this.idleBattler(n1);
+				if (this.roundStatus.idleBattles[idleBattleIndex] != undefined) {
                 delete this.roundStatus.idleBattles[idleBattleIndex];
-                this.roundStatus.startedBattles[objLength(this.roundStatus.startedBattles) - 1] = [n1, n2];
+                this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [n1, n2];
+				}
                 if (!this.finals) botAll("Round " + this.roundnumber + " Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
                 else botAll("Final Round Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
             }
@@ -1905,9 +1896,11 @@ Tours.prototype.tie = function (src, dest) {
     }
     else {
         var startedBattleIndex = this.isBattling(s);
+		if (startedBattleIndex != false) {
         delete this.roundStatus.startedBattles[startedBattleIndex];
-        this.roundStatus.idleBattles[objLength(this.roundStatus.idleBattles) - 1] = [s, d];
+        this.roundStatus.idleBattles[objLength(this.roundStatus.idleBattles)] = [s, d];
     }
+	}
 }
 
 Tours.prototype.afterBattleEnded = function (src, dest, desc) {
@@ -1931,8 +1924,10 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
     if (this.battlemode == 1 || this.battlemode == 4 || rush) {
         var stuff = this.roundStatus;
         var stuffSBIndex = this.isBattling(src);
-        stuff.winLose[objLength(stuff.winLose) - 1] = [src, dest];
-        if (stuffSBIndex !== false) delete stuff.startedBattles[stuffSBIndex];
+        stuff.winLose[objLength(stuff.winLose)] = [src, dest];
+        if (stuffSBIndex !== false) {
+		delete stuff.ongoingBattles[stuffSBIndex];
+		}
 
         delete this.players[destTL];
         delete this.couples[this.players[srcTL].couplesid];
@@ -1989,9 +1984,11 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
 
             var stuff = this.roundStatus;
             var stuffSBIndex = this.isBattling(src);
-            stuff.winLose[objLength(stuff.winLose) - 1] = [src, dest];
-            if (stuffSBIndex !== false) delete stuff.startedBattles[stuffSBIndex];
-
+            
+        stuff.winLose[objLength(stuff.winLose)] = [src, dest];
+        if (stuffSBIndex !== false) {
+		delete stuff.ongoingBattles[stuffSBIndex];
+		}
             delete this.players[loserTL];
             delete this.couples[this.players[winnerTL].couplesid];
             this.players[winnerTL].couplesid = -1;
@@ -2031,17 +2028,20 @@ Tours.prototype.tourSpots = function () {
 
 Tours.prototype.randomPlayer = function (hash, team) {
     var ol = objLength(hash);
-    if (ol == 1) return 0;
+    if (ol == 1 || ol == 0) return 0;
     if (ol == 2) return sys.rand(0, 2);
-    var rand = sys.rand(0, ol + 1);
+    var rand = sys.rand(0, ol);
 
-    if (!this.tagteam_tour()) return rand;
+    if (!this.tagteam_tour()) {
+	return rand;
+	}
 
     var h = this.hashOf(hash, rand);
     if (h == undefined) return "";
 
     while (h.team != team) {
-        h = this.hashOf(hash, sys.rand(0, ol + 1));
+	rand = sys.rand(0, ol);
+        h = this.hashOf(hash, rand);
     }
 
     return rand;
@@ -2385,7 +2385,11 @@ JSESSION.refill();
         if (typeof DataHash.teamSpammers == "undefined") {
             DataHash.teamSpammers = {};
         }
-
+		
+ if (typeof DataHash.reconnect == "undefined") {
+            DataHash.reconnect = {};
+        }
+		
         Clantag = {};
         Clantag.full = ClanTag;
         Clantag.fullText = removespaces(Clantag.full.replace(/[\[\]\{\}]/gi, ""));
@@ -2628,6 +2632,12 @@ Trivia.start();
 
         script.resolveLocation(src, myIp, false);
 
+	if (DataHash.reconnect[myIp] != undefined) {
+	testNameKickedPlayer = src;
+	sys.stopEvent();
+	return;
+	}
+	
         if (script.testName(src)) {
             testNameKickedPlayer = src;
             sys.stopEvent();
@@ -3742,7 +3752,7 @@ poUser.lastMsg = sys.time()*1;
                     var x;
 
                     for (x in DataHash.league.gym) {
-                        t.register(playerInfo(DataHash.league.gym[x]));
+                        t.register("<b>"+x+"</b>. "+playerInfo(DataHash.league.gym[x]));
                     }
 
                     if (!gyms0) {
@@ -3752,7 +3762,7 @@ poUser.lastMsg = sys.time()*1;
                     t.span("Elite Four");
 
                     for (x in DataHash.league.elite) {
-                        t.register(playerInfo(DataHash.league.elite[x]));
+                        t.register("<b>"+x+"</b>. "+playerInfo(DataHash.league.elite[x]));
                     }
 
                     if (!elite0) {
@@ -6842,8 +6852,8 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Mod Commands: Kick -- */
                 kick: function () {
+				var tarid = sys.id(mcmd[0]);
                     var tn = sys.name(tarid);
-
                     if (sys.maxAuth(dbIp) >= sys.auth(src) && sys.auth(src) < 3) {
                         botMessage(src, "Can't kick that person!", chan);
                         return;
@@ -7151,7 +7161,7 @@ poUser.lastMsg = sys.time()*1;
                         botMessage(src, "You can't make over 16 gym leaders.", chan);
                         return;
                     }
-                    if (dbIp === undefined) {
+                    if (sys.dbIp(mcmd[1]) === undefined) {
                         botMessage(src, "That person doesn't exist in the db.", chan);
                         return;
                     }
@@ -7166,7 +7176,7 @@ poUser.lastMsg = sys.time()*1;
                         botMessage(src, "You can't make over 4 elite members.", chan);
                         return;
                     }
-                    if (dbIp === undefined) {
+                    if (sys.dbIp(mcmd[1]) === undefined) {
                         botMessage(src, "That person doesn't exist in the db.", chan);
                         return;
                     }
@@ -9311,18 +9321,19 @@ poUser.lastMsg = sys.time()*1;
             }
 
             var x, chanList = sys.channelsOfPlayer(src);
-            for (x in chanList)
+            for (x in chanList) {
             JSESSION.channels(chanList[x]).updateAuth();
-        }
+			}
+			
+        } /* END OF LOGGING */
 
-        var srcname = sys.name(src).toLowerCase();
-        if (typeof DataHash.mail[srcname] != "undefined") {
-            if (DataHash.mail[srcname].length > 0) {
-                var mail = DataHash.mail[srcname],
-                    p, count = 0;
+        var srcname = sys.name(src).toLowerCase(), myMail = DataHash.mail[srcname];
+        if (myMail != undefined) {
+            if (myMail.length > 0) {
+                var p, count = 0;
 
-                for (p in mail) {
-                    if (!mail[p].read) {
+                for (p in myMail) {
+                    if (!myMail[p].read) {
                         count++;
                     }
                 }
@@ -9332,8 +9343,6 @@ poUser.lastMsg = sys.time()*1;
                 }
             }
         }
-
-        script.customAbilityBans(src);
 
         if (sys.gen(src) >= 4) {
             for (var i = 0; i < 6; i++) {
@@ -9361,16 +9370,20 @@ poUser.lastMsg = sys.time()*1;
                 }
             }
         }
-
-        script.dreamWorldAbilitiesCheck(src, false);
-        script.littleCupCheck(src, false);
-        script.inconsistentCheck(src, false);
-        script.monotypecheck(src);
-        script.weatherlesstiercheck(src);
-        script.shanaiAbilityCheck(src, false);
-        script.monoColourCheck(src);
-        script.advance200Check(src);
-
+		script.eventShinies(src);
+		
+        var mono = script.monotypecheck(src);
+        var weather = script.weatherlesstiercheck(src);
+        var colour = script.monoColourCheck(src);
+        var swim = script.swiftSwimCheck(src);
+        var drought = script.droughtCheck(src);
+        var adv200 = script.advance200Check(src);
+        var snow = script.snowWarningCheck(src);
+		
+        if (!snow || !mono || !weather || !colour || !swim || !drought || !adv200) {
+            sys.changeTier(src, "Challenge Cup");
+        }
+		
         if (!logging) // IFY
         ify.afterChangeTeam(src);
     },
@@ -9467,8 +9480,6 @@ poUser.lastMsg = sys.time()*1;
             return;
         }
 
-        if (sys.tier(src) === sys.tier(dest)) {
-            var tier = sys.tier(src);
             var dw1 = script.dreamWorldAbilitiesCheck(src);
             var dw2 = script.dreamWorldAbilitiesCheck(dest);
             var incos1 = script.inconsistentCheck(src);
@@ -9479,11 +9490,11 @@ poUser.lastMsg = sys.time()*1;
             var shan2 = script.shanaiAbilityCheck(dest);
             var evio1 = script.evioliteCheck(src);
             var evio2 = script.evioliteCheck(dest);
-            if (!dw1 || !dw2 || !incos1 || !incos2 || !lit1 || !lit2 || !shan1 || !shan2 || !evio1 || !evio2) {
+            
+			if (!dw1 || !dw2 || !incos1 || !incos2 || !lit1 || !lit2 || !shan1 || !shan2 || !evio1 || !evio2) {
                 sys.stopEvent();
                 return;
             }
-        }
     },
 
     beforeChangeTier: function (src, oldtier, newtier) {
@@ -9493,8 +9504,9 @@ poUser.lastMsg = sys.time()*1;
         var swim = script.swiftSwimCheck(src, newtier);
         var drought = script.droughtCheck(src, newtier);
         var adv200 = script.advance200Check(src, newtier);
-
-        if (!mono || !weather || !colour || !swim || !drought || !adv200) {
+        var snow1 = script.snowWarningCheck(src, newtier);
+		
+        if (!snow || !mono || !weather || !colour || !swim || !drought || !adv200) {
             sys.stopEvent();
         }
     },
@@ -9510,8 +9522,6 @@ poUser.lastMsg = sys.time()*1;
             return;
         }
 
-        if (sys.tier(src) === sys.tier(dest)) {
-            var tier = sys.tier(src);
             var dw1 = script.dreamWorldAbilitiesCheck(src);
             var dw2 = script.dreamWorldAbilitiesCheck(dest);
             var incos1 = script.inconsistentCheck(src);
@@ -9526,7 +9536,6 @@ poUser.lastMsg = sys.time()*1;
                 sys.stopEvent();
                 return;
             }
-        }
     },
 
     beforePlayerKick: function (src, tar) {
@@ -9652,7 +9661,7 @@ poUser.lastMsg = sys.time()*1;
             return true;
         }
 
-        if (ip == "74.177.140.6" || ip == "71.200.127.248" || ip == "80.99.185.34" || ip == "98.224.59.142" || ip == "146.185.22.84" || ip == "80.57.218.225" || ip == "24.9.47.159" || ip == "202.109.143.36" || ip == "122.225.36.101" || ip == "96.21.77.178" || ip == "99.99.42.44" || ip == "1.23.90.54" || ip == "120.62.170.171" || ip == "120.63.37.210" || ip == "184.57.43.134" || ip == "24.220.22.51" || ip == "78.145.211.13" || ip == "68.101.77.47" || ip == "172.131.113.123" || ip == "108.216.164.247" || ip == "86.42.2.61" || ip == "217.166.85.2" || ip == "172.129.68.11" || ip == "174.54.115.184" || ip == "178.165.60.119" || ip == "67.191.121.15" || ip == "121.8.124.42" || ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
+        if (ip == "174.97.200.137" || ip == "74.177.140.6" || ip == "71.200.127.248" || ip == "80.99.185.34" || ip == "98.224.59.142" || ip == "146.185.22.84" || ip == "80.57.218.225" || ip == "24.9.47.159" || ip == "202.109.143.36" || ip == "122.225.36.101" || ip == "96.21.77.178" || ip == "99.99.42.44" || ip == "1.23.90.54" || ip == "120.62.170.171" || ip == "120.63.37.210" || ip == "184.57.43.134" || ip == "24.220.22.51" || ip == "78.145.211.13" || ip == "68.101.77.47" || ip == "172.131.113.123" || ip == "108.216.164.247" || ip == "86.42.2.61" || ip == "217.166.85.2" || ip == "172.129.68.11" || ip == "174.54.115.184" || ip == "178.165.60.119" || ip == "67.191.121.15" || ip == "121.8.124.42" || ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
             if (!nomessage) {
                 sendFailWhale(src, 0);
             }
@@ -10170,7 +10179,7 @@ poUser.lastMsg = sys.time()*1;
     shanaiAbilityCheck: function (src) {
         var tier = sys.tier(src);
         if (["Shanai Cup", "Shanai Cup 1.5", "Shanai Cup STAT", "Original Shanai Cup TEST"].indexOf(tier) === -1) {
-            return;
+            return true;
         }
         var bannedAbilities = {
             'treecko': ['overgrow'],
@@ -10224,6 +10233,41 @@ poUser.lastMsg = sys.time()*1;
         }
         return retbool;
     },
+
+	snowWarningCheck: function (src, tier) {
+	if (!tier) {
+	tier = sys.tier(src);
+	}
+	
+	if (["Wifi UU", "Wifi LU", "Wifi NU"].indexOf(tier) == -1) {
+	return true;
+	}
+	
+    for(var i = 0; i <6; ++i){
+        if(sys.ability(sys.teamPokeAbility(src, i)) == "Snow Warning"){
+            botMessage(src, "Snow Warning is not allowed in " + tier + ".");
+            return true;
+        }
+    }
+},
+
+	eventShinies: function (src) {
+    var beasts = {};
+    beasts[sys.pokeNum('Raikou')]  = ['Extremespeed', 'Aura Sphere', 'Weather Ball', 'Zap Cannon'] .map(sys.moveNum);
+    beasts[sys.pokeNum('Suicune')] = ['Extremespeed', 'Aqua Ring',   'Sheer Cold',   'Air Slash']  .map(sys.moveNum);
+    beasts[sys.pokeNum('Entei')]   = ['Extremespeed', 'Howl',        'Crush Claw',   'Flare Blitz'].map(sys.moveNum);
+ 
+    for (var beast in beasts) {
+        for (var slot=0; slot<6; slot++) {
+            if (sys.teamPoke(src, slot) == beast) {
+                for (var i=0; i<4; i++) {
+                    if (beasts[beast].indexOf(sys.teamPokeMove(src, slot, i)) > -1)
+                        sys.changePokeShine(src, slot, true);
+	}
+}
+}
+}	
+},
 
     littleCupCheck: function (src, se) {
         if (["Wifi LC", "Wifi LC Ubers", "Wifi LC UU"].indexOf(sys.tier(src)) === -1) {
@@ -10328,7 +10372,7 @@ poUser.lastMsg = sys.time()*1;
             tier = sys.tier(src);
         }
 
-        if (tier != "Clear Skies") {
+        if (tier != "Clear Skies" && tier != "Clear Skies DW") {
             return true;
         }
 
@@ -10336,16 +10380,6 @@ poUser.lastMsg = sys.time()*1;
             ability = sys.ability(sys.teamPokeAbility(src, i))
             if (ability.toLowerCase() == "drizzle" || ability.toLowerCase() == "drought" || ability.toLowerCase() == "snow warning" || ability.toLowerCase() == "sand stream") {
                 botMessage(src, "Your team has a pokemon with the ability: " + ability + ", please remove before entering this tier.");
-                if (sys.hasLegalTeamForTier(src, "DW OU")) {
-                    if (sys.hasLegalTeamForTier(src, "Wifi OU")) {
-                        sys.changeTier(src, "Wifi OU");
-                    }
-                    sys.changeTier(src, "DW OU");
-                }
-                if (sys.hasLegalTeamForTier(src, "Wifi Ubers")) {
-                    sys.changeTier(src, "Wifi Ubers");
-                }
-                sys.changeTier(src, "DW Ubers");
                 return false;
             }
         }
@@ -11182,26 +11216,37 @@ poUser.lastMsg = sys.time()*1;
         kick = function (src) {
             var xlist, c;
             var ip = sys.ip(src);
-            var playerIdList = sys.playerIds();
+            var playerIdList = sys.playerIds(), addIp = false;
 
             for (xlist in playerIdList) {
                 c = playerIdList[xlist];
                 if (ip == sys.ip(c)) {
-                    botAll("Running kick against IP: " + ip + ", id: " + src + ", name: " + sys.name(src), watch);
-                    sys.callQuickly('sys.kick(' + c + ');', 1);
+                    sys.callQuickly('sys.kick(' + c + ');', 20);
+					addIp = true;
                 }
             }
+			
+			if (addIp) {
+			DataHash.reconnect[ip] = true;
+			sys.callLater("delete DataHash.reconnect['"+ip+"'];", 5);
+			}
         }
 
         aliasKick = function (ip) {
             var aliases = sys.aliases(ip),
-                alias, id;
+                alias, id, addIp = false;
             for (alias in aliases) {
                 id = sys.id(aliases[alias]);
                 if (id != undefined) {
-                    sys.callQuickly('sys.kick(' + id + ');', 150);
+                    sys.callQuickly('sys.kick(' + id + ');', 20);
+					addIp = sys.ip(id);
                 }
             }
+			
+			if (addIp != false) {
+			DataHash.reconnect[addIp] = true;
+			sys.callLater("delete DataHash.reconnect['"+addIp+"'];", 5);
+			}
         }
 
         massKick = function () {
@@ -11378,10 +11423,10 @@ poUser.lastMsg = sys.time()*1;
             return now;
         }
 
-        border = "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»:";
-        border2 = "<font color='mediumblue'><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»</font>";
-        border3 = "<font color='cornflowerblue'><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»</font>";
-        tour = "<font color=blue><timestamp/><b>«««««««««««««««««««««««»»»»»»»»»»»»»»»»»»»»»»»»</b></font>";
+        border = "\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB";
+        border2 = "<font color='mediumblue'><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</font>";
+        border3 = "<font color='cornflowerblue'><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</font>";
+        tour = "<font color=blue><timestamp/><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</b></font>";
         SMT_tourCounter = 0;
 
         sendMainTour = function () {
@@ -11731,11 +11776,6 @@ poUser.lastMsg = sys.time()*1;
         }
 
         objLength = function (obj) {
-            var type = Object.prototype.toString.call(obj);
-            if (type != "[object Object]") {
-                return obj.length;
-            }
-
             return Object.keys(obj).length;
         }
 
@@ -11885,13 +11925,17 @@ poUser.lastMsg = sys.time()*1;
                 cChan.tourAuth = {};
             }
 
-            if (cData.toursEnabled && cChan.tour == undefined) cChan.tour = new Tours(cChan.id);
+            if (cData.toursEnabled && cChan.tour == undefined) {
+			cChan.tour = new Tours(cChan.id);
+			}
         }
 
         ChannelDataManager.prototype.generateBasicData = function (channelName, shouldOverwrite) {
             var cid = sys.channelId(channelName);
-            if (JSESSION.channels(cid) == undefined || sys.channel(cid) == undefined) return "ERROR: No Channel"; /* No such channel. Probally called by /eval */
-
+            if (JSESSION.channels(cid) == undefined || sys.channel(cid) == undefined) {
+			return "ERROR: No Channel"; /* No such channel. Probally called by /eval */
+			}
+			
             var cData = this.channelData;
             var cChan = JSESSION.channels(cid);
 
@@ -11950,7 +11994,9 @@ poUser.lastMsg = sys.time()*1;
         ChannelDataManager.prototype.changeTopic = function (chan, topic, setter, defaultT) {
             var name = sys.channel(chan);
 
-            if (!name in this.channelData) this.generateBasicData(name);
+            if (!name in this.channelData) {
+			this.generateBasicData(name);
+			}
 
             var data = this.channelData[name];
             data.topic = topic;
@@ -11963,7 +12009,9 @@ poUser.lastMsg = sys.time()*1;
         ChannelDataManager.prototype.changeStatus = function (chan, perm, priv, sil) {
             var name = sys.channel(chan);
 
-            if (!name in this.channelData) this.generateBasicData(name);
+            if (!name in this.channelData) {
+			this.generateBasicData(name);
+			}
 
             var ddd = this.channelData[name];
 
@@ -11977,8 +12025,10 @@ poUser.lastMsg = sys.time()*1;
         ChannelDataManager.prototype.changeBans = function (chan, mutes, bans) {
             var name = sys.channel(chan);
 
-            if (!name in this.channelData) this.generateBasicData(name);
-
+            if (!name in this.channelData) {
+			this.generateBasicData(name);
+			}
+			
             var cdata = this.channelData[name];
 
             cdata.mutelist = JSON.stringify(mutes);
@@ -11989,7 +12039,9 @@ poUser.lastMsg = sys.time()*1;
         ChannelDataManager.prototype.changeToursEnabled = function (chan, e) {
             var name = sys.channel(chan);
 
-            if (!name in this.channelData) this.generateBasicData(name);
+            if (!name in this.channelData) {
+			this.generateBasicData(name);
+			}
 
             var name = sys.channel(chan);
             this.channelData[name].toursEnabled = e;
@@ -12002,6 +12054,19 @@ poUser.lastMsg = sys.time()*1;
 
         if (typeof cData == "undefined") {
             cData = new ChannelDataManager();
+			
+			var chanList = cData.channelData, x, c_chan, creator_id;
+			for (x in chanList) {
+			c_chan = chanList[x];
+			if (c_chan.perm && !sys.existChannel(x)) {
+			creator_id = sys.id(c_chan.creator);
+			if (creator_id == undefined) {
+			creator_id = 0;
+			}
+			sys.createChannel(x);
+			script.beforeChannelCreated(sys.channelId(x), x, creator_id);
+			}
+			}
         }
         else {
             if (typeof updateProto !== "undefined") {
@@ -12015,9 +12080,9 @@ poUser.lastMsg = sys.time()*1;
         },
             y;
 
-        mafiachan = makeChan("Mafia Channel");
+        mafiachan = makeChan("Mafia Channel");/*
         trivia = makeChan("Trivia");
-        trivreview = makeChan("Trivia Review");
+        trivreview = makeChan("Trivia Review");*/
         watch = makeChan("Watch");
         staffchannel = makeChan("Staff Channel");
         scriptchannel = makeChan("Eval Area");
@@ -12687,9 +12752,9 @@ poUser.lastMsg = sys.time()*1;
             "name": "default",
             "author": "Lutra",
             "styling": {
-                "header": "<font color=cornflowerblue><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»</b></font>",
-                "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»</b></font>",
-                "icon": "•",
+                "header": "<font color=cornflowerblue><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</b></font>",
+                "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</b></font>",
+                "icon": "\u2022",
                 "formatting": ["<b>", "</b>"],
                 "color": "green",
                 "message": "<b><font color='orangered'>The following commands need to be entered into a channel's main chat:</font></b>",
@@ -12701,9 +12766,9 @@ poUser.lastMsg = sys.time()*1;
             "name": "Green Daylight",
             "author": "TheUnknownOne",
             "styling": {
-                "header": "<font color=limegreen><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»<b></font><br/>",
-                "footer": "<br><font color=limegreen><b>»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»</b></font>",
-                "icon": "<font color=orange>•</font>",
+                "header": "<font color=limegreen><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB<b></font><br/>",
+                "footer": "<br><font color=limegreen><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</b></font>",
+                "icon": "<font color=orange>\u2022</font>",
                 "formatting": ["<b>", "</b>"],
                 "color": "green",
                 "message": "<i>Enter the following commands into a channel prefixed '/'. For help with arguments, type in /arglist.</i>",
@@ -13965,7 +14030,7 @@ poUser.lastMsg = sys.time()*1;
         cache.sic("allowicon", false);
         cache.sic("implock", true);
         cache.sic("motd", false);
-        cache.sic("evallock", true);
+        cache.sic("evallock", false);
         cache.sic("AutoStartTours", false);
         cache.sic("AutoKick", true);
         cache.sic("AutoMute", true);
