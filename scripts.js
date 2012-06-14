@@ -12,7 +12,7 @@
 || # Lamperi, Mystra                                       # ||
 || #                                                       # ||
 || # Script Version:                                       # ||
-|| # 2.2.50 Pre-Stable                                     # ||
+|| # 2.2.50                                                # ||
 || #                                                       # ||
 || # Server Requirements:                                  # ||
 || # 1.0.53                                                # ||
@@ -34,7 +34,6 @@
 || # http://creativecommons.org/licenses/by-nc-sa/3.0/     # ||
 || #                                                       # ||
 || ######################################################### ||
-
 ===============================================================
 ||                     Config Chart                          ||
 ===============================================================
@@ -60,6 +59,10 @@
 || - this on.                                                ||
 || - true = yes. false = no                                  ||
 ===============================================================
+|| @ AutoBans:                                               ||
+|| - Automaticly bans certain proxies and troublesome users. ||
+|| - true = yes. false = no                                  ||
+===============================================================
 || @ ClearLogsAt:                                            ||
 || - If file size of logs.txt is higher than given size      ||
 || - Cleans all data. Gets checked every hour. 0 = off       ||
@@ -76,7 +79,7 @@
 \*===========================================================*/
 
 EvaluationTimeStart = new Date().getTime(); /* Do not modify this! This is only to count load speed! */
-ScriptVerData = ["2.2.50", "Pre-Stable"];
+ScriptVerData = ["2.2.50", ""];
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
@@ -91,7 +94,8 @@ Config = {
     AutoChannelJoin: true,
     WelcomeMessages: false,
     Superimping: false,
-	FixChallenges: false,
+    FixChallenges: false,
+    AutoBans: true,
 
     ClearLogsAt: 36700160,
     HighPermission: {
@@ -119,6 +123,9 @@ RECOVERY_BACKUP = {};
 if (typeof script != "undefined") {
     for (var x in script) {
         RECOVERY_BACKUP[x] = script[x];
+    }
+    if (typeof x !== "undefined") {
+        delete x;
     }
 }
 
@@ -219,7 +226,7 @@ FormatError = function (mess, e) {
         mess += ".";
     }
 
-    if (typeof e.format !== 'undefined') {
+    if (typeof e.format !== 'undefined') { /* throw */
         return mess + " Custom Error: " + e;
     }
 
@@ -241,13 +248,13 @@ ChannelLink = function (channel) {
         return "";
     }
 
-    return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
+    return "<a href='po:join/" + channel + "' style='font-weight: none;'>#" + channel + "</a>";
 }
 
 ChannelNames = function () {
     var channelIds = sys.channelIds(),
         channelNames = [],
-		x;
+        x;
     for (x in channelIds) {
         channelNames.push(sys.channel(channelIds[x]));
     }
@@ -277,7 +284,7 @@ addChannelLinks = function (line2) {
             }
         });
         if (longestName !== "") {
-            html = "<a href=\"po:join/%1\">#%2</a>".format(longestName, longestChannelName);
+            html = "<a href=\"po:join/" + longestName + "\" style=\"font-weight: none;\">#" + longestChannelName + "</a>";
             line = line.replaceBetween(pos - 1, longestName.length + 1, html);
             pos += html.length - 1;
             longestName = "";
@@ -304,8 +311,8 @@ fileLen = function (file) {
 sTB = function (bytes) {
     var sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
     if (bytes == 0) {
-	return '0 bytes';
-	}
+        return '0 bytes';
+    }
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
     if (i == 0) {
         return (bytes / Math.pow(1024, i)) + ' ' + sizes[i];
@@ -316,15 +323,17 @@ sTB = function (bytes) {
 clearlogs = function () {
     var l = Config.ClearLogsAt;
     if (l == 0) {
-	return;
-	}
+        return;
+    }
 
-    var len = fileLen("logs.txt");
-	if (len == undefined || len == 0) {
-	Config.ClearLogsAt = 0; /* Linux and Mac */
-	return;
-	}
-	
+    try {
+        var len = fileLen("logs.txt");
+    }
+    catch (e) { /* Linux, Mac */
+        Config.ClearLogsAt = 0;
+        return;
+    }
+
     if (len > l) {
         botAll("The file logs.txt contains " + sTB(len) + ", which is more than given maximum (" + sTB(l) + "). Clearing file.", 0);
         sys.writeToFile("logs.txt", "");
@@ -361,37 +370,24 @@ function POUser(id) {
         this.macro = ["%m1", "%m2", "%m3", "%m4", "%m5"];
         return;
     }
+    var dh = DataHash;
 
-    if (DataHash.mutes !== undefined) {
-        var d = DataHash.mutes;
-        this.muted = d.hasOwnProperty(this.ip);
+    var d = dh.mutes;
+    this.muted = d.hasOwnProperty(this.ip);
+
+    this.megauser = dh.megausers.hasOwnProperty(mn_lc);
+
+    var i = dh.rankicons;
+
+    if (i.hasOwnProperty(mn_lc)) {
+        this.icon = i[mn_lc];
     }
 
-    if (DataHash.megausers !== undefined) {
-        this.megauser = DataHash.megausers.hasOwnProperty(mn_lc);
-    }
+    i = dh.voices;
+    this.voice = i.hasOwnProperty(mn_lc);
 
-    var i, dh = DataHash;
-
-    if (dh.rankicons !== undefined) {
-        i = dh.rankicons;
-        if (i.hasOwnProperty(mn_lc)) {
-            this.icon = i[mn_lc];
-        }
-        else {
-            this.icon = undefined;
-        }
-    }
-
-    if (dh.voices !== undefined) {
-        i = dh.voices;
-        this.voice = i.hasOwnProperty(mn_lc);
-    }
-
-    if (dh.macros !== undefined) {
-        i = dh.macros;
-        this.macro = i.hasOwnProperty(mn_lc) ? i[mn_lc] : ["%m1", "%m2", "%m3", "%m4", "%m5"];
-    }
+    i = dh.macros;
+    this.macro = i.hasOwnProperty(mn_lc) ? i[mn_lc] : ["%m1", "%m2", "%m3", "%m4", "%m5"];
 
 }
 
@@ -1124,8 +1120,8 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
 
     botEscapeAll(sys.name(src) + " left the tournament!", 0);
     if (this.tourmode == 2 && this.players[name2].couplesid != -1) {
-	this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
-	}
+        this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
+    }
 
     delete this.players[name2];
 
@@ -1205,7 +1201,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         sys.sendMessage(src, "", chan);
     }
 
-	sys.sendMessage(src, chan);
+    sys.sendMessage(src, "", chan);
     sys.sendHtmlMessage(src, style.footer, chan);
     return;
 }
@@ -1276,11 +1272,11 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
         pNum = indexThingy[0] == playerN;
         delete this.roundStatus.idleBattlers[indexOfIdle];
         if (pNum) {
-		this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [swittchN, indexThingy[1]];
-		}
+            this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [swittchN, indexThingy[1]];
+        }
         else {
-		this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [indexThingy[0], switchN];
-		}
+            this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [indexThingy[0], switchN];
+        }
     }
 
     this.players[parts[1]] = obj;
@@ -1298,8 +1294,13 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
         this.border();
     }
     else {
+
+        parts = parts.map(function (pname) {
+            return '<b color="' + script.namecolor(sys.id(pname)) + '">' + pname.name() + '</b>';
+        });
+
         var spots = this.tourmode == 1 ? "<br><b>" + this.tourSpots() + "</b> more spot(s) left!" : '';
-        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + parts[0] + " was switched with " + parts[1] + " by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", this.id);
+        sys.sendHtmlAll("<table><tr><td><hr width='300'><center>" + parts[0] + " was switched with " + parts[1] + " by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", this.id);
     }
 }
 
@@ -1343,8 +1344,8 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
         this.border();
     }
     else {
-        var spots = this.tourmode == 1 ? "<br><b>" + this.tourSpots() + "</b> more spot(s) left!" : '';
-        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + commandData + " was added to the Tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", this.id);
+        var spots = this.tourmode == 1 ? "<br/><b>" + this.tourSpots() + "</b> more spot(s) left!" : '';
+        sys.sendHtmlAll("<table><tr><td><hr width='300'><center><b style='" + script.namecolor(sys.id(commandData)) + "'>" + commandData.name() + "</b> was added to the Tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots + "</center><hr width='300'></td></tr></table>", this.id);
     }
 
     if (this.tourmode == 1 && this.tourSpots() == 0) {
@@ -1371,12 +1372,14 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
         botMessage(src, "This player is not in the tournament", this.id);
         return;
     }
-    var startername = sys.id(name) != undefined ? sys.name(sys.id(name)) : name.name();
+    var startername = name.name();
     var bIndex = this.isBattling(startername);
+
     if (bIndex === false) {
         botMessage(src, "Either this player is through the next round, or his/her battle hasn't begon yet.", this.id);
         return;
     }
+
     delete this.roundStatus.startedBattles[bIndex];
 
     if (display == 1) {
@@ -1387,7 +1390,7 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
         this.border();
     }
     else {
-        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + startername + " can forfeit their battle and rematch now." + "</center>" + "<hr width='300'>" + "</td>" + "</tr>" + "</table>", this.id);
+        sys.sendHtmlAll("<table><tr><td><hr width='300'><center><b style='color: " + script.namecolor(sys.id(startername)) + "'>" + startername + "</b> can forfeit their battle and rematch now.</center><hr width='300'></td></tr></table>", this.id);
     }
     return;
 }
@@ -1480,8 +1483,8 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
         this.white();
     }
     else {
-        var prize = !isEmpty(this.prize) ? '<b>Prize:</b> ' + this.prize + '<br>' : ''
-        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "A Tournament was started by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!<br>" + "<b>Players:</b> " + this.tournumber + " <br>" + "<b>Type:</b> " + this.identify(cp) + " <br>" + "<b>Tier:</b> " + this.tourtier + " <br>" + prize + "Type <b style='color:green'>/Join</b> to join the Tournament!" + "</center>" + "<hr width='300'>" + "</td>" + "</tr>" + "</table>", this.id);
+        var prize = !isEmpty(this.prize) ? '<b style="color: brown;">Prize:</b> ' + this.prize + '<br/>' : '';
+        sys.sendHtmlAll("<table><tr><td><hr width='300'><center>A Tournament was started by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>! <br/> <b style='color:red'>Players:</b> " + this.tournumber + " <br/> <b style='color: blue;'>Type:</b> " + this.identify(cp) + " <br/> <b style='color: orange;'>Tier:</b> " + this.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!</center><hr width='300'></td></tr></table>", this.id);
     }
 
     this.startTime = sys.time() * 1;
@@ -1513,7 +1516,7 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
             return;
         }
 
-        if (count % 2 == 0) {
+        if (count % 2 != 0) {
             botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12]", this.id)
             return;
         }
@@ -1534,7 +1537,7 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
         this.border();
     }
     else {
-        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> changed the numbers of entrants to " + count + "!" + "<b>" + this.tourSpots() + "</b> more spot(s) left!" + "</center>" + "<hr width='300'>" + "</td>" + "</tr>" + "</table>", this.id);
+        sys.sendHtmlAll("<table><tr><td><hr width='300'><center><b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> changed the numbers of entrants to " + count + "!<br/><b>" + this.tourSpots() + "</b> more spot(s) left!</center><hr width='300'></td></tr></table>", this.id);
     }
 
     if (this.tourSpots() == 0) {
@@ -1562,12 +1565,12 @@ Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
             this.border();
         }
         else {
-            sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "The Tournament was cancelled by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", this.id);
+            sys.sendHtmlAll("<table><tr><td><hr width='300'><center>The Tournament was cancelled by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!</center><hr width='300'></td></tr></table>", this.id);
         }
         return;
     }
 
-    botMessage(src, "You are unable to end the Tournament because it is not currently running.", this.id);
+    botMessage(src, "You are unable to end the tournament because it is not currently running.", this.id);
 }
 
 Tours.prototype.clearVariables = function () {
@@ -1765,7 +1768,7 @@ Tours.prototype.roundPairing = function () {
     }
 
     for (a in tempplayers) {
-		if (objLength(tempplayers) == 1) {
+        if (objLength(tempplayers) == 1) {
             break;
         }
 
@@ -1778,7 +1781,7 @@ Tours.prototype.roundPairing = function () {
             x2 = this.randomPlayer(tempplayers);
             name2 = this.playerName(tempplayers, x2);
             n2tl = name2.toLowerCase();
-            delete tempplayers[n2tl];			
+            delete tempplayers[n2tl];
 
         }
         else {
@@ -1793,11 +1796,11 @@ Tours.prototype.roundPairing = function () {
             delete tempplayers[n2tl];
         }
 
-            this.couples[i] = [name1, name2];
-            this.players[n1tl].couplesid = i;
-            this.players[n2tl].couplesid = i;
-            this.players[n1tl].couplenum = 0;
-            this.players[n2tl].couplenum = 1;
+        this.couples[i] = [name1, name2];
+        this.players[n1tl].couplesid = i;
+        this.players[n2tl].couplesid = i;
+        this.players[n1tl].couplenum = 0;
+        this.players[n2tl].couplenum = 1;
 
         if (!this.AutoStartBattles) {
             this.roundStatus.idleBattles[i] = [name1, name2];
@@ -1846,8 +1849,8 @@ Tours.prototype.isInTourneyId = function (id) {
 Tours.prototype.tourOpponent = function (nam) {
     var name = nam.toLowerCase();
     if (this.players[name].couplesid == -1) {
-	return "";
-	}
+        return "";
+    }
     var namenum = this.players[name].couplenum,
         id = this.players[name].couplesid;
     namenum = namenum == 0 ? 1 : 0;
@@ -1874,10 +1877,10 @@ Tours.prototype.afterBattleStarted = function (src, dest) {
                 n2 = sys.name(dest);
             if (sys.tier(src) == sys.tier(dest) && cmp(sys.tier(src), this.tourtier)) {
                 var idleBattleIndex = this.idleBattler(n1);
-				if (this.roundStatus.idleBattles[idleBattleIndex] != undefined) {
-                delete this.roundStatus.idleBattles[idleBattleIndex];
-                this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [n1, n2];
-				}
+                if (this.roundStatus.idleBattles[idleBattleIndex] != undefined) {
+                    delete this.roundStatus.idleBattles[idleBattleIndex];
+                    this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [n1, n2];
+                }
                 if (!this.finals) botAll("Round " + this.roundnumber + " Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
                 else botAll("Final Round Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
             }
@@ -1896,11 +1899,11 @@ Tours.prototype.tie = function (src, dest) {
     }
     else {
         var startedBattleIndex = this.isBattling(s);
-		if (startedBattleIndex != false) {
-        delete this.roundStatus.startedBattles[startedBattleIndex];
-        this.roundStatus.idleBattles[objLength(this.roundStatus.idleBattles)] = [s, d];
+        if (startedBattleIndex != false) {
+            delete this.roundStatus.startedBattles[startedBattleIndex];
+            this.roundStatus.idleBattles[objLength(this.roundStatus.idleBattles)] = [s, d];
+        }
     }
-	}
 }
 
 Tours.prototype.afterBattleEnded = function (src, dest, desc) {
@@ -1926,8 +1929,8 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
         var stuffSBIndex = this.isBattling(src);
         stuff.winLose[objLength(stuff.winLose)] = [src, dest];
         if (stuffSBIndex !== false) {
-		delete stuff.ongoingBattles[stuffSBIndex];
-		}
+            delete stuff.ongoingBattles[stuffSBIndex];
+        }
 
         delete this.players[destTL];
         delete this.couples[this.players[srcTL].couplesid];
@@ -1984,11 +1987,11 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
 
             var stuff = this.roundStatus;
             var stuffSBIndex = this.isBattling(src);
-            
-        stuff.winLose[objLength(stuff.winLose)] = [src, dest];
-        if (stuffSBIndex !== false) {
-		delete stuff.ongoingBattles[stuffSBIndex];
-		}
+
+            stuff.winLose[objLength(stuff.winLose)] = [src, dest];
+            if (stuffSBIndex !== false) {
+                delete stuff.ongoingBattles[stuffSBIndex];
+            }
             delete this.players[loserTL];
             delete this.couples[this.players[winnerTL].couplesid];
             this.players[winnerTL].couplesid = -1;
@@ -2033,14 +2036,14 @@ Tours.prototype.randomPlayer = function (hash, team) {
     var rand = sys.rand(0, ol);
 
     if (!this.tagteam_tour()) {
-	return rand;
-	}
+        return rand;
+    }
 
     var h = this.hashOf(hash, rand);
     if (h == undefined) return "";
 
     while (h.team != team) {
-	rand = sys.rand(0, ol);
+        rand = sys.rand(0, ol);
         h = this.hashOf(hash, rand);
     }
 
@@ -2385,11 +2388,11 @@ JSESSION.refill();
         if (typeof DataHash.teamSpammers == "undefined") {
             DataHash.teamSpammers = {};
         }
-		
- if (typeof DataHash.reconnect == "undefined") {
+
+        if (typeof DataHash.reconnect == "undefined") {
             DataHash.reconnect = {};
         }
-		
+
         Clantag = {};
         Clantag.full = ClanTag;
         Clantag.fullText = removespaces(Clantag.full.replace(/[\[\]\{\}]/gi, ""));
@@ -2468,7 +2471,7 @@ JSESSION.refill();
             return;
         }
 
-        if ((c === watch || c === staffchannel || c === trivreview)) {
+        if ((c === watch || c === staffchannel /* || c === trivreview*/ )) {
             botMessage(src, "The access to that channel is restricted!");
             sys.stopEvent();
             return;
@@ -2478,7 +2481,7 @@ JSESSION.refill();
     beforeChannelDestroyed: function (channel) {
         var ch = JSESSION.channels(channel);
         var c = sys.channel(channel);
-        if (channel == trivia || channel == watch || channel == scriptchannel || channel == staffchannel || channel == mafiachan || ch.perm) {
+        if ( /*channel == trivia || */ channel == watch || channel == scriptchannel || channel == staffchannel || channel == mafiachan || ch.perm) {
             sys.stopEvent();
             return;
         }
@@ -2632,12 +2635,12 @@ Trivia.start();
 
         script.resolveLocation(src, myIp, false);
 
-	if (DataHash.reconnect[myIp] != undefined) {
-	testNameKickedPlayer = src;
-	sys.stopEvent();
-	return;
-	}
-	
+        if (DataHash.reconnect[myIp] != undefined) {
+            testNameKickedPlayer = src;
+            sys.stopEvent();
+            return;
+        }
+
         if (script.testName(src)) {
             testNameKickedPlayer = src;
             sys.stopEvent();
@@ -2801,13 +2804,8 @@ Trivia.start();
             var topic = chan.topic,
                 tsetter = chan.topicsetter;
             var dbAuth = sys.dbAuth(tsetter);
-            if (allowicon) {
-                var auth = dbAuth == undefined ? "lvl0" : dbAuth;
-                topic = format(auth, topic);
-                if (dbAuth != undefined && dbAuth < 0) topic = html_escape(topic);
-            }
-            else {
-                if (dbAuth != undefined && dbAuth < 0) topic = html_escape(topic);
+            if (dbAuth != undefined && dbAuth < 0) {
+                topic = html_escape(topic);
             }
             sys.sendHtmlMessage(src, "<font color=orange><timestamp/><b>Welcome Message:</b></font> " + topic, channel);
             if (tsetter != '') {
@@ -2883,7 +2881,7 @@ Trivia.start();
                 }
             }
         }
-
+/*
         if (channel === trivreview) {
             var triv_rev_count = Trivia.reviewCount(),
                 s = "are",
@@ -2895,7 +2893,7 @@ Trivia.start();
                 }
                 botMessage(src, "There " + s + " " + triv_rev_count + " question" + s2 + " to review. Type /review for a full list.");
             }
-        }
+        }*/
 
     },
 
@@ -3244,7 +3242,9 @@ poUser.lastMsg = sys.time()*1;
             return;
         }
 
-        if (poUser.muted && !host) {
+        var isRules = hasCommandStart(message) && message.substr(1, 6) == "rules";
+
+        if (poUser.muted && !host && !isRules) {
             prune_mutes();
             if (!DataHash.mutes.hasOwnProperty(ip)) {
                 botMessage(src, "You are no longer muted.", chan);
@@ -3272,7 +3272,7 @@ poUser.lastMsg = sys.time()*1;
             }
         }
 
-        if (poChan.isMutedInChannel(ip) && !host) {
+        if (poChan.isMutedInChannel(ip) && !host && !isRules) {
             prune_channel_mutes(chan);
             if (!poChan.isMutedInChannel(ip)) {
                 botMessage(src, "You are no longer muted in " + sys.channel(chan) + ".", chan);
@@ -3421,8 +3421,9 @@ poUser.lastMsg = sys.time()*1;
                     if (poChan.toursEnabled) {
                         ct.register("tourcommands", "Displays the Tournament commands.");
                     }
+/*
                     ct.register("triviacommands", "Displays the Trivia Commands.");
-
+					*/
                     if (!noPermission(src, 1)) {
                         ct.register(removespaces(ModName).toLowerCase() + "commands", "Displays the " + ModName + " commands.");
                     }
@@ -3492,7 +3493,7 @@ poUser.lastMsg = sys.time()*1;
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
-
+/*
                 triviacommands: function () {
                     var ct = new Command_Templater('Trivia Commands', true);
                     ct.span("Trivia " + UserName + " Commands");
@@ -3519,7 +3520,7 @@ poUser.lastMsg = sys.time()*1;
 
                     ct.register(style.footer);
                     ct.render(src, chan);
-                },
+                },*/
 
                 messagecommands: function () {
                     var ct = new Command_Templater('Messaging Commands', true);
@@ -3592,7 +3593,7 @@ poUser.lastMsg = sys.time()*1;
                     t.register(arg("orange", "Specify a number"));
                     t.register(arg("purple", "Specify some text"));
                     t.register(arg("blue", "Select one of the given choices"));
-                    t.register(arg("blueviolet", "Specify a time unit that starts with the following: s (second), m (minute), h (hour), d (day), w (week), mo (month), y (year), de (decade). The default is second if none specified"));
+                    t.register(arg("blueviolet", "Specify a time unit that starts with the following: s (second), m (minute), h (hour), d (day), w (week), mo (month), y (year), de (decade). The default is minutes if none specified"));
                     t.register(arg("green", "Specify a player in the channels tournament") + "<br/>");
                     t.register("Any argument with an <u>underline</u> is optional.");
                     t.register(style.footer);
@@ -3752,7 +3753,7 @@ poUser.lastMsg = sys.time()*1;
                     var x;
 
                     for (x in DataHash.league.gym) {
-                        t.register("<b>"+x+"</b>. "+playerInfo(DataHash.league.gym[x]));
+                        t.register("<b>" + x + "</b>. " + playerInfo(DataHash.league.gym[x]));
                     }
 
                     if (!gyms0) {
@@ -3762,7 +3763,7 @@ poUser.lastMsg = sys.time()*1;
                     t.span("Elite Four");
 
                     for (x in DataHash.league.elite) {
-                        t.register("<b>"+x+"</b>. "+playerInfo(DataHash.league.elite[x]));
+                        t.register("<b>" + x + "</b>. " + playerInfo(DataHash.league.elite[x]));
                     }
 
                     if (!elite0) {
@@ -4070,7 +4071,10 @@ poUser.lastMsg = sys.time()*1;
 
                     t.register("The Bot Name is " + Bot.bot.bold().fontcolor(Bot.botcolor) + "</i>.");
                     t.register("The Server Chat Name is " + Server.name.bold().fontcolor(Server.color) + "</i>.");
-                    t.register("The Clantag is " + ClanTag == "" ? "None" : ClanTag.bold() + ".");
+
+                    if (ClanTag != "" && ClanTag != "None") {
+                        t.register("The Clan tag is " + ClanTag.bold() + ".");
+                    }
 
                     t.register(style.footer);
                     t.render(src, chan);
@@ -4079,23 +4083,24 @@ poUser.lastMsg = sys.time()*1;
                 rules: function () {
                     var t = new Templater(servername + ' Rules');
 
-                    t.register("<b>1</b>) Do not spam or overuse CAPS. This is both a rule, and a warning. The CAPSBot will (if the " + servername + " Authority have not done yet so) mute you, along with any other spammers.");
-                    t.register("<b>2</b>) Do not flood or spam the chat. Once again, this is both a rule, and a warning.");
+                    t.register("<b>1</b>) Do not spam or overuse CAPS. The bots can mute you for it.");
+                    t.register("<b>2</b>) Do not flood or spam the chat. The bots can kick you for it.");
                     t.register("<b>3</b>) Do not complain about hax. It's part of the game.");
-                    t.register("<b>4</b>) Do not time stall in a battle. 'Time Stalling' means you wait until your opponent forfeit's by not making moves. If you are absent for a couple of minutes, say so.");
+                    t.register("<b>4</b>) Do not time stall in a battle. 'Time Stalling' means you wait until your opponent forfeits by not making moves. If you are absent for a couple of minutes, say so.");
                     t.register("<b>5</b>) Do not troll. This is very, very annoying. Doing this will get you kicked, muted, or banned, on sight.");
-                    t.register("<b>6</b>) Do not flame, insult, or make racist comments. These can be very insulting to people.");
-                    t.register("<b>7</b>) Absolutely no cyber bullying at all.");
-                    t.register("<b>8</b>) Do not advertise Servers/Clans/Forums/Youtube Channels/Sites. Links like pictures and videos are Ok, most of the time.");
-                    t.register("<b>9</b>) No Obscene, Pornographic, or illegal content. This will be an instant ban in most cases.");
-                    t.register("<b>10</b>) Do not ask to be Server Authority<font size=2>(Exception: Being Authority before a Server Reset)</font>. Doing this will basically ruin your chances to ever be one.");
+                    t.register("<b>6</b>) Do not flame or insult. People don't like this.");
+                    t.register("<b>7</b>) No sexism, racism, or anything similar to it is allowed.");
+                    t.register("<b>8</b>) Do not advertise. Links like pictures and videos are Ok when they dont break the other rules.");
+                    t.register("<b>9</b>) No obscene, pornographic, or illegal content. This will be an instant ban in most cases.");
+                    t.register("<b>10</b>) Do not ask to be auth. Doing this will basically ruin your chances to ever be one.");
                     t.register("<b>11</b>) Do not mini-moderate. Mini-Moderating means you act like a Moderator, while your not. Contact an Authority instead.");
-                    t.register("<b>12</b>) Do not Ban Evade. Doing so will result in an instant ban, or rangeban.");
+                    t.register("<b>12</b>) Do not ban evade. Doing so will result in an instant ban, or rangeban.");
                     t.register("<b>13</b>) Do not blackmail. This will result in an instant mute/ban/rangeban.");
-                    t.register("<b>14</b>) Do not complain or brag. This can cause big arguments, not exactly what we want.");
+                    t.register("<b>14</b>) Do not complain or brag.");
 
-                    t.register("<br/><i>The owners of " + servername + " have the right to change the rules at <u>any</u> time without notification.</i>");
-                    t.register("<i>The authority of " + servername + " <u>do not</u> have to apply these rules if wanted.");
+                    t.register("<br/><i>The authority of " + servername + " <u>do not</u> have to apply these rules.</i>");
+                    t.register("<i>If the authority of " + servername + " think it is necessary to punish someone, then they are allowed to do so.</i>");
+                    t.register("<br/>These rules may be changed at any time without notification.");
 
                     t.register(style.footer);
                     t.render(src, chan);
@@ -4808,6 +4813,7 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 /* -- User Commands: Trivia */
+/*
                 a: function () {
                     if (sendChanError(src, chan, trivia)) return;
 
@@ -4833,6 +4839,7 @@ poUser.lastMsg = sys.time()*1;
 
                     Trivia.viewQuestion(src, commandData);
                 },
+				*/
 
                 /* -- User Commands: Messaging */
                 me: function () {
@@ -5099,7 +5106,8 @@ poUser.lastMsg = sys.time()*1;
                         ct.register("channelkick", ["{r Person}", "{p <u>Reason</u>}"], "Kicks someone from this channel.");
                         ct.register("channelmute", ["{or Person}", "<u>{o Time}</u>", "{bv <u>Time Unit</b>}", "<u>{p Reason}</u>"], "Mutes someone in this Channel.");
                         ct.register("channelunmute", ["{or Person}", "<u>{p Reason}</u>"], "Unmutes someone in this channel.");
-                        ct.register("topic", ["{p Message}"], "Changes the Channel Topic. If message is default, changes the Topic back to it's default.");
+                        ct.register("invite", ["{r Player}"], "Invites someone to this channel.");
+						ct.register("topic", ["{p Message}"], "Changes the Channel Topic. If message is default, changes the Topic back to it's default.");
                         ct.register("cbanlist", "Displays Channel Banlist.");
                         ct.register("cmutelist", "Displays Channel Mutelist.");
                         ct.register("csilence", "Silences everyone who's Channel Authority is lower than yours.");
@@ -5379,10 +5387,10 @@ poUser.lastMsg = sys.time()*1;
                     var color = script.namecolor(src);
                     var srcname = sys.name(src)
 
-                    sys.sendHtmlAll(border2 + "<br>", chan);
+                    sys.sendHtmlAll(darkBorder + "<br>", chan);
                     var l = allowicon === true ? rankico : '';
                     sys.sendHtmlAll('<font color=' + script.namecolor(src) + '><timestamp/><b>' + l + html_escape(sys.name(src)) + ':</font></b> ' + commandData, chan);
-                    sys.sendHtmlAll("<br>" + border2, chan);
+                    sys.sendHtmlAll("<br>" + darkBorder, chan);
                 },
 
                 channelwall: function () {
@@ -5394,7 +5402,7 @@ poUser.lastMsg = sys.time()*1;
                     var color = script.namecolor(src);
                     var srcname = sys.name(src)
 
-                    sys.sendHtmlAll(border2 + "<br>", chan);
+                    sys.sendHtmlAll(darkBorder + "<br>", chan);
 
                     var l = '',
                         send = sys.sendAll,
@@ -5407,7 +5415,7 @@ poUser.lastMsg = sys.time()*1;
                     var displaystr = allowicon === true ? '<font color=' + script.namecolor(src) + '><timestamp/><b>' + l + html_escape(sys.name(src)) + ':</font></b> ' + f : sys.name(src) + ': ' + f
 
                     send(displaystr, chan);
-                    sys.sendHtmlAll("<br>" + border2, chan);
+                    sys.sendHtmlAll("<br>" + darkBorder, chan);
                 },
 
                 /* -- Channel Commands: HTML -- */
@@ -5592,9 +5600,10 @@ poUser.lastMsg = sys.time()*1;
                         botMessage(src, "The topic may not be over 500 characters.", chan);
                         return;
                     }
+					
                     poChan.changeTopic(src, commandData, fullCommand);
                     if (commandData != "") {
-                        cData.changeTopic(chan, commandData, false);
+                        cData.changeTopic(chan, commandData, sys.name(src), false);
                     }
                 },
 
@@ -5703,7 +5712,9 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
 
-                    if (poChan.tour != undefined && !poChan.toursEnabled) poChan.toursEnabled = true;
+                    if (poChan.tour != undefined && !poChan.toursEnabled) {
+					poChan.toursEnabled = true;
+					}
 
                     if (poChan.toursEnabled) {
                         botMessage(src, "Tours are already installed!", chan);
@@ -5754,6 +5765,27 @@ poUser.lastMsg = sys.time()*1;
                     cData.changeToursEnabled(chan, false);
                 },
 
+				/* -- Channel Commands: Invite */
+				invite: function () {
+                    if (!poChan.isChanMod(src) && noPermission(src, 1)) {
+                        noPermissionMessage(src, fullCommand, chan);
+                        return;
+                    }
+                    if (tar == undefined) {
+                        botMessage(src, "That person doesn't exist.", chan);
+                        return;
+                    }
+					
+					if (sys.isInChannel(tar, chan)) {
+					botMessage(src, "That person is already in this channel.", chan);
+					return;
+					}
+					
+                    sys.putInChannel(tar, chan);
+					botMessage(tar, sys.name(src)+" invited you to "+sys.channel(chan)+"! <ping/>", chan);
+					botMessage(src, sys.name(tar)+" was invited.");
+                },
+				
                 /* -- Channel Commands: Ban */
                 channelban: function () {
                     if (!poChan.isChanAdmin(src) && noPermission(src, 2)) {
@@ -5765,15 +5797,15 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
                     if (poChan.isBannedInChannel(dbIp)) {
-                        botMessage(src, 'That person is already Channel Banned.', chan);
+                        botMessage(src, 'That person is already channel banned.', chan);
                         return;
                     }
                     if (!poChan.canIssue(src, mcmd[0])) {
-                        botMessage(src, 'That person has either equal or higher Channel Auth than you.'.chan);
+                        botMessage(src, 'That person has either equal or higher channel auth than you.'.chan);
                         return;
                     }
                     if (self(src, mcmd[0])) {
-                        botMessage(src, 'You cannot Channel Ban yourself.', chan);
+                        botMessage(src, 'You cannot channel ban yourself.', chan);
                         return;
                     }
 
@@ -5838,7 +5870,7 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
                     if (!poChan.canIssue(src, commandData)) {
-                        botMessage(src, 'That person has either equal or higher Channel Authority than you.', chan);
+                        botMessage(src, 'That person has either equal or higher channel authority than you.', chan);
                         return;
                     }
                     if (tar == undefined) {
@@ -5846,11 +5878,11 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
                     if (self(src, mcmd[0])) {
-                        botMessage(src, 'You can\'t Channel Kick yourself.', chan);
+                        botMessage(src, "You cannot channel kick yourself.", chan);
                         return;
                     }
                     if (!sys.isInChannel(tar, chan)) {
-                        botMessage(src, "That person isn't in this Channel.", chan);
+                        botMessage(src, "That person isn't in this channel.", chan);
                         return;
                     }
                     botEscapeAll(sys.name(tar) + " has been kicked in this channel by " + sys.name(src) + "!", chan);
@@ -6068,9 +6100,11 @@ poUser.lastMsg = sys.time()*1;
 
                     if (cmdlc == 'on' && !AutoStartTours) {
                         if (display == 1) {
-                            sendMainTour();
+                            sys.sendHtmlAll(tour, 0);
+                            sys.sendAll("", 0);
                             botEscapeAll(sys.name(src) + " turned on auto start tours.", 0);
-                            sendMainTour();
+                            sys.sendAll("", 0);
+                            sys.sendHtmlAll(tour, 0);
                         }
                         else {
                             sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "<center>" + "<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned on auto start tours." + "</center>" + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", 0);
@@ -6082,9 +6116,11 @@ poUser.lastMsg = sys.time()*1;
 
                     if (cmdlc == 'off' && AutoStartTours) {
                         if (display == 1) {
-                            sendMainTour();
+                            sys.sendHtmlAll(tour, 0);
+                            sys.sendAll("", 0);
                             botEscapeAll(sys.name(src) + " turned off auto start tours.", 0);
-                            sendMainTour();
+                            sys.sendAll("", 0);
+                            sys.sendHtmlAll(tour, 0);
                         }
                         else {
                             sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "<center>" + "<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned off auto start tours." + "</center>" + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", 0);
@@ -6099,7 +6135,6 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 /* -- Tour Commands: Switch -- */
-
                 'switch': function () {
                     poChan.tour.command_switch(src, commandData, fullCommand);
                 },
@@ -6524,6 +6559,7 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 /* -- Mod Commands: Trivia -- */
+/*
                 start: function () {
                     if (sendChanError(src, chan, trivia)) return;
 
@@ -6547,23 +6583,24 @@ poUser.lastMsg = sys.time()*1;
 
                     Trivia.skipRound(src);
                 },
+				*/
 
                 /* -- Mod Commands: Wall -- */
                 htmlwall: function () {
                     var color = script.namecolor(src);
                     var srcname = sys.name(src)
 
-                    sys.sendHtmlAll(border2 + "<br>");
+                    sys.sendHtmlAll(darkBorder + "<br>");
                     var l = allowicon === true ? rankico : '';
                     sys.sendHtmlAll('<font color=' + script.namecolor(src) + '><timestamp/><b>' + l + html_escape(sys.name(src)) + ':</font></b> ' + commandData);
-                    sys.sendHtmlAll("<br>" + border2);
+                    sys.sendHtmlAll("<br>" + darkBorder);
                 },
 
                 wall: function () {
                     var color = script.namecolor(src);
                     var srcname = sys.name(src)
 
-                    sys.sendHtmlAll(border2 + "<br>");
+                    sys.sendHtmlAll(darkBorder + "<br>");
 
                     var l = allowicon === true ? rankico : '';
                     var send = allowicon === true ? sys.sendHtmlAll : sys.sendAll
@@ -6571,7 +6608,7 @@ poUser.lastMsg = sys.time()*1;
                     var displaystr = allowicon === true ? '<font color=' + script.namecolor(src) + '><timestamp/><b>' + l + html_escape(sys.name(src)) + ':</font></b> ' + f : sys.name(src) + ': ' + f
 
                     send(displaystr);
-                    sys.sendHtmlAll("<br>" + border2);
+                    sys.sendHtmlAll("<br>" + darkBorder);
                 },
 
                 /* -- Mod Commands: Silence -- */
@@ -6852,9 +6889,9 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Mod Commands: Kick -- */
                 kick: function () {
-				var tarid = sys.id(mcmd[0]);
+                    var tarid = sys.id(mcmd[0]);
                     var tn = sys.name(tarid);
-                    if (sys.maxAuth(dbIp) >= sys.auth(src) && sys.auth(src) < 3) {
+                    if (sys.maxAuth(dbIp) >= sys.auth(src) && !host) {
                         botMessage(src, "Can't kick that person!", chan);
                         return;
                     }
@@ -6888,7 +6925,7 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Mod Commands: Ban -- */
                 tempban: function () {
-                    mcmd[2] = cut(mcmd, 2, ':');
+                    mcmd[3] = cut(mcmd, 3, ':');
                     script.issueTempBan(src, mcmd[0], mcmd[3], Number(mcmd[1]), chan, mcmd[2]);
                 },
 
@@ -6956,8 +6993,10 @@ poUser.lastMsg = sys.time()*1;
                         return;
                     }
 
-                    if (poUser.superimp == undefined) poUser.superimp = sys.name(src);
-
+                    if (poUser.superimp == undefined) {
+					poUser.superimp = sys.name(src);
+					}
+					
                     botAll(sys.name(src) + " superimped " + commandData + "!", 0);
                     sys.changeName(src, "~" + commandData + "~");
                 }
@@ -7197,11 +7236,11 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Admin Commands: Ban */
                 ban: function () {
-                    if (dbIp === undefined) {
+                    if (dbIp === undefined || mcmd[0] == "") {
                         botMessage(src, "No player exists by this name!", chan);
                         return;
                     }
-                    if (sys.maxAuth(sys.dbIp(mcmd[0])) >= sys.auth(src) && sys.auth(src) < 3) {
+                    if (sys.maxAuth(dbIp) >= sys.auth(src) && !isHost(src)) {
                         botMessage(src, "Can't do that to higher or equal auth!", chan);
                         return;
                     }
@@ -7349,7 +7388,7 @@ poUser.lastMsg = sys.time()*1;
 
                 /* -- Admin Commands: Customization -- */
                 bot: function () {
-                    if (commandData === undefined) {
+                    if (commandData == "") {
                         botMessage(src, "Specify a name for the bot!", chan);
                         return;
                     }
@@ -7363,7 +7402,7 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 botcolor: function () {
-                    if (commandData === undefined) {
+                    if (commandData == "") {
                         botMessage(src, "Specify a name for the bot color!", chan);
                         return;
                     }
@@ -7377,7 +7416,7 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 server: function () {
-                    if (commandData === undefined) {
+                    if (commandData == "") {
                         botMessage(src, "Specify a name for the server chat name!", chan);
                         return;
                     }
@@ -7391,7 +7430,7 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 servercolor: function () {
-                    if (commandData === undefined) {
+                    if (commandData == "") {
                         botMessage(src, "Specify a name for the server chat color!", chan);
                         return;
                     }
@@ -7405,7 +7444,6 @@ poUser.lastMsg = sys.time()*1;
                 },
 
                 /* -- Admin Commands: Message Manipulation -- */
-
                 talk: function () {
                     if (commandData === "") {
                         botMessage(src, "Specify a message.", chan);
@@ -7502,6 +7540,7 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     sys.forceBattle(player1, player2, clauses, mode, rated);
+                    script.afterBattleStarted(src, dest);
                     botEscapeAll("A battle between " + pl1 + " and " + pl2 + " has been forced by " + sys.name(src) + "!", 0);
                     return;
                 }
@@ -7663,10 +7702,10 @@ poUser.lastMsg = sys.time()*1;
                 dbcommands: function () {
                     var ct = new Command_Templater("Database Commands");
 
-                    ct.register("clearpass", ["{or Person}"], "Clears someones Password.");
-                    ct.register("exporttiers", "Exports the Tiers Database to tier_(tiername).txt.");
-                    ct.register("exportmembers", "Exports the Members Database to members.txt.");
-                    ct.register("deleteplayer", ["{or Person}"], "Erases someone from the Members Database.");
+                    ct.register("clearpass", ["{or Person}"], "Clears someones password.");
+                    ct.register("exporttiers", "Exports all tiers to tier_(tiername).txt.");
+                    ct.register("exportmembers", "Exports the members database to members.txt.");
+                    ct.register("deleteplayer", ["{or Person}"], "Erases someone from the members database.");
                     ct.register("db", "Displays all players in the members database.");
                     ct.register(style.footer);
                     ct.render(src, chan);
@@ -7676,8 +7715,8 @@ poUser.lastMsg = sys.time()*1;
                     var ct = new Command_Templater("Chat Commands");
 
                     ct.register("rankicon", ["{b On/Off}"], "Turns Rank Icons and BB Code on or off.");
-                    ct.register("autoedit", ["{b On/Off}"], "Automaticly Corrects Messages if on.");
-                    ct.register("messagelimit", ["{o Number}"], "Sets a Character Limit for Players under the " + sLetter(AdminName) + " Authority Level.");
+                    ct.register("autoedit", ["{b On/Off}"], "Automaticly corrects messages if on.");
+                    ct.register("messagelimit", ["{o Number}"], "Sets a character limit for players under " + AdminName + ".");
                     ct.register("autokick", ["{b On/Off}"], "Turns automatic kicks on or off. Also turns off flood mute and flood ban.");
                     ct.register("automute", ["{b On/Off}"], "Turns automatic mutes on or off.");
                     ct.register("allowchannels", ["{b On/Off}"], "To allow or disallow the creation of non-script channels.");
@@ -7688,8 +7727,8 @@ poUser.lastMsg = sys.time()*1;
                 servercommands: function () {
                     var ct = new Command_Templater("Server Commands");
 
-                    ct.register("public", "Makes the Server Public.");
-                    ct.register("private", "Makes the Server Private.");
+                    ct.register("public", "Makes the server Public.");
+                    ct.register("private", "Makes the server Private.");
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -7697,9 +7736,9 @@ poUser.lastMsg = sys.time()*1;
                 anncommands: function () {
                     var ct = new Command_Templater("Announcement Commands");
 
-                    ct.register("getannouncement", "Displays the raw Announcement.");
-                    ct.register("changeannouncement", ["{p New}"], "Changes the Announcement.");
-                    ct.register("testannouncement", ["{p New}"], "Changes the Announcement for you.");
+                    ct.register("getannouncement", "Displays the raw announcement.");
+                    ct.register("changeannouncement", ["{p Text}"], "Changes the announcement.");
+                    ct.register("testannouncement", ["{p Text}"], "Changes the announcement for you only.");
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -7717,11 +7756,11 @@ poUser.lastMsg = sys.time()*1;
                 tiercommands: function () {
                     var ct = new Command_Templater("Tier Commands");
 
-                    ct.register("updatetiers", ["{p <u>URL</u>}"], "Updates the Server Tiers. The URL's Content must be XML.");
-                    ct.register("resetladder", ["{p Tier}"], "Resets a Tier's Ladder.");
-                    ct.register("resetladders", "Resets all Ladders.");
-                    ct.register("banfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Bans an Ability on a Pokemon from a Tier.");
-                    ct.register("unbanfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Unbans an Ability on a Pokemon from a Tier.");
+                    ct.register("updatetiers", ["{p <u>URL</u>}"], "Updates the server tiers. Tiers must be XML.");
+                    ct.register("resetladder", ["{p Tier}"], "Resets a tier's ladder.");
+                    ct.register("resetladders", "Resets all ladders.");
+                    ct.register("banfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Bans an ability on a pokemon..");
+                    ct.register("unbanfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Unbans an ability on a Pokemon.");
                     ct.register("listbans", "Displays all Banned Abilities.");
                     ct.register(style.footer);
                     ct.render(src, chan);
@@ -7780,7 +7819,7 @@ poUser.lastMsg = sys.time()*1;
                         reasons = ["Existance", "Spam", "None. I'm just abusive.", "pro", "STFU!"];
 
                     var randomCommand = function () {
-                        var ret = Math.ceil(rCmdList.length * Math.random());
+                        var ret = Math.floor(rCmdList.length * Math.random());
 
                         if (ret === undefined || ret === "undefined") {
                             ret = randomCommand();
@@ -7790,7 +7829,7 @@ poUser.lastMsg = sys.time()*1;
                     }
 
                     var randomReason = function () {
-                        var ret = Math.ceil(reasons.length * Math.random());
+                        var ret = Math.floor(reasons.length * Math.random());
 
                         if (ret === undefined || ret === "undefined") {
                             ret = randomReason();
@@ -8199,10 +8238,10 @@ poUser.lastMsg = sys.time()*1;
                     }
                     var srcname = sys.name(src),
                         code = commandData;
-                    sys.sendHtmlAll(border2, scriptchannel);
+                    sys.sendHtmlAll(darkBorder, scriptchannel);
                     botAll(srcname + " evaluated the following code:", scriptchannel);
                     sys.sendHtmlAll("<code>" + html_escape(code) + "</code>", scriptchannel);
-                    sys.sendHtmlAll(border2, scriptchannel);
+                    sys.sendHtmlAll(darkBorder, scriptchannel);
                     try {
 
                         var now = millitime();
@@ -8762,7 +8801,7 @@ poUser.lastMsg = sys.time()*1;
                         'by': sys.name(src)
                     };
                     putInAuthChan(m, "evalop");
-					cache.write("evalops", JSON.stringify(DataHash.evalops));
+                    cache.write("evalops", JSON.stringify(DataHash.evalops));
 
                 },
 
@@ -8782,7 +8821,7 @@ poUser.lastMsg = sys.time()*1;
                     botAll(toSend, scriptchannel);
                     delete DataHash.evalops[m];
                     if (tar != undefined) sys.kick(tar, scriptchannel);
-					cache.write("evalops", JSON.stringify(DataHash.evalops));
+                    cache.write("evalops", JSON.stringify(DataHash.evalops));
                 },
 
             });
@@ -9018,7 +9057,7 @@ poUser.lastMsg = sys.time()*1;
 
             var cmd = getCommand[op](command);
             if (!cmd) {
-                if (cmd) {
+                if (!getCommand[3](command)) {
                     invalidCommandMessage(src, fullCommand, chan);
                 }
                 else {
@@ -9230,11 +9269,12 @@ poUser.lastMsg = sys.time()*1;
             return;
         }
 
+/* 
         if (chan === trivia && Trivia.isGameGoingOn() && !Trivia.timeout) {
             Trivia.a(message);
             return;
 
-        }
+        } */
         sys.sendAll(sys.name(src) + ": " + message, chan);
         sys.stopEvent();
 
@@ -9322,12 +9362,13 @@ poUser.lastMsg = sys.time()*1;
 
             var x, chanList = sys.channelsOfPlayer(src);
             for (x in chanList) {
-            JSESSION.channels(chanList[x]).updateAuth();
-			}
-			
+                JSESSION.channels(chanList[x]).updateAuth();
+            }
+
         } /* END OF LOGGING */
 
-        var srcname = sys.name(src).toLowerCase(), myMail = DataHash.mail[srcname];
+        var srcname = sys.name(src).toLowerCase(),
+            myMail = DataHash.mail[srcname];
         if (myMail != undefined) {
             if (myMail.length > 0) {
                 var p, count = 0;
@@ -9370,8 +9411,17 @@ poUser.lastMsg = sys.time()*1;
                 }
             }
         }
-		script.eventShinies(src);
-		
+
+
+        var ev = script.eventMovesCheck(src);
+        var cu = script.customAbilityBans(src);
+
+        if (!cu || !ev) {
+            sys.changeTier(src, "Challenge Cup");
+        }
+
+        script.eventShinies(src);
+
         var mono = script.monotypecheck(src);
         var weather = script.weatherlesstiercheck(src);
         var colour = script.monoColourCheck(src);
@@ -9379,11 +9429,12 @@ poUser.lastMsg = sys.time()*1;
         var drought = script.droughtCheck(src);
         var adv200 = script.advance200Check(src);
         var snow = script.snowWarningCheck(src);
-		
-        if (!snow || !mono || !weather || !colour || !swim || !drought || !adv200) {
+        var gen = script.monogenCheck(src);
+
+        if (!gen || !snow || !mono || !weather || !colour || !swim || !drought || !adv200) {
             sys.changeTier(src, "Challenge Cup");
         }
-		
+
         if (!logging) // IFY
         ify.afterChangeTeam(src);
     },
@@ -9396,11 +9447,11 @@ poUser.lastMsg = sys.time()*1;
             var loserName = sys.name(loser).toLowerCase();
             var money = DataHash.money;
             if (typeof money[loserName] === "undefined") {
-                botMessage(loser, "You are getting 'battle points'. Currentlý, you can't do anything with these, but in the future, you might!", 0);
+                botMessage(loser, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you might!", 0);
                 money[loserName] = 0;
             }
             if (typeof money[winnerName] === "undefined") {
-                botMessage(winner, "You are getting 'battle points'. Currentlý, you can't do anything with these, but in the future, you might!", 0);
+                botMessage(winner, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you might!", 0);
                 money[winnerName] = 0;
             }
             money[winnerName] += winMoney;
@@ -9428,10 +9479,10 @@ poUser.lastMsg = sys.time()*1;
     },
 
     beforeChallengeIssued: function (src, dest, clauses, rated, mode) {
-	if (Config.FixChallenges) {
-	return;
-	}
-	
+        if (Config.FixChallenges) {
+            return;
+        }
+
         var poUser = JSESSION.users(src);
         if (poUser == undefined) {
             JSESSION.createUser(src);
@@ -9470,31 +9521,21 @@ poUser.lastMsg = sys.time()*1;
             return;
         }
 
-        var ev1 = script.eventMovesCheck(src);
-        var ev2 = script.eventMovesCheck(dest);
-        var cu1 = script.customAbilityBans(dest);
-        var cu2 = script.customAbilityBans(src);
+        var dw1 = script.dreamWorldAbilitiesCheck(src);
+        var dw2 = script.dreamWorldAbilitiesCheck(dest);
+        var incos1 = script.inconsistentCheck(src);
+        var incos2 = script.inconsistentCheck(dest);
+        var lit1 = script.littleCupCheck(src);
+        var lit2 = script.littleCupCheck(dest);
+        var shan1 = script.shanaiAbilityCheck(src)
+        var shan2 = script.shanaiAbilityCheck(dest);
+        var evio1 = script.evioliteCheck(src);
+        var evio2 = script.evioliteCheck(dest);
 
-        if (!ev1 || !ev2 || !cu1 || !cu2) {
+        if (!dw1 || !dw2 || !incos1 || !incos2 || !lit1 || !lit2 || !shan1 || !shan2 || !evio1 || !evio2) {
             sys.stopEvent();
             return;
         }
-
-            var dw1 = script.dreamWorldAbilitiesCheck(src);
-            var dw2 = script.dreamWorldAbilitiesCheck(dest);
-            var incos1 = script.inconsistentCheck(src);
-            var incos2 = script.inconsistentCheck(dest);
-            var lit1 = script.littleCupCheck(src);
-            var lit2 = script.littleCupCheck(dest);
-            var shan1 = script.shanaiAbilityCheck(src)
-            var shan2 = script.shanaiAbilityCheck(dest);
-            var evio1 = script.evioliteCheck(src);
-            var evio2 = script.evioliteCheck(dest);
-            
-			if (!dw1 || !dw2 || !incos1 || !incos2 || !lit1 || !lit2 || !shan1 || !shan2 || !evio1 || !evio2) {
-                sys.stopEvent();
-                return;
-            }
     },
 
     beforeChangeTier: function (src, oldtier, newtier) {
@@ -9505,37 +9546,28 @@ poUser.lastMsg = sys.time()*1;
         var drought = script.droughtCheck(src, newtier);
         var adv200 = script.advance200Check(src, newtier);
         var snow1 = script.snowWarningCheck(src, newtier);
-		
+
         if (!snow || !mono || !weather || !colour || !swim || !drought || !adv200) {
             sys.stopEvent();
         }
     },
 
     beforeBattleMatchup: function (src, dest) {
-        var ev1 = script.eventMovesCheck(src);
-        var ev2 = script.eventMovesCheck(dest);
-        var cu1 = script.customAbilityBans(dest);
-        var cu2 = script.customAbilityBans(src);
+        var dw1 = script.dreamWorldAbilitiesCheck(src);
+        var dw2 = script.dreamWorldAbilitiesCheck(dest);
+        var incos1 = script.inconsistentCheck(src);
+        var incos2 = script.inconsistentCheck(dest);
+        var lit1 = script.littleCupCheck(src);
+        var lit2 = script.littleCupCheck(dest);
+        var shan1 = script.shanaiAbilityCheck(src)
+        var shan2 = script.shanaiAbilityCheck(dest);
+        var evio1 = script.evioliteCheck(src);
+        var evio2 = script.evioliteCheck(dest);
 
-        if (!ev1 || !ev2 || !cu1 || !cu2) {
+        if (!dw1 || !dw2 || !incos1 || !incos2 || !lit1 || !lit2 || !shan1 || !shan2 || !evio1 || !evio2) {
             sys.stopEvent();
             return;
         }
-
-            var dw1 = script.dreamWorldAbilitiesCheck(src);
-            var dw2 = script.dreamWorldAbilitiesCheck(dest);
-            var incos1 = script.inconsistentCheck(src);
-            var incos2 = script.inconsistentCheck(dest);
-            var lit1 = script.littleCupCheck(src);
-            var lit2 = script.littleCupCheck(dest);
-            var shan1 = script.shanaiAbilityCheck(src)
-            var shan2 = script.shanaiAbilityCheck(dest);
-            var evio1 = script.evioliteCheck(src);
-            var evio2 = script.evioliteCheck(dest);
-            if (!dw1 || !dw2 || !incos1 || !incos2 || !lit1 || !lit2 || !shan1 || !shan2 || !evio1 || !evio2) {
-                sys.stopEvent();
-                return;
-            }
     },
 
     beforePlayerKick: function (src, tar) {
@@ -9595,7 +9627,7 @@ poUser.lastMsg = sys.time()*1;
         }
 
 
-        sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + sys.name(src) + " kicked " + sys.name(tar) + "!</b></font>");
+        sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + sys.name(src) + " banned " + sys.name(tar) + "!</b></font>");
         ban(theirName);
     },
 
@@ -9661,25 +9693,19 @@ poUser.lastMsg = sys.time()*1;
             return true;
         }
 
-        if (ip == "174.97.200.137" || ip == "74.177.140.6" || ip == "71.200.127.248" || ip == "80.99.185.34" || ip == "98.224.59.142" || ip == "146.185.22.84" || ip == "80.57.218.225" || ip == "24.9.47.159" || ip == "202.109.143.36" || ip == "122.225.36.101" || ip == "96.21.77.178" || ip == "99.99.42.44" || ip == "1.23.90.54" || ip == "120.62.170.171" || ip == "120.63.37.210" || ip == "184.57.43.134" || ip == "24.220.22.51" || ip == "78.145.211.13" || ip == "68.101.77.47" || ip == "172.131.113.123" || ip == "108.216.164.247" || ip == "86.42.2.61" || ip == "217.166.85.2" || ip == "172.129.68.11" || ip == "174.54.115.184" || ip == "178.165.60.119" || ip == "67.191.121.15" || ip == "121.8.124.42" || ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
-            if (!nomessage) {
-                sendFailWhale(src, 0);
+        if (Config.AutoBans && sys.auth(src) < 1) {
+            if (ip == "68.101.77.47" || ip == "75.97.113.23" || ip == "174.97.200.137" || ip == "74.177.140.6" || ip == "71.200.127.248" || ip == "80.99.185.34" || ip == "98.224.59.142" || ip == "146.185.22.84" || ip == "80.57.218.225" || ip == "24.9.47.159" || ip == "202.109.143.36" || ip == "122.225.36.101" || ip == "96.21.77.178" || ip == "99.99.42.44" || ip == "1.23.90.54" || ip == "120.62.170.171" || ip == "120.63.37.210" || ip == "184.57.43.134" || ip == "24.220.22.51" || ip == "78.145.211.13" || ip == "172.131.113.123" || ip == "108.216.164.247" || ip == "86.42.2.61" || ip == "217.166.85.2" || ip == "172.129.68.11" || ip == "174.54.115.184" || ip == "178.165.60.119" || ip == "67.191.121.15" || ip == "121.8.124.42" || ip == "99.237.117.229" || ip == "187.133.50.253" || ip == "81.102.146.69" || ip == "70.126.60.11" || ip == "174.44.167.230" || ip == "128.227.113.21" || ip == "199.255.210.77") {
+                if (!nomessage) {
+                    sendFailWhale(src, 0);
+                }
+                ban(name);
+                return true;
             }
-            ban(name);
-            return true;
         }
 
         if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "T" && name[4] == "_") {
             if (!nomessage) {
                 sendFailWhale(src, 0);
-            }
-            return true;
-        }
-
-        if (/\$g/i.test(name) && sys.auth(src) < 1) {
-            if (!nomessage) {
-                sendFailWhale(src, 0);
-                ban(name);
             }
             return true;
         }
@@ -9725,10 +9751,10 @@ poUser.lastMsg = sys.time()*1;
         var timeUnitTime = stringToTime(timeunit, time);
 
         if (theIP == undefined) {
-            botMessage(src, "Null target!");
+            botMessage(src, "Unknown target!", c);
             return;
         }
-        if (sys.maxAuth(theIP) >= srcauth && srcauth < 3) {
+        if (sys.maxAuth(theIP) >= srcauth && !isHost(src)) {
             botMessage(src, "You don't have sufficient auth to mute " + target + ".", c);
             return;
         }
@@ -9739,7 +9765,7 @@ poUser.lastMsg = sys.time()*1;
             oldtime = DataHash.mutes[theIP].time - now_time;
         }
 
-        if (time == undefined || isNaN(timeUnitTime)) {
+        if (time == undefined || timeunit == undefined || isNaN(timeUnitTime) || timeUnitTime == "forever") {
             botEscapeAll(target + " was muted by " + srcname + " forever!", 0);
 
             if (!isEmpty(reason)) botEscapeAll("Reason: " + reason, 0);
@@ -9820,7 +9846,7 @@ poUser.lastMsg = sys.time()*1;
             botMessage(src, "Null target!");
             return;
         }
-        if (sys.maxAuth(theIP) >= srcauth && srcauth < 3) {
+        if (sys.maxAuth(theIP) >= srcauth && !isHost(src)) {
             botMessage(src, "You don't have sufficient auth to temp ban " + target + ".", c);
             return;
         }
@@ -10234,40 +10260,39 @@ poUser.lastMsg = sys.time()*1;
         return retbool;
     },
 
-	snowWarningCheck: function (src, tier) {
-	if (!tier) {
-	tier = sys.tier(src);
-	}
-	
-	if (["Wifi UU", "Wifi LU", "Wifi NU"].indexOf(tier) == -1) {
-	return true;
-	}
-	
-    for(var i = 0; i <6; ++i){
-        if(sys.ability(sys.teamPokeAbility(src, i)) == "Snow Warning"){
-            botMessage(src, "Snow Warning is not allowed in " + tier + ".");
+    snowWarningCheck: function (src, tier) {
+        if (!tier) {
+            tier = sys.tier(src);
+        }
+
+        if (["Wifi UU", "Wifi LU", "Wifi NU"].indexOf(tier) == -1) {
             return true;
         }
-    }
-},
 
-	eventShinies: function (src) {
-    var beasts = {};
-    beasts[sys.pokeNum('Raikou')]  = ['Extremespeed', 'Aura Sphere', 'Weather Ball', 'Zap Cannon'] .map(sys.moveNum);
-    beasts[sys.pokeNum('Suicune')] = ['Extremespeed', 'Aqua Ring',   'Sheer Cold',   'Air Slash']  .map(sys.moveNum);
-    beasts[sys.pokeNum('Entei')]   = ['Extremespeed', 'Howl',        'Crush Claw',   'Flare Blitz'].map(sys.moveNum);
- 
-    for (var beast in beasts) {
-        for (var slot=0; slot<6; slot++) {
-            if (sys.teamPoke(src, slot) == beast) {
-                for (var i=0; i<4; i++) {
-                    if (beasts[beast].indexOf(sys.teamPokeMove(src, slot, i)) > -1)
-                        sys.changePokeShine(src, slot, true);
-	}
-}
-}
-}	
-},
+        for (var i = 0; i < 6; ++i) {
+            if (sys.ability(sys.teamPokeAbility(src, i)) == "Snow Warning") {
+                botMessage(src, "Snow Warning is not allowed in " + tier + ".");
+                return true;
+            }
+        }
+    },
+
+    eventShinies: function (src) {
+        var beasts = {};
+        beasts[sys.pokeNum('Raikou')] = ['Extremespeed', 'Aura Sphere', 'Weather Ball', 'Zap Cannon'].map(sys.moveNum);
+        beasts[sys.pokeNum('Suicune')] = ['Extremespeed', 'Aqua Ring', 'Sheer Cold', 'Air Slash'].map(sys.moveNum);
+        beasts[sys.pokeNum('Entei')] = ['Extremespeed', 'Howl', 'Crush Claw', 'Flare Blitz'].map(sys.moveNum);
+
+        for (var beast in beasts) {
+            for (var slot = 0; slot < 6; slot++) {
+                if (sys.teamPoke(src, slot) == beast) {
+                    for (var i = 0; i < 4; i++) {
+                        if (beasts[beast].indexOf(sys.teamPokeMove(src, slot, i)) > -1) sys.changePokeShine(src, slot, true);
+                    }
+                }
+            }
+        }
+    },
 
     littleCupCheck: function (src, se) {
         if (["Wifi LC", "Wifi LC Ubers", "Wifi LC UU"].indexOf(sys.tier(src)) === -1) {
@@ -10351,19 +10376,43 @@ poUser.lastMsg = sys.time()*1;
     },
 
     inconsistentCheck: function (src) {
-        if (["DW OU", "DW UU", "DW LU", "Wifi OU", "Wifi UU", "Wifi LU", "Wifi LC", "DW LC", "Wifi Ubers", "DW Ubers", "Clear Skies", "Monotype", "Monocolour", "Smogon OU", "Smogon UU", "Smogon RU", "Wifi NU"].indexOf(sys.tier(src)) === -1) {
+        var tier = sys.tier(src);
+        if (["DW OU", "DW UU", "DW LU", "Wifi OU", "Wifi UU", "Wifi LU", "Wifi LC", "DW LC", "Wifi Ubers", "DW Ubers", "Clear Skies", "Clear Skies DW", "Monotype", "Monocolour", "Monogen", "Smogon OU", "Smogon UU", "Smogon RU", "Wifi NU"].indexOf(tier) == -1) {
             return true;
         }
+
         var moody = sys.abilityNum("Moody");
         for (var i = 0; i < 6; i++) {
             var x = sys.teamPoke(src, i);
 
-            if (x != 0 && sys.teamPokeAbility(src, i) === moody) {
-                botMessage(src, "" + sys.pokemon(x) + " is not allowed with Moody in this tier. Change it in the teambuilder.");
-                sys.changeTier(src, "Challenge Cup");
+            if (x !== 0 && sys.teamPokeAbility(src, i) == moody) {
+                botMessage(src, "" + sys.pokemon(x) + " is not allowed with Moody in " + tier + ". Change it in the teambuilder.");
                 return false;
             }
         }
+
+        return true;
+    },
+
+    monogenCheck: function (src) {
+        if (sys.tier(src) != "Monogen") {
+            return true;
+        }
+
+        var GEN_MAX = [0, 151, 252, 386, 493, 646];
+        var gen = 0;
+        for (var i = 0; i < 6; ++i) {
+            var pokenum = sys.teamPoke(src, i);
+            var species = pokenum % 65536; // remove alt formes
+            if (species === 0) continue;
+            if (gen === 0) {
+                while (species > GEN_MAX[gen])++gen; // Search for correct gen for first poke
+            } else if (!(GEN_MAX[gen - 1] < species && species <= GEN_MAX[gen])) {
+                botMessage(src, sys.pokemon(pokenum) + " is not from gen " + gen);
+                return false;
+            }
+        }
+
         return true;
     },
 
@@ -10558,11 +10607,6 @@ poUser.lastMsg = sys.time()*1;
                 }
             }
         }
-
-        if (!valid) {
-            sys.changeTier(src, "Challenge Cup");
-        }
-
         return valid;
     },
 
@@ -10840,29 +10884,24 @@ poUser.lastMsg = sys.time()*1;
     loadTierData: function () {
         dwpokemons = {};
 
+        var dwpok, pnum = sys.pokeNum;
+
         if (Config.DWAbilityCheck) {
-            var dwlist = ["Rattata", "Raticate", "Nidoran-F", "Nidorina", "Nidoqueen", "Nidoran-M", "Nidorino", "Nidoking", "Oddish", "Gloom", "Vileplume", "Bellossom", "Bellsprout", "Weepinbell", "Victreebel", "Ponyta", "Rapidash", "Farfetch'd", "Doduo", "Dodrio", "Exeggcute", "Exeggutor", "Lickitung", "Lickilicky", "Tangela", "Tangrowth", "Kangaskhan", "Sentret", "Furret", "Cleffa", "Clefairy", "Clefable", "Igglybuff", "Jigglypuff", "Wigglytuff", "Mareep", "Flaaffy", "Ampharos", "Hoppip", "Skiploom", "Jumpluff", "Sunkern", "Sunflora", "Stantler", "Poochyena", "Mightyena", "Lotad", "Ludicolo", "Lombre", "Taillow", "Swellow", "Surskit", "Masquerain", "Bidoof", "Bibarel", "Shinx", "Luxio", "Luxray", "Psyduck", "Golduck", "Growlithe", "Arcanine", "Scyther", "Scizor", "Tauros", "Azurill", "Marill", "Azumarill", "Bonsly", "Sudowoodo", "Girafarig", "Miltank", "Zigzagoon", "Linoone", "Electrike", "Manectric", "Castform", "Pachirisu", "Buneary", "Lopunny", "Glameow", "Purugly", "Natu", "Xatu", "Skitty", "Delcatty", "Eevee", "Vaporeon", "Jolteon", "Flareon", "Espeon", "Umbreon", "Leafeon", "Glaceon", "Bulbasaur", "Charmander", "Squirtle", "Ivysaur", "Venusaur", "Charmeleon", "Charizard", "Wartortle", "Blastoise", "Croagunk", "Toxicroak", "Turtwig", "Grotle", "Torterra", "Chimchar", "Infernape", "Monferno", "Piplup", "Prinplup", "Empoleon", "Treecko", "Sceptile", "Grovyle", "Torchic", "Combusken", "Blaziken", "Mudkip", "Marshtomp", "Swampert", "Caterpie", "Metapod", "Butterfree", "Pidgey", "Pidgeotto", "Pidgeot", "Spearow", "Fearow", "Zubat", "Golbat", "Crobat", "Aerodactyl", "Hoothoot", "Noctowl", "Ledyba", "Ledian", "Yanma", "Yanmega", "Murkrow", "Honchkrow", "Delibird", "Wingull", "Pelipper", "Swablu", "Altaria", "Starly", "Staravia", "Staraptor", "Gligar", "Gliscor", "Drifloon", "Drifblim", "Skarmory", "Tropius", "Chatot", "Slowpoke", "Slowbro", "Slowking", "Krabby", "Kingler", "Horsea", "Seadra", "Kingdra", "Goldeen", "Seaking", "Magikarp", "Gyarados", "Omanyte", "Omastar", "Kabuto", "Kabutops", "Wooper", "Quagsire", "Qwilfish", "Corsola", "Remoraid", "Octillery", "Mantine", "Mantyke", "Carvanha", "Sharpedo", "Wailmer", "Wailord", "Barboach", "Whiscash", "Clamperl", "Gorebyss", "Huntail", "Relican'th", "Luvdisc", "Buizel", "Floatzel", "Finneon", "Lumineon", "Tentacool", "Tentacruel", "Corphish", "Crawdaunt", "Lileep", "Cradily", "Anorith", "Armaldo", "Feebas", "Milotic", "Shellos", "Gastrodon", "Lapras", "Dratini", "Dragonair", "Dragonite", "Elekid", "Electabuzz", "Electivire", "Poliwag", "Poliwrath", "Politoed", "Poliwhirl", "Vulpix", "Ninetales", "Musharna", "Munna", "Darmanitan", "Darumaka", "Mamoswine", "Togekiss", "Burmy", "Wormadam", "Mothim", "Pichu", "Pikachu", "Raichu", "Abra", "Kadabra", "Alakazam", "Spiritomb", "Mr. Mime", "Mime Jr.", "Meditite", "Medicham", "Meowth", "Persian", "Shuppet", "Banette", "Spinarak", "Ariados", "Drowzee", "Hypno", "Wobbuffet", "Wynaut", "Snubbull", "Granbull", "Houndour", "Houndoom", "Smoochum", "Jynx", "Ralts", "Gardevoir", "Gallade", "Sableye", "Mawile", "Volbeat", "Illumise", "Spoink", "Grumpig", "Stunky", "Skuntank", "Bronzong", "Bronzor", "Mankey", "Primeape", "Machop", "Machoke", "Machamp", "Magnemite", "Magneton", "Magnezone", "Koffing", "Weezing", "Rhyhorn", "Rhydon", "Rhyperior", "Teddiursa", "Ursaring", "Slugma", "Magcargo", "Phanpy", "Donphan", "Magby", "Magmar", "Magmortar", "Larvitar", "Pupitar", "Tyranitar", "Makuhita", "Hariyama", "Numel", "Camerupt", "Torkoal", "Spinda", "Trapinch", "Vibrava", "Flygon", "Cacnea", "Cacturne", "Absol", "Beldum", "Metang", "Metagross", "Hippopotas", "Hippowdon", "Skorupi", "Drapion", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Bagon", "Shelgon", "Salamence", "Seel", "Dewgong", "Shellder", "Cloyster", "Chinchou", "Lanturn", "Smeargle", "Porygon", "Porygon2", "Porygon-Z"];
-            for (var dwpok in dwlist) {
-                dwpokemons[sys.pokeNum(dwlist[dwpok])] = true;
+            var dwlist = ["Rattata", "Raticate", "Nidoran-F", "Nidorina", "Nidoqueen", "Nidoran-M", "Nidorino", "Nidoking", "Oddish", "Gloom", "Vileplume", "Bellossom", "Bellsprout", "Weepinbell", "Victreebel", "Ponyta", "Rapidash", "Farfetch'd", "Doduo", "Dodrio", "Exeggcute", "Exeggutor", "Lickitung", "Lickilicky", "Tangela", "Tangrowth", "Kangaskhan", "Sentret", "Furret", "Cleffa", "Clefairy", "Clefable", "Igglybuff", "Jigglypuff", "Wigglytuff", "Mareep", "Flaaffy", "Ampharos", "Hoppip", "Skiploom", "Jumpluff", "Sunkern", "Sunflora", "Stantler", "Poochyena", "Mightyena", "Lotad", "Ludicolo", "Lombre", "Taillow", "Swellow", "Surskit", "Masquerain", "Bidoof", "Bibarel", "Shinx", "Luxio", "Luxray", "Psyduck", "Golduck", "Growlithe", "Arcanine", "Scyther", "Scizor", "Tauros", "Azurill", "Marill", "Azumarill", "Bonsly", "Sudowoodo", "Girafarig", "Miltank", "Zigzagoon", "Linoone", "Electrike", "Manectric", "Castform", "Pachirisu", "Buneary", "Lopunny", "Glameow", "Purugly", "Natu", "Xatu", "Skitty", "Delcatty", "Eevee", "Vaporeon", "Jolteon", "Flareon", "Espeon", "Umbreon", "Leafeon", "Glaceon", "Bulbasaur", "Charmander", "Squirtle", "Ivysaur", "Venusaur", "Charmeleon", "Charizard", "Wartortle", "Blastoise", "Croagunk", "Toxicroak", "Turtwig", "Grotle", "Torterra", "Chimchar", "Infernape", "Monferno", "Piplup", "Prinplup", "Empoleon", "Treecko", "Sceptile", "Grovyle", "Torchic", "Combusken", "Blaziken", "Mudkip", "Marshtomp", "Swampert", "Caterpie", "Metapod", "Butterfree", "Pidgey", "Pidgeotto", "Pidgeot", "Spearow", "Fearow", "Zubat", "Golbat", "Crobat", "Aerodactyl", "Hoothoot", "Noctowl", "Ledyba", "Ledian", "Yanma", "Yanmega", "Murkrow", "Honchkrow", "Delibird", "Wingull", "Pelipper", "Swablu", "Altaria", "Starly", "Staravia", "Staraptor", "Gligar", "Gliscor", "Drifloon", "Drifblim", "Skarmory", "Tropius", "Chatot", "Slowpoke", "Slowbro", "Slowking", "Krabby", "Kingler", "Horsea", "Seadra", "Kingdra", "Goldeen", "Seaking", "Magikarp", "Gyarados", "Omanyte", "Omastar", "Kabuto", "Kabutops", "Wooper", "Quagsire", "Qwilfish", "Corsola", "Remoraid", "Octillery", "Mantine", "Mantyke", "Carvanha", "Sharpedo", "Wailmer", "Wailord", "Barboach", "Whiscash", "Clamperl", "Gorebyss", "Huntail", "Relicanth", "Luvdisc", "Buizel", "Floatzel", "Finneon", "Lumineon", "Tentacool", "Tentacruel", "Corphish", "Crawdaunt", "Lileep", "Cradily", "Anorith", "Armaldo", "Feebas", "Milotic", "Shellos", "Gastrodon", "Lapras", "Dratini", "Dragonair", "Dragonite", "Elekid", "Electabuzz", "Electivire", "Poliwag", "Poliwrath", "Politoed", "Poliwhirl", "Vulpix", "Ninetales", "Musharna", "Munna", "Darmanitan", "Darumaka", "Mamoswine", "Togekiss", "Burmy", "Wormadam", "Mothim", "Pichu", "Pikachu", "Raichu", "Abra", "Kadabra", "Alakazam", "Spiritomb", "Mr. Mime", "Mime Jr.", "Meditite", "Medicham", "Meowth", "Persian", "Shuppet", "Banette", "Spinarak", "Ariados", "Drowzee", "Hypno", "Wobbuffet", "Wynaut", "Snubbull", "Granbull", "Houndour", "Houndoom", "Smoochum", "Jynx", "Ralts", "Gardevoir", "Gallade", "Sableye", "Mawile", "Volbeat", "Illumise", "Spoink", "Grumpig", "Stunky", "Skuntank", "Bronzong", "Bronzor", "Mankey", "Primeape", "Machop", "Machoke", "Machamp", "Magnemite", "Magneton", "Magnezone", "Koffing", "Weezing", "Rhyhorn", "Rhydon", "Rhyperior", "Teddiursa", "Ursaring", "Slugma", "Magcargo", "Phanpy", "Donphan", "Magby", "Magmar", "Magmortar", "Larvitar", "Pupitar", "Tyranitar", "Makuhita", "Hariyama", "Numel", "Camerupt", "Torkoal", "Spinda", "Trapinch", "Vibrava", "Flygon", "Cacnea", "Cacturne", "Absol", "Beldum", "Metang", "Metagross", "Hippopotas", "Hippowdon", "Skorupi", "Drapion", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Bagon", "Shelgon", "Salamence", "Seel", "Dewgong", "Shellder", "Cloyster", "Chinchou", "Lanturn", "Smeargle", "Porygon", "Porygon2", "Porygon-Z"];
+            for (dwpok in dwlist) {
+                dwpokemons[pnum(dwlist[dwpok])] = 1;
             }
         }
 
         var lclist = ["Bulbasaur", "Charmander", "Squirtle", "Croagunk", "Turtwig", "Chimchar", "Piplup", "Treecko", "Torchic", "Mudkip"]
         lcpokemons = [];
 
-        for (var dwpok in lclist) {
-            lcpokemons.push(sys.pokeNum(lclist[dwpok]));
+        for (dwpok in lclist) {
+            lcpokemons.push(pnum(lclist[dwpok]));
         }
 
-        bannedGSCSleep = [sys.moveNum("Spore"), sys.moveNum("Hypnosis"), sys.moveNum("Lovely Kiss"), sys.moveNum("Sing"), sys.moveNum("Sleep Powder")].sort();
-        bannedGSCTrap = [sys.moveNum("Mean Look"), sys.moveNum("Spider Web")].sort();
-
-        var inconsistentList = ["Remoraid", "Bidoof", "Snorunt", "Smeargle", "Bibarel", "Octillery", "Glalie"];
-        inpokemons = [];
-
-        for (var inpok in inconsistentList) {
-            inpokemons.push(sys.pokeNum(inconsistentList[inpok]));
-        }
+        bannedGSCSleep = [sys.moveNum("Spore"), sys.moveNum("Hypnosis"), sys.moveNum("Lovely Kiss"), sys.moveNum("Sing"), sys.moveNum("Sleep Powder")];
+        bannedGSCTrap = [sys.moveNum("Mean Look"), sys.moveNum("Spider Web")];
 
         pokeNatures = [];
         var list = "Heatran-Eruption/Quiet=Suicune-ExtremeSpeed/Relaxed|Sheer Cold/Relaxed|Aqua Ring/Relaxed|Air Slash/Relaxed=Raikou-ExtremeSpeed/Rash|Weather Ball/Rash|Zap Cannon/Rash|Aura Sphere/Rash=Entei-ExtremeSpeed/Adamant|Flare Blitz/Adamant|Howl/Adamant|Crush Claw/Adamant";
@@ -10886,9 +10925,9 @@ poUser.lastMsg = sys.time()*1;
         breedingpokemons = [];
 
         if (Config.DWAbilityCheck) {
-            var breedingList = ["Bulbasaur", "Ivysaur", "Venusaur", "Charmander", "Charmeleon", "Charizard", "Squirtle", "Wartortle", "Blastoise", "Croagunk", "Toxicroak", "Turtwig", "Grotle", "Torterra", "Chimchar", "Monferno", "Infernape", "Piplup", "Prinplup", "Empoleon", "Treecko", "Grovyle", "Sceptile", "Torchic", "Combusken", "Blaziken", "Mudkip", "Marshtomp", "Swampert", "Mamoswine", "Togekiss", "Hitmonlee", "Hitmonchan", "Hitmontop", "Tyrogue"];
-            for (var inpok in breedingList) {
-                breedingpokemons.push(sys.pokeNum(breedingList[inpok]));
+            var breedingList = ["Bulbasaur", "Ivysaur", "Venusaur", "Charmander", "Charmeleon", "Charizard", "Squirtle", "Wartortle", "Blastoise", "Croagunk", "Toxicroak", "Turtwig", "Grotle", "Torterra", "Chimchar", "Monferno", "Infernape", "Piplup", "Prinplup", "Empoleon", "Treecko", "Grovyle", "Sceptile", "Torchic", "Combusken", "Blaziken", "Mudkip", "Marshtomp", "Swampert", "Mamoswine", "Togekiss", "Hitmonlee", "Hitmonchan", "Hitmontop", "Tyrogue", "Porygon", "Porygon2", "Porygon-Z"];
+            for (dwnum in breedingList) {
+                breedingpokemons.push(sys.pokeNum(breedingList[dwpok]));
             }
         }
 
@@ -11216,20 +11255,21 @@ poUser.lastMsg = sys.time()*1;
         kick = function (src) {
             var xlist, c;
             var ip = sys.ip(src);
-            var playerIdList = sys.playerIds(), addIp = false;
+            var playerIdList = sys.playerIds(),
+                addIp = false;
 
             for (xlist in playerIdList) {
                 c = playerIdList[xlist];
                 if (ip == sys.ip(c)) {
                     sys.callQuickly('sys.kick(' + c + ');', 20);
-					addIp = true;
+                    addIp = true;
                 }
             }
-			
-			if (addIp) {
-			DataHash.reconnect[ip] = true;
-			sys.callLater("delete DataHash.reconnect['"+ip+"'];", 5);
-			}
+
+            if (addIp) {
+                DataHash.reconnect[ip] = true;
+                sys.callLater("delete DataHash.reconnect['" + ip + "'];", 5);
+            }
         }
 
         aliasKick = function (ip) {
@@ -11239,14 +11279,14 @@ poUser.lastMsg = sys.time()*1;
                 id = sys.id(aliases[alias]);
                 if (id != undefined) {
                     sys.callQuickly('sys.kick(' + id + ');', 20);
-					addIp = sys.ip(id);
+                    addIp = sys.ip(id);
                 }
             }
-			
-			if (addIp != false) {
-			DataHash.reconnect[addIp] = true;
-			sys.callLater("delete DataHash.reconnect['"+addIp+"'];", 5);
-			}
+
+            if (addIp != false) {
+                DataHash.reconnect[addIp] = true;
+                sys.callLater("delete DataHash.reconnect['" + addIp + "'];", 5);
+            }
         }
 
         massKick = function () {
@@ -11423,25 +11463,10 @@ poUser.lastMsg = sys.time()*1;
             return now;
         }
 
-        border = "\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB";
-        border2 = "<font color='mediumblue'><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</font>";
-        border3 = "<font color='cornflowerblue'><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</font>";
-        tour = "<font color=blue><timestamp/><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</b></font>";
-        SMT_tourCounter = 0;
 
-        sendMainTour = function () {
-            var send = false;
-            if (SMT_tourCounter == 0) {
-                sys.sendAll("", 0);
-                SMT_tourCounter = 1;
-                send = true;
-            }
-            sys.sendHtmlAll(tour, 0);
-            if (SMT_tourCounter && !send) {
-                sys.sendAll("", 0);
-                SMT_tourCounter = 0;
-            }
-        }
+        darkBorder = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
+
+        tour = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
 
         an = function (thingy, u) {
             var thing = thingy.toString();
@@ -11583,8 +11608,12 @@ poUser.lastMsg = sys.time()*1;
         }
 
         stringToTime = function (str, time) {
+            if (time == "") {
+                return "forever";
+            }
+
             if (typeof str != 'string') {
-                return 0;
+                str = "";
             }
 
             str = str.toLowerCase();
@@ -11617,7 +11646,7 @@ poUser.lastMsg = sys.time()*1;
                 return unit1 * time;
             }
 
-            return units.s * time;
+            return 60 * time;
         }
 
         startUpTime = function () {
@@ -11926,16 +11955,16 @@ poUser.lastMsg = sys.time()*1;
             }
 
             if (cData.toursEnabled && cChan.tour == undefined) {
-			cChan.tour = new Tours(cChan.id);
-			}
+                cChan.tour = new Tours(cChan.id);
+            }
         }
 
         ChannelDataManager.prototype.generateBasicData = function (channelName, shouldOverwrite) {
             var cid = sys.channelId(channelName);
             if (JSESSION.channels(cid) == undefined || sys.channel(cid) == undefined) {
-			return "ERROR: No Channel"; /* No such channel. Probally called by /eval */
-			}
-			
+                return "ERROR: No Channel"; /* No such channel. Probally called by /eval */
+            }
+
             var cData = this.channelData;
             var cChan = JSESSION.channels(cid);
 
@@ -11995,8 +12024,8 @@ poUser.lastMsg = sys.time()*1;
             var name = sys.channel(chan);
 
             if (!name in this.channelData) {
-			this.generateBasicData(name);
-			}
+                this.generateBasicData(name);
+            }
 
             var data = this.channelData[name];
             data.topic = topic;
@@ -12010,8 +12039,8 @@ poUser.lastMsg = sys.time()*1;
             var name = sys.channel(chan);
 
             if (!name in this.channelData) {
-			this.generateBasicData(name);
-			}
+                this.generateBasicData(name);
+            }
 
             var ddd = this.channelData[name];
 
@@ -12026,9 +12055,9 @@ poUser.lastMsg = sys.time()*1;
             var name = sys.channel(chan);
 
             if (!name in this.channelData) {
-			this.generateBasicData(name);
-			}
-			
+                this.generateBasicData(name);
+            }
+
             var cdata = this.channelData[name];
 
             cdata.mutelist = JSON.stringify(mutes);
@@ -12040,8 +12069,8 @@ poUser.lastMsg = sys.time()*1;
             var name = sys.channel(chan);
 
             if (!name in this.channelData) {
-			this.generateBasicData(name);
-			}
+                this.generateBasicData(name);
+            }
 
             var name = sys.channel(chan);
             this.channelData[name].toursEnabled = e;
@@ -12054,19 +12083,20 @@ poUser.lastMsg = sys.time()*1;
 
         if (typeof cData == "undefined") {
             cData = new ChannelDataManager();
-			
-			var chanList = cData.channelData, x, c_chan, creator_id;
-			for (x in chanList) {
-			c_chan = chanList[x];
-			if (c_chan.perm && !sys.existChannel(x)) {
-			creator_id = sys.id(c_chan.creator);
-			if (creator_id == undefined) {
-			creator_id = 0;
-			}
-			sys.createChannel(x);
-			script.beforeChannelCreated(sys.channelId(x), x, creator_id);
-			}
-			}
+
+            var chanList = cData.channelData,
+                x, c_chan, creator_id;
+            for (x in chanList) {
+                c_chan = chanList[x];
+                if (c_chan.perm && !sys.existChannel(x)) {
+                    creator_id = sys.id(c_chan.creator);
+                    if (creator_id == undefined) {
+                        creator_id = 0;
+                    }
+                    sys.createChannel(x);
+                    script.beforeChannelCreated(sys.channelId(x), x, creator_id);
+                }
+            }
         }
         else {
             if (typeof updateProto !== "undefined") {
@@ -12080,7 +12110,8 @@ poUser.lastMsg = sys.time()*1;
         },
             y;
 
-        mafiachan = makeChan("Mafia Channel");/*
+        mafiachan = makeChan("Mafia Channel");
+/*
         trivia = makeChan("Trivia");
         trivreview = makeChan("Trivia Review");*/
         watch = makeChan("Watch");
@@ -12288,7 +12319,6 @@ poUser.lastMsg = sys.time()*1;
             // PO DATA LOADER //
             print("Began importing PO Script data.");
             // MEMORY HASH //
-
 
             function MemoryHash(filename) {
                 this.hash = {};
@@ -12498,7 +12528,7 @@ poUser.lastMsg = sys.time()*1;
                 current_mute
                 ban = c.mutelist,
                 TIME_NOW = sys.time() * 1,
-                hasDeleted;
+                hasDeleted = false;
             for (pruneban in ban) {
                 current_mute = ban[pruneban];
                 if (TIME_NOW >= current_mute.time && current_mute.time != 0) {
@@ -12752,8 +12782,8 @@ poUser.lastMsg = sys.time()*1;
             "name": "default",
             "author": "Lutra",
             "styling": {
-                "header": "<font color=cornflowerblue><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</b></font>",
-                "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</b></font>",
+                "header": "<font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
+                "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
                 "icon": "\u2022",
                 "formatting": ["<b>", "</b>"],
                 "color": "green",
@@ -12766,8 +12796,8 @@ poUser.lastMsg = sys.time()*1;
             "name": "Green Daylight",
             "author": "TheUnknownOne",
             "styling": {
-                "header": "<font color=limegreen><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB<b></font><br/>",
-                "footer": "<br><font color=limegreen><b>\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB\u00BB</b></font>",
+                "header": "<font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB<b></font><br/>",
+                "footer": "<br><font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
                 "icon": "<font color=orange>\u2022</font>",
                 "formatting": ["<b>", "</b>"],
                 "color": "green",
@@ -13001,10 +13031,10 @@ poUser.lastMsg = sys.time()*1;
             "name": "Iconburst",
             "author": "TheUnknownOne",
             "ranks": {
-                "User": "%",
-                "Mod": "±",
-                "Admin": "\u2261",
-                "Owner": "#"
+                "User": "",
+                "Mod": "\xB1",
+                "Admin": "\xB1",
+                "Owner": "\xB1"
             }
         }
 
@@ -13024,20 +13054,20 @@ poUser.lastMsg = sys.time()*1;
             "author": "TheUnknownOne",
             "ranks": {
                 "User": "",
-                "Mod": "</b>»<i><b>",
-                "Admin": "</b>»<i><b>",
-                "Owner": "</b>»<i><b>"
+                "Mod": "</b>\xBB<i><b>",
+                "Admin": "</b>\xBB<i><b>",
+                "Owner": "</b>\xBB<i><b>"
             }
         }
 
-        var skyDrop = {
-            "name": "Skydrop",
+        var money = {
+            "name": "Money",
             "author": "TheUnknownOne",
             "ranks": {
                 "User": "",
                 "Mod": "$",
-                "Admin": "%",
-                "Owner": "+"
+                "Admin": "\x80",
+                "Owner": "¥"
             }
         }
 
@@ -13053,18 +13083,8 @@ poUser.lastMsg = sys.time()*1;
             }
         }
 
-        var four = {
-            "name": "four-thousand",
-            "author": "person6445",
-            "ranks": {
-                "User": "?",
-                "Mod": "?",
-                "Admin": "?",
-                "Owner": "?"
-            }
-        }
 
-        var iconArr = [defaultIcons, iconBurst, PO, POA, skyDrop, pokeballs, four];
+        var iconArr = [defaultIcons, iconBurst, PO, POA, money, pokeballs];
 
         function RankIconList() {}
 
@@ -13885,7 +13905,7 @@ poUser.lastMsg = sys.time()*1;
         updateProtoForJSESSION(Tours);
 
         isNonNegative = function (n) {
-            return typeof n == 'number' && !isNaN(n) && n >= 0;
+            return !isNaN(n) && n >= 0;
         }
 
         isEmpty = function (s) {
@@ -13907,12 +13927,12 @@ poUser.lastMsg = sys.time()*1;
             }
 
             if (type == "object") {
-                if (s instanceof Object) {
+                if (!Array.isArray(s)) {
                     if (Object.keys(s) == 0) {
                         return true;
                     }
                 }
-                else if (s instanceof Array) {
+                else {
                     if (s.length == 0) {
                         return true;
                     }
@@ -14423,12 +14443,12 @@ poUser.lastMsg = sys.time()*1;
                         return "no questions available";
                     }
 
-                    var rand = Math.ceil(len * Math.random());
+                    var rand = Math.floor(len * Math.random());
                     var result = this.questions[list[rand]],
                         resn = result.name;
 
                     while (result === undefined) {
-                        rand = Math.ceil(len * Math.random());
+                        rand = Math.floor(len * Math.random());
                         result = this.questions[list[rand]], resn = result.name;
                     }
 
