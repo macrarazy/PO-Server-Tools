@@ -144,36 +144,7 @@ if (typeof Server == 'undefined') {
         color: "blue"
     }; // default
 }
- 
-/** CONSTANTS **/
-if (typeof Constants == 'undefined') {
-Constants = {}; 
-}
 
-const = function (key, val) {
-key = key.toLowerCase();
-
-if (key in Constants) {
-return;
-}
-
-Object.defineProperty(Constants, key, 
-{"value": val, 
-"enumerable": true
-}); 
-}
-
-constant = function (key) {
-key = key.toLowerCase();
-return Constants[key];
-}
-
-const ("1s", 1);
-const ("1m", 60);
-const ("1h", 60*60);
-const ("1d", 24*60*60);
-
-// constant("OneDay"
 /*** BOTS ***/
 botEscapeMessage = function (src, message, channel) {
     if (typeof Bot == 'undefined') {
@@ -251,7 +222,7 @@ FormatError = function (mess, e) {
 
     var lastChar = mess[mess.length - 1],
         lineData = "";
-    if (mess != "" && lastChar !== "." && lastCharF !== "!" && lastChar !== "?" && lastChar !== ":") {
+    if (mess != "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
         mess += ".";
     }
 
@@ -648,7 +619,7 @@ POChannel.prototype.changeAuth = function (name, newauth) {
     }
 
     var nh;
-	if typeof name == "number") {
+	if (typeof name == "number") {
 	nh = sys.name(name).toLowerCase();
 	} else {
 	nh = name.toLowerCase();
@@ -3362,7 +3333,7 @@ if(message == "Maximum Players Changed.") {
 				var by = mute.by + "</i>",
 				why = mute.why,
                     lastChar = why[why.length - 1],
-                    lastChars = [".", "?", "!";
+                    lastChars = [".", "?", "!"];
 
                 if (lastChars.indexOf(lastChar) == -1) {
                     why += ".";
@@ -3395,7 +3366,7 @@ if(message == "Maximum Players Changed.") {
 				var by = mute.by + "</i>",
 				why = mute.why,
                     lastChar = why[why.length - 1],
-                    lastChars = [".", "?", "!";
+                    lastChars = [".", "?", "!"];
 
                 if (lastChars.indexOf(lastChar) == -1) {
                     why += ".";
@@ -17964,7 +17935,6 @@ function Mafia(mafiachan) {
     };
 };
 
-module.exports = new Mafia(sys.channelId("Mafia Channel"));
         if (typeof poGlobal == 'undefined') {
             poGlobal = JSESSION.global();
         }
