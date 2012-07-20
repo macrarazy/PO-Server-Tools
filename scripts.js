@@ -1107,7 +1107,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         botMessage(src, "You are already in the tournament. You are not able to join more than once.", this.id);
         return;
     }
-    if (!hasTier(src, tourtier)) {
+    if (!hasTeam(src, tourtier)) {
         botMessage(src, "You don't have a team for the " + this.tourtier + " tier. Load or make one to join.", this.id);
         return;
     }
@@ -9660,11 +9660,11 @@ TierBans.findGoodTier(src, team);
                 money = DataHash.money;
 
             if (typeof money[loserName] === "undefined") {
-                botMessage(loser, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you might!", 0);
+                botMessage(loser, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you will!", 0);
                 money[loserName] = 0;
             }
             if (typeof money[winnerName] === "undefined") {
-                botMessage(winner, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you might!", 0);
+                botMessage(winner, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you will!", 0);
                 money[winnerName] = 0;
             }
             money[winnerName] += winMoney;
@@ -10438,46 +10438,37 @@ beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier
 	}
 
 this.isLegalTeam = function(src, team, tier, silent) {
-sys.appendToFile("debug", src+team+tier+silent);
     if (tier == "Challenge Cup") {
 	return true;
 	}
 	
-	sys.appendToFile("debug", "do hasLegalTeam4Tier");
 
     if (!sys.hasLegalTeamForTier(src, team, tier)) {
 	return false;
 	}
 
     var alerts = [], x, b = this.bans, cban, correct, z, alert;
-		sys.appendToFile("debug", "begin loop");
 
 	for (x in b) {
-	cban = b[x];	sys.appendToFile("debug", "\ncban = "+JSON.stringify(cban)+"\n");
-
+	cban = b[x];
 	if (cban.method == this.Include) {
 	correct = tiers.indexOf(tier) != -1;
 	} else {
 	correct = tiers.indexOf(tier) == -1;
 	}
-		sys.appendToFile("debug", "do correct");
 
-	if (correct) {	sys.appendToFile("debug", "do bancheck");
-
+	if (correct) {
 	alert = cban.ban(src, team, tier);
 	if (typeof alert == "object") {
 	alerts.concat(alert);
 	}
 	}
-		sys.appendToFile("debug", "did concat");
 
-	if (alerts.length == 0) {	sys.appendToFile("debug", "team is valid");
-
+	if (alerts.length == 0) {
 	return true; // Team is valid
 	} else if (!silent) {
 	for (z in alerts) {
 	teamAlert(src, team, alerts[z]);
-		sys.appendToFile("debug", "did alert "+alert[z]);
 }
 	return false;
 	}
@@ -10501,7 +10492,7 @@ this.findGoodTier = function(src, team) {
 var INCLUDING = TierBans.Include,
 EXCLUDING = TierBans.Exclude,
 cc = ["Challenge Cup", "CC 1v1"],
-dw = ["No Preview OU", "No Preview Ubers", "DW LC", "Monotype", "DW UU", "DW LU", "Gen 5 1v1 Ubers", "Gen 5 1v1", "Challenge Cup", "CC 1v1", "DW Uber Triples", "No Preview OU Triples", "No Preview Uber Doubles", "No Preview OU Doubles", "Shanai Cup", "Shanai Cup 1.5", "Shanai Cup STAT", "Original Shanai Cup TEST", "Monocolour", "Clear Skies DW"];
+dw = ["No Preview OU", "No Preview Ubers", "Monotype", "Gen 5 1v1 Ubers", "Gen 5 1v1", "Challenge Cup", "CC 1v1", "DW Uber Triples", "No Preview OU Triples", "No Preview Uber Doubles", "No Preview OU Doubles", "Shanai Cup", "Monocolour"];
 
 TierBans.newBan(EXCLUDING, [], function eventShinies(player, team) {
 if (typeof beasts == "undefined") {
