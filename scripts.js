@@ -256,7 +256,7 @@ ChannelLink = function (channel) {
         return "";
     }
 
-    return "<a href='po:join/" + channel + "' style='font-weight: none;'>#" + channel + "</a>";
+    return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
 }
 
 ChannelNames = function () {
@@ -292,7 +292,7 @@ addChannelLinks = function (line2) {
             }
         });
         if (longestName !== "") {
-            html = "<a href=\"po:join/" + longestName + "\" style=\"font-weight: none;\">#" + longestChannelName + "</a>";
+            html = "<a href=\"po:join/" + longestName + "\">#" + longestChannelName + "</a>";
             line = line.replaceBetween(pos - 1, longestName.length + 1, html);
             pos += html.length - 1;
             longestName = "";
@@ -337,7 +337,7 @@ clearlogs = function () {
     try {
         var len = fileLen("logs.txt");
     }
-    catch (e) { /* Linux, Mac */
+    catch (e) { /* Linux */
         Config.ClearLogsAt = 0;
         return;
     }
@@ -400,10 +400,6 @@ function POUser(id) {
     if (i.hasOwnProperty(mn_lc)) {
         this.macro = i[mn_lc];
     }
-}
-
-POUser.prototype.toString = function () {
-    return "[object POUser]";
 }
 
 POUser.prototype.muteCheck = function () {
@@ -525,10 +521,6 @@ POChannel.prototype.takeTourAuth = function (name) {
     }
 
     cData.changeTourAuth(this.id, this.tourAuth);
-}
-
-POChannel.prototype.toString = function () {
-    return "[object POChannel]";
 }
 
 POChannel.prototype.changeTopic = function (source, topic, fullCommand) {
@@ -736,13 +728,13 @@ _JSESSION = function () {
 _JSESSION.prototype.toString = function () {
     var str = "JSESSION Information\r\n";
     if (this.UsesUser) {
-        str += " Uses User; User contains " + objLength(this.UserData) + " values;"
+        str += " Uses User\n User contains " + objLength(this.UserData) + " values\n"
     }
     if (this.UsesChannel) {
-        str += " Uses Channel; Channel contains " + objLength(this.ChannelData) + " values;"
+        str += " Uses Channel\n Channel contains " + objLength(this.ChannelData) + " values\n"
     }
     if (this.UsesGlobal) {
-        str += " Uses Global;"
+        str += " Uses Global\n"
     }
     if (this.ScriptID != undefined) {
         str += " Has Script ID";
@@ -2580,7 +2572,7 @@ JSESSION.refill();
         cData.loadDataFor(name);
 
         var POChan = JSESSION.channels(chan);
-        if (POChan.creator == src) {
+        if (sys.loggedIn(src) && POChan.creator == src) {
             POChan.creator = sys.name(src).toLowerCase();
         } else {
             POChan.creator = "~Unknown~";
@@ -3014,7 +3006,9 @@ Trivia.start();
 
         if (message.substring(0, 14) == "Script Warning") {
             sys.stopEvent();
+			if (watch != undefined) {
             botAll(message, watch);
+			}
             return;
         }
 
@@ -3022,13 +3016,13 @@ Trivia.start();
             ImportData();
             sys.stopEvent();
             return;
-        }
+        }/*
         if (message.substr(0, 2) != "[#") {
             if (/Script Error line \d+:/.test(message)) {
                 botAll(message, watch);
                 return;
             }
-        }
+        }*/
 
 /*
 if(message == "Safe scripts setting changed") {
@@ -3068,11 +3062,6 @@ if(message == "Maximum Players Changed.") {
             for (var x in script) {
                 RECOVERY_BACKUP[x] = script[x];
             }
-
-            var today = String(new Date());
-            var timestamp = today.replace(/\((.*?)\)/g, "").replace(/\)/g, "").replace(/\+/, "").replace(/:/g, "-").trim();
-
-            sys.writeToFile("backups/script_" + timestamp + ".js", sys.getFileContent("scripts.js"));
             return;
         }
 
@@ -3113,19 +3102,6 @@ if(message == "Maximum Players Changed.") {
         }
         else if (typeof INSERVMSG !== 'undefined') {
             delete INSERVMSG;
-        }
-
-        if (message.substr(0, 2) == "[#") {
-            var htmesc = html_strip(message, true),
-                status_HTML_MSG_ACTIVE = typeof SERVER_HTML_MSG_ACTIVE;
-            if (htmesc != message && status_HTML_MSG_ACTIVE == 'undefined') {
-                SERVER_HTML_MSG_ACTIVE = true;
-                print(htmesc.replace(/\s{2,}/g, ' '));
-                sys.stopEvent();
-            }
-            else if (status_HTML_MSG_ACTIVE != 'undefined') {
-                delete SERVER_HTML_MSG_ACTIVE;
-            }
         }
     },
 
@@ -9716,19 +9692,19 @@ beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier
             return;
         }
 
-        if (sys.tier(src).indexOf("Doubles") != -1 && sys.tier(dest).indexOf("Doubles") != -1 && mode != 1) {
+        if (sys.tier(src, team).indexOf("Doubles") != -1 && destTier.indexOf("Doubles") != -1 && mode != 1) {
             botMessage(src, "To fight in doubles, enable doubles in the challenge window!");
             sys.stopEvent();
             return;
         }
-        if (sys.tier(src).indexOf("Triples") != -1 && sys.tier(dest).indexOf("Triples") != -1 && mode != 2) {
+        if (sys.tier(src, team).indexOf("Triples") != -1 && destTier.indexOf("Triples") != -1 && mode != 2) {
             botMessage(src, "To fight in triples, enable triples in the challenge window!");
             sys.stopEvent();
             return;
         }
     },
 
-    beforeChangeTier : function(src, team, oldtier, newtier) {
+    beforeChangeTier: function(src, team, oldtier, newtier) {
     if (!TierBans.isLegalTeam(src, team, newtier)) {
        sys.stopEvent();
        teamAlert(src, team, "You cannot go in the "+newtier+" tier. Appointing another tier for this team...");
@@ -10413,11 +10389,7 @@ beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier
             t.register(style.footer);
             t.render(src, chan, "<br/>");
         },
-
-        customAbilityBans: function (src, tier) {
-        },
-
-
+		
         loadTiers: function () {
 		TierBans = new (function() {
         this.bans = [];
@@ -10463,6 +10435,7 @@ this.isLegalTeam = function(src, team, tier, silent) {
 	}
 	return false;
 	}
+	}
 }
 
 this.findGoodTier = function(src, team) {
@@ -10484,7 +10457,7 @@ EXCLUDING = TierBans.Exclude,
 cc = ["Challenge Cup", "CC 1v1"],
 dw = ["No Preview OU", "No Preview Ubers", "DW LC", "Monotype", "DW UU", "DW LU", "Gen 5 1v1 Ubers", "Gen 5 1v1", "Challenge Cup", "CC 1v1", "DW Uber Triples", "No Preview OU Triples", "No Preview Uber Doubles", "No Preview OU Doubles", "Shanai Cup", "Shanai Cup 1.5", "Shanai Cup STAT", "Original Shanai Cup TEST", "Monocolour", "Clear Skies DW"];
 
-TierBans.addBan(EXCLUDING, [], function eventShinies(player, team) {
+TierBans.newBan(EXCLUDING, [], function eventShinies(player, team) {
 if (typeof beasts == "undefined") {
     beasts = {};
     beasts[sys.pokeNum('Raikou')]  = ['Extremespeed', 'Aura Sphere', 'Weather Ball', 'Zap Cannon'].map(sys.moveNum);
@@ -10575,7 +10548,7 @@ TierBans.newBan(INCLUDING, ["Wifi NU"], function evioliteCheck(src, team, tier) 
     }
 });
 
-TierBans.addBan(EXCLUDING, dw, function dwAbilityCheck(src, team, tier) {
+TierBans.newBan(EXCLUDING, dw, function dwAbilityCheck(src, team, tier) {
     if (sys.gen(src, team) < 5) {
         return;
 	}
@@ -10593,7 +10566,7 @@ TierBans.addBan(EXCLUDING, dw, function dwAbilityCheck(src, team, tier) {
     return ret;
 });
 
-TierBans.addBan(INCLUDING, ["No Preview OU", "Wifi OU", "Wifi UU", "Wifi LU", "Wifi LC", "DW LC", "Wifi Ubers", "No Preview Ubers", "Clear Skies", "Clear Skies DW", "Monotype", "Monocolour", "Monogen", "Smogon OU", "Smogon UU", "Smogon RU", "Wifi NU"],
+TierBans.newBan(INCLUDING, ["No Preview OU", "Wifi OU", "Wifi UU", "Wifi LU", "Wifi LC", "DW LC", "Wifi Ubers", "No Preview Ubers", "Clear Skies", "Clear Skies DW", "Monotype", "Monocolour", "Monogen", "Smogon OU", "Smogon UU", "Smogon RU", "Wifi NU"],
                            function inconsistentCheck(src, team, tier) {
     var moody = sys.abilityNum("Moody"), ret = [], i, x;
 	
@@ -10606,7 +10579,7 @@ TierBans.addBan(INCLUDING, ["No Preview OU", "Wifi OU", "Wifi UU", "Wifi LU", "W
     return ret;
 });
 
-TierBans.addBan(INCLUDING, ["Clear Skies"], function weatherlesstiercheck(src, team, tier) {
+TierBans.newBan(INCLUDING, ["Clear Skies"], function weatherlesstiercheck(src, team, tier) {
     var ret = [], i, ability, tl;
     for (i = 0; i < 6; i++){
         ability = sys.ability(sys.teamPokeAbility(src, team, i));
@@ -10619,7 +10592,7 @@ TierBans.addBan(INCLUDING, ["Clear Skies"], function weatherlesstiercheck(src, t
     return ret;
 });
 
-TierBans.addBan(INCLUDING, ["Monotype"], function monotypeCheck(src, team, tier) {
+TierBans.newBan(INCLUDING, ["Monotype"], function monotypeCheck(src, team, tier) {
     var TypeA = sys.pokeType1(sys.teamPoke(src, team, 0), 5),
 	TypeB = sys.pokeType2(sys.teamPoke(src, team, 0), 5),
 	k, checkType, i, temptypeA, temptypeB;
@@ -10688,7 +10661,7 @@ TierBans.addBan(INCLUDING, ["Monotype"], function monotypeCheck(src, team, tier)
     }
 });
 
-TierBans.addBan(INCLUDING, ["Monogen"], function monoGenCheck(src, team, tier) {
+TierBans.newBan(INCLUDING, ["Monogen"], function monoGenCheck(src, team, tier) {
     var GEN_MAX = [0, 151, 252, 386, 493, 647],
 	gen = 0, i, pokenum, species;
     for (i = 0; i < 6; ++i) {
@@ -10706,7 +10679,7 @@ TierBans.addBan(INCLUDING, ["Monogen"], function monoGenCheck(src, team, tier) {
 });
 
 
-TierBans.addBan(INCLUDING, ["Monocolour"], function monoColourCheck(src, team, tier) {
+TierBans.newBan(INCLUDING, ["Monocolour"], function monoColourCheck(src, team, tier) {
     if (typeof pokeColours == 'undefined') {
     pokeColours = {
         'Red': ['Charmander', 'Charmeleon', 'Charizard', 'Vileplume', 'Paras', 'Parasect', 'Krabby', 'Kingler', 'Voltorb', 'Electrode', 'Goldeen', 'Seaking', 'Jynx', 'Magikarp', 'Magmar', 'Flareon', 'Ledyba', 'Ledian', 'Ariados', 'Yanma', 'Scizor', 'Slugma', 'Magcargo', 'Octillery', 'Delibird', 'Porygon2', 'Magby', 'Ho-Oh', 'Torchic', 'Combusken', 'Blaziken', 'Wurmple', 'Medicham', 'Carvanha', 'Camerupt', 'Solrock', 'Corphish', 'Crawdaunt', 'Latias', 'Groudon', 'Deoxys', 'Deoxys-A', 'Deoxys-D', 'Deoxys-S', 'Kricketot', 'Kricketune', 'Magmortar', 'Porygon-Z', 'Rotom', 'Rotom-H', 'Rotom-F', 'Rotom-W', 'Rotom-C', 'Rotom-S', 'Tepig', 'Pignite', 'Emboar', 'Pansear', 'Simisear', 'Throh', 'Venipede', 'Scolipede', 'Krookodile', 'Darumaka', 'Darmanitan', 'Dwebble', 'Crustle', 'Scrafty', 'Shelmet', 'Accelgor', 'Druddigon', 'Pawniard', 'Bisharp', 'Braviary', 'Heatmor'],
@@ -10738,7 +10711,7 @@ TierBans.addBan(INCLUDING, ["Monocolour"], function monoColourCheck(src, team, t
     }
 });
 
-TierBans.addBan(INCLUDING, ["Smogon OU", "Wifi OU", "No Preview OU"], function swiftSwimCheck(src, team, tier) {
+TierBans.newBan(INCLUDING, ["Smogon OU", "Wifi OU", "No Preview OU"], function swiftSwimCheck(src, team, tier) {
     var i, j;
 	for(i = 0; i <6; ++i){
         if(sys.ability(sys.teamPokeAbility(src, team, i)) == "Drizzle"){
@@ -10751,7 +10724,7 @@ TierBans.addBan(INCLUDING, ["Smogon OU", "Wifi OU", "No Preview OU"], function s
     }
 });
 
-TierBans.addBan(INCLUDING, ["Smogon UU"], function droughtCheck(src, team, tier) {
+TierBans.newBan(INCLUDING, ["Smogon UU"], function droughtCheck(src, team, tier) {
     var i;
 	for(i = 0; i <6; ++i){
         if(sys.ability(sys.teamPokeAbility(src, team, i)) == "Drought"){
@@ -10760,7 +10733,7 @@ TierBans.addBan(INCLUDING, ["Smogon UU"], function droughtCheck(src, team, tier)
     }
 });
 
-TierBans.addBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function sandStreamCheck(src, team, tier) {
+TierBans.newBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function sandStreamCheck(src, team, tier) {
     var i;
 	for(i = 0; i <6; ++i){
         if(sys.ability(sys.teamPokeAbility(src, team, i)) == "Sand Stream"){
@@ -10769,7 +10742,7 @@ TierBans.addBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function sandStrea
     }
 });
 
-TierBans.addBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function snowWarningCheck(src, team, tier) {
+TierBans.newBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function snowWarningCheck(src, team, tier) {
     var i;
 	for(i = 0; i <6; ++i){
         if(sys.ability(sys.teamPokeAbility(src, team, i)) == "Snow Warning"){
@@ -10778,7 +10751,7 @@ TierBans.addBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function snowWarni
     }
 });
 
-TierBans.addBan(INCLUDING, ["Shanai Cup"], function shanaiAbilityCheck(src, team, tier) {
+TierBans.newBan(INCLUDING, ["Shanai Cup"], function shanaiAbilityCheck(src, team, tier) {
     var bannedAbilities = {
         'treecko': ['overgrow'],
         'chimchar': ['blaze'],
@@ -10798,6 +10771,7 @@ TierBans.addBan(INCLUDING, ["Shanai Cup"], function shanaiAbilityCheck(src, team
         'pidgeotto': ['big pecks'],
         'karrablast': ['swarm']
     }, ret = [], ability, lability, poke, lpoke;
+	
     for (i = 0; i < 6; ++i) {
         ability = sys.ability(sys.teamPokeAbility(src, team, i)),
 		lability = ability.toLowerCase(),
@@ -10810,7 +10784,7 @@ TierBans.addBan(INCLUDING, ["Shanai Cup"], function shanaiAbilityCheck(src, team
     return ret;
 });
 
-TierBans.addBan(EXCLUDING, challenge_cups, function hasOneUsablePokemon(player, team) {
+TierBans.newBan(EXCLUDING, cc, function hasOneUsablePokemon(player, team) {
     var slot, move;
 	for (slot=0; slot<6; slot++) {
         if (sys.teamPoke(player, team, slot) !== 0) {
@@ -11621,15 +11595,15 @@ dwpokemons = {};
                 ];
 
                 var sec = sys.time() * 1 - startupTime,
-                    j, n, s, len = d.length;
+                    j, n, sL, len = d.length;
                 for (j = 0; j < d.length; ++j) {
                     n = parseInt(sec / d[j][0]);
                     if (n > 0) {
-                        s = "";
+                        sL = "";
                         if (n > 1) {
-                            s = "s";
+                            sL = "s";
                         }
-                        s.push((n + " " + d[j][1] + s));
+                        s.push((n + " " + d[j][1] + sL));
                         sec -= n * d[j][0];
                         if (s.length >= len) {
                             break;
@@ -11657,16 +11631,16 @@ dwpokemons = {};
                 ];
 
                 var s = [],
-                    j, n, s, len = d.length;
+                    j, n, sL, len = d.length;
                 for (j = 0; j < d.length; ++j) {
                     n = parseInt(sec / d[j][0]);
                     if (n > 0) {
-                        s = "";
+                        sL = "";
                         if (n > 1) {
-                            s = "s";
+                            sL = "s";
                         }
 
-                        s.push((n + " " + d[j][1] + s));
+                        s.push((n + " " + d[j][1] + sL));
                         sec -= n * d[j][0];
                         if (s.length >= d.length) {
                             break;
@@ -11674,7 +11648,9 @@ dwpokemons = {};
                     }
                 }
 
-                if (s.length == 0) return "1 second";
+                if (s.length == 0) {
+				return "1 second";
+				}
 
                 return andJoin(s);
             }
@@ -13254,12 +13230,12 @@ dwpokemons = {};
                     };
 
                 var Files = {
-                    'stats': parseFile("poke_stats"),
-                    'weight': parseFile("poke_weight"),
+                    'stats': parseFile("stats"),
+                    'weight': parseFile("weight"),
                     'height': parseFile("height"),
                     'evos': parseFile("evos"),
-                    'evolevels': parseFile("minlevels_G5"),
-                    'genders': parseFile("poke_gender"),
+                    'evolevels': parseFile("5G/minlevels"),
+                    'genders': parseFile("gender"),
                     'cc': parseFile("level_balance"),
 
                     'egggroup1': parseFile("egg_group_1"),
@@ -13270,7 +13246,7 @@ dwpokemons = {};
                         'egg': parseMoveFile("egg"),
                         'level': parseMoveFile("level"),
                         'evo': parseMoveFile("pre_evo"),
-                        'event': parseMoveFile("special"),
+                        'event': parseFile("5G/Subgen 0/special_moves"),
                         'tms': parseMoveFile("tm_and_hm"),
                         'tutor': parseMoveFile("tutor")
                     }
@@ -14919,34 +14895,7 @@ dwpokemons = {};
             // Remember to update this if you are updating mafia
             // Otherwise mafia game won't get reloaded
             var version = "2012-07-19";
-
-            function Mafia(mafiachan) {
-                // Remember to update this if you are updating mafia
-                // Otherwise mafia game won't get reloaded
-                this.version = version;
-                var mafia = this;
-
-                var noPlayer = '*';
-                var CurrentGame;
-                var PreviousGames;
-                var MAFIA_SAVE_FILE = Config.Mafia.stats_file;
-                sys.appendToFile(MAFIA_SAVE_FILE, "");
-
-                var DEFAULT_BORDER = "***************************************************************************************";
-                var border;
-
-                var savePlayedGames = function () {
-                    sys.writeToFile(MAFIA_SAVE_FILE, JSON.stringify(PreviousGames));
-                };
-                var loadPlayedGames = function () {
-                    try {
-                        PreviousGames = JSON.parse(sys.getFileContent(MAFIA_SAVE_FILE));
-                    } catch (e) {
-                        PreviousGames = [];
-                    }
-                };
-                loadPlayedGames();
-
+			
                 function dump(src, mess) {
                     for (var x in mess) {
                         sys.sendMessage(src, mess[x], mafiachan);
@@ -14992,7 +14941,7 @@ dwpokemons = {};
                 function Mafia(mafiachan) {
                     // Remember to update this if you are updating mafia
                     // Otherwise mafia game won't get reloaded
-                    this.version = "2012-01-21.1";
+                    this.version = version;
                     var mafia = this;
                     var noPlayer = '*';
                     var CurrentGame;
@@ -17700,7 +17649,6 @@ dwpokemons = {};
                         throw ("no valid command");
                     };
                 };
-				}
 				
                 mafia = new Mafia(sys.channelId("Mafia Channel"));
 
