@@ -11540,44 +11540,53 @@ TierBans.findGoodTier(src, team);
             return AuthIMG(id) + " " + sys.name(id).bold().fontcolor(color) + " " + online() + " <small>(<font color='blue'><b>Session ID: " + id + "</b></font>)</small>";
         }
 
-        formatPoke = function (pokenum, shine, backsprite, gendar, gan) {
-            if (!pokenum || pokenum < 1 || isNaN(pokenum)) {
-                if (sys.pokeNum(pokenum) == undefined) {
+		formatPoke = function (num, isShiny, fromBack, Gender, generation) {
+		if (!isNonNegative(num)) {
+                if (sys.pokeNum(num) == undefined) {
                     return "<img src='pokemon:0'>";
                 }
                 else {
-                    pokenum = sys.pokeNum(pokenum);
+                    num = sys.pokeNum(num);
                 }
             }
-
-            var shiny = false,
+			var shiny = false,
                 back = false,
                 gender = "neutral",
                 gen = 5;
 
-            if (shine) shiny = true;
-
-            if (backsprite) back = true;
-
-            if (gendar) {
-                gendar = Number(gendar);
-                if ((gendar == 0 || gendar == 1 || gendar == 2)) {
-                    gender = {
+            if (isShiny) {
+			shiny = true;
+			}
+			
+			if  (fromBack) {
+			back = true;
+			}
+			
+			if (Gender != undefined) {
+			Gender = Number(Gender);
+			
+			gender = {
                         0: "neutral",
                         1: "male",
                         2: "female"
-                    }[gendar];
-                }
+            }[Gender] || "neutral";
             }
+			
 
-            if (gan == 2 && pokenum > 151 && pokenum < 252) gen = gan;
+            if (generation == 2 && pokenum > 151 && pokenum < 252) {
+			gen = 2;
+			}
 
-            if (gan == 2 && pokenum > 251 && pokenum < 387) gen = 3;
+            if (generation == 3 && pokenum > 251 && pokenum < 387) {
+			gen = 3;
+			}
 
-            if (gan == 3 && pokenum > 386 && pokemon < 494) gen = 4;
+            if (generation == 3 && pokenum > 386 && pokemon < 494) {
+			gen = 4;
+			}
 
             return "<img src='pokemon:" + pokenum + "&shiny=" + shiny + "&back=" + back + "&gender=" + gender + "&gen=" + gen + "'>";
-        }
+	    }
 
         cmp = function (a, b) {
             return a.toLowerCase() == b.toLowerCase();
@@ -11728,14 +11737,13 @@ TierBans.findGoodTier(src, team);
         }
 
         lastName = function (ip) {
-            if (typeof DataHash.names[ip] != "undefined" && typeof(DataHash) != "undefined") {
-                return DataHash.names[ip];
-            }
-            return undefined;
+            return DataHash.names[ip];
         }
 
         html_escape = function (str) {
-            if (typeof str != "string") str = String(str);
+            if (typeof str != "string") {
+			str = String(str);
+			}
 
             return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
         }
@@ -11745,6 +11753,7 @@ TierBans.findGoodTier(src, team);
             if (repChar) {
                 replaceChar = "  ";
             }
+			
             return str.replace(/<\/?[^>]*>/g, replaceChar);
         }
 
@@ -11759,11 +11768,13 @@ TierBans.findGoodTier(src, team);
         idsOfIP = function (ip) {
             var players = sys.playerIds(),
                 y, ipArr = [];
+				
             for (y in players) {
                 if (sys.ip(players[y]) == ip) {
                     ipArr.push(players[y]);
                 }
             }
+			
             return ipArr;
         }
 
@@ -11775,15 +11786,13 @@ TierBans.findGoodTier(src, team);
             if (!hasCommandStart(message)) {
                 return true;
             }
-
-            /* * added for posting comments */
-
+			
             return message[1] == "/" || message[1] == "!" || message[1] == "*";
         }
 
         sendChanError = function (src, chan, mchan) {
             if (chan != mchan) {
-                botMessage(src, ChannelLink(sys.channel(mchan)) + " commands should be used in channel " + ChannelLink(sys.channel(mchan)) + ".", chan);
+                botMessage(src, sys.channel(mchan) + " commands should be used in " + ChannelLink(sys.channel(mchan)) + ".", chan);
                 if (!sys.isInChannel(src, mchan)) {
                     sys.putInChannel(src, mchan);
                 }
@@ -11796,26 +11805,24 @@ TierBans.findGoodTier(src, team);
             return Object.keys(obj).length;
         }
 
-        sendBotToAllBut = function (id, mss, cid, kind) {
-            var typo;
-            if (kind == undefined) var kind = "";
-
-            var k = kind.toLowerCase();
-            if (k == "escape") typo = botEscapeMessage;
-            else typo = botMessage;
-
-            var pID;
-            var pIDs = sys.playerIds();
+		sendBotToAllBut = function (src, message, channel, type) {
+            var func, pID, pIDs = sys.playerIds(), p;
+			
+            if (t == "escape") {
+			func = botEscapeMessage;
+			} else {
+			func = botMessage;
+			}
+			
             for (pID in pIDs) {
-                var p = pIDs[pID];
+                p = pIDs[pID];
                 if (p !== id) {
-                    typo(p, mss, cid);
+                    func(p, message, channel);
                 }
             }
 
-            print("[#" + sys.channel(cid) + "] " + Bot.bot + ": " + mss);
-        }
-
+            print("[#" + sys.channel(channel) + "] " + Bot.bot + ": " + message);
+			}
 
         putInMultipleChannels = function (src, channelList) {
             var x, pinC = sys.putInChannel;
