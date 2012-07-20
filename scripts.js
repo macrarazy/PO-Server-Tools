@@ -207,8 +207,8 @@ botAll = function (message, channel) {
 }
 
 teamAlert = function (src, team, message) {
-    team_no++;
-    botMessage(src, "Team #" + team_no + ": " + message);
+    team += 1;
+    botMessage(src, "Team #" + team + ": " + message, undefined);
 }
 
 /* Invalid Command Messages */
@@ -956,7 +956,7 @@ hasTeam = function (id, tier) {
         return sys.teamCount(id) != 0;
     }
 
-    return firstTeamForTier(id, tier) != -1;
+    return sys.hasTier(id, tier);
 }
 
 function Tours(id) {
@@ -1107,9 +1107,8 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         botMessage(src, "You are already in the tournament. You are not able to join more than once.", this.id);
         return;
     }
-    var srctier = sys.tier(src);
-    if (!cmp(srctier, this.tourtier)) {
-        botMessage(src, "You are currently not battling in the " + this.tourtier + " tier. Change your tier to " + this.tourtier + " to be able to join.", this.id);
+    if (!hasTier(src, tourtier)) {
+        botMessage(src, "You don't have a team for the " + this.tourtier + " tier. Load or make one to join.", this.id);
         return;
     }
 
@@ -1862,14 +1861,16 @@ Tours.prototype.roundPairing = function () {
     this.border();
     this.white();
     if (this.AutoStartBattles) {
-        var t;
+        var t, p, op, meteams, oppteams;
         for (t in this.couples) {
-            var p = this.couples[t][0].toLowerCase(),
+            p = this.couples[t][0].toLowerCase(),
                 op = this.couples[t][1].toLowerCase();
             if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
-                if (sys.tier(sys.id(p)) == sys.tier(sys.id(op)) && cmp(sys.tier(sys.id(p)), this.tourtier)) {
+			meteams = firstTeamFor(sys.id(p), this.tourtier);
+			oppteams = firstTeamFor(sys.id(op), tourtier);
+                if (meteams != -1 && oppteams != -1) {
                     if (!this.ongoingTourneyBattle(p) && !this.ongoingTourneyBattle(op)) {
-                        sys.forceBattle(sys.id(p), sys.id(op), sys.getClauses(this.tourtier), 0, false);
+                        sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(this.tourtier), 0, false);
                         this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [p.name(), op.name()];
                     }
                 }
@@ -2488,9 +2489,8 @@ JSESSION.refill();
     },
 
     beforeFindBattle: function (src) {
-        var tier = sys.tier(src);
         var getColor = script.namecolor(src);
-        sys.sendHtmlAll("<timestamp/><b>Find Battle</b>[<font color=" + getColor + "><b>" + sys.name(src) + "</b></font>] -- <b>" + tier + "</b>", watch);
+        sys.sendHtmlAll("<timestamp/><b>Find Battle</b> -- <font color=" + getColor + "><b>" + sys.name(src) + "</b></font></b>", watch);
     },
 
     beforeChannelJoin: function (src, c) {
@@ -2696,7 +2696,7 @@ Trivia.start();
             if (!sys.loggedIn(src)) {
                 return;
             }
-            sys.sendHtmlMessage(src, "<i>Error while sending reply to server -- Received error n°5: The server could not handle your request</i>");
+            sendFailWhale(src, 0);
             sys.stopEvent();
             return;
         }
@@ -2727,7 +2727,7 @@ Trivia.start();
             testNameKickedPlayer = src;
             sys.stopEvent();
             return;
-        }
+        }	
     },
 
     beforeChannelLeave: function (src, channel) {
@@ -2801,9 +2801,9 @@ Trivia.start();
             white();
             border();
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + " " + startTime + " ago! </b></font>", 0);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>PLAYERS:</font></b> " + poChan.tour.tournumber, 0);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>TYPE:</b></font> Single Elimination", 0);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>TIER:</b></font> " + poChan.tour.tourtier, 0);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + poChan.tour.tournumber, 0);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + poChan.tour.identify(), 0);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + poChan.tour.tourtier, 0);
 
             if (!isEmpty(poChan.tour.prize)) {
                 sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>PRIZE:</b></font> " + poChan.tour.prize, 0);
@@ -3551,12 +3551,12 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater('Fun User Commands');
                     ct.register("roulette", "Win a randon Pokemon!");
                     ct.register("catch", "Catch a random Pokemon!");
-                    ct.register('attack', ['{p Thing}'], 'Attack something with a random attack!');
+                    ct.register('attack', ['{p Thing}'], 'Attack something or someone with a random attack!');
                     ct.register("future", ["{o Time}", "{p Message}"], "Sends a message into the future! Time must be over 4 seconds and under 5 hours. Message can also be a command(with command start).");
 
                     if (!noPermission(src, 2)) {
                         ct.span("Fun " + AdminName + " Commands");
-                        ct.register("ify", ["{p Name}"], "Changes everyones name on the server. Changes names of those who change team and login aswell.");
+                        ct.register("ify", ["{p Name}"], "Changes everyones name on the server. Changes names of those who change team and login as well.");
                         ct.register("unify", "Changes everyones name back.");
                     }
 
@@ -3567,16 +3567,16 @@ if(message == "Maximum Players Changed.") {
                 stylecommands: function () {
                     var ct = new Command_Templater('Style Commands', true);
                     ct.span("Style " + UserName + " Commands");
-                    ct.register("styles", "Displays all Style Names.");
-                    ct.register("styleinfo", "Displays full information about Styles.");
+                    ct.register("styles", "Displays a list of all styles (their names)");
+                    ct.register("styleinfo", "Displays full information about styles.");
 
                     if (!noPermission(src, 1)) {
                         ct.span("Style " + ModName + " Commands");
-                        ct.register("loadstyle", ["{p URL}"], "Loads a style from the Web.");
+                        ct.register("loadstyle", ["{p URL}"], "Loads a style from the given URL.");
                     }
                     if (!noPermission(src, 2)) {
                         ct.span("Style " + AdminName + " Commands");
-                        ct.register("mainstyle", ["{p Style}"], "Makes a Style the Main. (Current Style is " + style.name + ")");
+                        ct.register("mainstyle", ["{p Style}"], "Makes a Style the main (active) style. (Current Style is " + style.name + ")");
                     }
                     ct.register(style.footer);
                     ct.render(src, chan);
@@ -3585,17 +3585,17 @@ if(message == "Maximum Players Changed.") {
                 iconcommands: function () {
                     var ct = new Command_Templater('Rank Icon Commands', true);
                     ct.span("Rank Icon " + UserName + " Commands");
-                    ct.register("icons", "Displays all Rank Icon names.");
-                    ct.register("iconinfo", "Displays full information about Rank Icons.");
+                    ct.register("icons", "Displays a list of all rank icons (their names).");
+                    ct.register("iconinfo", "Displays full information about rank icons.");
                     ct.register("changeicon", ["{p Icon}"], "Changes your Icon. If Icon is remove, removes your Icon.");
 
                     if (!noPermission(src, 1)) {
                         ct.span("Rank Icon " + ModName + " Commands");
-                        ct.register("loadicons", ["{p URL}"], "Loads Rank Icons from the web.");
+                        ct.register("loadicons", ["{p URL}"], "Loads rank icons from the URL.");
                     }
                     if (!noPermission(src, 2)) {
                         ct.span("Rank Icon " + AdminName + " Commands");
-                        ct.register("mainicon", ["{p Name}"], "Makes a Rank Icons list the main. (Current Rank Icons list is " + Icons.name + ")");
+                        ct.register("mainicon", ["{p Name}"], "Makes a rank icon list the main (active). (Current Rank Icons list is " + Icons.name + ")");
                     }
                     ct.register(style.footer);
                     ct.render(src, chan);
@@ -3632,14 +3632,14 @@ if(message == "Maximum Players Changed.") {
                 messagecommands: function () {
                     var ct = new Command_Templater('Messaging Commands', true);
                     ct.span("Messaging " + UserName + " Commands");
-                    ct.register("me", ["{p Message}"], "Sends a message to everyone with *** prefixed while using BBCode.");
+                    ct.register("me", ["{p Message}"], "Sends a message to everyone with *** prefixed. BBCode is allowed and will be parsed.");
 
                     if (!noPermission(src, 1)) {
                         ct.span("Messaging " + ModName + " Commands");
-                        ct.register("htmlme", ["{p Message}"], "Sends a message to everyone with *** prefixed while using HTML.");
+                        ct.register("htmlme", ["{p Message}"], "Sends a message to everyone with *** prefixed. HTML is allowed and will be parsed");
                         ct.register("send", ["{p Message}"], "Sends a message to everyone.");
                         ct.register("wall", ["{p Message}"], "Announces something in all channels.");
-                        ct.register("htmlwall", ["{p Message}"], "Announces something in all channels with HTML.");
+                        ct.register("htmlwall", ["{p Message}"], "Announces something in all channels. HTML is allowed and will be parsed");
                     }
 
                     ct.register(style.footer);
@@ -3651,8 +3651,8 @@ if(message == "Maximum Players Changed.") {
                     ct.register('deletemail', 'Deletes all your mail.');
                     ct.register('readmail', 'Displays your mail.');
                     ct.register('sendmail', ["{or Person}", "{p Title}", "{p Text}"], "Sends mail to someone! Text and Title may contain BB Code.", chan);
-                    ct.register('deletesent', 'Removes all your send mails.');
-                    ct.register('sentmails', 'Displays your send mails.');
+                    ct.register('deletesent', 'Removes all your sent mails.');
+                    ct.register('sentmails', 'Displays your sent mails.');
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -3661,24 +3661,24 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater('Information Commands');
 
                     ct.register('team', 'Makes an importable of your team.');
-                    ct.register("ranking", ["<u>{r Person}</u>"], "Displays ranking stats of you or another Player.");
-                    ct.register('players', 'Displays Information of Players Online and Number of Players online.');
-                    ct.register("tours", "Displays Information of Tournaments existing and Number of existing Tournaments.");
-                    ct.register('channels', 'Displays Information of Channels exisiting and Number of Channels existing.');
-                    ct.register("authlist", "Displays Server Authority.");
-                    ct.register("tourauthlist", "Displays Server Tournament Authority.");
-                    ct.register("autoidles", "Displays Auto Idles.");
-                    ct.register("voices", "Displays Voices.");
-                    ct.register("rules", "Displays Server Rules.");
-                    ct.register('league', 'Displays League Members.');
-                    ct.register('scriptinfo', 'Displays Script Information.');
-                    ct.register('settings', 'Displays Script Settings.');
+                    ct.register("ranking", ["<u>{r Name}</u>"], "Displays ranking of you or another person. Your ladder (and the person's if given) must be enabled.");
+                    ct.register('players', 'Displays information about all online players.');
+                    ct.register('channels', 'Displays information about online channels.');
+					ct.register("tours", "Displays information about active tours.");
+                    ct.register("authlist", "Displays a list of server authority.");
+                    ct.register("tourauthlist", "Displays a list of server tournament authority.");
+                    ct.register("autoidles", "Displays a list of people who Auto-Idle.");
+                    ct.register("voices", "Displays a list of Voices.");
+                    ct.register("rules", "Displays this Server's rulelist.");
+                    ct.register('league', 'Displays a list of league members (Gyms, E4, Champion).');
+                    ct.register('scriptinfo', 'Displays script information (including links).');
+                    ct.register('settings', 'Displays a list of script settings and their given value.');
                     ct.register('battlepoints', ["<u>{or User}</u>"], "Displays someones battle points. If no user is specified or is invalid, displays your battle points.");
-                    ct.register('viewmotd', 'Displays the Message of the Day.');
-                    ct.register("pokedex", ["{p Pokemon}</b>/<b>{b Pokenum}</b>"], "Displays Information about Pokemon.");
-                    ct.register('commandstats', ["<u>{o Number}</u>"], 'Displays Command Statistics. You can also view the most x used commands.');
+                    ct.register('viewmotd', 'Displays the message of the day again.');
+                    ct.register("pokedex", ["{p Pokemon}</b>/<b>{b Pokenum}</b>"], "Displays information (pokedex) about the given pokemon.");
+                    ct.register('commandstats', ["<u>{o Number}</u>"], 'Displays server-wide command usage statistics. You can also view the most x used commands.');
 
-                    ct.register("bbcodes", "Displays usable BB Codes for your Auth Level.");
+                    ct.register("bbcodes", "Displays a list of BB Codes that you can use.");
 
                     ct.register(style.footer);
                     ct.render(src, chan);
@@ -3804,7 +3804,9 @@ if(message == "Maximum Players Changed.") {
 
                     for (x in members) {
                         name = sys.name(members[x]);
-                        if (name == undefined) name = "~Unknown~";
+                        if (name == undefined) {
+						name = "~Unknown~";
+						}
 
                         t.register(playerInfo(name));
                     }
@@ -4430,7 +4432,7 @@ if(message == "Maximum Players Changed.") {
 
                     var r, name = sys.name(src),
                         pid = src,
-                        list, ranking, rank, ladd, ladder, total, battles, mess_rank;
+                        list, ranking, rank, ladd, ladder, total, battles, mess_rank, x, i;
 
                     if (sys.name(tar) != undefined) {
                         name = sys.name(tar), pid = tar;
@@ -4441,18 +4443,19 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var tt = new Table_Templater("Ranking of " + name, "orange", "3");
+					
+					if (sys.loggedIn(pid)) {
                     tt.register(["Team #", "Team Tier", "Ranked", "Rating", "Battles"], true);
-
-                    for (var x = 0; x < sys.teamCount(pid); x++) {
-                        list = tierlist[r];
+                    for (i = 0; i < sys.teamCount(pid); i++) {
+                        list = sys.tier(src, i);
                         ranking = "unranked";
-                        rank = sys.ranking(name, x, list);
+                        rank = sys.ranking(name, i);
 
                         if (!isNaN(rank)) {
                             ranking = rank;
                         }
 
-                        ladd = sys.ladderRating(name, x, list);
+                        ladd = sys.ladderRating(name, i);
                         ladder = "1000";
 
                         if (ladd != undefined) {
@@ -4460,16 +4463,47 @@ if(message == "Maximum Players Changed.") {
                         }
 
                         total = sys.totalPlayersByTier(list);
-                        battles = sys.ratedBattles(name, x, list);
+                        battles = sys.ratedBattles(name, i);
 
                         mess_rank = "unranked";
                         if (ranking != "unranked") {
                             mess_rank = ranking + "/" + total;
                         }
 
-                        tt.register([x + 1, list, mess_rank, ladder, battles], false);
+                        tt.register([(i + 1), list, mess_rank, ladder, battles], false);
                     }
+					} else {
+					tt.register(["Tier", "Ranked", "Rating", "Battles"], true);
+					var list = sys.getTierList();
+                    for (i = 0; i < list.length; i++) {
+                        list = list[i];
+                        ranking = "unranked";
+                        rank = sys.ranking(name, list);
 
+                        if (!isNaN(rank)) {
+                            ranking = rank;
+                        }
+
+                        ladd = sys.ladderRating(name, list);
+                        ladder = "1000";
+
+                        if (ladd != undefined) {
+                            ladder = ladd;
+                        }
+
+                        total = sys.totalPlayersByTier(list);
+                        battles = sys.ratedBattles(name, list);
+
+                        mess_rank = "unranked";
+                        if (ranking != "unranked") {
+                            mess_rank = ranking + "/" + total;
+                        }
+
+                        tt.register([list, mess_rank, ladder, battles], false);
+                    }
+					
+					}
+					
                     tt.end();
                     tt.render(src, chan);
                 },
@@ -4898,7 +4932,6 @@ if(message == "Maximum Players Changed.") {
 
                     DataHash.mail[sys.name(src).toLowerCase()] = [];
                     botMessage(src, "Mail deleted!", chan);
-                    F
                     cache.write("mail", JSON.stringify(DataHash.mail));
                 },
 
@@ -4947,12 +4980,15 @@ if(message == "Maximum Players Changed.") {
                 unregister: function () {
                     var name = sys.name(src);
                     if (!sys.dbRegistered(name)) {
-                        botMessage(src, 'You can\'t unregister an alias which is not registered!', chan);
+                        botMessage(src, "You can't unregister an alias which is not registered!", chan);
                         return;
                     }
                     sys.clearPass(name);
-                    sendAuth(name + " cleared their password!");
                     botMessage(src, "Your password was succesfully cleared!", chan);
+					if (sys.auth(src) > 0) {
+                    sendAuth(name + " cleared their password!");
+					botMessage(src, "Please register again (before logging out)! This is for the safety of the server!", chan);
+					}
                 },
 
                 /* -- User Commands: Styles */
@@ -5013,11 +5049,9 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     if (unicodeAbuse(src, commandData)) {
-
                         if (!sys.loggedIn(src)) {
                             return;
                         }
-
                         sys.sendHtmlMessage(src, "<font color=" + getColor + "><timestamp/><i><b>*** " + sys.name(src) + "</b> " + format(src, html_escape(commandData)) + "</font></b></i>", chan);
                         return;
                     }
@@ -5088,7 +5122,6 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 /* -- User Commands: Impersonation */
-
                 imp: function () {
                     if (implock && sys.auth(src) < 1) {
                         botMessage(src, 'Imping has been locked for ' + sLetter(UserName) + '.', chan);
@@ -5100,7 +5133,6 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     if (unicodeAbuse(src, commandData)) {
-
                         if (!sys.loggedIn(src)) {
                             return;
                         }
@@ -5129,7 +5161,9 @@ if(message == "Maximum Players Changed.") {
 
                     poUser.impersonation = commandData;
 
-                    if (sys.auth(src) == 0) sendAuth(poUser.impersonation + " was impersonated by " + sys.name(src) + "!");
+                    if (sys.auth(src) == 0) {
+					sendAuth(poUser.impersonation + " was impersonated by " + sys.name(src) + "!");
+					}
 
                     botMessage(src, "Now you are " + poUser.impersonation + "!", chan);
                     return;
@@ -9502,7 +9536,7 @@ if(message == "Maximum Players Changed.") {
 
     afterChangeTeam: function (src, logging) {
         var myName = sys.name(src),
-            lc = myName.toLowerCase(),
+            lc = myName.toLowerCase();
 
             if (!logging) {
                 // UPDATING DATA
@@ -9591,9 +9625,9 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, "You have " + count + " new mails! Type <font color='green'><b>/readmail</b></font> to view!");
                 }
             }
-        }
-
+        }/*
         for (var team = 0; team < sys.teamCount(src); team++) {
+
             if (sys.gen(src, team) === 2) {
                 pokes:
                 for (var i = 0; i <= 6; i++)
@@ -9608,9 +9642,10 @@ if(message == "Maximum Players Changed.") {
             }
 
         if (!TierBans.isLegalTeam(src, team, sys.tier(src, team))) {
-            TierBans.findGoodTier(src, team);
+TierBans.findGoodTier(src, team);
         }
-    }
+
+    }*/
 
         if (!logging) // IFY
         ify.afterChangeTeam(src);
@@ -10276,17 +10311,18 @@ beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier
 
         var hiddenPowerNum = sys.moveNum("Hidden Power"),
             t = new Template(),
-            teamno, gen;
+            teamno, gen, subgen;
         t.register(style.header);
 
         for (var n = 0; n < sys.teamCount(src); n++) {
             teamno = x + 1;
             gen = sys.gen(src, n);
+			subgen = sys.generation(gen, n);
             if (n != 0) {
                 t.register("");
             }
 
-            t.register("<font color=" + script.namecolor(tar) + "><b>" + sys.name(tar) + "</b></font>'s #" + teamno + " Gen " + gen + " Team <br/>");
+            t.register("<font color=" + script.namecolor(tar) + "><b>" + sys.name(tar) + "</b></font>'s #" + teamno + " Gen " + gen + " ("+subgen+") Team<br/>");
 
             var i, color, gender, pokeId, nick, item, level, evstr, w, evtable, dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs, b, hp, t_, hptype, type;
 
@@ -10402,37 +10438,47 @@ beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier
 	}
 
 this.isLegalTeam = function(src, team, tier, silent) {
+sys.appendToFile("debug", src+team+tier+silent);
     if (tier == "Challenge Cup") {
 	return true;
 	}
 	
+	sys.appendToFile("debug", "do hasLegalTeam4Tier");
+
     if (!sys.hasLegalTeamForTier(src, team, tier)) {
 	return false;
 	}
 
     var alerts = [], x, b = this.bans, cban, correct, z, alert;
-	
+		sys.appendToFile("debug", "begin loop");
+
 	for (x in b) {
-	cban = b[x];
+	cban = b[x];	sys.appendToFile("debug", "\ncban = "+JSON.stringify(cban)+"\n");
+
 	if (cban.method == this.Include) {
 	correct = tiers.indexOf(tier) != -1;
 	} else {
 	correct = tiers.indexOf(tier) == -1;
 	}
-	
-	if (correct) {
+		sys.appendToFile("debug", "do correct");
+
+	if (correct) {	sys.appendToFile("debug", "do bancheck");
+
 	alert = cban.ban(src, team, tier);
 	if (typeof alert == "object") {
 	alerts.concat(alert);
 	}
 	}
-	
-	if (alerts.length == 0) {
+		sys.appendToFile("debug", "did concat");
+
+	if (alerts.length == 0) {	sys.appendToFile("debug", "team is valid");
+
 	return true; // Team is valid
 	} else if (!silent) {
 	for (z in alerts) {
 	teamAlert(src, team, alerts[z]);
-	}
+		sys.appendToFile("debug", "did alert "+alert[z]);
+}
 	return false;
 	}
 	}
@@ -10440,10 +10486,10 @@ this.isLegalTeam = function(src, team, tier, silent) {
 
 this.findGoodTier = function(src, team) {
     var path = ["Wifi LC", "DW LC", "Wifi LC Ubers", "Wifi NU", "Wifi LU", "Wifi UU", "Wifi OU", "No Preview OU", "Wifi Ubers", "No Preview Ubers", "Challenge Cup"],
-	i, tier, legal = sys.hasLegalTeamForTier;
+	i, tier;
     for (i in path) {
         tier = path[i];
-        if (legal(src, team, testtier) && this.isLegalTeam(src, team, testtier, true)) {
+        if (sys.hasLegalTeamForTier(src, team, testtier) && this.isLegalTeam(src, team, testtier, true)) {
 		teamAlert(src, team, "Your team's tier is now "+tier+".");
             sys.changeTier(src, team, testtier);
             return;
@@ -10485,9 +10531,9 @@ TierBans.newBan(EXCLUDING, cc, function customAbilityBans(src, team, tier) {
 			bans = DataHash.bannedAbilities, i, ability,
 			lability, poke, lpoke;
             for (i = 0; i < 6; ++i) {
-                ability = sys.ability(sys.teamPokeAbility(src, i)),
+                ability = sys.ability(sys.teamPokeAbility(src, team, i)),
 				lability = ability.toLowerCase(),
-				poke = sys.pokemon(sys.teamPoke(src, i)),
+				poke = sys.pokemon(sys.teamPoke(src, team, i)),
 				lpoke = poke.toLowerCase();
 
                 if (bans[ltier] != undefined) {
