@@ -9625,9 +9625,7 @@ if(message == "Maximum Players Changed.") {
                 }
             }
         }
-/*
         for (var team = 0; team < sys.teamCount(src); team++) {
-
             if (sys.gen(src, team) === 2) {
                 pokes:
                 for (var i = 0; i <= 6; i++)
@@ -9645,7 +9643,7 @@ if(message == "Maximum Players Changed.") {
 TierBans.findGoodTier(src, team);
         }
 
-    }*/
+    }
 
         if (!logging) // IFY
         ify.afterChangeTeam(src);
