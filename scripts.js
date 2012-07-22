@@ -117,6 +117,7 @@ VERSION = function (v, data) {
 VERSION.prototype.toString = function () {
     return this.version + " " + this.additionalData;
 }
+
 ScriptVersion = new VERSION(ScriptVerData[0], ScriptVerData[1]);
 
 /** RECOVERY **/
