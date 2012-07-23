@@ -2292,6 +2292,8 @@ JSESSION.refill();
         startupTime = sys.time() * 1;
         StartUp = true;
         script.beforeNewMessage("Script Check: OK");
+		
+		sys.updateDatabase();
     },
 
     loadAll: function () {
@@ -2306,19 +2308,8 @@ JSESSION.refill();
             }
         }
 
-        var configFile = sys.getFileContent("config").split("\n"),
-            x, c_conf, serv = /server_name=/,
-            desc = /server_description=/,
-            ann = /server_announcement=/;
-        servername = "";
-
-        for (x in configFile) {
-            c_conf = configFile[x];
-            if (serv.test(c_conf) && !ann.test(c_conf) && !desc.test(c_conf)) {
-                servername = c_conf.substring(12, c_conf.length).replace(/\\xe9/i, "é").trim();
-                break;
-            }
-        }
+        var line = sys.getFileContent("config").split("\n")[30];
+        servername = line.substring(0, line.indexOf("=")).replace(/\\xe9/i, "é").trim();
 
         run("requiredUtilitiesLoad");
         run("loadCache");
