@@ -3747,7 +3747,7 @@ if(message == "Maximum Players Changed.") {
                         pokedex(src, chan, commandData);
                     }
                     catch (e) {
-                        var rand = randPoke(),
+                        var rand = sys.pokemon(sys.rand(1, 650));
                             rands = rand + "'s";
                         if (rand[rand.length - 1] == "s") {
                             rands = rand + "'";
@@ -13218,10 +13218,15 @@ if(message == "Maximum Players Changed.") {
         if (typeof Poke_Data == 'undefined') { /* Only do this once! Takes too much time! */
             var parseFile = function (file) {
                 var res = sys.getFileContent("db/pokes/" + file + ".txt");
+				
+				if (!res) {
+				return [];
+				}
+				
                 return res.split("\n");
             },
                 parseMoveFile = function (file) {
-                    return parseFile("5G/Subgen 1/" + file + "_moves");
+                    return parseFile("5G/" + file + "_moves");
                 };
 
             var Files = {
@@ -13241,7 +13246,7 @@ if(message == "Maximum Players Changed.") {
                     'egg': parseMoveFile("egg"),
                     'level': parseMoveFile("level"),
                     'evo': parseMoveFile("pre_evo"),
-                    'event': parseFile("5G/Subgen 0/special_moves"),
+                    'event': parseFile("special_moves"),
                     'tms': parseMoveFile("tm_and_hm"),
                     'tutor': parseMoveFile("tutor")
                 }
@@ -13662,10 +13667,6 @@ if(message == "Maximum Players Changed.") {
             }
 
             return "<img src='Themes/Classic/genders/gender0.png'>";
-        }
-
-        randPoke = function () {
-            return sys.pokemon(sys.rand(1, 650));
         }
 
         pokedex = function (src, chan, pokemon, source) {
