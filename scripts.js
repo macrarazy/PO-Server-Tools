@@ -50,10 +50,6 @@
 || - If the script should publicly welcome/goodbye people.   ||
 || - true = yes. false = no                                  ||
 ===============================================================
-|| @ Superimping:                                            ||
-|| - If auth may use superimp. This can be a security risk.  ||
-|| - true = yes. false = no                                  ||
-===============================================================
 || @ FixChallenges:                                          ||
 || - If you have issues with no challenges being sent, turn  ||
 || - this on.                                                ||
@@ -93,7 +89,6 @@ Config = {
     DWAbilityCheck: true,
     AutoChannelJoin: true,
     WelcomeMessages: false,
-    Superimping: false,
     FixChallenges: false,
     AutoBans: true,
 
@@ -265,37 +260,16 @@ ChannelNames = function () {
     return channelNames;
 }
 
-addChannelLinks = function (line2) {
-    var channelNames = ChannelNames();
-
-    var line = line2;
-    var pos = 0;
-    pos = line.indexOf('#', pos);
-    var longestName = "",
-        longestChannelName = "",
-        html = "",
-        channelName = "",
-        res;
-    while (pos != -1) {
-        ++pos;
-        channelNames.forEach(function (name) {
-            channelName = String(line.midRef(pos, name.length));
-            res = channelName.toLowerCase() == name.toLowerCase();
-            if (res && longestName.length < channelName.length) {
-                longestName = name;
-                longestChannelName = channelName;
-            }
-        });
-        if (longestName !== "") {
-            html = "<a href=\"po:join/" + longestName + "\">#" + longestChannelName + "</a>";
-            line = line.replaceBetween(pos - 1, longestName.length + 1, html);
-            pos += html.length - 1;
-            longestName = "";
-            longestChannelName = "";
-        }
-        pos = line.indexOf('#', pos);
-    }
-    return line;
+addChannelLinks = function (str) {
+    var channelNames = ChannelNames(),
+	exp, i, nameslength = channelNames.length;
+	
+	for (i = 0; i < args; i++) {
+		exp = new RegExp("#"+channelNames[i], "gi");
+		str = str.replace(exp, "<a href='po:join/" + channelNames[i] + "'>"+channelNames[i]+"</a>");
+	}
+		
+    return str;
 }
 
 var capsMessage = function (mess) {
@@ -6468,10 +6442,8 @@ if(message == "Maximum Players Changed.") {
 
                     ct.register("unimp", ["{r Person}"], "Removes someones Impersonation.");
 
-                    if (Config.Superimping) {
                         ct.register("superimp", ["{p Thing}"], "Changes your name to ~<b>Thing</b>~.");
                         ct.register("superimpoff", "Restores your name.");
-                    }
 
                     ct.register(style.footer);
                     ct.render(src, chan);
@@ -7262,7 +7234,6 @@ if(message == "Maximum Players Changed.") {
                 ct.render(src, chan);
             }
 
-            if (Config.Superimping) {
                 modCommands["superimp"] = function () {
                     if (commandData == "") {
                         botMessage(src, "Specify a name to imp.", chan);
@@ -7290,7 +7261,6 @@ if(message == "Maximum Players Changed.") {
                     sys.changeName(src, poUser.superimp);
                     botAll(sys.name(src) + " changed their name back!", 0);
                 }
-            }
 
             /* -- Admin Commands: Start -- */
             adminCommands = ({ /* -- Admin Commands: Command Templates */
