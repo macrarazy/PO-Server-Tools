@@ -7151,9 +7151,9 @@ if(message == "Maximum Players Changed.") {
 
                         cache.remove("MOTDMessage");
                         cache.remove("MOTDSetter");
-
-                        sendBotToAllBut(src, "The MOTD has been changed to default by <font color=" + getColor + "><b> " + sys.name(src) + "</b></font>!", 0, "NOESCAPE");
+						
                         botEscapeMessage(src, "You changed the MOTD back to default.", chan);
+                        sendBotToAllBut(src, "The MOTD has been changed to default by <font color=" + getColor + "><b> " + sys.name(src) + "</b></font>!", 0, "");
                         return;
                     }
 
@@ -7162,9 +7162,9 @@ if(message == "Maximum Players Changed.") {
 
                     cache.write("MOTDMessage", commandData);
                     cache.write("MOTDSetter", sys.name(src));
-
-                    sendBotToAllBut(src, "The MOTD has been changed by <font color=" + getColor + "><b> " + sys.name(src) + "</b></font>!", 0, "NOESCAPE");
+					
                     botEscapeMessage(src, "You changed the MOTD to: " + commandData, chan);
+                    sendBotToAllBut(src, "The MOTD has been changed by <font color=" + getColor + "><b> " + sys.name(src) + "</b></font>!", 0, "");
                 },
 
                 /* -- Mod Commands: Kick -- */
@@ -11767,7 +11767,7 @@ if(message == "Maximum Players Changed.") {
             var func, pID, pIDs = sys.playerIds(),
                 p;
 
-            if (t == "escape") {
+            if (type == "escape") {
                 func = botEscapeMessage;
             } else {
                 func = botMessage;
