@@ -2308,8 +2308,8 @@ JSESSION.refill();
             }
         }
 
-        var line = sys.getFileContent("config").split("\n")[30];
-        servername = line.substring(0, line.indexOf("=")).replace(/\\xe9/i, "é").trim();
+        var line = sys.getFileContent("config").split("\n")[31];
+        servername = line.substring(line.indexOf("=") + 1).replace(/\\xe9/i, "é").trim();
 
         run("requiredUtilitiesLoad");
         run("loadCache");
