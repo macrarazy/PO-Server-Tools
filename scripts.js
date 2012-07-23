@@ -4720,12 +4720,23 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var attack = Math.floor(560 * Math.random());
+					if (typeof AttackingMoves == "undefined") {
+					AttackingMoves = [];
+                    var file = sys.getFileContent("db/moves/5G/damage_class.txt").split("\n"), arr = AttackingMoves, x;
+					
+					for (x in file) {
+					if (file[x] == "0 0") {
+					continue;
+					}
+					
+					arr.push(Number(file[x].split(" ")[0]));
+					}
+					}
+					
+                    var attack = AttackingMoves[Math.floor(AttackingMoves.length * Math.random())], getcolor = script.namecolor(tar);
                     attack = sys.move(attack);
-                    var getcolor = script.namecolor(tar);
 
                     if (unicodeAbuse(src, commandData)) {
-
                         if (!sys.loggedIn(src)) {
                             return;
                         }
@@ -4778,7 +4789,7 @@ if(message == "Maximum Players Changed.") {
                 /* -- User Commands: Mail */
                 sendmail: function () {
                     if (dbIp == undefined) {
-                        botMessage(src, "Null tar!", chan);
+                        botMessage(src, "This person doesn't exist!", chan);
                         return;
                     }
 
@@ -4924,8 +4935,10 @@ if(message == "Maximum Players Changed.") {
 
                     if (resets.indexOf(cmdData) > -1 && DataHash.rankicons[sys.name(src).toLowerCase()] != undefined) {
                         botMessage(src, "Removed rank icon.", chan);
+						
                         poUser.icon = "";
                         delete DataHash.rankicons[sys.name(src).toLowerCase()];
+						
                         cache.write("rankicons", JSON.stringify(DataHash.rankicons));
                         return;
                     }
@@ -12698,7 +12711,7 @@ if(message == "Maximum Players Changed.") {
         Table_Templater.prototype.register = function (arr, bold) {
             var mess = "<tr bgcolor='" + this.color + "'>",
                 l = arr.length;
-            var bolds = ['<th', '</th'];
+            var bolds = ['<th>', '</th>'];
             if (!bold) {
                 bolds = ['<td>', '</td>'];
             }
@@ -12723,8 +12736,6 @@ if(message == "Maximum Players Changed.") {
                 var code = '<div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
                 sys.sendHtmlMessage(src, code, channel);
             }
-
-            return undefined;
         }
     },
 
