@@ -139,12 +139,6 @@ if (typeof Bot == 'undefined') {
         botcolor: "red"
     }; // default
 }
-if (typeof Server == 'undefined') {
-    Server = {
-        name: "~~Server~~",
-        color: "blue"
-    }; // default
-}
 
 /*** BOTS ***/
 botEscapeMessage = function (src, message, channel) {
@@ -3098,21 +3092,6 @@ if(message == "Maximum Players Changed.") {
             }
             return;
         }
-
-        if (message.substr(0, 11) == "~~Server~~:" && typeof INSERVMSG == 'undefined') {
-            INSERVMSG = true;
-            var pidsin, pids = sys.playerIds();
-            sys.stopEvent();
-            for (pidsin in pids) {
-                sys.sendHtmlMessage(pids[pidsin], "<font color=" + Server.color + "><timestamp/>" + "<b>" + Server.name + ":</b></font>" + " " + message.replace(/~~Server~~\:/, ""));
-            }
-
-            print(message);
-            return;
-        }
-        else if (typeof INSERVMSG !== 'undefined') {
-            delete INSERVMSG;
-        }
     },
 
     beforeChatMessage: function (src, message, chan) {
@@ -4213,8 +4192,7 @@ if(message == "Maximum Players Changed.") {
                     t.register("Tournament Display Mode is " + display + ".");
                     t.register("The Future Limit is per " + FutureLimit + " seconds.<br/>");
 
-                    t.register("The Bot Name is " + Bot.bot.bold().fontcolor(Bot.botcolor) + "</i>.");
-                    t.register("The Server Chat Name is " + Server.name.bold().fontcolor(Server.color) + "</i>.");
+                    t.register("The Bot name is " + Bot.bot.bold().fontcolor(Bot.botcolor) + "</i>.");
 
                     if (ClanTag != "" && ClanTag != "None") {
                         t.register("The Clan tag is " + ClanTag.bold() + ".");
@@ -4691,7 +4669,7 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 /* -- User Commands: Fun -- */
-                'catch': function () {
+                "catch": function () {
                     if (!CommandsEnabled._catch_) {
                         botMessage(src, "/catch is turned off!", chan);
                         return;
@@ -7718,34 +7696,6 @@ if(message == "Maximum Players Changed.") {
                     cache.write("Bot", JSON.stringify(Bot));
                 },
 
-                server: function () {
-                    if (commandData == "") {
-                        botMessage(src, "Specify a name for the server chat name!", chan);
-                        return;
-                    }
-                    if (commandData.length > 40) {
-                        botMessage(src, "The server name cannot be over 40 characters. Current: " + commandData.length, chan);
-                        return;
-                    }
-                    botAll("The Server Name was changed to " + commandData + " by " + sys.name(src) + "!", 0);
-                    Server.name = commandData;
-                    cache.write("Server", JSON.stringify(Server));
-                },
-
-                servercolor: function () {
-                    if (commandData == "") {
-                        botMessage(src, "Specify a name for the server chat color!", chan);
-                        return;
-                    }
-                    if (!sys.validColor(commandData)) {
-                        botMessage(src, "The server color is invalid.", chan);
-                        return;
-                    }
-                    botAll("The Server Chat Color was changed to <font color=" + commandData + ">" + commandData + "</font> by " + sys.name(src) + "!", 0);
-                    Server.color = commandData;
-                    cache.write("Server", JSON.stringify(Server));
-                },
-
                 /* -- Admin Commands: Message Manipulation -- */
                 talk: function () {
                     if (commandData === "") {
@@ -7867,8 +7817,6 @@ if(message == "Maximum Players Changed.") {
                 ct.register("forcebattle", ["{r Player1}", "{r Player2}", "{p <u>Tier</u>}", "{p <u>Mode</u>}", "{p <u>Rated</u>}"], "Forces a Battle against 2 Players. Tier must be a valid Tier for Battle Clauses. Mode can be Doubles or Triples. Rated must be one of the following: true, rated, yes. If not, the Battle won't be Rated.");
                 ct.register("bot", ["{p NewName}"], "Changes the Bot name.");
                 ct.register("botcolor", ["{p NewColor}"], "Changes the Bot color.");
-                ct.register("server", ["{p NewName}"], "Changes the Server chat name.");
-                ct.register("servercolor", ["{p NewColor}"], "Changes the Server chat nolor.");
                 ct.register("clantag", ["{p Tag}"], "Changes the Clan Tag. If Tag is None, turns the Clan feature off.");
                 ct.register("autoidle", ["{or Name}", "{p Entrymsg}"], "Automaticly Idles someone with an optional Entrymsg. Also works when you only want to change the Entrymsg.");
                 ct.register("autoidleoff", ["{p Name}"], "Removes Automatic Idling.");
@@ -8113,7 +8061,7 @@ if(message == "Maximum Players Changed.") {
                     var randomUser = function () {
                         var ret = Math.round(pl.length * Math.random());
                         if (ret === 0) {
-                            ret = Server.name;
+                            ret = "~~Server~~";
                         }
                         else {
                             ret = sys.name(ret);
@@ -8552,14 +8500,15 @@ if(message == "Maximum Players Changed.") {
                     botAll(srcname + " evaluated the following code:", scriptchannel);
                     sys.sendHtmlAll("<code>" + html_escape(code) + "</code>", scriptchannel);
                     sys.sendHtmlAll(darkBorder, scriptchannel);
+					
                     try {
 
                         var now = millitime();
-                        eval(code);
+                        var result = eval(code);
                         var end = millitime();
 
-                        sys.appendToFile('Evals.txt', 'Succesfull evaluated code: ' + code + ' \r\n');
-                        botAll("No errors were detected!", scriptchannel);
+						botAll("Eval returned:", scriptchannel);
+                        botAll(result, scriptchannel);
 
                         var took = end - now,
                             sec = took / 1000,
@@ -8567,7 +8516,6 @@ if(message == "Maximum Players Changed.") {
                         botAll("Code took " + micro + " microseconds / " + took + " milliseconds / " + sec + " seconds to run. ", scriptchannel);
                     }
                     catch (err) {
-                        sys.appendToFile('Evals.txt', 'Unsuccesfull evaluated code: ' + code + ' \r\n');
                         var err = FormatError("", err);
                         botAll(err, scriptchannel);
                     }
@@ -11591,7 +11539,7 @@ if(message == "Maximum Players Changed.") {
                 gen = 4;
             }
 
-            return "<img src='pokemon:" + pokenum + "&shiny=" + shiny + "&back=" + back + "&gender=" + gender + "&gen=" + gen + "'>";
+            return "<img src='pokemon:" + num + "&shiny=" + shiny + "&back=" + back + "&gender=" + gender + "&gen=" + gen + "'>";
         }
 
         cmp = function (a, b) {
@@ -14085,10 +14033,6 @@ if(message == "Maximum Players Changed.") {
             "bot": "~Server~",
             "botcolor": "red"
         },
-            SERVER_JSON = {
-                "name": "~~Server~~",
-                "color": "blue"
-            },
             LEAGUE_JSON = {
                 "Champion": "",
                 "gym": {},
@@ -14096,7 +14040,6 @@ if(message == "Maximum Players Changed.") {
             };
 
         cache.sic("Bot", JSON.stringify(BOT_JSON));
-        cache.sic("Server", JSON.stringify(SERVER_JSON));
         cache.sic("CommandsEnabled", "{'me':true,'_catch_':true,'attack':true,'roulette':true}");
         cache.sic("league", JSON.stringify(LEAGUE_JSON));
 
@@ -14131,7 +14074,6 @@ if(message == "Maximum Players Changed.") {
         FutureLimit = cache.get("FutureLimit");
 
         Bot = JSON.parse(cache.get("Bot"));
-        Server = JSON.parse(cache.get("Server"));
 
         if (cache.sics > 0) {
             cache.savec();
