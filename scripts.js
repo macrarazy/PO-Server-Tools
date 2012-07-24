@@ -909,6 +909,10 @@ cut = function (array, entry, join) {
 	join = "";
 	}
 	
+	if (!Array.isArray(array)) {
+	return array;
+	}
+	
     return array.splice(entry).join(join);
 }
 
@@ -11751,7 +11755,7 @@ if(message == "Maximum Players Changed.") {
 
             for (pID in pIDs) {
                 p = pIDs[pID];
-                if (p !== id) {
+                if (p !== src) {
                     func(p, message, channel);
                 }
             }
@@ -13233,7 +13237,7 @@ if(message == "Maximum Players Changed.") {
                     'egg': parseMoveFile("egg"),
                     'level': parseMoveFile("level"),
                     'evo': parseMoveFile("pre_evo"),
-                    'event': parseFile("special_moves"),
+                    'event': parseMoveFile("special_moves"),
                     'tms': parseMoveFile("tm_and_hm"),
                     'tutor': parseMoveFile("tutor")
                 }
