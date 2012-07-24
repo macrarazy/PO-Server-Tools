@@ -264,7 +264,7 @@ addChannelLinks = function (str) {
     var channelNames = ChannelNames(),
         exp, i, nameslength = channelNames.length;
 
-    for (i = 0; i < args; i++) {
+    for (i = 0; i < nameslength; i++) {
         exp = new RegExp("#" + channelNames[i], "gi");
         str = str.replace(exp, "<a href='po:join/" + channelNames[i] + "'>" + channelNames[i] + "</a>");
     }
