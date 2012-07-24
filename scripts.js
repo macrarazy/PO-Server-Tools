@@ -1084,7 +1084,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         botMessage(src, "You are already in the tournament. You are not able to join more than once.", this.id);
         return;
     }
-    if (!hasTeam(src, tourtier)) {
+    if (!hasTeam(src, this.tourtier)) {
         botMessage(src, "You don't have a team for the " + this.tourtier + " tier. Load or make one to join.", this.id);
         return;
     }
@@ -2282,8 +2282,13 @@ JSESSION.refill();
             }
         }
 
-        var line = sys.getFileContent("config").split("\n")[31];
-        servername = line.substring(line.indexOf("=") + 1).replace(/\\xe9/i, "é").trim();
+        var lines = sys.getFileContent("config").split("\n"), z;
+		for (z in lines) {
+		if (lines[z].substring(0, 4) == "Name=") {
+        servername = lines[z].substring(5).replace(/\\xe9/i, "é").trim();
+		break;
+		}
+		}
 
         run("requiredUtilitiesLoad");
         run("loadCache");
