@@ -262,13 +262,13 @@ ChannelNames = function () {
 
 addChannelLinks = function (str) {
     var channelNames = ChannelNames(),
-	exp, i, nameslength = channelNames.length;
-	
-	for (i = 0; i < args; i++) {
-		exp = new RegExp("#"+channelNames[i], "gi");
-		str = str.replace(exp, "<a href='po:join/" + channelNames[i] + "'>"+channelNames[i]+"</a>");
-	}
-		
+        exp, i, nameslength = channelNames.length;
+
+    for (i = 0; i < args; i++) {
+        exp = new RegExp("#" + channelNames[i], "gi");
+        str = str.replace(exp, "<a href='po:join/" + channelNames[i] + "'>" + channelNames[i] + "</a>");
+    }
+
     return str;
 }
 
@@ -2266,8 +2266,8 @@ JSESSION.refill();
         startupTime = sys.time() * 1;
         StartUp = true;
         script.beforeNewMessage("Script Check: OK");
-		
-		sys.updateDatabase();
+
+        sys.updateDatabase();
     },
 
     loadAll: function () {
@@ -2443,9 +2443,9 @@ JSESSION.refill();
 
     attemptToSpectateBattle: function (src, srcbattler, tarbattler) {
         var c = sys.channelIds(),
-            b;
+            b, chan;
         for (b in c) {
-            var chan = JSESSION.channels(c[b]);
+            chan = JSESSION.channels(c[b]);
             if (!chan.toursEnabled) {
                 continue;
             }
@@ -2480,9 +2480,9 @@ JSESSION.refill();
 
         var ip = sys.ip(src);
         if (chan.isBannedInChannel(ip)) {
-            sys.stopEvent();
             prune_channel_bans(c);
             if (chan.isBannedInChannel(ip)) { // repeat this because of ban prune
+                sys.stopEvent();
                 var ban = chan.banlist[ip],
                     time;
 
@@ -2528,7 +2528,7 @@ JSESSION.refill();
             sys.stopEvent();
             return;
         }
-        sys.sendHtmlAll("<timestamp/><b>" + ChannelLink(c) + "</b> -- <b>Channel destroyed</b>", watch);
+        sys.sendHtmlAll("<timestamp/><b>" + c + "</b> -- <b>Channel Destroyed</b>", watch);
         JSESSION.destroyChannel(channel);
     },
 
@@ -3722,7 +3722,7 @@ if(message == "Maximum Players Changed.") {
                     }
                     catch (e) {
                         var rand = sys.pokemon(sys.rand(1, 650));
-                            rands = rand + "'s";
+                        rands = rand + "'s";
                         if (rand[rand.length - 1] == "s") {
                             rands = rand + "'";
                         }
@@ -4694,20 +4694,23 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-					if (typeof AttackingMoves == "undefined") {
-					AttackingMoves = [];
-                    var file = sys.getFileContent("db/moves/5G/damage_class.txt").split("\n"), arr = AttackingMoves, x;
-					
-					for (x in file) {
-					if (file[x] == "0 0") {
-					continue;
-					}
-					
-					arr.push(Number(file[x].split(" ")[0]));
-					}
-					}
-					
-                    var attack = AttackingMoves[Math.floor(AttackingMoves.length * Math.random())], getcolor = script.namecolor(tar);
+                    if (typeof AttackingMoves == "undefined") {
+                        AttackingMoves = [];
+                        var file = sys.getFileContent("db/moves/5G/damage_class.txt").split("\n"),
+                            arr = AttackingMoves,
+                            x;
+
+                        for (x in file) {
+                            if (file[x] == "0 0") {
+                                continue;
+                            }
+
+                            arr.push(Number(file[x].split(" ")[0]));
+                        }
+                    }
+
+                    var attack = AttackingMoves[Math.floor(AttackingMoves.length * Math.random())],
+                        getcolor = script.namecolor(tar);
                     attack = sys.move(attack);
 
                     if (unicodeAbuse(src, commandData)) {
@@ -4909,10 +4912,10 @@ if(message == "Maximum Players Changed.") {
 
                     if (resets.indexOf(cmdData) > -1 && DataHash.rankicons[sys.name(src).toLowerCase()] != undefined) {
                         botMessage(src, "Removed rank icon.", chan);
-						
+
                         poUser.icon = "";
                         delete DataHash.rankicons[sys.name(src).toLowerCase()];
-						
+
                         cache.write("rankicons", JSON.stringify(DataHash.rankicons));
                         return;
                     }
@@ -6442,8 +6445,8 @@ if(message == "Maximum Players Changed.") {
 
                     ct.register("unimp", ["{r Person}"], "Removes someones Impersonation.");
 
-                        ct.register("superimp", ["{p Thing}"], "Changes your name to ~<b>Thing</b>~.");
-                        ct.register("superimpoff", "Restores your name.");
+                    ct.register("superimp", ["{p Thing}"], "Changes your name to ~<b>Thing</b>~.");
+                    ct.register("superimpoff", "Restores your name.");
 
                     ct.register(style.footer);
                     ct.render(src, chan);
@@ -7123,7 +7126,7 @@ if(message == "Maximum Players Changed.") {
 
                         cache.remove("MOTDMessage");
                         cache.remove("MOTDSetter");
-						
+
                         botEscapeMessage(src, "You changed the MOTD back to default.", chan);
                         sendBotToAllBut(src, "The MOTD has been changed to default by <font color=" + getColor + "><b> " + sys.name(src) + "</b></font>!", 0, "");
                         return;
@@ -7134,7 +7137,7 @@ if(message == "Maximum Players Changed.") {
 
                     cache.write("MOTDMessage", commandData);
                     cache.write("MOTDSetter", sys.name(src));
-					
+
                     botEscapeMessage(src, "You changed the MOTD to: " + commandData, chan);
                     sendBotToAllBut(src, "The MOTD has been changed by <font color=" + getColor + "><b> " + sys.name(src) + "</b></font>!", 0, "");
                 },
@@ -7234,33 +7237,33 @@ if(message == "Maximum Players Changed.") {
                 ct.render(src, chan);
             }
 
-                modCommands["superimp"] = function () {
-                    if (commandData == "") {
-                        botMessage(src, "Specify a name to imp.", chan);
-                        return;
-                    }
-                    if (commandData.length > 20) {
-                        botMessage(src, "Specify a shorter name.", chan);
-                        return;
-                    }
-
-                    if (poUser.superimp == undefined) {
-                        poUser.superimp = sys.name(src);
-                    }
-
-                    botAll(sys.name(src) + " superimped " + commandData + "!", 0);
-                    sys.changeName(src, "~" + commandData + "~");
+            modCommands["superimp"] = function () {
+                if (commandData == "") {
+                    botMessage(src, "Specify a name to imp.", chan);
+                    return;
+                }
+                if (commandData.length > 20) {
+                    botMessage(src, "Specify a shorter name.", chan);
+                    return;
                 }
 
-                modCommands["superimpoff"] = function () {
-                    if (poUser.superimp == undefined) {
-                        botMessage(src, "You aren't superimping!", chan);
-                        return;
-                    }
-
-                    sys.changeName(src, poUser.superimp);
-                    botAll(sys.name(src) + " changed their name back!", 0);
+                if (poUser.superimp == undefined) {
+                    poUser.superimp = sys.name(src);
                 }
+
+                botAll(sys.name(src) + " superimped " + commandData + "!", 0);
+                sys.changeName(src, "~" + commandData + "~");
+            }
+
+            modCommands["superimpoff"] = function () {
+                if (poUser.superimp == undefined) {
+                    botMessage(src, "You aren't superimping!", chan);
+                    return;
+                }
+
+                sys.changeName(src, poUser.superimp);
+                botAll(sys.name(src) + " changed their name back!", 0);
+            }
 
             /* -- Admin Commands: Start -- */
             adminCommands = ({ /* -- Admin Commands: Command Templates */
@@ -8474,14 +8477,14 @@ if(message == "Maximum Players Changed.") {
                     botAll(srcname + " evaluated the following code:", scriptchannel);
                     sys.sendHtmlAll("<code>" + html_escape(code) + "</code>", scriptchannel);
                     sys.sendHtmlAll(darkBorder, scriptchannel);
-					
+
                     try {
 
                         var now = millitime();
                         var result = eval(code);
                         var end = millitime();
 
-						botAll("Eval returned:", scriptchannel);
+                        botAll("Eval returned:", scriptchannel);
                         botAll(result, scriptchannel);
 
                         var took = end - now,
@@ -11541,11 +11544,11 @@ if(message == "Maximum Players Changed.") {
                 'h': 3600,
                 'd': 86400,
                 'w': 604800,
-                'y': 31536000
+                'y': 31556926
             },
                 units2 = {
-                    'mo': 2592000,
-                    'de': 315360000
+                    'mo': 2629744,
+                    'de': 315569260
                 };
 
             var unit1 = units[unitString],
@@ -11565,7 +11568,7 @@ if(message == "Maximum Players Changed.") {
         startUpTime = function () {
             var n, s = [];
             var d = [
-                [2592000, "<b>Month"],
+                [2629744, "<b>Month"],
                 [604800, "<b>Week"],
                 [86400, "<b>Day"],
                 [3600, "<b>Hour"],
@@ -11598,10 +11601,10 @@ if(message == "Maximum Players Changed.") {
 
         getTimeString = function (sec) {
             var d = [
-                [315360000, "decade"],
-                [31536000, "year"],
+                [315569260, "decade"],
+                [31556926, "year"],
 
-                [2592000, "month"],
+                [2629744, "month"],
                 [604800, "week"],
                 [86400, "day"],
                 [3600, "hour"],
@@ -13199,11 +13202,11 @@ if(message == "Maximum Players Changed.") {
         if (typeof Poke_Data == 'undefined') { /* Only do this once! Takes too much time! */
             var parseFile = function (file) {
                 var res = sys.getFileContent("db/pokes/" + file + ".txt");
-				
-				if (!res) {
-				return [];
-				}
-				
+
+                if (!res) {
+                    return [];
+                }
+
                 return res.split("\n");
             },
                 parseMoveFile = function (file) {
@@ -14249,8 +14252,8 @@ if(message == "Maximum Players Changed.") {
 
         if (typeof Trivia === 'undefined' || !Trivia.loaded) {
             Trivia = new
-
             function () {
+			
                 this.qNum = function () {
                     var quest = objLength(this.questions);
                     return quest;
@@ -14281,9 +14284,8 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 this.questionInfo = function () { /* No escaping on purpose; admins should review well */
-
-                    var qs = this.currentQuestion;
-                    var quest = qs.display_question;
+                    var qs = this.currentQuestion,
+					quest = qs.display_question;
 
                     this.sendAll("<hr width='450'/><center><b>Category:</b> " + qs.category + " <br/> <b>Question</b>: " + quest + " </center><hr width='450'/>", true);
                 }
@@ -14339,7 +14341,7 @@ if(message == "Maximum Players Changed.") {
 /* Struct players:
 			nameToLower => "name", "points", "actionTime" 
 			(Correct case, points earned, time (in millisecs) of the /a if q was correct)
-			defaults: NULL, 0, -1
+			defaults: null, 0, -1
 			*/
 
                     this.gamePoints = -1;
@@ -14870,13 +14872,13 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 this.command_review = function (src, mcmd) {
-				var qid = mcmd[0], keep = on(mcmd[1]);
-				if (!keep) {
-				delete this.review[qid];
-				botAll("Removed question "+qid);
-				}
-				}
-
+                    var qid = mcmd[0],
+                        keep = on(mcmd[1]);
+                    if (!keep) {
+                        delete this.review[qid];
+                        botAll("Removed question " + qid, trivreview);
+                    }
+                }
             }();
         }
 
@@ -17633,11 +17635,11 @@ if(message == "Maximum Players Changed.") {
                     sys.sendMessage(src, "±Game: You can't join now!", mafiachan);
                     return;
                 }
-				
+
                 if (!this.isMafiaAdmin(src)) {
-				throw ("no valid command");
-				}
-				
+                    throw ("no valid command");
+                }
+
                 if (command in this.commands.auth) {
                     this.commands.auth[command][0].call(this, src, commandData);
                     return;
