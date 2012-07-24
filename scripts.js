@@ -905,7 +905,10 @@ if (typeof JSESSION == 'undefined') {
 }
 
 cut = function (array, entry, join) {
-    if (!join) join = "";
+    if (!join) {
+	join = "";
+	}
+	
     return array.splice(entry).join(join);
 }
 
@@ -1235,12 +1238,12 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
     if (display == 1) {
         this.border();
         this.white();
-        botEscapeAll(commandData + " was removed from Tournament by " + sys.name(src) + "!", this.id);
+        botEscapeAll(commandData + " was removed from the tournament by " + sys.name(src) + "!", this.id);
         this.white();
         this.border();
     }
     else {
-        sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + commandData + " was removed from the Tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", this.id);
+        sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + commandData + " was removed from the tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!<hr width='300'></center></td></tr></table>", this.id);
     }
 
 
@@ -5140,7 +5143,6 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     botMessage(src, "Now you are " + poUser.impersonation + "!", chan);
-                    return;
                 },
 
                 impoff: function () {
@@ -5155,7 +5157,6 @@ if(message == "Maximum Players Changed.") {
 
                     delete poUser.impersonation;
                     botMessage(src, "Now you are yourself again!", chan);
-                    return;
                 },
 
                 /* -- User Commands: Battle Points */
@@ -7114,7 +7115,7 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 /* -- Mod Commands: Message Sending -- */
-                sendall: function () {
+                send: function () {
                     sys.sendAll(commandData, chan);
                 },
 
@@ -10209,9 +10210,7 @@ if(message == "Maximum Players Changed.") {
             2: "Brave</font></b> Nature (+Atk, -Spd)",
             1: "Lonely</font></b> Nature (+Atk, -Def)",
             0: "Hardy</font></b> Nature"
-        };
-
-        var colorNames = {
+        }, colorNames = {
             0: "#a8a878",
             1: "#c03028",
             2: "#a890f0",
@@ -10229,14 +10228,11 @@ if(message == "Maximum Players Changed.") {
             14: "#98d8d8",
             15: "#7038f8",
             16: "#705848"
-        };
-
-        var genderNames = {
+        }, genderNames = {
             2: "female",
             1: "male",
             0: "neutral"
-        }
-        var evNames = {
+        }, evNames = {
             0: "HP",
             1: "Atk",
             2: "Def",
@@ -10248,6 +10244,7 @@ if(message == "Maximum Players Changed.") {
         var hiddenPowerNum = sys.moveNum("Hidden Power"),
             t = new Template(),
             teamno, gen, subgen;
+			
         t.register(style.header);
 
         for (var n = 0; n < sys.teamCount(src); n++) {
@@ -10291,7 +10288,7 @@ if(message == "Maximum Players Changed.") {
                     t.register("<font color=" + color + "><b>Trait:</b></font> " + sys.ability(sys.teamPokeAbility(tar, n, i)));
                 }
 
-                level = sys.teamPokeLevel(tar, i);
+                level = sys.teamPokeLevel(tar, n, i);
 
                 if (level != 100) {
                     t.register('<b><font color=' + color + '>Level:</b></font> ' + level);
@@ -11361,13 +11358,14 @@ if(message == "Maximum Players Changed.") {
 
         sendAuth = function (message) {
             var auth_list = sys.dbAuths(),
-                id;
-            for (var y in auth_list) {
+                id, y;
+            for (y in auth_list) {
                 id = sys.id(auth_list[y]);
                 if (id != undefined) {
                     botMessage(id, message);
                 }
             }
+			
             print("[#" + sys.channel(0) + "] " + Bot.bot + ": " + message);
         }
 
