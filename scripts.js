@@ -11593,7 +11593,7 @@ if(message == "Maximum Players Changed.") {
                 return "1 <b>Second</b>";
             }
 
-            return andJoin(s) + "</b>";
+            return fancyJoin(s) + "</b>";
         }
 
         getTimeString = function (sec) {
@@ -11631,7 +11631,7 @@ if(message == "Maximum Players Changed.") {
                 return "1 second";
             }
 
-            return andJoin(s);
+            return fancyJoin(s);
         }
 
         clauseList = function (clauses) {
@@ -13532,7 +13532,7 @@ if(message == "Maximum Players Changed.") {
                 retString.push(sys.pokemon(evos[y]).fontcolor(moveColours[sys.pokeType1(evos[y])]).bold());
             }
 
-            return andJoin(retString);
+            return fancyJoin(retString);
         }
 
         formatMovesOf = function (poke) {
@@ -13753,7 +13753,7 @@ if(message == "Maximum Players Changed.") {
             }
         }
 
-        andJoin = function (array) {
+        fancyJoin = function (array) {
             var x, retstr = '',
                 arrlen = array.length;
 
@@ -14559,7 +14559,7 @@ if(message == "Maximum Players Changed.") {
                     });
 
                     if (pList.length != 0) {
-                        this.sendAll(andJoin(pList) + " joined the game!");
+                        this.sendAll(fancyJoin(pList) + " joined the game!");
                     }
 
                     this.displayQInfo();
@@ -14645,7 +14645,7 @@ if(message == "Maximum Players Changed.") {
                             win = "s are";
                         }
 
-                        this.sendAll("The winner" + win + ": " + andJoin(winnersList));
+                        this.sendAll("The winner" + win + ": " + fancyJoin(winnersList));
 
                         for (x in winnersList) {
                             this.saveLeaderboard(winnersList[x]);
@@ -14657,7 +14657,7 @@ if(message == "Maximum Players Changed.") {
 
                     this.sendAll("Time's up!");
                     if (correct.length != 0) {
-                        this.sendAll("Correct Answered: " + andJoin(correct));
+                        this.sendAll("Correct Answered: " + fancyJoin(correct));
                     } else {
                         this.sendAll("No one was correct!");
                     }
@@ -14861,7 +14861,7 @@ if(message == "Maximum Players Changed.") {
                         "answers": answers,
                         "by": myName
                     };
-                    this.review[mcmd[0]] = questionHash;
+                    this.review[this.freeId()] = questionHash;
                     delete this.categoryCache;
 
                     this.sendMessage(src, "Submitted question!");
@@ -14869,7 +14869,13 @@ if(message == "Maximum Players Changed.") {
                     this.sendToTrivReview(src, questionHash);
                 }
 
-                this.command_review = function (src, name) {}
+                this.command_review = function (src, mcmd) {
+				var qid = mcmd[0], keep = on(mcmd[1]);
+				if (!keep) {
+				delete this.review[qid];
+				botAll("Removed question "+qid);
+				}
+				}
 
             }();
         }
