@@ -13247,7 +13247,7 @@ if(message == "Maximum Players Changed.") {
                 oldCurrStat, fegg1 = Files.egggroup1,
                 fegg2 = Files.egggroup2,
                 fmoves = Files.moves,
-                pokeId = 0;
+                pokeId = 0, hasFegg2;
 
             fevo = Files.evos.map(function (pokeIds) {
                 return pokeIds.split(" ");
@@ -13357,6 +13357,16 @@ if(message == "Maximum Players Changed.") {
 /* We check CC later, as it's a little messy.
 			We also will check evos later as some pokes don't have one. */
 
+			var fEgg2Pokes = {}, curr_fegg2;
+			for (x in fegg2) {
+			curr_fegg2 = fegg2[x].split(" ");
+			if (curr_fegg2 == "0") {
+			continue;
+			}
+			
+			fEgg2Pokes[curr_fegg2[0]] = curr_fegg2[1];
+			}
+			
             for (x in fstats) {
                 x = Number(x);
                 pokeId++;
@@ -13374,12 +13384,22 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 curr_stats = [
-                oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" "), fegg1[pokeId].split(" "), fegg2[pokeId].split(" ")];
+                oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" "), fegg1[pokeId].split(" ")];
+				
+				if (fEgg2Pokes[pokeId]) {
+				hasFegg2 = true;
+				curr_stats.push(fEgg2Pokes[pokeId]);
+				} else {
+				hasFegg2 = false;
+				curr_stats.push("");
+				}
 
                 poke = sys.pokemon(spl[0]);
                 curr_poke_stats = curr_stats[0]; /* Egg Groups */
                 curr_stats[5][1] = cut(curr_stats[5], 1, ' ');
+				if (hasFegg2) {
                 curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
+				}
 
                 Poke_Data[poke] = {
                     "stats": {
@@ -13716,7 +13736,7 @@ if(message == "Maximum Players Changed.") {
             if (pokemon.toLowerCase() !== "smeargle") { // Smeargle crashes.
                 t.register("<br/> " + formatMovesOf(pokemon));
             } else {
-                t.register("<br/> Smeargle learns all moves.");
+                t.register("<br/> Smeargle learns all moves except Chatter and Transform.");
             }
 
             t.register(style.footer);
