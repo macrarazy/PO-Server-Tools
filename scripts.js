@@ -8235,7 +8235,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     cache.write("FutureLimit", pi);
-                    botAll("The Futures allowed was changed to per " + pi + " seconds by " + sys.name(src) + "!", 0);
+                    botAll("The x futures allowed was changed to per " + pi + " seconds by " + sys.name(src) + "!", 0);
                     FutureLimit = pi;
                 },
 
@@ -8273,11 +8273,11 @@ if(message == "Maximum Players Changed.") {
                 messagelimit: function () {
                     commandData = parseInt(commandData);
                     if (isNaN(commandData)) {
-                        botMessage(src, 'Sorry, but that isn\'t a number.', chan);
+                        botMessage(src, "That isn't a valid number.", chan);
                         return;
                     }
                     if (MaxMessageLength === commandData) {
-                        botMessage(src, "The Message Limit is already " + commandData, chan);
+                        botMessage(src, "The message limit is already " + commandData, chan);
                         return;
                     }
                     MaxMessageLength = commandData;
@@ -8287,7 +8287,7 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Owner Commands: Announcement */
                 getannouncement: function () {
-                    botEscapeMessage(src, "The raw Announcement is: " + sys.getAnnouncement());
+                    botEscapeMessage(src, "The raw announcement is: " + sys.getAnnouncement());
                 },
 
                 changeannouncement: function () {
@@ -8330,7 +8330,7 @@ if(message == "Maximum Players Changed.") {
                     }
                     sys.makeServerPublic(true);
                     var conf = sys.getFileContent("config");
-                    conf.replace(/server_private=1/, "server_private=0");
+                    conf.replace(/Private=1/, "Private=0");
                     sys.writeToFile("config", conf);
                     botAll("The Server has been made public by <b><font color= " + getColor + "> " + html_escape(sys.name(src)) + "</b><font>", 0);
                 },
@@ -8341,7 +8341,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
                     var conf = sys.getFileContent("config");
-                    conf.replace(/server_private=0/, "server_private=1");
+                    conf.replace(/Private=0/, "Private=1");
                     sys.writeToFile("config", conf);
                     sys.makeServerPublic(false);
                     botAll("The Server has been made private by <b><font color= " + getColor + "> " + html_escape(sys.name(src)) + "</b><font>", 0);
@@ -8350,11 +8350,11 @@ if(message == "Maximum Players Changed.") {
                 /* -- Owner Commands: Password */
                 clearpass: function () {
                     if (dbIp === undefined) {
-                        botMessage(src, "Sorry, that person doesn't exist.", chan);
+                        botMessage(src, "That person doesn't exist.", chan);
                         return;
                     }
                     if (!sys.dbRegistered(commandData)) {
-                        botMessage(src, 'Sorry, that person isn\'t registered.', chan);
+                        botMessage(src, "That person isn't registered.", chan);
                         return;
                     }
 
@@ -8363,7 +8363,7 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, "You cleared " + commandData + "'s password.", chan);
 
                     if (tar != undefined) {
-                        botMessage(tar, "<ping/>Your Password has been cleared by " + html_escape(sys.name(src)) + ".");
+                        botMessage(tar, "<ping/>Your password has been cleared by " + html_escape(sys.name(src)) + ".");
                     }
                 },
 
