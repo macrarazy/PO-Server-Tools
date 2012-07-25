@@ -13104,6 +13104,7 @@ if(message == "Maximum Players Changed.") {
 
 
     loadPokemonStats: function () {
+	try {
         if (typeof Poke_Data == 'undefined') { /* Only do this once! Takes too much time! */
             var parseFile = function (file) {
                 var res = sys.getFileContent("db/pokes/" + file + ".txt");
@@ -13655,6 +13656,9 @@ if(message == "Maximum Players Changed.") {
             sys.sendHtmlMessage(src, html_escape(t.template.join("<br/>")), chan);
 
         }
+		} catch (e) {
+		print(FormatError("", e));
+		}
 
     },
 
