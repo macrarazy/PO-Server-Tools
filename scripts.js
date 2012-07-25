@@ -906,13 +906,13 @@ if (typeof JSESSION == 'undefined') {
 
 cut = function (array, entry, join) {
     if (!join) {
-	join = "";
-	}
-	
-	if (!Array.isArray(array)) {
-	return array;
-	}
-	
+        join = "";
+    }
+
+    if (!Array.isArray(array)) {
+        return array;
+    }
+
     return array.splice(entry).join(join);
 }
 
@@ -2289,13 +2289,14 @@ JSESSION.refill();
             }
         }
 
-        var lines = sys.getFileContent("config").split("\n"), z;
-		for (z in lines) {
-		if (lines[z].substring(0, 4) == "Name=") {
-        servername = lines[z].substring(5).replace(/\\xe9/i, "é").trim();
-		break;
-		}
-		}
+        var lines = sys.getFileContent("config").split("\n"),
+            z;
+        for (z in lines) {
+            if (lines[z].substring(0, 4) == "Name=") {
+                servername = lines[z].substring(5).replace(/\\xe9/i, "é").trim();
+                break;
+            }
+        }
 
         run("requiredUtilitiesLoad");
         run("loadCache");
@@ -8426,7 +8427,7 @@ if(message == "Maximum Players Changed.") {
                         timestr, timeUnitTime = stringToTime(mcmd[2], mcmd[1] * 1);
 
                     if (!isNaN(timeUnitTime)) {
-                        time = sys.time() * 1 + timeUnitTime
+                        time = sys.time() * 1 + timeUnitTime;
                     }
                     if (time === 0) {
                         timestr = 'forever';
@@ -8471,7 +8472,7 @@ if(message == "Maximum Players Changed.") {
                         cache.write("rangebans", JSON.stringify(DataHash.rangebans));
                         return;
                     }
-                    botEscapeMessage(src, "Couldn't find range IP " + commandData + " in rangebanlist.", chan);
+                    botEscapeMessage(src, "Couldn't find range IP " + commandData + " in the range banlist.", chan);
                 },
 
                 /* -- Owner Commands: Eval */
@@ -8494,7 +8495,6 @@ if(message == "Maximum Players Changed.") {
                         var result = eval(code);
                         var end = millitime();
 
-                        botAll("Eval returned:", scriptchannel);
                         botAll(result, scriptchannel);
 
                         var took = end - now,
@@ -8883,7 +8883,7 @@ if(message == "Maximum Players Changed.") {
                 /* -- Owner Commands: Ban */
                 banfrom: function () {
                     if (mcmd[0] === undefined || mcmd[1] === undefined || mcmd[2] === undefined) {
-                        botMessage(src, "Usage /banfrom tier:poke:ability", chan);
+                        botMessage(src, "Invalid parameters.", chan);
                         return;
                     }
 
@@ -8916,7 +8916,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     if (abilityarr.indexOf(mcmd[2].toLowerCase()) === -1) {
-                        botEscapeMessage(src, "The Ability " + mcmd[2] + " for pokemon " + mcmd[1] + " doesn't exist!", chan);
+                        botEscapeMessage(src, "The ability " + mcmd[2] + " for pokemon " + mcmd[1] + " doesn't exist!", chan);
                         return;
                     }
                     var bans = DataHash.bannedAbilities;
@@ -8941,17 +8941,18 @@ if(message == "Maximum Players Changed.") {
                 },
                 unbanfrom: function () {
                     if (mcmd[0] === undefined || mcmd[1] === undefined || mcmd[2] === undefined) {
-                        botMessage(src, "Usage /unbanfrom tier:poke:ability", chan);
+                        botMessage(src, "Invalid parameters.", chan);
                         return;
                     }
 
                     var tiers = sys.getTierList(),
                         get = false,
-                        y, name;
+                        y, name, tier = mcmd[0];
                     for (y in tiers) {
-                        if (tiers[y].toLowerCase() === mcmd[0].toLowerCase()) {
+                        if (tiers[y].toLowerCase() === tier.toLowerCase()) {
                             get = true;
-                            name = tiers[y].toLowerCase();
+                            name = tier.toLowerCase();
+                            tier = tiers[y];
                             break;
                         }
                     }
@@ -8974,18 +8975,18 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     if (abilityarr.indexOf(mcmd[2].toLowerCase()) === -1) {
-                        botEscapeMessage(src, "The Ability " + mcmd[2] + " for pokemon " + mcmd[1] + " doesn't exist!", chan);
+                        botEscapeMessage(src, "The ability " + mcmd[2] + " for pokemon " + mcmd[1] + " doesn't exist!", chan);
                         return;
                     }
                     var bans = DataHash.bannedAbilities;
                     if (typeof bans[name] === 'undefined') {
-                        botMessage(src, "That Tier has no Ability Bans.", chan);
+                        botMessage(src, tier + " doesn't have any ability bans.", chan);
                         return;
                     }
 
                     var pN = sys.pokemon(num).toLowerCase();
                     if (typeof bans[name][pN] === 'undefined') {
-                        botMessage(src, "That Pokemon has no Ability Bans.", chan);
+                        botMessage(src, sys.pokemon(num) + " doesn't have any ability bans in " + tier, chan);
                         return;
                     }
 
@@ -9092,9 +9093,9 @@ if(message == "Maximum Players Changed.") {
                 ct.register("jsessioncommands", "Displays JSESSION Commands.");
                 ct.register("servercommands", "Displays Server Commands.");
                 ct.register("tiercommands", "Displays Tier Commands.");
-                ct.register("eval", ["{p Code}"], "Evaluates a QtScript code.");
-                ct.register("randomspam", ["{o Number}"], "Spams the Chat with Random Messages.");
-                ct.register("resetcommandstats", "Resets Command Stats.");
+                ct.register("eval", ["{p Code}"], "Evaluates a QtScript code and returns the result.");
+                ct.register("randomspam", ["{o Number}"], "Spams the chat with random messages.");
+                ct.register("resetcommandstats", "Resets command stats.");
                 ct.register(style.footer);
                 ct.render(src, chan);
             }
@@ -10214,47 +10215,51 @@ if(message == "Maximum Players Changed.") {
             2: "Brave</font></b> Nature (+Atk, -Spd)",
             1: "Lonely</font></b> Nature (+Atk, -Def)",
             0: "Hardy</font></b> Nature"
-        }, colorNames = {
-            0: "#a8a878",
-            1: "#c03028",
-            2: "#a890f0",
-            3: "#a040a0",
-            4: "#e0c068",
-            5: "#b8a038",
-            6: "#a8b820",
-            7: "#705898",
-            8: "#b8b8d0",
-            9: "#f08030",
-            10: "#6890f0",
-            11: "#78c850",
-            12: "#f8d030",
-            13: "#f85888",
-            14: "#98d8d8",
-            15: "#7038f8",
-            16: "#705848"
-        }, genderNames = {
-            2: "female",
-            1: "male",
-            0: "neutral"
-        }, evNames = {
-            0: "HP",
-            1: "Atk",
-            2: "Def",
-            3: "SAtk",
-            4: "SDef",
-            5: "Spd"
-        };
+        },
+            colorNames = {
+                0: "#a8a878",
+                1: "#c03028",
+                2: "#a890f0",
+                3: "#a040a0",
+                4: "#e0c068",
+                5: "#b8a038",
+                6: "#a8b820",
+                7: "#705898",
+                8: "#b8b8d0",
+                9: "#f08030",
+                10: "#6890f0",
+                11: "#78c850",
+                12: "#f8d030",
+                13: "#f85888",
+                14: "#98d8d8",
+                15: "#7038f8",
+                16: "#705848"
+            },
+            genderNames = {
+                2: "female",
+                1: "male",
+                0: "neutral"
+            },
+            evNames = {
+                0: "HP",
+                1: "Atk",
+                2: "Def",
+                3: "SAtk",
+                4: "SDef",
+                5: "Spd"
+            };
 
         var hiddenPowerNum = sys.moveNum("Hidden Power"),
             t = new Template(),
-            teamno, gen, subgen;
-			
+            teamno, gen, subgen, n;
+
         t.register(style.header);
 
-        for (var n = 0; n < sys.teamCount(src); n++) {
-            teamno = x + 1;
+        for (n = 0; n < sys.teamCount(src); n++) {
+            teamno = n + 1;
             gen = sys.gen(src, n);
             subgen = sys.generation(gen, n);
+
             if (n != 0) {
                 t.register("");
             }
@@ -10395,9 +10400,9 @@ if(message == "Maximum Players Changed.") {
                 for (x in b) {
                     cban = b[x];
                     if (cban.method == this.Include) {
-                        correct = tiers.indexOf(tier) != -1;
+                        correct = cban.tiers.indexOf(tier) != -1;
                     } else {
-                        correct = tiers.indexOf(tier) == -1;
+                        correct = cban.tiers.indexOf(tier) == -1;
                     }
 
                     if (correct) {
@@ -10423,9 +10428,9 @@ if(message == "Maximum Players Changed.") {
                     i, tier;
                 for (i in path) {
                     tier = path[i];
-                    if (sys.hasLegalTeamForTier(src, team, testtier) && this.isLegalTeam(src, team, testtier, true)) {
+                    if (sys.hasLegalTeamForTier(src, team, tier) && this.isLegalTeam(src, team, tier, true)) {
                         teamAlert(src, team, "Your team's tier is now " + tier + ".");
-                        sys.changeTier(src, team, testtier);
+                        sys.changeTier(src, team, tier);
                         return;
                     }
                 }
@@ -10471,7 +10476,6 @@ if(message == "Maximum Players Changed.") {
                     if (bans[ltier][lpoke] != undefined) {
                         if (bans[ltier][lpoke].indexOf(lability) != -1) {
                             ret.push(poke + " is not allowed to have ability " + ability + " in " + tier + ". Please change it in Teambuilder.");
-                            break;
                         }
                     }
                 }
@@ -11369,7 +11373,7 @@ if(message == "Maximum Players Changed.") {
                     botMessage(id, message);
                 }
             }
-			
+
             print("[#" + sys.channel(0) + "] " + Bot.bot + ": " + message);
         }
 
@@ -11686,13 +11690,8 @@ if(message == "Maximum Players Changed.") {
             return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
         }
 
-        html_strip = function (str, repChar) {
-            var replaceChar = "";
-            if (repChar) {
-                replaceChar = "  ";
-            }
-
-            return str.replace(/<\/?[^>]*>/g, replaceChar);
+        html_strip = function (str) {
+            return str.replace(/<\/?[^>]*>/g, "");
         }
 
         html_escape_strip = function (str) {
@@ -13254,7 +13253,8 @@ if(message == "Maximum Players Changed.") {
                 oldCurrStat, fegg1 = Files.egggroup1,
                 fegg2 = Files.egggroup2,
                 fmoves = Files.moves,
-                pokeId = 0, hasFegg2;
+                pokeId = 0,
+                hasFegg2;
 
             fevo = Files.evos.map(function (pokeIds) {
                 return pokeIds.split(" ");
@@ -13364,16 +13364,17 @@ if(message == "Maximum Players Changed.") {
 /* We check CC later, as it's a little messy.
 			We also will check evos later as some pokes don't have one. */
 
-			var fEgg2Pokes = {}, curr_fegg2;
-			for (x in fegg2) {
-			curr_fegg2 = fegg2[x].split(" ");
-			if (curr_fegg2 == "0") {
-			continue;
-			}
-			
-			fEgg2Pokes[curr_fegg2[0]] = curr_fegg2[1];
-			}
-			
+            var fEgg2Pokes = {},
+                curr_fegg2;
+            for (x in fegg2) {
+                curr_fegg2 = fegg2[x].split(" ");
+                if (curr_fegg2 == "0") {
+                    continue;
+                }
+
+                fEgg2Pokes[curr_fegg2[0]] = curr_fegg2[1];
+            }
+
             for (x in fstats) {
                 x = Number(x);
                 pokeId++;
@@ -13392,21 +13393,21 @@ if(message == "Maximum Players Changed.") {
 
                 curr_stats = [
                 oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" "), fegg1[pokeId].split(" ")];
-				
-				if (fEgg2Pokes[pokeId]) {
-				hasFegg2 = true;
-				curr_stats.push(fEgg2Pokes[pokeId]);
-				} else {
-				hasFegg2 = false;
-				curr_stats.push("");
-				}
+
+                if (fEgg2Pokes[pokeId]) {
+                    hasFegg2 = true;
+                    curr_stats.push(fEgg2Pokes[pokeId]);
+                } else {
+                    hasFegg2 = false;
+                    curr_stats.push("");
+                }
 
                 poke = sys.pokemon(spl[0]);
                 curr_poke_stats = curr_stats[0]; /* Egg Groups */
                 curr_stats[5][1] = cut(curr_stats[5], 1, ' ');
-				if (hasFegg2) {
-                curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
-				}
+                if (hasFegg2) {
+                    curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
+                }
 
                 Poke_Data[poke] = {
                     "stats": {
@@ -13751,6 +13752,7 @@ if(message == "Maximum Players Changed.") {
                 t.render(src, chan);
                 return;
             }
+
             sys.sendHtmlMessage(src, html_escape(t.template.join("<br/>")), chan);
 
         }
@@ -14279,8 +14281,9 @@ if(message == "Maximum Players Changed.") {
 
         if (typeof Trivia === 'undefined' || !Trivia.loaded) {
             Trivia = new
+
             function () {
-			
+
                 this.qNum = function () {
                     var quest = objLength(this.questions);
                     return quest;
@@ -14312,7 +14315,7 @@ if(message == "Maximum Players Changed.") {
 
                 this.questionInfo = function () { /* No escaping on purpose; admins should review well */
                     var qs = this.currentQuestion,
-					quest = qs.display_question;
+                        quest = qs.display_question;
 
                     this.sendAll("<hr width='450'/><center><b>Category:</b> " + qs.category + " <br/> <b>Question</b>: " + quest + " </center><hr width='450'/>", true);
                 }
