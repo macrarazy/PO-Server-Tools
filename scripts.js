@@ -926,6 +926,10 @@ hasTeam = function (id, tier) {
     return sys.hasTier(id, tier);
 }
 
+TourBox = function (message) {
+    return "<table><tr><td><center><hr width='300'>" + message + "</center><hr width='300'></center></td></tr></table>";
+}
+
 function Tours(id) {
     this.id = id;
     this.tourmode = 0;
@@ -948,18 +952,26 @@ function Tours(id) {
 }
 
 Tours.prototype.border = function () {
-    return sys.sendHtmlAll(tour, this.id);
+    sys.sendHtmlAll(tour, this.id);
 }
 
 Tours.prototype.white = function () {
-    return sys.sendAll("", this.id);
+    sys.sendAll("", this.id);
 }
 
 Tours.prototype.hasTourAuth = function (id) {
     var poUser = JSESSION.users(id),
         poChannel = JSESSION.channels(this.id);
 
-    return poChannel.tourAuth[poUser.lowername] != undefined || sys.auth(id) > 0 || poUser.megauser || poChannel.isChanMod(src);
+    var test = function () {
+        if (noPermission) {
+            return !noPermission(src, 1);
+        }
+
+        return sys.auth(src) > 0;
+    }
+
+    return poChannel.tourAuth[poUser.lowername] != undefined || test() || poUser.megauser || poChannel.isChanMod(src);
 }
 
 Tours.prototype.roundStatusGenerate = function () {
@@ -999,20 +1011,37 @@ Tours.prototype.isBattling = function (name) {
 }
 
 Tours.prototype.identify = function (test) {
-    if (test == null) test = this.battlemode;
-    if (test === 0) return "No tournament is running.";
-    else if (test === 1) return "Single Elimination";
-    else if (test === 2) return "Double Elimination";
-    else if (test === 3) return "Triple Elimination";
-    else if (test === 4) return "Tag Team Single Elimination";
-    else if (test === 5) return "Tag Team Double Elimination";
-    else if (test === 6) return "Tag Team Triple Elimination";
-    else return "Unknown Mode";
+    if (test == null) {
+        test = this.battlemode;
+    }
+    if (test === 0) {
+        return "No tournament is running.";
+    }
+    else if (test === 1) {
+        return "Single Elimination";
+    }
+    else if (test === 2) {
+        return "Double Elimination";
+    }
+    else if (test === 3) {
+        return "Triple Elimination";
+    }
+    else if (test === 4) {
+        return "Tag Team Single Elimination";
+    }
+    else if (test === 5) {
+        return "Tag Team Double Elimination";
+    }
+    else if (test === 6) {
+        return "Tag Team Triple Elimination";
+    }
+    else {
+        return "Unknown Mode";
+    }
 }
 
 Tours.prototype.command_autostartbattles = function (src, commandData, fullCommand) {
-    var poUser = JSESSION.users(src);
-    if (sys.auth(src) < 1 && !poUser.megauser && !JSESSION.channels(this.id).isChanMod(src)) {
+    if (!this.hasTourAuth(src)) {
         noPermissionMessage(src, fullCommand, this.id);
         return;
     }
@@ -1032,7 +1061,7 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
             this.border();
         }
         else {
-            sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start battles off." + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", this.id);
+            sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> turned auto start battles on."), this.id);
         }
         this.AutoStartBattles = true;
         return;
@@ -1048,7 +1077,7 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
             this.AutoStartBattles = false;
         }
         else {
-            sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start battles off." + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", this.id);
+            sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> turned auto start battles off."), this.id);
             this.AutoStartBattles = false;
         }
         return;
@@ -1089,7 +1118,11 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
     if (this.tourSpots() > 0) {
         this.buildHash(src);
 
-        botAll(sys.name(src) + " joined the tournament! " + this.tourSpots() + " more spot(s) left!", this.id);
+        if (display == 1) {
+            botEscapeAll(sys.name(src) + " joined the tournament! " + this.tourSpots() + " more spot(s) left!", this.id);
+        } else {
+            sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> joined the tournament! <b>" + this.tourSpots() + "</b> more spot(s) left!"), this.id);
+        }
 
         if (this.tourSpots() == 0) {
             this.tourmode = 2;
@@ -1105,7 +1138,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
 
 Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
     if (this.tourmode == 0) {
-        botMessage(src, "Wait till the tournament has started.", this.id);
+        botMessage(src, "Wait untill the tournament has started.", this.id);
         return;
     }
 
@@ -1119,7 +1152,12 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
         this.remaining--;
     }
 
-    botEscapeAll(sys.name(src) + " left the tournament!", 0);
+    if (display == 1) {
+        botEscapeAll(sys.name(src) + " left the tournament " + (this.tourSpots() + 1) + " spots left!", this.id);
+    } else {
+        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> left the tournament! <b>" + (this.tourSpots() + 1) + "</b> spots left!"), this.id);
+    }
+
     if (this.tourmode == 2 && this.players[name2].couplesid != -1) {
         this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
     }
@@ -1220,7 +1258,7 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
         return;
     }
     var name2 = commandData.toLowerCase();
-    if (this.players[name2] == undefined) {
+    if (!this.players[name2]) {
         botMessage(src, "This player is not in the tournament.", this.id);
         return;
     }
@@ -1232,12 +1270,13 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
     if (display == 1) {
         this.border();
         this.white();
-        botEscapeAll(commandData + " was removed from the tournament by " + sys.name(src) + "!", this.id);
+        botEscapeAll(commandData.name() + " was removed from the tournament by " + sys.name(src) + "!", this.id);
         this.white();
         this.border();
     }
     else {
-        sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + commandData + " was removed from the tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!<hr width='300'></center></td></tr></table>", this.id);
+        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(sys.id(commandData)) + "'>"
+        commandData.name() + "</b> was removed from the tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!"), this.id);
     }
 
 
@@ -1256,6 +1295,7 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
 
     var parts = commandData.split(':');
     parts[1] = parts[1].toLowerCase();
+
     if (!this.isInTourney(parts[0]) || sys.id(parts[1]) == undefined) {
         botMessage(src, "The players need to exist!", this.id);
         return;
@@ -1265,11 +1305,11 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
         return;
     }
 
-    var obj = this.players[parts[0].toLowerCase()];
-    var playerN = parts[0].name(),
-        switchN = parts[1].name();
-    var indexOfIdle = this.idleBattler(playerN);
-    var indexThingy, pNum;
+    var obj = this.players[parts[0].toLowerCase()],
+        playerN = parts[0].name(),
+        switchN = parts[1].name(),
+        indexOfIdle = this.idleBattler(playerN),
+        indexThingy, pNum;
 
     if (indexOfIdle !== false) {
         indexThingy = this.roundStatus.idleBattles[indexOfIdle];
@@ -1298,9 +1338,8 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
         this.border();
     }
     else {
-
         parts = parts.map(function (pname) {
-            return '<b color="' + script.namecolor(sys.id(pname)) + '">' + pname.name() + '</b>';
+            return '<b style="color: ' + script.namecolor(sys.id(pname)) + '">' + pname.name() + '</b>';
         });
 
         var spots = '';
@@ -1308,7 +1347,7 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
             spots = "<br><b>" + this.tourSpots() + "</b> more spot(s) left!";
         }
 
-        sys.sendHtmlAll("<table><tr><td><hr width='300'><center>" + parts[0] + " was switched with " + parts[1] + " by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", this.id);
+        sys.sendHtmlAll(TourBox(parts[0] + " was switched with " + parts[1] + " by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots), this.id);
     }
 }
 
@@ -1332,7 +1371,7 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
         return;
     }
     if (sys.dbIp(commandData) == undefined) {
-        botMessage(src, "Unknown target!", this.id);
+        botMessage(src, "This person doesn't exist.", this.id);
         return;
     }
 
@@ -1360,7 +1399,7 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
             spots = "<br/><b>" + this.tourSpots() + "</b> more spot(s) left!";
         }
 
-        sys.sendHtmlAll("<table><tr><td><hr width='300'><center><b style='" + script.namecolor(sys.id(commandData)) + "'>" + commandData.name() + "</b> was added to the Tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots + "</center><hr width='300'></td></tr></table>", this.id);
+        sys.sendHtmlAll(TourBox("<b style='color:" + script.namecolor(sys.id(commandData)) + "'>" + name + "</b> was added to the tournament by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots), this.id);
     }
 
     if (this.tourmode == 1 && this.tourSpots() == 0) {
@@ -1404,7 +1443,7 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
         this.border();
     }
     else {
-        sys.sendHtmlAll("<table><tr><td><hr width='300'><center><b style='color: " + script.namecolor(sys.id(startername)) + "'>" + startername + "</b> can forfeit their battle and rematch now.</center><hr width='300'></td></tr></table>", this.id);
+        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(sys.id(startername)) + "'>" + startername + "</b> can forfeit their battle and rematch now."), this.id);
     }
     return;
 }
@@ -1450,7 +1489,7 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
     }
 
     if (this.tournumber > 150) {
-        botMessage(src, "Having over 150 players would be near-impossible!", chan);
+        botMessage(src, "Having over 150 players would be impossible!", chan);
         return;
     }
 
@@ -1502,7 +1541,7 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
             prize = '<b style="color: brown;">Prize:</b> ' + this.prize + '<br/>';
         }
 
-        sys.sendHtmlAll("<table><tr><td><hr width='300'><center>A Tournament was started by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>! <br/> <b style='color:red'>Players:</b> " + this.tournumber + " <br/> <b style='color: blue;'>Type:</b> " + this.identify(cp) + " <br/> <b style='color: orange;'>Tier:</b> " + this.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!</center><hr width='300'></td></tr></table>", this.id);
+        sys.sendHtmlAll(TourBox("A Tournament was started by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>! <br/> <b style='color:red'>Players:</b> " + this.tournumber + " <br/> <b style='color: blue'>Type:</b> " + this.identify(cp) + " <br/> <b style='color: orange'>Tier:</b> " + this.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!"), this.id);
     }
 
     this.startTime = sys.time() * 1;
@@ -1554,7 +1593,7 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
         this.border();
     }
     else {
-        sys.sendHtmlAll("<table><tr><td><hr width='300'><center><b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> changed the numbers of entrants to " + count + "!<br/><b>" + this.tourSpots() + "</b> more spot(s) left!</center><hr width='300'></td></tr></table>", this.id);
+        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b> changed the numbers of entrants to " + count + "!<br/><b>" + this.tourSpots() + "</b> more spot(s) left!"), this.id);
     }
 
     if (this.tourSpots() == 0) {
@@ -1577,12 +1616,12 @@ Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
         if (display == 1) {
             this.border();
             this.white();
-            botAll("The Tournament was cancelled by " + sys.name(src) + "!", this.id);
+            botAll("The tournament has been ended by " + sys.name(src) + "!", this.id);
             this.white();
             this.border();
         }
         else {
-            sys.sendHtmlAll("<table><tr><td><hr width='300'><center>The Tournament was cancelled by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!</center><hr width='300'></td></tr></table>", this.id);
+            sys.sendHtmlAll(TourBox("The tournament has been ended by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!"), this.id);
         }
         return;
     }
@@ -6120,30 +6159,33 @@ if(message == "Maximum Players Changed.") {
             /* -- Tour Commands: Start */
             tourCommands = ({ /* -- Tour Templates: Commands */
                 tourcommands: function () {
+                    if (!poChan.toursEnabled) {
+                        return;
+                    }
                     var ct = new Command_Templater("Tournament Commands", true);
                     ct.span("Tournament " + ChanTour0 + " Commands");
 
-                    ct.register("join", "Lets you join the Tournament.");
-                    ct.register("unjoin", "Lets you leave the Tournament.");
-                    ct.register("viewround", "Displays information about the current Tournament Round");
-                    ct.register("tourprize", "Displays the Tournament Prize.");
+                    ct.register("join", "Makes you join the tournament.");
+                    ct.register("unjoin", "Makes you leave the tournament.");
+                    ct.register("viewround", "Displays information about the current round.");
+                    ct.register("tourprize", "Displays the tournament prize.");
 
-                    if (!noPermission(src, 1) || typeof poChan.tourAuth[sys.name(src).toLowerCase()] != 'undefined' || poUser.megauser || JSESSION.channels(chan).isChanMod(src)) {
+                    if (poChan.tour.hasTourAuth(src)) {
                         ct.span("Tournament " + ChanTour1 + " Commands");
-                        ct.register("tour", ["{p Tier}", "{o Players}", "{o <u>Type</u>}", "{p <u>Prize</u>}"], "Starts a Tournament. Type will be Single Elimination (1) if not entered. Types are: Single Elimination (1), Double Elimination (2), Triple Elimination(3), Tag Team Single Elimination(4), Tag Team Double Elimination(5), Tag Team Triple Elimination(6). For Tag Team Tournaments, the entrants must be an even number.");
-                        ct.register("dq", ["{g Person}"], "DQs someone from the Tournament.");
+                        ct.register("tour", ["{p Tier}", "{o Players}", "{o <u>Type</u>}", "{p <u>Prize</u>}"], "Starts a tournament. Type will be Single Elimination (1) if not specified. Types are: Single Elimination (1), Double Elimination (2), Triple Elimination (3), Tag Team Single Elimination (4), Tag Team Double Elimination (5), Tag Team Triple Elimination (6). For Tag Team Tournaments, the entrants must be an even number.");
+                        ct.register("dq", ["{g Person}"], "DQs someone from the tournament.");
                         ct.register("cancelbattle", ["{g Person}"], "Makes someones battle unofficial.");
                         ct.register("changespots", ["{o Number}"], "Changes the number of entry spots. In Tag Team Tournaments, the entrants must be an even number.");
-                        ct.register("push", ["{or Person}"], "Adds someone to the Tournament. In Tag Team Tournaments, you cannot add players after the signup.");
-                        ct.register("endtour", "Ends the Tournament");
+                        ct.register("push", ["{or Person}"], "Adds someone to the tournament. In Tag Team Tournaments, you cannot add players after the signup.");
+                        ct.register("endtour", "Ends the tournament.");
                         ct.register("switch", ["{g Player}", "{r NewPlayer}"], "Switches 2 players in the tournament.");
-                        ct.register("autostartbattles", ["{b On/Off}"], "Turns Auto Start Battles on or off in the Channel.");
+                        ct.register("autostartbattles", ["{b On/Off}"], "Turns auto start battles on or off in the channel.");
                     }
 
                     if (!noPermission(src, 1) || poUser.megauser) {
                         ct.span("Tournament " + Tour1 + " Commands");
-                        ct.register("autostarttours", ["{b On/Off}"], "Turns Auto Start Tours on or off.");
-                        ct.register("display", ["{b 1/2}"], "Changes the Tournament Display Mode.");
+                        ct.register("autostarttours", ["{b On/Off}"], "Turns auto start tours on or off.");
+                        ct.register("display", ["{b 1/2}"], "Changes the tournament display mode.");
                     }
 
                     ct.register(style.footer);
@@ -6151,23 +6193,23 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 /* -- Tour Commands: Style -- */
-
                 display: function () {
                     if (noPermission(src, 1) && !poUser.megauser) {
-                        botMessage(src, "You can not use the display command.", chan);
+                        noPermissionMessage(src, chan);
                         return;
                     }
 
                     var num = parseInt(commandData);
                     if (num != 1 && num != 2) {
-                        botMessage(src, "Valid Tournament Display Modes are 1 and 2.", chan);
+                        botMessage(src, "Valid tournament display modes are 1 and 2.", chan);
                         return;
                     }
                     if (display == num) {
-                        botMessage(src, "The Tournament Display Mode is already " + num + ".", chan);
+                        botMessage(src, "The tournament display mode is already " + num + ".", chan);
                         return;
                     }
-                    botAll(sys.name(src) + " changed the Tournament Display Mode to " + num + ".", 0);
+
+                    botAll(sys.name(src) + " changed the tournament display mode to " + num + "!", 0);
                     display = num;
                     cache.write("TourDisplay", num);
                 },
@@ -6175,50 +6217,49 @@ if(message == "Maximum Players Changed.") {
                 /* -- Tour Commands: AutoStartTours -- */
                 autostarttours: function () {
                     if (noPermission(src, 1) && !poUser.megauser) {
-                        botMessage(src, "You can not use the autostarttours command.", chan);
+                        noPermissionMessage(src, chan);
                         return;
                     }
 
-                    var cmdlc = cmdData;
-                    if (cmdlc != 'on' && cmdlc != 'off') {
-                        botMessage(src, "Pick either on or off.", chan);
+                    if (cmdData != 'on' && cmdData != 'off') {
+                        botMessage(src, "Use on or off.", chan);
                         return;
                     }
 
-                    if (cmdlc == 'on' && !AutoStartTours) {
+                    if (cmdData == 'on' && !AutoStartTours) {
                         if (display == 1) {
                             sys.sendHtmlAll(tour, 0);
                             sys.sendAll("", 0);
-                            botEscapeAll(sys.name(src) + " turned on auto start tours.", 0);
+                            botEscapeAll(sys.name(src) + " turned auto start tours on.", 0);
                             sys.sendAll("", 0);
                             sys.sendHtmlAll(tour, 0);
                         }
                         else {
-                            sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "<center>" + "<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned on auto start tours." + "</center>" + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", 0);
+                            sys.sendHtmlAll(TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours on."), 0);
                         }
                         AutoStartTours = true;
                         cache.write("AutoStartTours", true);
                         return;
                     }
 
-                    if (cmdlc == 'off' && AutoStartTours) {
+                    if (cmdData == 'off' && AutoStartTours) {
                         if (display == 1) {
                             sys.sendHtmlAll(tour, 0);
                             sys.sendAll("", 0);
-                            botEscapeAll(sys.name(src) + " turned off auto start tours.", 0);
+                            botEscapeAll(sys.name(src) + " turned auto start tours off.", 0);
                             sys.sendAll("", 0);
                             sys.sendHtmlAll(tour, 0);
                         }
                         else {
-                            sys.sendHtmlAll("<table>" + "<tr>" + "<td>" + "<center>" + "<hr width='300'>" + "<center>" + "<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned off auto start tours." + "</center>" + "<hr width='300'>" + "</center>" + "</td>" + "</tr>" + "</table>", 0);
+                            sys.sendHtmlAll(TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours off."), 0);
                         }
                         AutoStartTours = false;
                         cache.write("AutoStartTours", false);
                         return;
                     }
 
-                    cmdlc += '.';
-                    botMessage(src, "Auto Start Tours is already " + cmdlc, chan);
+                    cmdData += '.';
+                    botMessage(src, "Auto Start Tours is already " + cmdData, chan);
                 },
 
                 /* -- Tour Commands: Switch -- */
@@ -6226,7 +6267,7 @@ if(message == "Maximum Players Changed.") {
                     poChan.tour.command_switch(src, commandData, fullCommand);
                 },
 
-                /* -- Tour Commands: ASB -- */
+                /* -- Tour Commands: Auto Start Battles -- */
                 autostartbattles: function () {
                     poChan.tour.command_autostartbattles(src, commandData, fullCommand);
                 },
@@ -6287,19 +6328,19 @@ if(message == "Maximum Players Changed.") {
                 cmdcommands: function () {
                     var ct = new Command_Templater("Command Commands", true);
                     ct.span("Command " + ModName + " Commands");
-                    ct.register("enable", ["{p Command}"], "Enables a Command. Valid Commands are: me, attack, roulette, catch.");
-                    ct.register("disable", ["{p Command}"], "Disables a Command. Valid Commands are: me, attack, roulette, catch.");
+                    ct.register("enable", ["{p Command}"], "Enables a command. Valid commands are: me, attack, roulette, catch.");
+                    ct.register("disable", ["{p Command}"], "Disables a command. Valid commands are: me, attack, roulette, catch.");
 
                     if (!noPermission(src, 2)) {
                         ct.span("Command " + AdminName + " Commands");
-                        ct.register("implock", "Locks Impersonation Commands for " + sLetter(UserName) + ".");
-                        ct.register("impunlock", "Unlocks Impersonation Commands for " + sLetter(UserName) + ".");
+                        ct.register("implock", "Locks impersonation commands for " + sLetter(UserName) + ".");
+                        ct.register("impunlock", "Unlocks impersonation commands for " + sLetter(UserName) + ".");
                     }
 
                     if (!noPermission(src, 3)) {
                         ct.span("Command " + OwnerName + " Commands");
-                        ct.register("pointercommand", ["{p Name}", "{p Command}"], "Creates a PointerCommand.");
-                        ct.register("delpointercommand", ["{p Name}"], "Deletes a PointerCommand.");
+                        ct.register("pointercommand", ["{p Name}", "{p Command}"], "Creates a pointer command.");
+                        ct.register("delpointercommand", ["{p Name}"], "Deletes a pointer command.");
                         ct.register("futurelimit", ["{o Limit}"], "Changes the futures allowed per x seconds.");
                     }
 
@@ -7622,10 +7663,10 @@ if(message == "Maximum Players Changed.") {
                     if (!mcmd[2]) mcmd[2] = "";
                     if (!mcmd[3]) mcmd[3] = "";
                     if (!mcmd[4]) mcmd[4] = "";
-                    var x,
-					found = false,
-					clauses = 0,
-					tierlist = sys.getTierList(), tier = mcmd[2].toLowerCase();
+                    var x, found = false,
+                        clauses = 0,
+                        tierlist = sys.getTierList(),
+                        tier = mcmd[2].toLowerCase();
 
                     for (x in tierlist) {
                         if (tier === tierlist[x].toLowerCase()) {
@@ -7636,9 +7677,9 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var player1 = sys.id(mcmd[0]),
-					player2 = sys.id(mcmd[1]),
-					pl1 = sys.name(player1),
-					pl2 = sys.name(player2);
+                        player2 = sys.id(mcmd[1]),
+                        pl1 = sys.name(player1),
+                        pl2 = sys.name(player2);
 
                     if (player1 === undefined || player2 === undefined) {
                         botMessage(src, "Those players don't exist!", chan);
@@ -7679,14 +7720,15 @@ if(message == "Maximum Players Changed.") {
                         rated = true;
                     }
 
-					var player1_team = firstTeamForTier(player1, tier), player2_team = firstTeamForTier(player2, tier);
-					if (player1_team == -1) {
-					player1_team = 0; 
-					}
-					if (player2_team == -1) {
-					player2_team = 0;
-					}
-					
+                    var player1_team = firstTeamForTier(player1, tier),
+                        player2_team = firstTeamForTier(player2, tier);
+                    if (player1_team == -1) {
+                        player1_team = 0;
+                    }
+                    if (player2_team == -1) {
+                        player2_team = 0;
+                    }
+
                     sys.forceBattle(player1, player2, player1_team, player2_team, clauses, mode, rated);
                     script.afterBattleStarted(src, dest, clauses, rated, 0, 0);
                     botEscapeAll("A battle between " + pl1 + " and " + pl2 + " has been forced by " + sys.name(src) + "!", 0);
@@ -13107,561 +13149,561 @@ if(message == "Maximum Players Changed.") {
 
 
     loadPokemonStats: function () {
-	try {
-        if (typeof Poke_Data == 'undefined') { /* Only do this once! Takes too much time! */
-            var parseFile = function (file) {
-                var res = sys.getFileContent("db/pokes/" + file + ".txt");
+        try {
+            if (typeof Poke_Data == 'undefined') { /* Only do this once! Takes too much time! */
+                var parseFile = function (file) {
+                    var res = sys.getFileContent("db/pokes/" + file + ".txt");
 
-                if (!res) {
-                    return [];
-                }
+                    if (!res) {
+                        return [];
+                    }
 
-                return res.split("\n");
-            },
-                parseMoveFile = function (file) {
-                    return parseFile("5G/" + file + "_moves");
+                    return res.split("\n");
+                },
+                    parseMoveFile = function (file) {
+                        return parseFile("5G/" + file + "_moves");
+                    };
+
+                var Files = {
+                    'stats': parseFile("stats"),
+                    'weight': parseFile("weight"),
+                    'height': parseFile("height"),
+                    'evos': parseFile("evos"),
+                    'evolevels': parseFile("5G/minlevels"),
+                    'genders': parseFile("gender"),
+                    'cc': parseFile("level_balance"),
+
+                    'egggroup1': parseFile("egg_group_1"),
+                    'egggroup2': parseFile("egg_group_2"),
+
+                    'moves': {
+                        'dw': parseMoveFile("dw"),
+                        'egg': parseMoveFile("egg"),
+                        'level': parseMoveFile("level"),
+                        'evo': parseMoveFile("pre_evo"),
+                        'event': parseMoveFile("special_moves"),
+                        'tms': parseMoveFile("tm_and_hm"),
+                        'tutor': parseMoveFile("tutor")
+                    }
                 };
 
-            var Files = {
-                'stats': parseFile("stats"),
-                'weight': parseFile("weight"),
-                'height': parseFile("height"),
-                'evos': parseFile("evos"),
-                'evolevels': parseFile("5G/minlevels"),
-                'genders': parseFile("gender"),
-                'cc': parseFile("level_balance"),
+                Poke_Data = {};
 
-                'egggroup1': parseFile("egg_group_1"),
-                'egggroup2': parseFile("egg_group_2"),
+                var x, curr_stats, curr_poke_stats, poke, spl, fstats = Files.stats,
+                    pMF, fweigh = Files.weight,
+                    fheigh = Files.height,
+                    fevol = Files.evolevels,
+                    fgen = Files.genders,
+                    fcc = Files.cc,
+                    oldCurrStat, fegg1 = Files.egggroup1,
+                    fegg2 = Files.egggroup2,
+                    fmoves = Files.moves,
+                    pokeId = 0,
+                    hasFegg2;
 
-                'moves': {
-                    'dw': parseMoveFile("dw"),
-                    'egg': parseMoveFile("egg"),
-                    'level': parseMoveFile("level"),
-                    'evo': parseMoveFile("pre_evo"),
-                    'event': parseMoveFile("special_moves"),
-                    'tms': parseMoveFile("tm_and_hm"),
-                    'tutor': parseMoveFile("tutor")
+                fevo = Files.evos.map(function (pokeIds) {
+                    return pokeIds.split(" ");
+                });
+
+                var moveObj = {},
+                    fdw = fmoves.dw,
+                    fegg = fmoves.dw,
+                    fevent = fmoves.event,
+                    flevel = fmoves.level,
+                    fevom = fmoves.evo,
+                    ftms = fmoves.tms,
+                    ftutor = fmoves.tutor,
+                    current_move, c_m_spl, c_m_space, c_poke, dwMoves = {},
+                    eggMoves = {},
+                    eventMoves = {},
+                    levelMoves = {},
+                    evoMoves = {},
+                    tmMoves = {},
+                    tutorMoves = {},
+                    i = 1;
+
+                /* Lets begin with moves. */
+
+                var importMoves = function (moveArray, Obj) {
+                    for (x in moveArray) {
+                        current_move = moveArray[x];
+                        c_m_spl = current_move.split(":");
+                        c_m_space = current_move.split(" ");
+                        c_poke = Number(c_m_spl[0]);
+
+                        if (current_move === "" || current_move === " ") {
+                            continue;
+                        }
+
+                        if (c_m_spl[1].charAt(0) !== "0") { // A forme.
+                            continue;
+                        }
+
+                        c_m_space.splice(0, 1);
+                        Obj[c_poke] = c_m_space.join(" ");
+                    }
                 }
-            };
 
-            Poke_Data = {};
+                importMoves(fdw, dwMoves);
+                importMoves(fegg, eggMoves);
+                importMoves(fevent, eventMoves);
+                importMoves(flevel, levelMoves);
+                importMoves(fevom, evoMoves);
+                importMoves(ftms, tmMoves);
+                importMoves(ftutor, tutorMoves);
 
-            var x, curr_stats, curr_poke_stats, poke, spl, fstats = Files.stats,
-                pMF, fweigh = Files.weight,
-                fheigh = Files.height,
-                fevol = Files.evolevels,
-                fgen = Files.genders,
-                fcc = Files.cc,
-                oldCurrStat, fegg1 = Files.egggroup1,
-                fegg2 = Files.egggroup2,
-                fmoves = Files.moves,
-                pokeId = 0,
-                hasFegg2;
+                while (i != 650) {
+                    c_poke = i, current_move = "";
 
-            fevo = Files.evos.map(function (pokeIds) {
-                return pokeIds.split(" ");
-            });
+                    current_move += levelMoves[c_poke];
 
-            var moveObj = {},
-                fdw = fmoves.dw,
-                fegg = fmoves.dw,
-                fevent = fmoves.event,
-                flevel = fmoves.level,
-                fevom = fmoves.evo,
-                ftms = fmoves.tms,
-                ftutor = fmoves.tutor,
-                current_move, c_m_spl, c_m_space, c_poke, dwMoves = {},
-                eggMoves = {},
-                eventMoves = {},
-                levelMoves = {},
-                evoMoves = {},
-                tmMoves = {},
-                tutorMoves = {},
-                i = 1;
-
-            /* Lets begin with moves. */
-
-            var importMoves = function (moveArray, Obj) {
-                for (x in moveArray) {
-                    current_move = moveArray[x];
-                    c_m_spl = current_move.split(":");
-                    c_m_space = current_move.split(" ");
-                    c_poke = Number(c_m_spl[0]);
-
-                    if (current_move === "" || current_move === " ") {
-                        continue;
+                    if (c_poke in dwMoves) {
+                        current_move += " " + dwMoves[c_poke];
                     }
 
-                    if (c_m_spl[1].charAt(0) !== "0") { // A forme.
-                        continue;
+                    if (c_poke in eggMoves) {
+                        current_move += " " + eggMoves[c_poke];
                     }
 
-                    c_m_space.splice(0, 1);
-                    Obj[c_poke] = c_m_space.join(" ");
-                }
-            }
-
-            importMoves(fdw, dwMoves);
-            importMoves(fegg, eggMoves);
-            importMoves(fevent, eventMoves);
-            importMoves(flevel, levelMoves);
-            importMoves(fevom, evoMoves);
-            importMoves(ftms, tmMoves);
-            importMoves(ftutor, tutorMoves);
-
-            while (i != 650) {
-                c_poke = i, current_move = "";
-
-                current_move += levelMoves[c_poke];
-
-                if (c_poke in dwMoves) {
-                    current_move += " " + dwMoves[c_poke];
-                }
-
-                if (c_poke in eggMoves) {
-                    current_move += " " + eggMoves[c_poke];
-                }
-
-                if (c_poke in eventMoves) {
-                    current_move += " " + eventMoves[c_poke];
-                }
-
-                if (c_poke in evoMoves) {
-                    current_move += " " + evoMoves[c_poke];
-                }
-
-                if (c_poke in tutorMoves) {
-                    current_move += " " + tutorMoves[c_poke];
-                }
-
-                if (c_poke in tmMoves) {
-                    current_move += " " + tmMoves[c_poke];
-                }
-
-                moveObj[sys.pokemon(c_poke)] = current_move;
-                i++;
-            }
-
-            /* Double checks for multiple moves */
-            var mTA, doneMoves, c_mTA;
-            for (x in moveObj) {
-                doneMoves = [];
-                current_move = moveObj[x];
-                mTA = current_move.split(" ");
-
-                for (i in mTA) {
-                    c_mTA = sys.move(Number(mTA[i]));
-                    if (doneMoves.indexOf(c_mTA) !== -1) {
-                        mTA.splice(i, 3);
-                        continue;
+                    if (c_poke in eventMoves) {
+                        current_move += " " + eventMoves[c_poke];
                     }
 
-                    doneMoves.push(c_mTA);
+                    if (c_poke in evoMoves) {
+                        current_move += " " + evoMoves[c_poke];
+                    }
+
+                    if (c_poke in tutorMoves) {
+                        current_move += " " + tutorMoves[c_poke];
+                    }
+
+                    if (c_poke in tmMoves) {
+                        current_move += " " + tmMoves[c_poke];
+                    }
+
+                    moveObj[sys.pokemon(c_poke)] = current_move;
+                    i++;
                 }
 
-                moveObj[x] = mTA.join(" ");
-            }
+                /* Double checks for multiple moves */
+                var mTA, doneMoves, c_mTA;
+                for (x in moveObj) {
+                    doneMoves = [];
+                    current_move = moveObj[x];
+                    mTA = current_move.split(" ");
+
+                    for (i in mTA) {
+                        c_mTA = sys.move(Number(mTA[i]));
+                        if (doneMoves.indexOf(c_mTA) !== -1) {
+                            mTA.splice(i, 3);
+                            continue;
+                        }
+
+                        doneMoves.push(c_mTA);
+                    }
+
+                    moveObj[x] = mTA.join(" ");
+                }
 
 
 /* We check CC later, as it's a little messy.
 			We also will check evos later as some pokes don't have one. */
 
-            var fEgg2Pokes = {},
-                curr_fegg2;
-            for (x in fegg2) {
-                curr_fegg2 = fegg2[x].split(" ");
-                if (curr_fegg2 == "0") {
-                    continue;
+                var fEgg2Pokes = {},
+                    curr_fegg2;
+                for (x in fegg2) {
+                    curr_fegg2 = fegg2[x].split(" ");
+                    if (curr_fegg2 == "0") {
+                        continue;
+                    }
+
+                    fEgg2Pokes[curr_fegg2[0]] = curr_fegg2[1];
                 }
 
-                fEgg2Pokes[curr_fegg2[0]] = curr_fegg2[1];
-            }
+                for (x in fstats) {
+                    x = Number(x);
+                    pokeId++;
 
-            for (x in fstats) {
-                x = Number(x);
-                pokeId++;
+                    /* Put stuff into an array here. */
 
-                /* Put stuff into an array here. */
+                    curr_stats = [fstats[x].split(" ")];
+                    oldCurrStat = curr_stats[0];
+                    spl = fstats[x].split(":");
 
-                curr_stats = [fstats[x].split(" ")];
-                oldCurrStat = curr_stats[0];
-                spl = fstats[x].split(":");
+                    /* First is for formes. Second is missingno check. */
+                    if (spl[1][0] != "0" || spl[0] == "0") {
+                        pokeId--;
+                        continue;
+                    }
 
-                /* First is for formes. Second is missingno check. */
-                if (spl[1][0] != "0" || spl[0] == "0") {
-                    pokeId--;
-                    continue;
+                    curr_stats = [
+                    oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" "), fegg1[pokeId].split(" ")];
+
+                    if (fEgg2Pokes[pokeId]) {
+                        hasFegg2 = true;
+                        curr_stats.push(fEgg2Pokes[pokeId]);
+                    } else {
+                        hasFegg2 = false;
+                        curr_stats.push("");
+                    }
+
+                    poke = sys.pokemon(spl[0]);
+                    curr_poke_stats = curr_stats[0]; /* Egg Groups */
+                    curr_stats[5][1] = cut(curr_stats[5], 1, ' ');
+                    if (hasFegg2) {
+                        curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
+                    }
+
+                    Poke_Data[poke] = {
+                        "stats": {
+                            'HP': curr_poke_stats[1],
+                            'ATK': curr_poke_stats[2],
+                            'DEF': curr_poke_stats[3],
+                            'SPATK': curr_poke_stats[4],
+                            'SPDEF': curr_poke_stats[5],
+                            'SPD': curr_poke_stats[6]
+                        },
+
+                        "weight": curr_stats[1][1],
+                        "height": curr_stats[2][1],
+                        "minlvl": Number(curr_stats[4][1].split("/")[0]),
+                        "genders": curr_stats[3][1],
+                        "egg": [curr_stats[5][1], curr_stats[6][1]],
+                        "moves": moveObj[poke]
+                    };
+
+                    /* Done! */
                 }
 
-                curr_stats = [
-                oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" "), fegg1[pokeId].split(" ")];
+                /* Parsing evos */
+                var pArr = Files.evos.map(function (a) {
+                    return a.split(" ");
+                }),
+                    c_entry, next_entry, c_poke;
 
-                if (fEgg2Pokes[pokeId]) {
-                    hasFegg2 = true;
-                    curr_stats.push(fEgg2Pokes[pokeId]);
-                } else {
-                    hasFegg2 = false;
-                    curr_stats.push("");
+                for (x in pArr) {
+                    c_entry = pArr[x];
+                    next_entry = pArr[Number(x) + 1];
+                    c_poke = sys.pokemon(c_entry[0]);
+
+                    if (next_entry !== undefined && Number(c_entry[1]) == Number(next_entry[0])) {
+                        Poke_Data[c_poke].evos = [c_entry[1], next_entry[1]];
+                    }
+                    else if (c_entry.length === 3 && c_entry[1] === c_entry[2]) { /* Feebas evo bug. */
+                        Poke_Data[c_poke].evos = [c_entry[1]];
+                    }
+                    else if (c_entry.length !== 2) {
+                        c_entry.splice(0, 1);
+                        Poke_Data[c_poke].evos = c_entry;
+                    }
+                    else if (Number(c_entry[0]) + 1 === Number(c_entry[1])) {
+                        Poke_Data[c_poke].evos = [c_entry[1]];
+                    }
                 }
-
-                poke = sys.pokemon(spl[0]);
-                curr_poke_stats = curr_stats[0]; /* Egg Groups */
-                curr_stats[5][1] = cut(curr_stats[5], 1, ' ');
-                if (hasFegg2) {
-                    curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
-                }
-
-                Poke_Data[poke] = {
-                    "stats": {
-                        'HP': curr_poke_stats[1],
-                        'ATK': curr_poke_stats[2],
-                        'DEF': curr_poke_stats[3],
-                        'SPATK': curr_poke_stats[4],
-                        'SPDEF': curr_poke_stats[5],
-                        'SPD': curr_poke_stats[6]
-                    },
-
-                    "weight": curr_stats[1][1],
-                    "height": curr_stats[2][1],
-                    "minlvl": Number(curr_stats[4][1].split("/")[0]),
-                    "genders": curr_stats[3][1],
-                    "egg": [curr_stats[5][1], curr_stats[6][1]],
-                    "moves": moveObj[poke]
-                };
 
                 /* Done! */
-            }
 
-            /* Parsing evos */
-            var pArr = Files.evos.map(function (a) {
-                return a.split(" ");
-            }),
-                c_entry, next_entry, c_poke;
+                /* Checking CC levels */
+                for (x in fcc) {
+                    c_entry = fcc[x];
+                    spl = c_entry.split(":");
+                    c_m_space = c_entry.split(" ");
+                    c_poke = sys.pokemon(Number(spl[0]));
 
-            for (x in pArr) {
-                c_entry = pArr[x];
-                next_entry = pArr[Number(x) + 1];
-                c_poke = sys.pokemon(c_entry[0]);
+                    if (c_poke == undefined || c_poke == "Missingno" || spl[1][0] !== "0") { // Formes. Missingno.
+                        continue;
+                    }
 
-                if (next_entry !== undefined && Number(c_entry[1]) == Number(next_entry[0])) {
-                    Poke_Data[c_poke].evos = [c_entry[1], next_entry[1]];
-                }
-                else if (c_entry.length === 3 && c_entry[1] === c_entry[2]) { /* Feebas evo bug. */
-                    Poke_Data[c_poke].evos = [c_entry[1]];
-                }
-                else if (c_entry.length !== 2) {
-                    c_entry.splice(0, 1);
-                    Poke_Data[c_poke].evos = c_entry;
-                }
-                else if (Number(c_entry[0]) + 1 === Number(c_entry[1])) {
-                    Poke_Data[c_poke].evos = [c_entry[1]];
+                    Poke_Data[c_poke].cc = Number(c_m_space[1]);
                 }
             }
 
-            /* Done! */
+            formatStat = function (poke, stat) {
+                var stat = Poke_Data[poke].stats[stat];
+                var string = stat.bold(),
+                    y;
+                var ranges = [30, 50, 60, 70, 80, 90, 100, 200, 300];
+                var colors = ["#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"];
 
-            /* Checking CC levels */
-            for (x in fcc) {
-                c_entry = fcc[x];
-                spl = c_entry.split(":");
-                c_m_space = c_entry.split(" ");
-                c_poke = sys.pokemon(Number(spl[0]));
-
-                if (c_poke == undefined || c_poke == "Missingno" || spl[1][0] !== "0") { // Formes. Missingno.
-                    continue;
+                for (y in ranges) {
+                    if (stat <= ranges[y]) {
+                        return string.fontcolor(colors[y]);
+                    }
                 }
 
-                Poke_Data[c_poke].cc = Number(c_m_space[1]);
+                return string.fontcolor(colors[colors.length - 1]);
             }
-        }
 
-        formatStat = function (poke, stat) {
-            var stat = Poke_Data[poke].stats[stat];
-            var string = stat.bold(),
-                y;
-            var ranges = [30, 50, 60, 70, 80, 90, 100, 200, 300];
-            var colors = ["#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"];
-
-            for (y in ranges) {
-                if (stat <= ranges[y]) {
-                    return string.fontcolor(colors[y]);
+            statsOf = function (poke) {
+                var stat = Poke_Data[poke].stats;
+                var ret = [],
+                    z;
+                for (z in stat) {
+                    ret.push(stat[z]);
                 }
+                return ret;
             }
 
-            return string.fontcolor(colors[colors.length - 1]);
-        }
-
-        statsOf = function (poke) {
-            var stat = Poke_Data[poke].stats;
-            var ret = [],
-                z;
-            for (z in stat) {
-                ret.push(stat[z]);
-            }
-            return ret;
-        }
-
-        formatStatsOf = function (poke) {
-            var stats = ["HP", "ATK", "DEF", "SPATK", "SPDEF", "SPD"];
-            var ret = "",
-                z, stt;
-            for (z in stats) {
-                stt = stats[z];
-                if (stt != "SPD") {
-                    ret += stt + ": " + formatStat(poke, stt) + " | ";
+            formatStatsOf = function (poke) {
+                var stats = ["HP", "ATK", "DEF", "SPATK", "SPDEF", "SPD"];
+                var ret = "",
+                    z, stt;
+                for (z in stats) {
+                    stt = stats[z];
+                    if (stt != "SPD") {
+                        ret += stt + ": " + formatStat(poke, stt) + " | ";
+                    }
+                    else {
+                        ret += stt + ": " + formatStat(poke, stt);
+                    }
                 }
-                else {
-                    ret += stt + ": " + formatStat(poke, stt);
+
+                return ret;
+            }
+
+            movesOf = function (poke) {
+                var moves = Poke_Data[poke].moves.split(" ").map(function (move) {
+                    return Number(move);
+                }).sort(function (a, b) {
+                    return sys.moveType(b) - sys.moveType(a);
+                });
+
+                return moves;
+            }
+
+            evosOf = function (poke) {
+                var PD = Poke_Data[poke];
+                if (PD.evos === undefined) {
+                    return [];
                 }
+
+                return PD.evos;
             }
 
-            return ret;
-        }
+            var moveColours = {
+                0: "#a8a878",
+                1: "#c03028",
+                2: "#a890f0",
+                3: "#a040a0",
+                4: "#e0c068",
+                5: "#b8a038",
+                6: "#a8b820",
+                7: "#705898",
+                8: "#b8b8d0",
+                9: "#f08030",
+                10: "#6890f0",
+                11: "#78c850",
+                12: "#f8d030",
+                13: "#f85888",
+                14: "#98d8d8",
+                15: "#7038f8",
+                16: "#705848"
+            };
 
-        movesOf = function (poke) {
-            var moves = Poke_Data[poke].moves.split(" ").map(function (move) {
-                return Number(move);
-            }).sort(function (a, b) {
-                return sys.moveType(b) - sys.moveType(a);
-            });
+            formatEvosOf = function (poke) {
+                var evos = evosOf(poke),
+                    y, retString = [];
 
-            return moves;
-        }
-
-        evosOf = function (poke) {
-            var PD = Poke_Data[poke];
-            if (PD.evos === undefined) {
-                return [];
-            }
-
-            return PD.evos;
-        }
-
-        var moveColours = {
-            0: "#a8a878",
-            1: "#c03028",
-            2: "#a890f0",
-            3: "#a040a0",
-            4: "#e0c068",
-            5: "#b8a038",
-            6: "#a8b820",
-            7: "#705898",
-            8: "#b8b8d0",
-            9: "#f08030",
-            10: "#6890f0",
-            11: "#78c850",
-            12: "#f8d030",
-            13: "#f85888",
-            14: "#98d8d8",
-            15: "#7038f8",
-            16: "#705848"
-        };
-
-        formatEvosOf = function (poke) {
-            var evos = evosOf(poke),
-                y, retString = [];
-
-            for (y in evos) {
-                retString.push(sys.pokemon(evos[y]).fontcolor(moveColours[sys.pokeType1(evos[y])]).bold());
-            }
-
-            return fancyJoin(retString);
-        }
-
-        formatMovesOf = function (poke) {
-            var moves = movesOf(poke),
-                y, retString = "",
-                ml = moves.length - 1;
-
-            for (y in moves) {
-                retString += sys.move(moves[y]).fontcolor(moveColours[sys.moveType(moves[y])]).bold().fontsize(2);
-                if (ml != y) {
-                    retString += ", ";
+                for (y in evos) {
+                    retString.push(sys.pokemon(evos[y]).fontcolor(moveColours[sys.pokeType1(evos[y])]).bold());
                 }
+
+                return fancyJoin(retString);
             }
 
-            return retString + ".";
-        }
+            formatMovesOf = function (poke) {
+                var moves = movesOf(poke),
+                    y, retString = "",
+                    ml = moves.length - 1;
 
-        baseStatTotal = function (poke) {
-            var poke = Poke_Data[poke].stats;
-            var retnum = 0,
-                y;
-
-            for (y in poke) {
-                retnum += Number(poke[y]);
-            }
-            return retnum;
-        }
-
-        formatBaseStatTotal = function (poke) {
-            var stat = baseStatTotal(poke);
-            var string = String(stat).bold(),
-                y;
-            var ranges = [180, 300, 360, 420, 480, 540, 600, 1200, 1800];
-            var colors = ["#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"];
-
-            for (y in ranges) {
-                if (stat <= ranges[y]) {
-                    return string.fontcolor(colors[y]);
+                for (y in moves) {
+                    retString += sys.move(moves[y]).fontcolor(moveColours[sys.moveType(moves[y])]).bold().fontsize(2);
+                    if (ml != y) {
+                        retString += ", ";
+                    }
                 }
-            }
-            return string;
-        }
 
-        pokeType = function (poke) {
-            var poke_num = sys.pokeNum(poke);
-            var type = sys.pokeType1(poke_num);
-            var ret = "";
-            var type2 = sys.pokeType2(poke_num);
-
-            var type_name = sys.type(type).bold().fontcolor(moveColours[type]);
-
-            ret += type_name;
-
-            if (type2 != 17) {
-                var type_name2 = sys.type(type2).bold().fontcolor(moveColours[type2]);
-                ret += " & " + type_name2;
+                return retString + ".";
             }
 
-            return ret;
-        }
+            baseStatTotal = function (poke) {
+                var poke = Poke_Data[poke].stats;
+                var retnum = 0,
+                    y;
 
-        firstGen = function (poke) {
-            poke = sys.pokeNum(poke);
-
-            if (poke < 152) {
-                return 1;
-            }
-
-            else if (poke < 252) {
-                return 2;
-            }
-
-            else if (poke < 387) {
-                return 3;
-            }
-
-            else if (poke < 494) {
-                return 4;
-            }
-
-            return 5;
-        }
-
-        pokeAbilities = function (poke) {
-            poke = sys.pokeNum(poke);
-            var ret = "";
-            var abil = [sys.pokeAbility(poke, 0), sys.pokeAbility(poke, 1), sys.pokeAbility(poke, 2)];
-
-            ret += sys.ability(abil[0]).bold();
-
-            if (abil[1] != 0) {
-                ret += " | " + sys.ability(abil[1]).bold();
-            }
-            if (abil[2] != 0) {
-                ret += " | " + sys.ability(abil[2]).bold() + " (<u>Dream World Ability</u>)";
-            }
-            return ret;
-        }
-
-        pokeGender = function (poke) {
-            var pD = Number(Poke_Data[poke].genders);
-
-            if (pD === 3) {
-                return "<img src='Themes/Classic/genders/gender1.png'> <img src='Themes/Classic/genders/gender2.png'>";
-            }
-
-            else if (pD === 2) {
-                return "<img src='Themes/Classic/genders/gender2.png'>";
-            }
-
-            else if (pD === 1) {
-                return "<img src='Themes/Classic/genders/gender1.png'>";
-            }
-
-            return "<img src='Themes/Classic/genders/gender0.png'>";
-        }
-
-        pokedex = function (src, chan, pokemon, source) {
-            var t = new Templater("Pokedex - " + pokemon.fontcolor(moveColours[sys.pokeType1(sys.pokeNum(pokemon))]));
-
-            var n = sys.pokeNum(pokemon),
-                PD = Poke_Data[pokemon],
-                s = sys.pokeType2(n) == 17 ? '' : 's',
-                s2 = sys.pokeAbility(n, 1) == 0 && sys.pokeAbility(n, 2) == 0 ? 'y' : 'ies',
-                gender = pokeGender(pokemon),
-                eggs = PD.egg,
-                eggstr = "",
-                evoS = "";
-
-            t.register("<img src='pokemon:num=" + n + "'> <img src='pokemon:num=" + n + "&back=true'> <img src='pokemon:num=" + n + "&shiny=true'> <img src='pokemon:num=" + n + "&shiny=true&back=true'><br/>");
-            t.register("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + gender);
-            t.register("National Dex Number: " + String(n).bold() + ".");
-            t.register("Generation " + String(firstGen(pokemon)).bold() + " Pokemon. ");
-
-            if ((PD.evos !== undefined || (PD.minlvl !== 1 && PD.minlvl !== 100))) {
-                t.register("");
-            }
-
-            if (PD.evos !== undefined) {
-                if (PD.evos.length !== 1) {
-                    evoS = "s";
+                for (y in poke) {
+                    retnum += Number(poke[y]);
                 }
-                t.register("Evolution" + evoS + ": " + formatEvosOf(pokemon));
+                return retnum;
             }
 
-            if (PD.minlvl !== 1 && PD.minlvl !== 100) {
-                t.register("Minimum Level: <b>" + PD.minlvl + "</b>");
+            formatBaseStatTotal = function (poke) {
+                var stat = baseStatTotal(poke);
+                var string = String(stat).bold(),
+                    y;
+                var ranges = [180, 300, 360, 420, 480, 540, 600, 1200, 1800];
+                var colors = ["#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"];
+
+                for (y in ranges) {
+                    if (stat <= ranges[y]) {
+                        return string.fontcolor(colors[y]);
+                    }
+                }
+                return string;
             }
 
-            t.register("Level in Challenge Cup: <b>" + PD.cc + "</b><br/>");
+            pokeType = function (poke) {
+                var poke_num = sys.pokeNum(poke);
+                var type = sys.pokeType1(poke_num);
+                var ret = "";
+                var type2 = sys.pokeType2(poke_num);
 
-            if (!isEmpty(PD.egg[0])) {
-                eggstr += PD.egg[0].bold();
+                var type_name = sys.type(type).bold().fontcolor(moveColours[type]);
+
+                ret += type_name;
+
+                if (type2 != 17) {
+                    var type_name2 = sys.type(type2).bold().fontcolor(moveColours[type2]);
+                    ret += " & " + type_name2;
+                }
+
+                return ret;
             }
 
-            if (!isEmpty(PD.egg[1])) {
-                eggstr += " and " + PD.egg[1].bold();
+            firstGen = function (poke) {
+                poke = sys.pokeNum(poke);
+
+                if (poke < 152) {
+                    return 1;
+                }
+
+                else if (poke < 252) {
+                    return 2;
+                }
+
+                else if (poke < 387) {
+                    return 3;
+                }
+
+                else if (poke < 494) {
+                    return 4;
+                }
+
+                return 5;
             }
 
-            t.register("Type" + s + ": " + pokeType(pokemon));
+            pokeAbilities = function (poke) {
+                poke = sys.pokeNum(poke);
+                var ret = "";
+                var abil = [sys.pokeAbility(poke, 0), sys.pokeAbility(poke, 1), sys.pokeAbility(poke, 2)];
 
-            if (eggstr != "") {
-                if (eggstr.indexOf("and ") === -1) {
-                    t.register("Egg Group: " + eggstr);
+                ret += sys.ability(abil[0]).bold();
+
+                if (abil[1] != 0) {
+                    ret += " | " + sys.ability(abil[1]).bold();
+                }
+                if (abil[2] != 0) {
+                    ret += " | " + sys.ability(abil[2]).bold() + " (<u>Dream World Ability</u>)";
+                }
+                return ret;
+            }
+
+            pokeGender = function (poke) {
+                var pD = Number(Poke_Data[poke].genders);
+
+                if (pD === 3) {
+                    return "<img src='Themes/Classic/genders/gender1.png'> <img src='Themes/Classic/genders/gender2.png'>";
+                }
+
+                else if (pD === 2) {
+                    return "<img src='Themes/Classic/genders/gender2.png'>";
+                }
+
+                else if (pD === 1) {
+                    return "<img src='Themes/Classic/genders/gender1.png'>";
+                }
+
+                return "<img src='Themes/Classic/genders/gender0.png'>";
+            }
+
+            pokedex = function (src, chan, pokemon, source) {
+                var t = new Templater("Pokedex - " + pokemon.fontcolor(moveColours[sys.pokeType1(sys.pokeNum(pokemon))]));
+
+                var n = sys.pokeNum(pokemon),
+                    PD = Poke_Data[pokemon],
+                    s = sys.pokeType2(n) == 17 ? '' : 's',
+                    s2 = sys.pokeAbility(n, 1) == 0 && sys.pokeAbility(n, 2) == 0 ? 'y' : 'ies',
+                    gender = pokeGender(pokemon),
+                    eggs = PD.egg,
+                    eggstr = "",
+                    evoS = "";
+
+                t.register("<img src='pokemon:num=" + n + "'> <img src='pokemon:num=" + n + "&back=true'> <img src='pokemon:num=" + n + "&shiny=true'> <img src='pokemon:num=" + n + "&shiny=true&back=true'><br/>");
+                t.register("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + gender);
+                t.register("National Dex Number: " + String(n).bold() + ".");
+                t.register("Generation " + String(firstGen(pokemon)).bold() + " Pokemon. ");
+
+                if ((PD.evos !== undefined || (PD.minlvl !== 1 && PD.minlvl !== 100))) {
+                    t.register("");
+                }
+
+                if (PD.evos !== undefined) {
+                    if (PD.evos.length !== 1) {
+                        evoS = "s";
+                    }
+                    t.register("Evolution" + evoS + ": " + formatEvosOf(pokemon));
+                }
+
+                if (PD.minlvl !== 1 && PD.minlvl !== 100) {
+                    t.register("Minimum Level: <b>" + PD.minlvl + "</b>");
+                }
+
+                t.register("Level in Challenge Cup: <b>" + PD.cc + "</b><br/>");
+
+                if (!isEmpty(PD.egg[0])) {
+                    eggstr += PD.egg[0].bold();
+                }
+
+                if (!isEmpty(PD.egg[1])) {
+                    eggstr += " and " + PD.egg[1].bold();
+                }
+
+                t.register("Type" + s + ": " + pokeType(pokemon));
+
+                if (eggstr != "") {
+                    if (eggstr.indexOf("and ") === -1) {
+                        t.register("Egg Group: " + eggstr);
+                    } else {
+                        t.register("Egg Groups: " + eggstr);
+                    }
+                }
+
+                t.register("Abilit" + s2 + ": " + pokeAbilities(pokemon) + "<br/>");
+
+                t.register("Weight: <b>" + PD.weight + " kg</b>");
+                t.register("Height <b>" + PD.height + " m</b><br/>");
+
+                t.register(formatStatsOf(pokemon));
+                t.register("Base Stat Total: " + formatBaseStatTotal(pokemon));
+
+                if (pokemon.toLowerCase() !== "smeargle") { // Smeargle crashes.
+                    t.register("<br/> " + formatMovesOf(pokemon));
                 } else {
-                    t.register("Egg Groups: " + eggstr);
+                    t.register("<br/> Smeargle learns all moves except Chatter and Transform.");
                 }
+
+                t.register(style.footer);
+                if (!source) {
+                    t.render(src, chan);
+                    return;
+                }
+
+                sys.sendHtmlMessage(src, html_escape(t.template.join("<br/>")), chan);
+
             }
-
-            t.register("Abilit" + s2 + ": " + pokeAbilities(pokemon) + "<br/>");
-
-            t.register("Weight: <b>" + PD.weight + " kg</b>");
-            t.register("Height <b>" + PD.height + " m</b><br/>");
-
-            t.register(formatStatsOf(pokemon));
-            t.register("Base Stat Total: " + formatBaseStatTotal(pokemon));
-
-            if (pokemon.toLowerCase() !== "smeargle") { // Smeargle crashes.
-                t.register("<br/> " + formatMovesOf(pokemon));
-            } else {
-                t.register("<br/> Smeargle learns all moves except Chatter and Transform.");
-            }
-
-            t.register(style.footer);
-            if (!source) {
-                t.render(src, chan);
-                return;
-            }
-
-            sys.sendHtmlMessage(src, html_escape(t.template.join("<br/>")), chan);
-
+        } catch (e) {
+            print(FormatError("", e));
         }
-		} catch (e) {
-		print(FormatError("", e));
-		}
 
     },
 
@@ -14194,7 +14236,6 @@ if(message == "Maximum Players Changed.") {
             this.timer = sys.intervalCall(function () {
                 CommandStats.save();
             }, 30000); // 30 seconds
-			
             try {
                 this.stats = JSON.parse(sys.getFileContent(file));
             } catch (e) {
@@ -14202,7 +14243,7 @@ if(message == "Maximum Players Changed.") {
                 this.stats = {
                     commands: {}
                 };
-				
+
                 this.stats.startTime = time;
                 this.stats.lastCommandTime = time;
                 this.save();
