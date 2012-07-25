@@ -2306,96 +2306,8 @@ JSESSION.refill();
         run("loadTemplateUtility");
         run("loadIfyUtility");
         run("loadDataImportUtility");
+        run("loadCommandStatsUtility");
 
-        createFile("CommandStats.txt", "{\"startTime\": " + sys.time() * 1 + "}");
-
-        initCommandStats = function () {
-            try {
-                commandStats = JSON.parse(sys.getFileContent("CommandStats.txt"));
-            }
-            catch (e) {
-                commandStats = {};
-                commandStats.startTime = parseInt(sys.time());
-                saveCommandStats();
-            }
-        }
-
-        saveCommandStats = function () {
-            sys.writeToFile("CommandStats.txt", JSON.stringify(commandStats));
-        }
-
-        writeCommandStats = function (n, user) {
-            commandStats[n] = commandStats[n] || {
-                stat: 0,
-                lastuser: undefined
-            };
-            commandStats[n].stat += 1;
-            commandStats[n].lastuser = user;
-            if (n != "commandstats") {
-                commandStats.lastCommandUse = parseInt(sys.time());
-            }
-            saveCommandStats();
-        }
-
-        displayCommandStats = function (src, chan, limit) {
-            var cmdS = [],
-                name, totalstats = 0,
-                cmdStat = commandStats,
-                lim = -1;
-
-            if (limit != undefined && limit != 0) {
-                lim = limit;
-            }
-
-            for (name in commandStats) {
-                if (lim != -1 && lim < name) {
-                    break;
-                }
-                if (name == "lastCommandUse" || name == "startTime") {
-                    continue;
-                }
-                cmdS.push([name, cmdStat[name].stat, cmdStat[name].lastuser]);
-            }
-
-            cmdStat = objLength(cmdStat);
-
-            cmdS.sort(function (a, b) {
-                return b[1] - a[1];
-            });
-
-            var msg = "%1 commands used in total",
-                msg2 = "Command usage statistics for " + servername + ":";
-
-            if (lim != -1 && lim <= cmdStat) {
-                msg = "Commands were used %1 times in the top " + lim + " most used commands.", msg2 = "Command usage statistics for the top " + limit + " most used commands:";
-            }
-
-            botMessage(src, msg2, chan);
-
-            var num = 0;
-            for (var u = 0; u < cmdS.length; u++) {
-                num++;
-                if (num > limit) {
-                    break;
-                }
-                botEscapeMessage(src, "#" + num + ". Command " + cap(cmdS[u][0]) + ": " + cmdS[u][1] + ", last used by " + cmdS[u][2], chan);
-                totalstats += cmdS[u][1];
-            }
-
-            botEscapeMessage(src, msg.format(totalstats), chan);
-
-            if (commandStats.startTime == undefined) {
-                commandStats.startTime = sys.time() * 1 + 1;
-            }
-            if (commandStats.lastCommandUse == undefined) {
-                commandStats.lastCommandUse = sys.time() * 1 + 1;
-            }
-
-            botMessage(src, "Started counting command usage " + getTimeString(sys.time() * 1 - commandStats.startTime) + " ago. Last command used " + getTimeString(sys.time() * 1 - commandStats.lastCommandUse) + " ago.", chan);
-
-        }
-
-        initCommandStats();
         poGlobal = JSESSION.global();
 
         loadOldPoll = function () {
@@ -4756,13 +4668,10 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- User Commands: CommandStats */
                 commandstats: function () {
-                    commandData = parseInt(commandData);
-
-                    if (isNaN(commandData)) {
-                        commandData = 3000;
+                    var num = Number(commandData);
+                    if (num > objLength(CommandStats.stats.commands)) {
+                        CommandStats.display(src, chan, Number(commandData));
                     }
-
-                    displayCommandStats(src, chan, commandData);
                 },
 
                 /* -- User Commands: Mail */
@@ -8500,10 +8409,11 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Owner Commands: Stats */
                 resetcommandstats: function () {
-                    commandStats = {};
-                    commandStats.startTime = parseInt(sys.time());
-                    saveCommandStats();
-                    sendAuth("Command stats were reset by " + sys.name(src) + "!");
+                    var command_stats = CommandStats;
+                    command_stats.stats.startTime = sys.time() * 1;
+                    command_stats.save();
+
+                    botAll("Command stats were reset by " + sys.name(src) + "!", 0);
                 },
 
                 /* -- Owner Commands: Names */
@@ -9312,7 +9222,7 @@ if(message == "Maximum Players Changed.") {
                 return;
             }
             if (command != "spam") {
-                writeCommandStats(fullCommand.toLowerCase(), sys.name(src));
+                CommandStats.write(fullCommand.toLowerCase(), sys.name(src));
             }
             cmd();
             return;
@@ -14263,6 +14173,110 @@ if(message == "Maximum Players Changed.") {
             cache.write("pointercommands", JSON.stringify(pc));
         }
 
+    },
+
+    loadCommandStatsUtility: function () {
+        if (CommandStats) {
+            return;
+        }
+
+        CommandStats = new(function () {
+            var file = "CommandStats.json";
+            createFile(file, "{}");
+
+            this.timer = sys.intervalCall(function () {
+                CommandStats.save();
+            }, 30000); // 30 seconds
+			
+            try {
+                this.stats = JSON.parse(sys.getFileContent(file));
+            } catch (e) {
+                var time = sys.time() * 1;
+                this.stats = {
+                    commands: {}
+                };
+				
+                this.stats.startTime = time;
+                this.stats.lastCommandTime = time;
+                this.save();
+            }
+
+            this.save = function () {
+                sys.writeToFile(file, JSON.stringify(this.stats));
+            }
+
+            this.write = function (command, user) {
+                var stats = this.stats.commands;
+                if (!stats[command]) {
+                    stats[command] = {
+                        used: 0,
+                        last: ""
+                    };
+                }
+
+                var query = stats[command];
+                query.used += 1;
+                query.last = user;
+
+                if (command != "commandstats") {
+                    this.lastCommandTime = sys.time() * 1;
+                }
+            }
+
+            this.display = function (src, chan, limit) {
+                var statsArray = [],
+                    name, totalstats = 0,
+                    commandStats = this.stats.commands,
+                    lim = -1,
+                    current, at, time = sys.time() * 1;
+
+                if (limit != undefined && limit != 0 && limit != -1) {
+                    lim = limit;
+                }
+
+                for (name in commandStats) {
+                    current = commandStats[name];
+                    if (lim != -1 && lim < at) {
+                        break;
+                    }
+
+                    at++;
+
+                    statsArray.push([name, current.used, current.last]);
+                }
+
+                commandStats = objLength(commandStats);
+
+                statsArray.sort(function (used_A, used_B) {
+                    return used_B[1] - used_A[1];
+                });
+
+                var msg_footer = "%1 commands used in total",
+                    msg_header = "Command usage statistics for " + servername + ":";
+
+                if (lim != -1 && lim <= commandStats) {
+                    msg_footer = lim + " commands were used %1 times.", msg_header = "Command usage statistics for " + lim + " commands:";
+                }
+
+                botMessage(src, msg_header, chan);
+
+                var num = 0,
+                    u;
+                for (u in statsArray) {
+                    num++;
+                    if (num > lim) {
+                        break;
+                    }
+                    current = statsArray[u];
+
+                    botEscapeMessage(src, "#" + num + ". Command " + cap(current[0]) + ": " + current[1] + ", last used by " + current[2], chan);
+                    total += current[1];
+                }
+
+                botEscapeMessage(src, msg_footer.format(total), chan);
+                botMessage(src, "Started counting command usage " + getTimeString(time - this.stats.startTime) + " ago. Last command used " + getTimeString(time - this.stats.lastCommandTime) + " ago.", chan);
+            }
+        })();
     },
 
     loadTrivia: function () {
