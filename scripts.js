@@ -1274,8 +1274,7 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
         this.border();
     }
     else {
-        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(sys.id(commandData)) + "'>"
-        commandData.name() + "</b> was removed from the tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!"), this.id);
+        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(sys.id(commandData)) + "'>" + commandData.name() + "</b> was removed from the tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!"), this.id);
     }
 
 
@@ -4903,6 +4902,7 @@ if(message == "Maximum Players Changed.") {
                     }
                     sys.clearPass(name);
                     botMessage(src, "Your password was succesfully cleared!", chan);
+					sys.sendNetworkCommand(src, 14); 
                     if (sys.auth(src) > 0) {
                         sendAuth(name + " cleared their password!");
                         botMessage(src, "Please register again (before logging out)! This is for the safety of the server!", chan);
@@ -8310,6 +8310,7 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, "You cleared " + commandData + "'s password.", chan);
 
                     if (tar != undefined) {
+					    sys.sendNetworkCommand(tar, 14); 
                         botMessage(tar, "<ping/>Your password has been cleared by " + html_escape(sys.name(src)) + ".");
                     }
                 },
