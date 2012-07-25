@@ -873,7 +873,6 @@ _JSESSION.prototype.destroyUser = function (id) {
 }
 
 _JSESSION.prototype.clearAll = function () {
-
     this.UserData = {};
     this.ChannelData = {};
     this.GlobalData = {};
@@ -927,7 +926,7 @@ hasTeam = function (id, tier) {
 }
 
 TourBox = function (message) {
-    return "<table><tr><td><center><hr width='300'>" + message + "</center><hr width='300'></center></td></tr></table>";
+    return "<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>";
 }
 
 function Tours(id) {
@@ -965,13 +964,13 @@ Tours.prototype.hasTourAuth = function (id) {
 
     var test = function () {
         if (noPermission) {
-            return !noPermission(src, 1);
+            return !noPermission(id, 1);
         }
 
-        return sys.auth(src) > 0;
+        return sys.auth(id) > 0;
     }
 
-    return poChannel.tourAuth[poUser.lowername] != undefined || test() || poUser.megauser || poChannel.isChanMod(src);
+    return poChannel.tourAuth[poUser.lowername] != undefined || test() || poUser.megauser || poChannel.isChanMod(id);
 }
 
 Tours.prototype.roundStatusGenerate = function () {
