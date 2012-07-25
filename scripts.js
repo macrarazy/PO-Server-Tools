@@ -23,27 +23,17 @@
 || # Lutra, Intel_iX, person6445                           # ||
 || #                                                       # ||
 || ######################################################### ||
-|| #                                                       # ||
-|| ######################################################### ||
-|| #              -Licence Information-                    # ||
-|| ######################################################### ||
-|| #                                                       # ||
-|| # The Script is available under the                     # ||
-|| # Creative Commons Attribution-ShareAlike License 3.0   # ||
-|| # Which can be found at:                                # ||
-|| # http://creativecommons.org/licenses/by-nc-sa/3.0/     # ||
-|| #                                                       # ||
-|| ######################################################### ||
+||                                                           ||
 ===============================================================
 ||                     Config Chart                          ||
 ===============================================================
 || @ DWAbilityCheck:                                         ||
-|| - true if you want to check for unreleased Dream World   ||
+|| - true if you want to check for unreleased Dream World    ||
 || - abilities.                                              ||
 || - false if you don't.                                     ||
 ===============================================================
 || @ AutoChannelJoin:                                        ||
-|| - Automatically lets a player join all script defined       ||
+|| - Automatically lets a player join all script defined     ||
 || - if true. Not if false.                                  ||
 ===============================================================
 || @ WelcomeMessages:                                        ||
@@ -56,7 +46,7 @@
 || - true = yes. false = no                                  ||
 ===============================================================
 || @ AutoBans:                                               ||
-|| - Automatically bans certain proxies and troublesome users. ||
+|| - Automatically bans some proxies.                        ||
 || - true = yes. false = no                                  ||
 ===============================================================
 || @ ClearLogsAt:                                            ||
@@ -4089,7 +4079,6 @@ if(message == "Maximum Players Changed.") {
                     t.register("Credit to <b>Lutra</b> and <b>Intel_iX</b>.");
                     t.register("Special Thanks to <b>Lamperi</b> and <b>Mystra</b>.");
                     t.register("Styles and Rank Icons created by <b>Lutra</b>, <b>Intel_iX</b>, <b>person6445</b>, <b>Rigas</b>.");
-                    t.register("<br/>This script is available under the <a href='http://creativecommons.org/licenses/by-nc-sa/3.0/'>Creative Commons Attribution-ShareAlike License 3.0</a>.");
                     t.register("<small>Thanks to the PO Dev Team for making Pokemon Online!</small>");
 
                     t.register(style.footer);
