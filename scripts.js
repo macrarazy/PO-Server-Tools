@@ -7622,27 +7622,23 @@ if(message == "Maximum Players Changed.") {
                     if (!mcmd[2]) mcmd[2] = "";
                     if (!mcmd[3]) mcmd[3] = "";
                     if (!mcmd[4]) mcmd[4] = "";
-                    var x;
-                    var found = false;
-                    var clauses = "";
-                    var tierlist = sys.getTierList();
+                    var x,
+					found = false,
+					clauses = 0,
+					tierlist = sys.getTierList(), tier = mcmd[2].toLowerCase();
 
                     for (x in tierlist) {
-                        if (mcmd[2].toLowerCase() === tierlist[x].toLowerCase()) {
+                        if (tier === tierlist[x].toLowerCase()) {
                             found = true;
                             clauses = sys.getClauses(mcmd[2]);
                             break;
                         }
                     }
 
-                    if (!found) {
-                        clauses = 0;
-                    }
-
-                    var player1 = sys.id(mcmd[0]);
-                    var player2 = sys.id(mcmd[1]);
-                    var pl1 = sys.name(player1);
-                    var pl2 = sys.name(player2);
+                    var player1 = sys.id(mcmd[0]),
+					player2 = sys.id(mcmd[1]),
+					pl1 = sys.name(player1),
+					pl2 = sys.name(player2);
 
                     if (player1 === undefined || player2 === undefined) {
                         botMessage(src, "Those players don't exist!", chan);
@@ -7683,8 +7679,15 @@ if(message == "Maximum Players Changed.") {
                         rated = true;
                     }
 
-                    // TODO: Team Ids
-                    sys.forceBattle(player1, player2, 0, 0, clauses, mode, rated);
+					var player1_team = firstTeamForTier(player1, tier), player2_team = firstTeamForTier(player2, tier);
+					if (player1_team == -1) {
+					player1_team = 0; 
+					}
+					if (player2_team == -1) {
+					player2_team = 0;
+					}
+					
+                    sys.forceBattle(player1, player2, player1_team, player2_team, clauses, mode, rated);
                     script.afterBattleStarted(src, dest, clauses, rated, 0, 0);
                     botEscapeAll("A battle between " + pl1 + " and " + pl2 + " has been forced by " + sys.name(src) + "!", 0);
                     return;
@@ -7697,15 +7700,15 @@ if(message == "Maximum Players Changed.") {
 
                 ct.register("leaguecommands", "Displays League Commands.");
                 ct.register("authcommands", "Displays Authority Commands.");
-                ct.register("masskick", "Kicks all users from the Server.");
+                ct.register("masskick", "Kicks all users from the server.");
                 ct.register("clearchat", "Clears the chat.");
                 ct.register("showteam", ["{r Person}"], "Displays someones team.");
-                ct.register("forcebattle", ["{r Player1}", "{r Player2}", "{p <u>Tier</u>}", "{p <u>Mode</u>}", "{p <u>Rated</u>}"], "Forces a Battle against 2 Players. Tier must be a valid Tier for Battle Clauses. Mode can be Doubles or Triples. Rated must be one of the following: true, rated, yes. If not, the Battle won't be Rated.");
+                ct.register("forcebattle", ["{r Player1}", "{r Player2}", "{p <u>Tier</u>}", "{p <u>Mode</u>}", "{p <u>Rated</u>}"], "Forces a battle between 2 players. Tier must be a valid tier for clauses (teams of this are also prioritized if any). Mode can be Doubles or Triples. Rated must be one of the following: true, rated, yes. If not, the battle won't be rated.");
                 ct.register("bot", ["{p NewName}"], "Changes the Bot name.");
-                ct.register("botcolor", ["{p NewColor}"], "Changes the Bot color.");
-                ct.register("clantag", ["{p Tag}"], "Changes the Clan Tag. If Tag is None, turns the Clan feature off.");
-                ct.register("autoidle", ["{or Name}", "{p Entrymsg}"], "Automaticly Idles someone with an optional Entrymsg. Also works when you only want to change the Entrymsg.");
-                ct.register("autoidleoff", ["{p Name}"], "Removes Automatic Idling.");
+                ct.register("botcolor", ["{p NewColor}"], "Changes the bot color.");
+                ct.register("clantag", ["{p Tag}"], "Changes the clan tag. If Tag is None, turns the clan feature off.");
+                ct.register("autoidle", ["{or Name}", "<u>{p Entrymsg}</u>"], "Automatically idles someone with an optional entry message displayed when Name logs on. Also works when you only want to change the entry message.");
+                ct.register("autoidleoff", ["{p Name}"], "Removes Name's Auto-Idle.");
 
                 ct.register(style.footer);
                 ct.render(src, chan);
