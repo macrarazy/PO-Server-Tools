@@ -13178,7 +13178,7 @@ if(message == "Maximum Players Changed.") {
                         'egg': parseMoveFile("egg"),
                         'level': parseMoveFile("level"),
                         'evo': parseMoveFile("pre_evo"),
-                        'event': parseMoveFile("special_moves"),
+                        'event': parseMoveFile("special"),
                         'tms': parseMoveFile("tm_and_hm"),
                         'tutor': parseMoveFile("tutor")
                     }
@@ -13307,7 +13307,7 @@ if(message == "Maximum Players Changed.") {
 			We also will check evos later as some pokes don't have one. */
 
                 var fEgg2Pokes = {},
-                    curr_fegg2;
+                    curr_fegg2, hasFegg1;
                 for (x in fegg2) {
                     curr_fegg2 = fegg2[x].split(" ");
                     if (curr_fegg2 == "0") {
@@ -13326,7 +13326,11 @@ if(message == "Maximum Players Changed.") {
                     curr_stats = [fstats[x].split(" ")];
                     oldCurrStat = curr_stats[0];
                     spl = fstats[x].split(":");
-
+					
+					if (spl[1] == undefined) {
+					break;
+					}
+					
                     /* First is for formes. Second is missingno check. */
                     if (spl[1][0] != "0" || spl[0] == "0") {
                         pokeId--;
@@ -13334,8 +13338,16 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     curr_stats = [
-                    oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" "), fegg1[pokeId].split(" ")];
+                    oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" ")];
 
+					if (fegg1[pokeId] != undefined) {
+					hasFegg1 = true;
+			        curr_stats.push(fegg1[pokeId].split(" "));
+					} else {
+					hasFegg1 = false;
+					curr_stats.push("");
+					}
+					
                     if (fEgg2Pokes[pokeId]) {
                         hasFegg2 = true;
                         curr_stats.push(fEgg2Pokes[pokeId]);
@@ -13346,7 +13358,9 @@ if(message == "Maximum Players Changed.") {
 
                     poke = sys.pokemon(spl[0]);
                     curr_poke_stats = curr_stats[0]; /* Egg Groups */
+					if (hasFegg1) {
                     curr_stats[5][1] = cut(curr_stats[5], 1, ' ');
+					}
                     if (hasFegg2) {
                         curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
                     }
@@ -14222,7 +14236,7 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadCommandStatsUtility: function () {
-	if (CommandStats != undefined) {
+	if (typeof CommandStats != "undefined") {
 	sys.stopTimer(CommandStats.timer);
 	}
 	
