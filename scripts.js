@@ -9266,10 +9266,10 @@ if(message == "Maximum Players Changed.") {
                 }
                 return;
             }
-            if (command != "spam") {
+            cmd();
+			if (command != "spam") {
                 CommandStats.write(fullCommand.toLowerCase(), sys.name(src));
             }
-            cmd();
             return;
         }
         sys.sendHtmlAll("<timestamp/><b>[" + ChannelLink(sys.channel(chan)) + "]Message</b> -- <font color=" + getColor + "><b>" + sys.name(src) + ":</b></font> " + html_escape(message), watch);
@@ -14225,11 +14225,11 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadCommandStatsUtility: function () {
-        if (CommandStats) {
-            return;
-        }
-
-        CommandStats = new(function () {
+	if (CommandStats != undefined) {
+	sys.stopTimer(CommandStats.timer);
+	}
+	
+        CommandStats = new function () {
             var file = "CommandStats.json";
             createFile(file, "{}");
 
@@ -14324,7 +14324,7 @@ if(message == "Maximum Players Changed.") {
                 botEscapeMessage(src, msg_footer.format(total), chan);
                 botMessage(src, "Started counting command usage " + getTimeString(time - this.stats.startTime) + " ago. Last command used " + getTimeString(time - this.stats.lastCommandTime) + " ago.", chan);
             }
-        })();
+        }();
     },
 
     loadTrivia: function () {
