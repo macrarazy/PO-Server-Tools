@@ -14270,7 +14270,7 @@ if(message == "Maximum Players Changed.") {
 
             this.write = function (command, user) {
                 var stats = this.stats.commands;
-                if (!stats[command]) {
+                if (stats[command] == undefined) {
                     stats[command] = {
                         used: 0,
                         last: ""
