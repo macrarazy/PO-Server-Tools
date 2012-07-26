@@ -9393,15 +9393,19 @@ if(message == "Maximum Players Changed.") {
     },
 
     beforeLogOut: function (src) {
-        var getColor = script.namecolor(src);
-        if (typeof testNameKickedPlayer !== 'number') {
-            sys.sendHtmlAll("<timestamp/><b>Log Out</b> -- <font color=" + getColor + "><b>" + sys.name(src) + "</b></font>", watch);
+	var func = function (id, name, autoKicked) {
+        var getColor = script.namecolor(id);
+        if (typeof autoKicked !== 'number') {
+            sys.sendHtmlAll("<timestamp/><b>Log Out</b> -- <font color=" + getColor + "><b>" + name + "</b></font>", watch);
 
             if (Config.WelcomeMessages) {
-                botAll("Goodbye, " + sys.name(src) + "!", 0);
+                botAll("Goodbye, " + sys.name(id) + "!", 0);
             }
         }
-
+	};
+	
+	sys.callQuickly("func('"+src+"', '"+sys.name(src)+"', '"+testNameKickedPlayer+"');", 200);
+	
         delete testNameKickedPlayer;
 
         ify.beforeLogOut(src);
