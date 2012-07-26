@@ -2316,7 +2316,7 @@ JSESSION.refill();
             }
         }
 
-        var lines = sys.getFileContent("config").split("\n")[30];
+        var line = sys.getFileContent("config").split("\n")[30];
         servername = line.substring(5).replace(/\\xe9/i, "é").trim();
 
         run("requiredUtilitiesLoad");
