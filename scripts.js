@@ -2316,14 +2316,8 @@ JSESSION.refill();
             }
         }
 
-        var lines = sys.getFileContent("config").split("\n"),
-            z;
-        for (z in lines) {
-            if (lines[z].substring(0, 4) == "Name=") {
-                servername = lines[z].substring(5).replace(/\\xe9/i, "é").trim();
-                break;
-            }
-        }
+        var lines = sys.getFileContent("config").split("\n")[30];
+        servername = line.substring(5).replace(/\\xe9/i, "é").trim();
 
         run("requiredUtilitiesLoad");
         run("loadCache");
@@ -14331,9 +14325,7 @@ if(message == "Maximum Players Changed.") {
         return;
 
         if (typeof Trivia === 'undefined' || !Trivia.loaded) {
-            Trivia = new
-
-            function () {
+            Trivia = new function () {
 
                 this.qNum = function () {
                     var quest = objLength(this.questions);
