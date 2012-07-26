@@ -2319,10 +2319,10 @@ JSESSION.refill();
         var line = sys.getFileContent("config").split("\n")[30];
         servername = line.substring(5).replace(/\\xe9/i, "é").trim();
 
-        run("requiredUtilitiesLoad");
+        run("loadRequiredUtilities");
         run("loadCache");
 
-        run("utilitiesLoad");
+        run("loadUtilities");
         run("loadPruneUtilities");
         run("loadChannelUtilities");
 
@@ -10826,7 +10826,7 @@ if(message == "Maximum Players Changed.") {
         }
     },
 
-    utilitiesLoad: function () {
+    loadUtilities: function () {
         if (typeof fonts == 'undefined') {
             // Windows 7 Fonts //
             // Note: Some fonts MIGHT not work/look too much like default font
@@ -13701,7 +13701,7 @@ if(message == "Maximum Players Changed.") {
 
     },
 
-    requiredUtilitiesLoad: function () {
+    loadRequiredUtilities: function () {
         RECOVERY = function () {
             if (typeof script.message != 'undefined' && typeof script.step == 'undefined') {
                 botAll("Fatal Script Error detected! " + FormatError("", script));
