@@ -10191,22 +10191,22 @@ if(message == "Maximum Players Changed.") {
                 5: "Spd"
             };
 
-        var hiddenPowerNum = sys.moveNum("Hidden Power"),
+        var hiddenPowerNum = 237,
             t = new Template(),
-            teamno, gen, subgen, n;
+            teamno, gen, fullgen, n;
 
         t.register(style.header);
 
         for (n = 0; n < sys.teamCount(src); n++) {
             teamno = n + 1;
             gen = sys.gen(src, n);
-            subgen = sys.generation(gen, n);
+            fullgen = sys.generation(gen, sys.subgen(src, n));
 
             if (n != 0) {
                 t.register("");
             }
 
-            t.register("<font color=" + script.namecolor(tar) + "><b>" + sys.name(tar) + "</b></font>'s #" + teamno + " Gen " + gen + " (" + subgen + ") Team<br/>");
+            t.register("<font color=" + script.namecolor(tar) + "><b>" + sys.name(tar) + "</b></font>'s #" + teamno + " Gen " + gen + " (" + fullgen + ") Team<br/>");
 
             var i, color, gender, pokeId, nick, item, level, evstr, w, evtable, dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs, b, hp, t_, hptype, type;
 
@@ -10271,7 +10271,7 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 if (gen > 2) {
-                    nature = natureName[sys.teamPokeNature(tar, n, i)];
+                    nature = natureNames[sys.teamPokeNature(tar, n, i)];
                     t.register("<b><font color=" + color + ">" + nature + "</font></b>");
                 }
 
@@ -13341,23 +13341,22 @@ if(message == "Maximum Players Changed.") {
                         continue;
                     }
 
-                    curr_stats = [
-                    oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" ")];
+                    curr_stats = [oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" ")];
 
 					if (fegg1[pokeId] != undefined) {
 					hasFegg1 = true;
 			        curr_stats.push(fegg1[pokeId].split(" "));
 					} else {
 					hasFegg1 = false;
-					curr_stats.push("");
+					curr_stats.push(" ");
 					}
 					
-                    if (fEgg2Pokes[pokeId]) {
+                    if (fEgg2Pokes[pokeId] != undefined) {
                         hasFegg2 = true;
-                        curr_stats.push(fEgg2Pokes[pokeId]);
+                        curr_stats.push([pokeId, fEgg2Pokes[pokeId]]);
                     } else {
                         hasFegg2 = false;
-                        curr_stats.push("");
+                        curr_stats.push(" ");
                     }
 
                     poke = sys.pokemon(spl[0]);
@@ -13823,7 +13822,7 @@ if(message == "Maximum Players Changed.") {
 
         isEmpty = function (s) {
             var type = typeof s;
-            if (type == "undefined" || s === null) {
+            if (type == "undefined" || s == null) {
                 return true;
             }
 
