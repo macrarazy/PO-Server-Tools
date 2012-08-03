@@ -57,6 +57,7 @@
 || - Example: botMessage(src, sTB(1024*4));                  ||
 || - NOTE: Might lag. If the lag is a problem, make this 0.  ||
 || - NOTE2: Clearing logs removes lag, so it's recommended!  ||
+|| - NO LONGER WORKING ON PO v2                              ||
 ===============================================================
 || @ HighPermission users:                                   ||
 || - Can use commands with an higher auth level required.    ||
@@ -82,7 +83,7 @@ Config = {
     FixChallenges: false,
     AutoBans: true,
 
-    ClearLogsAt: 36700160,
+    ClearLogsAt: 36700160, // NO LONGER WORKING ON v2
     HighPermission: {
         "This gives Administrator Auth to a Moderator.": [1, 2],
         "Don't forget the commas and collons.": [1, 2]
@@ -288,6 +289,8 @@ sTB = function (bytes) {
 }
 
 clearlogs = function () {
+return; // no longer working on v2
+
     var l = Config.ClearLogsAt;
     if (l == 0) {
         return;
@@ -304,7 +307,6 @@ clearlogs = function () {
     if (len > l) {
         botAll("Clearing logs.txt", 0);
         sys.writeToFile("logs.txt", "");
-        gc(); // Garbage Collector
     }
 }
 
@@ -2552,10 +2554,11 @@ Trivia.start();
 }
 */
 
-        if (stepCounter % 3600 === 0) { /* 60*60 */
-            clearlogs();
-        }
-
+        //if (stepCounter % 3600 === 0) { /* 60*60 */
+          //  clearlogs();
+        //}
+		// no longer working on v2
+		
         if (typeof mafia != "undefined") {
             mafia.tickDown();
         }
