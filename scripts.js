@@ -10289,9 +10289,9 @@ if(message == "Maximum Players Changed.") {
 
                 t.register("<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=false&shiny=" + shinyPoke + "&gender=" + gender + "'><img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=true&shiny=" + shinyPoke + "&gender=" + gender + "'>");
 
-                nick = sys.teamPokeNick(tar, n, i) + " (" + sys.pokemon(sys.teamPoke(tar, n, i)) + ")"
+                nick = sys.teamPokeNick(tar, n, i) + "</b></font> (<b><font color="+color+">" + sys.pokemon(sys.teamPoke(tar, n, i)) + "</b></font>)"
                 if (sys.teamPokeNick(tar, n, i) == sys.pokemon(sys.teamPoke(tar, n, i))) {
-                    nick = sys.pokemon(sys.teamPoke(tar, n, i));
+                    nick = sys.pokemon(sys.teamPoke(tar, n, i)) + "</b></font>";
                 }
 
                 item = "<img src='item:" + sys.teamPokeItem(tar, n, i) + "'>";
@@ -10299,7 +10299,7 @@ if(message == "Maximum Players Changed.") {
                     item = "";
                 }
 
-                t.register("<font color=" + color + "><b> " + nick + "</b></font> " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "<img src='Themes/Classic/genders/gender2.png'> (F)").replace(/male/g, "<img src='Themes/Classic/genders/gender1.png'> (M)").replace(/genderless/g, "<img src='Themes/Classic/genders/gender0.png'>") + " @ " + item + " " + sys.item(sys.teamPokeItem(tar, n, i)));
+                t.register("<font color=" + color + "><b> " + nick + " " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "<img src='Themes/Classic/genders/gender2.png'> (F)").replace(/male/g, "<img src='Themes/Classic/genders/gender1.png'> (M)").replace(/genderless/g, "<img src='Themes/Classic/genders/gender0.png'>") + " @ " + item + " " + sys.item(sys.teamPokeItem(tar, n, i)));
 
                 if (gen > 2) {
                     t.register("<font color=" + color + "><b>Trait:</b></font> " + sys.ability(sys.teamPokeAbility(tar, n, i)));
