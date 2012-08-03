@@ -10274,7 +10274,7 @@ if(message == "Maximum Players Changed.") {
 
             t.register("#" + teamno + ": Gen " + gen + " (" + fullgen + ")<br/>");
 
-            var i, color, gender, pokeId, nick, item, level, evstr, w, evtable, dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs, hp, movetype, hptype, type;
+            var i, color, gender, pokeId, nick, item, level, evstr, w, evtable, dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs, hp, movetype, hptype;
 
             for (i = 0; i < 6; i++) {
                 color = colorNames[sys.pokeType1(sys.teamPoke(tar, n, i), gen)];
@@ -10285,7 +10285,7 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 gender = genderNames[sys.teamPokeGender(tar, n, i)];
-                shinyPoke = sys.teamPokeShine(tar, n, i);
+                shinyPoke = false; // sys.teamPokeShine(tar, n, i); = bugged in v2
 
                 t.register("<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=false&shiny=" + shinyPoke + "&gender=" + gender + "'><img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=true&shiny=" + shinyPoke + "&gender=" + gender + "'>");
 
@@ -10364,9 +10364,7 @@ if(message == "Maximum Players Changed.") {
                         moveStr = "<font color=" + colorNames[hp] + "><b>Hidden Power</b></font> [" + hptype + "]";
                     }
 
-                    type = "<img src='Themes/Classic/types/type" + sys.moveType(moveNum) + "' width='40'>";
-
-                    t.register(type + ' ' + moveStr);
+                    t.register(moveStr);
                 }
 				
 				if (teamno != numteams) {
