@@ -10258,20 +10258,21 @@ if(message == "Maximum Players Changed.") {
 
         var hiddenPowerNum = 237,
             t = new Template(),
-            teamno, gen, fullgen, n;
+            teamno, gen, fullgen, n, numteams = sys.teamCount(tar);
 
         t.register(style.header);
+        t.register("<font color=" + script.namecolor(tar) + "><b>" + sys.name(tar) + "</b></font>'s Teams<br/>");
 
-        for (n = 0; n < sys.teamCount(src); n++) {
+        for (n = 0; n < numteams; n++) {
             teamno = n + 1;
-            gen = sys.gen(src, n);
-            fullgen = sys.generation(gen, sys.subgen(src, n));
+            gen = sys.gen(tar, n);
+            fullgen = sys.generation(gen, sys.subgen(tar, n));
 
             if (n != 0) {
                 t.register("");
             }
 
-            t.register("<font color=" + script.namecolor(tar) + "><b>" + sys.name(tar) + "</b></font>'s #" + teamno + " Gen " + gen + " (" + fullgen + ") Team<br/>");
+            t.register("#" + teamno + ": Gen " + gen + " (" + fullgen + ")<br/>");
 
             var i, color, gender, pokeId, nick, item, level, evstr, w, evtable, dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs, hp, movetype, hptype, type;
 
@@ -10367,6 +10368,10 @@ if(message == "Maximum Players Changed.") {
 
                     t.register(type + ' ' + moveStr);
                 }
+				
+				if (teamno != numteams) {
+				t.register("<hr/>");
+				}
             }
         }
 
