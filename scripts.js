@@ -6405,7 +6405,7 @@ if(message == "Maximum Players Changed.") {
 
                     var range = DataHash.rangebans;
                     if (Object.keys(range) == 0) {
-                        botMessage(src, 'Sorry, there are currently no rangebans.', chan);
+                        botMessage(src, 'There are currently no rangebans.', chan);
                         return;
                     }
 
@@ -6430,11 +6430,11 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 tempbanlist: function () {
-                    Prune.tempBans();
+                    Prune.bans();
 
                     var range = DataHash.tempbans;
                     if (Object.keys(range) == 0) {
-                        botMessage(src, 'There are currently no temp bans.', chan);
+                        botMessage(src, "There are currently no temp bans.", chan);
                         return;
                     }
 
@@ -7497,10 +7497,10 @@ if(message == "Maximum Players Changed.") {
                         y;
 
                     for (y = 0; y < 2999; y++) {
-                        sys.sendAll("");
+                        sys.sendAll("", chan);
                     }
 
-                    botAll("<font color=" + getColor + "> " + srcname + "</font></font></b> cleared the chat!");
+                    botAll(srcname + " cleared the chat!");
                 },
 
                 /* -- Admin Commands: Team */
@@ -8289,11 +8289,14 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "The Server is already public.", chan);
                         return;
                     }
+					
                     sys.makeServerPublic(true);
+					
                     var conf = sys.getFileContent("config");
                     conf.replace(/Private=1/, "Private=0");
                     sys.writeToFile("config", conf);
-                    botAll("The Server has been made public by <b><font color= " + getColor + "> " + html_escape(sys.name(src)) + "</b><font>", 0);
+					
+                    botAll("The server has been made public by "+sys.name(src)+"!", 0);
                 },
 
                 private: function () {
@@ -8304,8 +8307,10 @@ if(message == "Maximum Players Changed.") {
                     var conf = sys.getFileContent("config");
                     conf.replace(/Private=0/, "Private=1");
                     sys.writeToFile("config", conf);
+					
                     sys.makeServerPublic(false);
-                    botAll("The Server has been made private by <b><font color= " + getColor + "> " + html_escape(sys.name(src)) + "</b><font>", 0);
+					
+                    botAll("The server has been made private by "+sys.name(src)+"!", 0);
                 },
 
                 /* -- Owner Commands: Password */
@@ -9843,7 +9848,7 @@ if(message == "Maximum Players Changed.") {
         }
 
         if (Config.AutoBans && auth < 1) {
-            var ips = ["68.101.77.47", "75.97.113.23", "174.97.200.137", "74.177.140.6", "71.200.127.248", "80.99.185.34", "98.224.59.142", "146.185.22.84", "80.57.218.225", "24.9.47.159", "202.109.143.36", "122.225.36.101", "96.21.77.178", "99.99.42.44", "1.23.90.54", "120.62.170.171", "120.63.37.210", "184.57.43.134", "24.220.22.51", "78.145.211.13", "172.131.113.123", "108.216.164.247", "86.42.2.61", "217.166.85.2", "172.129.68.11", "174.54.115.184", "178.165.60.119", "67.191.121.15", "121.8.124.42", "99.237.117.229", "187.133.50.253", "81.102.146.69", "70.126.60.11", "174.44.167.230", "128.227.113.21", "199.255.210.77"];
+            var ips = ["75.97.113.23", "174.97.200.137", "74.177.140.6", "71.200.127.248", "80.99.185.34", "98.224.59.142", "146.185.22.84", "80.57.218.225", "24.9.47.159", "202.109.143.36", "122.225.36.101", "96.21.77.178", "99.99.42.44", "1.23.90.54", "120.62.170.171", "120.63.37.210", "184.57.43.134", "24.220.22.51", "78.145.211.13", "172.131.113.123", "108.216.164.247", "86.42.2.61", "217.166.85.2", "172.129.68.11", "174.54.115.184", "178.165.60.119", "67.191.121.15", "121.8.124.42", "99.237.117.229", "187.133.50.253", "81.102.146.69", "70.126.60.11", "174.44.167.230", "128.227.113.21", "199.255.210.77"];
             if (ips.indexOf(ip) > -1) {
                 if (!nomessage) {
                     sendFailWhale(src, 0);
@@ -11968,8 +11973,6 @@ if(message == "Maximum Players Changed.") {
                     this.generateBasicData(name);
                 }
 
-                }
-
                 try {
                     this.channelData[name].chanAuth = JSON.stringify(auth);
                 }
@@ -11981,7 +11984,7 @@ if(message == "Maximum Players Changed.") {
             this.changeTourAuth = function (chan, auth) {
                 var name = sys.channel(chan);
 
-                if (!name in this.channelData) {
+                if (this.channelData[name] == undefined) {
                     this.generateBasicData(name);
                 }
 
@@ -14132,10 +14135,15 @@ if(message == "Maximum Players Changed.") {
                 "Champion": "",
                 "gym": {},
                 "elite": {}
-            };
+            }, ENABLED_JSON = {
+			"me": true,
+			"_catch_": true,
+			"attack": true,
+			"roulette": true
+			};
 
         cache.ensure("Bot", JSON.stringify(BOT_JSON));
-        cache.ensure("CommandsEnabled", "{'me':true,'_catch_':true,'attack':true,'roulette':true}");
+        cache.ensure("CommandsEnabled", JSON.stringify(ENABLED_JSON));
         cache.ensure("league", JSON.stringify(LEAGUE_JSON));
 
         ClanTag = cache.get("ClanTag");
