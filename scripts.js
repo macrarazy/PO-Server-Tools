@@ -913,6 +913,70 @@ TourBox = function (message) {
     return "<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>";
 }
 
+TourNotification = function (src, chan, info) { // info is an object
+    var tourmode = JSESSION.channels(chan).tour.tourmode;
+    if (src != 0) {
+        var poChan = JSESSION.channels(chan).tour,
+            startTime = getTimeString(sys.time() * 1 - poChan.startTime);
+
+        poChan.white();
+        poChan.border();
+
+        sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tourstarter + " " + startTime + " ago! </b></font>", chan);
+        sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + poChan.tournumber, chan);
+        sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + poChan.identify(), chan);
+        sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + poChan.tourtier, chan);
+
+        if (!isEmpty(poChan.prize)) {
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + poChan.prize, chan);
+        }
+
+        poChan.border();
+
+        if (poChan.tourmode == 1) {
+            sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
+        }
+        else if (poChan.tourmode == 2) {
+            var finalsSTr = "";
+            if (poChan.tour.finals) {
+                finalsStr = " (<B>Finals</B>)";
+            }
+
+            sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + poChan.roundnumber + finalsStr + ". " + poChan.remaining + " players remaining.", chan);
+
+        }
+
+        poChan.border();
+        poChan.white();
+    } else {
+        var channel = JSESSION.channels(chan).tour;
+        if (display == 1) {
+            channel.white()
+            channel.border();
+            sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + info.starter + "! </b></font>", chan);
+            sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + channel.tournumber, chan);
+            sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + channel.identify(), chan);
+            sys.sendHtmlAll("<timestamp/><b><font color=orange>Tier:</b></font> " + channel.tourtier, chan);
+            if (!isEmpty(channel.prize)) {
+                sys.sendHtmlAll("<timestamp/><b><font color=brown>Prize:</b></font> " + channel.prize, chan);
+            }
+            channel.border();
+            sys.sendHtmlAll("<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
+            channel.border();
+            channel.white()
+        }
+        else {
+            var prize = '';
+
+            if (!isEmpty(channel.prize)) {
+                prize = '<b style="color: brown;">Prize:</b> ' + channel.prize + '<br/>';
+            }
+
+            sys.sendHtmlAll(TourBox("A Tournament was started by <b style='color:" + info.color + "'>" + info.starter + "</b>! <br/> <b style='color:red'>Players:</b> " + channel.tournumber + " <br/> <b style='color: blue'>Type:</b> " + channel.identify() + " <br/> <b style='color: orange'>Tier:</b> " + channel.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!"), chan);
+        }
+    }
+}
+
 function Tours(id) {
     this.id = id;
     this.tourmode = 0;
@@ -1465,20 +1529,21 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
         }
 
         if (this.tournumber % 2 != 0) {
-            botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12, ..]", this.id)
+            botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12, ..]", this.id);
             return;
         }
     }
 
     if (this.tournumber > 150) {
-        botMessage(src, "Having over 150 players would be impossible!", chan);
+        botMessage(src, "Having over 150 players would be impossible!", this.id);
         return;
     }
 
-    var tier = sys.getTierList();
-    var found = false;
+    var tier = sys.getTierList(),
+        found = false,
+        x;
 
-    for (var x in tier) {
+    for (x in tier) {
         if (cmp(tier[x], commandpart[0])) {
             this.tourtier = tier[x];
             found = true;
@@ -1498,36 +1563,17 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
         this.prize = "";
     }
 
+    var m_name = sys.name(src);
+
     this.remaining = this.tournumber;
     this.tourmode = 1;
-
-    if (display == 1) {
-        this.white()
-        this.border();
-        sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + sys.name(src) + "! </b></font>", this.id);
-        sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + this.tournumber, this.id);
-        sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + this.identify(cp), this.id);
-        sys.sendHtmlAll("<timestamp/><b><font color=orange>Tier:</b></font> " + this.tourtier, this.id);
-        if (!isEmpty(this.prize)) {
-            sys.sendHtmlAll("<timestamp/><b><font color=brown>Prize:</b></font> " + this.prize, this.id);
-        }
-        this.border();
-        sys.sendHtmlAll("<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", this.id);
-        this.border();
-        this.white();
-    }
-    else {
-        var prize = '';
-
-        if (!isEmpty(this.prize)) {
-            prize = '<b style="color: brown;">Prize:</b> ' + this.prize + '<br/>';
-        }
-
-        sys.sendHtmlAll(TourBox("A Tournament was started by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>! <br/> <b style='color:red'>Players:</b> " + this.tournumber + " <br/> <b style='color: blue'>Type:</b> " + this.identify(cp) + " <br/> <b style='color: orange'>Tier:</b> " + this.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!"), this.id);
-    }
-
     this.startTime = sys.time() * 1;
-    this.tourstarter = sys.name(src);
+    this.tourstarter = m_name;
+
+    TourNotification(0, this.id, {
+        "starter": m_name,
+        "color": script.namecolor(src)
+    });
 }
 
 Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
@@ -2293,7 +2339,7 @@ JSESSION.refill();
 
         run("loadTiers");
         run("loadStyles");
-        run("loadRankicons");
+        run("loadRankIcons");
         run("loadPokemonStats");
 
         run("loadTemplateUtility");
@@ -2333,9 +2379,10 @@ JSESSION.refill();
             DataHash.teamSpammers = {};
         }
 
-        // if (typeof DataHash.reconnect == "undefined") {
-        // DataHash.reconnect = {};
-        // }
+        if (typeof DataHash.reconnect == "undefined") {
+            DataHash.reconnect = {};
+        }
+
         Clantag = {};
         Clantag.full = ClanTag;
         Clantag.fullText = removespaces(Clantag.full.replace(/[\[\]\{\}]/gi, ""));
@@ -2518,29 +2565,15 @@ JSESSION.refill();
                     mainChan.tourtier = tourTier;
                     mainChan.startTime = sys.time() * 1;
                     mainChan.battlemode = battleMode;
-
                     mainChan.prize = "";
-
                     mainChan.tourmode = 1;
-
-                    if (display == 1) {
-                        mainChan.white();
-                        mainChan.border();
-                        sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + Bot.bot + "</i>! </b></font>", 0);
-                        sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + mainChan.tournumber, 0);
-                        sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + mainChan.identify(), 0);
-                        sys.sendHtmlAll("<timestamp/><b><font color=orange>Tier:</b></font> " + mainChan.tourtier, 0);
-                        mainChan.border();
-                        sys.sendHtmlAll("<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", 0);
-                        mainChan.border();
-                        mainChan.white();
-                    }
-                    else {
-                        DisableChatColorRandomizer(0);
-                        sys.sendHtmlAll(TourBox("A Tournament was started by <b style='color:" + Bot.botcolor + "'>" + Bot.bot + "</i></b>!<br/><b style='color:red;'>Players:</b> " + mainChan.tournumber + " <br/><b color='blue'>Type:</b> " + mainChan.identify() + " <br/><b color='orange'>Tier:</b> " + mainChan.tourtier + " <br/>Type <b style='color:green'>/Join</b> to join the Tournament!"), 0);
-                    }
-
                     mainChan.tourstarter = Bot.bot + "</i>";
+
+                    TourNotification(0, 0, {
+                        "starter": Bot.bot + "</i>",
+                        "color": Bot.botcolor
+                    });
+
                 }
             }
         }
@@ -2581,7 +2614,7 @@ Trivia.start();
             sys.stopEvent();
             return;
         }
-		
+
         JSESSION.createChannel(cid);
     },
 
@@ -2597,13 +2630,11 @@ Trivia.start();
         playerscache.write("names", JSON.stringify(dhn));
         script.resolveLocation(src, myIp, false);
 
-/*
-		if (DataHash.reconnect[myIp] != undefined) {
+        if (DataHash.reconnect[myIp] != undefined) {
             testNameKickedPlayer = src;
             sys.stopEvent();
             return;
         }
-		*/
 
         if (script.testName(src)) {
             testNameKickedPlayer = src;
@@ -2613,7 +2644,7 @@ Trivia.start();
     },
 
     beforeChannelLeave: function (src, chan) {
-	WatchEvent(src, "Left Channel", chan);
+        WatchEvent(src, "Left Channel", chan);
     },
 
     afterLogIn: function (src) {
@@ -2652,7 +2683,7 @@ Trivia.start();
         if (typeof startupTime == 'number' && startupTime != NaN) {
             botMessage(src, "The server has been up for " + startUpTime() + "</b>.", 0);
         }
-		
+
         if (pNum > maxPlayersOnline) {
             maxPlayersOnline = pNum;
         }
@@ -2667,52 +2698,7 @@ Trivia.start();
             botMessage(src, "You are not registered. Click on the 'Register' button if you wish to protect your alias. Registration only requires a password.", 0);
         }
 
-        var poChan = JSESSION.channels(0),
-		border = function () {
-            return sys.sendHtmlMessage(src, tour, 0);
-        }, white = function () {
-            return sys.sendMessage(src, "", 0);
-        },
-		startTime = getTimeString(sys.time() * 1 - poChan.tour.startTime);
-		
-        if (poChan.tour.tourmode == 1) {
-            white();
-            border();
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + " " + startTime + " ago! </b></font>", 0);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + poChan.tour.tournumber, 0);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + poChan.tour.identify(), 0);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + poChan.tour.tourtier, 0);
-
-            if (!isEmpty(poChan.tour.prize)) {
-                sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>PRIZE:</b></font> " + poChan.tour.prize, 0);
-            }
-
-            border();
-            sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", 0);
-            border();
-            white();
-        }
-        else if (poChan.tour.tourmode == 2) {
-            white();
-            border();
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tour.tourstarter + " " + startTime + " ago! </b></font>", 0);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + poChan.tour.tournumber, 0);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + poChan.tour.identify(), 0);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + poChan.tour.tourtier, 0);
-            if (!isEmpty(poChan.tour.prize)) {
-                sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + poChan.tour.prize, 0);
-            }
-            border();
-            var finalsSTr = "";
-            if (poChan.tour.finals) {
-                finalsStr = " (<B>Finals</B>)";
-            }
-
-            sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + poChan.tour.roundnumber + finalsStr + ". " + poChan.tour.remaining + " players remaining.", 0);
-            border();
-            white();
-        }
-
+        TourNotification(src, 0);
         sys.sendMessage(src, "", 0);
 
         if (Config.AutoChannelJoin) {
@@ -2749,7 +2735,7 @@ Trivia.start();
     },
 
     afterChannelJoin: function (src, channel) {
-	WatchEvent(src, "Channel Joined", channel);
+        WatchEvent(src, "Channel Joined", channel);
 
         var chan = JSESSION.channels(channel),
             srcname = sys.name(src).toLowerCase(),
@@ -2803,52 +2789,7 @@ Trivia.start();
 
         if (chan.toursEnabled) {
             if (channel != 0) {
-                var border = function () {
-                    return sys.sendHtmlMessage(src, tour, channel);
-                },
-                    white = function () {
-                        return sys.sendMessage(src, "", channel);
-                    },
-                    startTime = getTimeString(sys.time() * 1 - chan.tour.startTime);
-
-                if (chan.tour.tourmode == 1) {
-                    white();
-                    border();
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + " " + startTime + " ago! </b></font>", channel);
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + chan.tour.tournumber, channel);
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + chan.tour.identify(), channel);
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + chan.tour.tourtier, channel);
-
-                    if (!isEmpty(chan.tour.prize)) {
-                        sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + chan.tour.prize, channel);
-                    }
-
-                    border();
-                    sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", channel);
-                    border();
-                    white();
-                }
-                else if (chan.tour.tourmode == 2) {
-                    white();
-                    border();
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + chan.tour.tourstarter + " " + startTime + " ago! </b></font>", channel);
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + chan.tour.tournumber, channel);
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + chan.tour.identify(), channel);
-                    sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + chan.tour.tourtier, channel);
-                    if (!isEmpty(chan.tour.prize)) {
-                        sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + chan.tour.prize, channel);
-                    }
-                    border();
-
-                    var finalsStr = "";
-                    if (chan.tour.finals) {
-                        finalsStr = "(<B>Finals</B>)";
-                    }
-
-                    sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + chan.tour.roundnumber + finalsStr + ". " + chan.tour.remaining + " players remaining.", channel);
-                    border();
-                    white();
-                }
+                TourNotification(src, channel);
             }
         }
 /*
@@ -3129,7 +3070,7 @@ if(message == "Maximum Players Changed.") {
         if (message.length > MaxMessageLength && myAuth < 2) {
             var tooMuch = MaxMessageLength - message.length;
             botMessage(src, "You have " + tooMuch + " more characters than allowed.", chan);
-			WatchPlayer(src, "Large Message", message, chan);
+            WatchPlayer(src, "Large Message", message, chan);
             sys.stopEvent();
             return;
         }
@@ -3137,42 +3078,42 @@ if(message == "Maximum Players Changed.") {
         if ((myAuth <= 0 && muteall && !voice)) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
-			WatchPlayer(src, "Silence Message", message, chan);
+            WatchPlayer(src, "Silence Message", message, chan);
             return;
         }
 
         if (!poChan.isChanMod(src) && poChan.silence == 1 && !voice) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
-			WatchPlayer(src, "Channel Silence Message", message, chan);
+            WatchPlayer(src, "Channel Silence Message", message, chan);
             return;
         }
 
         if ((myAuth < 2 && supermuteall)) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
-			WatchPlayer(src, "Silence Message", message, chan);
+            WatchPlayer(src, "Silence Message", message, chan);
             return;
         }
 
         if (!poChan.isChanAdmin(src) && poChan.silence == 2 && !voice) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
-			WatchPlayer(src, "Channel Silence Message", message, chan);
+            WatchPlayer(src, "Channel Silence Message", message, chan);
             return;
         }
 
         if (myAuth < 3 && megamuteall) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
-			WatchPlayer(src, "Silence Message", message, chan);
+            WatchPlayer(src, "Silence Message", message, chan);
             return;
         }
 
         if (!poChan.isChanOwner(src) && poChan.silence == 3 && !voice) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
-			WatchPlayer(src, "Channel Silence Message", message, chan);
+            WatchPlayer(src, "Channel Silence Message", message, chan);
             return;
         }
 
@@ -3185,7 +3126,7 @@ if(message == "Maximum Players Changed.") {
             }
             else {
                 sys.stopEvent();
-				WatchPlayer(src, "Mute Message", message, chan);
+                WatchPlayer(src, "Mute Message", message, chan);
 
                 var mute = DataHash.mutes[ip],
                     time;
@@ -3217,7 +3158,7 @@ if(message == "Maximum Players Changed.") {
             }
             else {
                 sys.stopEvent();
-				WatchPlayer(src, "Channel Mute Message", message, chan);
+                WatchPlayer(src, "Channel Mute Message", message, chan);
 
                 var mute = poChan.mutelist[ip],
                     time;
@@ -3302,7 +3243,7 @@ if(message == "Maximum Players Changed.") {
             sys.stopEvent();
 
             var channel = chan,
-			command, commandData = "",
+                command, commandData = "",
                 mcmd = [""],
                 tar = undefined,
                 cmdData = "",
@@ -3334,11 +3275,11 @@ if(message == "Maximum Players Changed.") {
             }
 
             if (command != "spam" && command != "sendmail") {
-			WatchPlayer(src, "Command", message, chan);
+                WatchPlayer(src, "Command", message, chan);
             }
 
             if (command == "spam") {
-                WatchEvent(src, "Spammed "+sys.name(tar)+".", chan);
+                WatchEvent(src, "Spammed " + sys.name(tar) + ".", chan);
             }
 
             poTar = JSESSION.users(tar);
@@ -3417,36 +3358,28 @@ if(message == "Maximum Players Changed.") {
                 stylecommands: function () {
                     var ct = new Command_Templater('Style Commands', true);
                     ct.span("Style " + UserName + " Commands");
-                    ct.register("styles", "Displays a list of all styles (their names)");
-                    ct.register("styleinfo", "Displays full information about styles.");
+                    ct.register("styles", "Displays all currently installed styles.");
 
-                    if (!noPermission(src, 1)) {
-                        ct.span("Style " + ModName + " Commands");
-                        ct.register("loadstyle", ["{p URL}"], "Loads a style from the given URL.");
-                    }
                     if (!noPermission(src, 2)) {
                         ct.span("Style " + AdminName + " Commands");
-                        ct.register("mainstyle", ["{p Style}"], "Makes a Style the main (active) style. (Current Style is " + style.name + ")");
+                        ct.register("activestyle", ["{p Style}"], "Makes a style active.");
                     }
+
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
                 iconcommands: function () {
-                    var ct = new Command_Templater('Rank Icon Commands', true);
-                    ct.span("Rank Icon " + UserName + " Commands");
-                    ct.register("icons", "Displays a list of all rank icons (their names).");
-                    ct.register("iconinfo", "Displays full information about rank icons.");
-                    ct.register("changeicon", ["{p Icon}"], "Changes your Icon. If Icon is remove, removes your Icon.");
+                    var ct = new Command_Templater('Icon Commands', true);
+                    ct.span("Icon " + UserName + " Commands");
+                    ct.register("icons", "Displays all currently installed rank icon packs.");
+                    ct.register("changeicon", ["{p Icon}"], "Changes your icon. If Icon is remove, removes your icon.");
 
-                    if (!noPermission(src, 1)) {
-                        ct.span("Rank Icon " + ModName + " Commands");
-                        ct.register("loadicons", ["{p URL}"], "Loads rank icons from the URL.");
-                    }
                     if (!noPermission(src, 2)) {
-                        ct.span("Rank Icon " + AdminName + " Commands");
-                        ct.register("mainicon", ["{p Name}"], "Makes a rank icon list the main (active). (Current Rank Icons list is " + Icons.name + ")");
+                        ct.span("Icon " + AdminName + " Commands");
+                        ct.register("activeicons", ["{p Icons}"], "Makes a rank icon pack active.");
                     }
+
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -4830,11 +4763,7 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 icons: function () {
-                    iconManager.showIcons(src, chan);
-                },
-
-                iconinfo: function () {
-                    iconManager.showIconInfo(src, chan);
+                    IconManager.iconInfo(src, chan);
                 },
 
                 /* -- User Commands: Register */
@@ -4855,11 +4784,7 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- User Commands: Styles */
                 styles: function () {
-                    styleManager.showStyles(src, chan);
-                },
-
-                styleinfo: function () {
-                    styleManager.showStyleInfo(src, chan);
+                    StyleManager.styleInfo(src, chan);
                 },
 
                 /* -- User Commands: Trivia */
@@ -6534,7 +6459,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var name = commandData.name(),
-                        range = dbRangeIPCheck(commandData);
+                        range = rangeIP(commandData);
 
                     if (sys.dbLastOn(commandData) !== undefined) {
                         laston = sys.dbLastOn(commandData);
@@ -6698,32 +6623,6 @@ if(message == "Maximum Players Changed.") {
                     if (sys.auth(tar) < 1) {
                         botMessage(tar, "You have been un-impersonated by " + srcname + "!");
                     }
-                },
-
-                /* -- Mod Commands: Styles -- */
-                loadstyle: function () {
-                    if (isEmpty(commandData)) {
-                        botMessage(src, "Specify an URL!", chan);
-                        return;
-                    }
-                    if (commandData.substring(0, 7) != "http://") {
-                        botMessage(src, "The link must begin with http://", chan);
-                        return;
-                    }
-                    styleManager.loadWebStyle(commandData);
-                },
-
-                /* -- Mod Commands: Rank Icons -- */
-                loadicons: function () {
-                    if (isEmpty(commandData)) {
-                        botMessage(src, "Specify an URL!", chan);
-                        return;
-                    }
-                    if (commandData.substring(0, 7) != "http://") {
-                        botMessage(src, "The link must begin with http://", chan);
-                        return;
-                    }
-                    iconManager.loadWebIcons(commandData);
                 },
 
                 /* -- Mod Commands: Trivia -- */
@@ -7313,86 +7212,16 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 /* -- Admin Commands: Style -- */
-                mainstyle: function () {
-                    if (!commandData in styleManager.styles) {
-                        botMessage(src, "That style doesn't exist.", chan);
-                        return;
-                    }
-
-                    var s = styleManager.styles;
-                    for (var y in s) {
-                        if (y.toLowerCase() === cmdData) {
-                            commandData = y;
-                        }
-                    }
-
-                    if (style != styleManager.styles["default"]) {
-                        styleManager.mainOff(src, style.name, true);
-                    }
-
-                    if (cmdData === "default") {
-                        styleManager.mainOff(src, style.name);
-                        return;
-                    }
-
-                    styleManager.mainOn(src, commandData);
+                activestyle: function () {
+                    StyleManager.setActiveStyle(src, commandData, chan);
                 },
 
-                /* -- Admin Commands: Rank Icon */
-                mainicon: function () {
-                    if (!commandData in iconManager.icons) {
-                        botMessage(src, "That rank icon list doesn't exist.", chan);
-                        return;
-                    }
-
-                    var s = iconManager.icons;
-                    for (var y in s) {
-                        if (y.toLowerCase() === cmdData) {
-                            commandData = y;
-                        }
-                    }
-
-                    if (Icons != iconManager.icons["default"]) {
-                        iconManager.mainOff(src, Icons.name, true);
-                    }
-
-                    if (cmdData === "default") {
-                        iconManager.mainOff(src, Icons.name);
-                        return;
-                    }
-
-                    iconManager.mainOn(src, commandData);
-                    Icons = iconManager.mainIcons();
+                /* -- Admin Commands: Rank Icons */
+                activeicons: function () {
+                    IconManager.setActiveIcons(src, commandData, chan);
                 },
 
-                removegl: function () {
-                    mcmd[0] = Math.round(parseInt(mcmd[0]));
-                    if (isNaN(mcmd[0]) || mcmd[0] > 16 || mcmd[0] < 1) {
-                        botMessage(src, "Select 1-16.", chan);
-                        return;
-                    }
-                    delete DataHash.league.gym[mcmd[0]];
-                    botEscapeAll(sys.name(src) + " removed gym leader #" + mcmd[0] + "!", 0);
-                    cache.write("league", JSON.stringify(DataHash.league));
-                },
-
-                removeelite: function () {
-                    mcmd[0] = Math.round(parseInt(mcmd[0]));
-                    if (isNaN(mcmd[0]) || mcmd[0] > 4 || mcmd[0] < 1) {
-                        botMessage(src, "Select 1-4.", chan);
-                        return;
-                    }
-                    delete DataHash.league.elite[mcmd[0]];
-                    botEscapeAll(sys.name(src) + " removed elite four #" + mcmd[0] + "!", 0);
-                    cache.write("league", JSON.stringify(DataHash.league));
-                },
-
-                removechampion: function () {
-                    DataHash.league["Champion"] = "";
-                    botEscapeAll(sys.name(src) + " removed the champion!", 0);
-                    cache.write("league", JSON.stringify(DataHash.league));
-                },
-
+                /* -- Admin Commands: League -- */
                 changegl: function () {
                     mcmd[0] = Math.round(parseInt(mcmd[0]));
                     if (isNaN(mcmd[0]) || mcmd[0] > 16 || mcmd[0] < 1) {
@@ -7430,6 +7259,34 @@ if(message == "Maximum Players Changed.") {
                     }
                     DataHash.league["Champion"] = commandData;
                     botEscapeAll(sys.name(src) + " made " + commandData + " the champion!", 0);
+                    cache.write("league", JSON.stringify(DataHash.league));
+                },
+
+                removegl: function () {
+                    mcmd[0] = Math.round(parseInt(mcmd[0]));
+                    if (isNaN(mcmd[0]) || mcmd[0] > 16 || mcmd[0] < 1) {
+                        botMessage(src, "Select 1-16.", chan);
+                        return;
+                    }
+                    delete DataHash.league.gym[mcmd[0]];
+                    botEscapeAll(sys.name(src) + " removed gym leader #" + mcmd[0] + "!", 0);
+                    cache.write("league", JSON.stringify(DataHash.league));
+                },
+
+                removeelite: function () {
+                    mcmd[0] = Math.round(parseInt(mcmd[0]));
+                    if (isNaN(mcmd[0]) || mcmd[0] > 4 || mcmd[0] < 1) {
+                        botMessage(src, "Select 1-4.", chan);
+                        return;
+                    }
+                    delete DataHash.league.elite[mcmd[0]];
+                    botEscapeAll(sys.name(src) + " removed elite four #" + mcmd[0] + "!", 0);
+                    cache.write("league", JSON.stringify(DataHash.league));
+                },
+
+                removechampion: function () {
+                    DataHash.league["Champion"] = "";
+                    botEscapeAll(sys.name(src) + " removed the champion!", 0);
                     cache.write("league", JSON.stringify(DataHash.league));
                 },
 
@@ -8289,14 +8146,14 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "The Server is already public.", chan);
                         return;
                     }
-					
+
                     sys.makeServerPublic(true);
-					
+
                     var conf = sys.getFileContent("config");
                     conf.replace(/Private=1/, "Private=0");
                     sys.writeToFile("config", conf);
-					
-                    botAll("The server has been made public by "+sys.name(src)+"!", 0);
+
+                    botAll("The server has been made public by " + sys.name(src) + "!", 0);
                 },
 
                 private: function () {
@@ -8307,10 +8164,10 @@ if(message == "Maximum Players Changed.") {
                     var conf = sys.getFileContent("config");
                     conf.replace(/Private=0/, "Private=1");
                     sys.writeToFile("config", conf);
-					
+
                     sys.makeServerPublic(false);
-					
-                    botAll("The server has been made private by "+sys.name(src)+"!", 0);
+
+                    botAll("The server has been made private by " + sys.name(src) + "!", 0);
                 },
 
                 /* -- Owner Commands: Password */
@@ -9295,14 +9152,14 @@ if(message == "Maximum Players Changed.") {
                 return;
             }
             cmd();
-			
+
             if (command != "spam") {
                 CommandStats.write(fullCommand.toLowerCase(), sys.name(src));
             }
             return;
         }
-		
-		WatchPlayer(src, "Message", message, chan);
+
+        WatchPlayer(src, "Message", message, chan);
 
         if (channel == mafiachan && mafia.ticks > 0 && mafia.state != "blank" && mafia.state != "voting" && !mafia.isInGame(sys.name(src)) && sys.auth(src) <= 0) {
             sys.stopEvent();
@@ -9440,7 +9297,7 @@ if(message == "Maximum Players Changed.") {
             }
         };
 
-        sys.callQuickly("func('" + src + "', '" + sys.name(src) + "', '"+script.namecolor(src)+"', '" + typeof testNameKickedPlayer == 'number' + "');", 200);
+        sys.callQuickly("func('" + src + "', '" + sys.name(src) + "', '" + script.namecolor(src) + "', '" + typeof testNameKickedPlayer == 'number' + "');", 200);
 
         delete testNameKickedPlayer;
 
@@ -9454,7 +9311,7 @@ if(message == "Maximum Players Changed.") {
             m = "Now idling.";
         }
 
-		WatchEvent(src, m);
+        WatchEvent(src, m);
     },
 
     afterChangeTeam: function (src, logging) {
@@ -9513,8 +9370,8 @@ if(message == "Maximum Players Changed.") {
             // Everything else //
             var getColor = script.namecolor(src),
                 dhn = DataHash.names;
-				
-				WatchEvent(src, "Changed Team/Name");
+
+            WatchEvent(src, "Changed Team/Name");
 
             dhn[ip] = myName;
             dhn[lc] = myName;
@@ -9685,13 +9542,14 @@ if(message == "Maximum Players Changed.") {
         JSESSION.users(src).muteCheck();
         sys.stopEvent();
 
-        var myName = sys.name(src), theirName = sys.name(tar);
+        var myName = sys.name(src),
+            theirName = sys.name(tar);
 
         if (JSESSION.users(src).muted) {
             var ip = sys.ip(src),
                 dhm = DataHash.mutes[ip];
 
-				WatchEvent(src, "Attempted to kick "+theirName+" while muted.");
+            WatchEvent(src, "Attempted to kick " + theirName + " while muted.");
 
             var time;
             if (dhm.time != 0) {
@@ -9721,13 +9579,14 @@ if(message == "Maximum Players Changed.") {
         JSESSION.users(src).muteCheck();
         sys.stopEvent();
 
-        var myName = sys.name(src), theirName = sys.name(tar);
+        var myName = sys.name(src),
+            theirName = sys.name(tar);
 
         if (JSESSION.users(src).muted) {
             var ip = sys.ip(src),
                 dhm = DataHash.mutes[ip];
-				
-				WatchEvent(src, "Attempted to ban "+theirName+" while muted.");
+
+            WatchEvent(src, "Attempted to ban " + theirName + " while muted.");
 
             var time;
             if (dhm.time != 0) {
@@ -11192,50 +11051,52 @@ if(message == "Maximum Players Changed.") {
 
         kick = function (src) {
             var xlist, c, ip = sys.ip(src),
-                playerIdList = sys.playerIds(); //,
-            //addIp = false;
+                playerIdList = sys.playerIds(),
+                addIp = false;
             for (xlist in playerIdList) {
                 c = playerIdList[xlist];
                 if (ip == sys.ip(c)) {
                     sys.callQuickly('sys.kick(' + c + ');', 20);
-                    //addIp = true;
+                    addIp = true;
                 }
             }
 
-/*if (addIp) {
-                    DataHash.reconnect[ip] = true;
-                    sys.callLater("delete DataHash.reconnect['" + ip + "'];", 5);
-                }*/
+            if (addIp) {
+                DataHash.reconnect[ip] = true;
+                sys.callLater("delete DataHash.reconnect['" + ip + "'];", 5);
+            }
         }
 
         aliasKick = function (ip) {
             var aliases = sys.aliases(ip),
-                alias, id; //, addIp = false;
+                alias, id, addIp = false;
             for (alias in aliases) {
                 id = sys.id(aliases[alias]);
                 if (id != undefined) {
                     sys.callQuickly('sys.kick(' + id + ');', 20);
-                    //addIp = sys.ip(id);
+                    addIp = true;
                 }
             }
 
-/*if (addIp != false) {
-                    DataHash.reconnect[addIp] = true;
-                    sys.callLater("delete DataHash.reconnect['" + addIp + "'];", 5);
-                }*/
+            if (!addIp) {
+                DataHash.reconnect[ip] = true;
+                sys.callLater("delete DataHash.reconnect['" + ip + "'];", 5);
+            }
         }
 
         massKick = function () {
-            var xKick, idList = sys.playerIds();
+            var x, ids = sys.playerIds(),
+                current;
 
-            for (xKick in idList) {
-                if (sys.auth(idList[xKick]) <= 0 && !JSESSION.users(idList[xKick]).megauser) {
-                    sys.kick(idList[xKick]);
+            for (x in ids) {
+                current = ids[x];
+                if (sys.auth(current) <= 0 && !JSESSION.users(current).megauser) {
+                    sys.kick(current);
                 }
             }
         }
 
-        dbRangeIPCheck = function (name) {
+        rangeIP = function (name) {
             var ips = sys.dbIp(name).split('.');
             return ips[0] + '.' + ips[1] + '.';
         }
@@ -12291,8 +12152,6 @@ if(message == "Maximum Players Changed.") {
             print("Ended importing Lutra Script data.");
 			*/
 
-            print("Began importing PO Script data.");
-
             function MemoryHash(filename) {
                 this.hash = {};
                 this.fname = filename;
@@ -12379,9 +12238,6 @@ if(message == "Maximum Players Changed.") {
                         print("Max number of players online is now " + MPO);
                     }
                 }
-
-
-                print("Finished PO Data import.");
             }
 
             delete MemoryHash;
@@ -12647,7 +12503,7 @@ if(message == "Maximum Players Changed.") {
 
             if (!mess) {
                 this.template = [
-                style.header, style.span.replace(/{{Name}}/gi, template_name) + "<br/>", style.message + "<br/>"];
+                style.header, style.span.replace(/{{Name}}/gi, template_name) + "<br/>", style.help + "<br/>"];
             }
             else {
                 this.template = [
@@ -12668,17 +12524,18 @@ if(message == "Maximum Players Changed.") {
 
         Command_Templater.prototype.register = function (name, args, desc) {
             var aliases = this.formattedAliases(name);
+
             if (arguments.length == 1) {
                 this.template.push(name);
                 return;
             }
 
-            var form = style.formatting;
+            var form = style["command-style"];
 
             if (arguments.length == 2) {
                 desc = args;
                 desc += aliases;
-                this.template.push(form[0] + style.icon + " <font color='" + style.color + "'>" + name + "</font>" + form[1] + ": " + desc);
+                this.template.push(form[0] + style["command-icon"] + " <font color='" + style["command-color"] + "'>" + name + "</font>" + form[1] + ": " + desc);
                 return;
             }
 
@@ -12692,14 +12549,15 @@ if(message == "Maximum Players Changed.") {
 
             desc += aliases;
             args_joined = args_joined.substring(0, args_joined.length - form[0].length);
-            this.template.push(form[0] + style.icon + " <font color='" + style.color + "'>" + name + "</font> " + args_joined + " " + desc);
+
+            this.template.push(form[0] + style["command-icon"] + " <font color='" + style["command-color"] + "'>" + name + "</font> " + args_joined + " " + desc);
         }
 
         Command_Templater.prototype.span = function (name) {
             this.template.push(style.span.replace(/{{Name}}/gi, name) + "<br/>");
 
             if (this.multiple) {
-                this.template.push(style.message + "<br/>");
+                this.template.push(style.help + "<br/>");
             }
         }
 
@@ -12771,240 +12629,114 @@ if(message == "Maximum Players Changed.") {
             sys.sendHtmlMessage(id, this.template.join(''), chan);
 
             if (ChatColorRandomizers.hasOwnProperty(chan)) { // Tables reset
-                var index = ChatColorRandomizers[channel],
+                var index = ChatColorRandomizers[chan],
                     code = '<div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
 
-                sys.sendHtmlMessage(src, code, channel);
+                sys.sendHtmlMessage(src, code, chan);
             }
         }
     },
 
-    // TODO: Rewrite
     loadStyles: function () {
-        var defaultStyle = {
+        var Styles = [{
             "name": "default",
             "author": "Lutra",
-            "styling": {
-                "header": "<font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
-                "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
-                "icon": "\u2022",
-                "formatting": ["<b>", "</b>"],
-                "color": "green",
-                "message": "<b><font color='orangered'>The following commands need to be entered into a channel's main chat:</font></b>",
-                "span": "<br><font size=5><B>{{Name}}</b></font>"
-            }
-        };
 
-        var greenStyle = {
-            "name": "Green Daylight",
+            "header": "<font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
+            "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
+            "command-icon": "\u2022",
+            "command-style": ["<b>", "</b>"],
+            "command-color": "green",
+            "help": "<b><font color='orangered'>The following commands need to be entered into a channel's main chat:</font></b>",
+            "span": "<br><font size=5><B>{{Name}}</b></font>"
+        },
+        {
+            "name": "Lime",
             "author": "TheUnknownOne",
-            "styling": {
-                "header": "<font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB<b></font><br/>",
-                "footer": "<br><font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
-                "icon": "<font color=orange>\u2022</font>",
-                "formatting": ["<b>", "</b>"],
-                "color": "green",
-                "message": "<i>Enter the following commands into a channel prefixed '/'. For help with arguments, type in /arglist.</i>",
-                "span": "<font size=5><b>{{Name}}</b></font>"
-            }
-        };
+            "header": "<font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB<b></font><br/>",
+            "footer": "<br><font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
+            "command-icon": "<font color=orange>\u2022</font>",
+            "command-style": ["<b>", "</b>"],
+            "command-color": "green",
+            "help": "<i>Enter the following commands into a channel prefixed '/'. For help with arguments, type in /arglist.</i>",
+            "span": "<font size=5><b>{{Name}}</b></font>"
+        }];
 
-        function Style() {}
-
-        function StyleManager() {
-            this.styleInfo = [];
+        StyleManager = new(function () {
             this.styles = {};
-        }
 
-        StyleManager.prototype.save = function (name, url, resp) {
-            var fname = "Styles_Style-" + name.replace(/\//g, "").toLowerCase() + ".txt";
-            sys.writeToFile(fname, resp);
-            var done = false;
-            for (var i = 0; i < this.styleInfo.length; ++i) {
-                if (cmp(name, this.styleInfo[i][0])) {
-                    done = true;
-                    this.styleInfo[i] = [name, url, fname, true];
-                    break;
+            this.loadAll = function () {
+                var x, curr, stylesCache = this.styles;
+                for (x in Styles) {
+                    curr = Styles[x];
+
+                    curr.active = false;
+                    stylesCache[curr.name.toLowerCase()] = curr; // Correct case is stored in the style.
                 }
-            }
-            if (!done) {
-                this.styleInfo.push([name, url, fname, true]);
-            }
-            sys.writeToFile("Styles_Metadata.txt", JSON.stringify({
-                'meta': this.styleInfo
-            }));
-        }
 
-        StyleManager.prototype.saveToFile = function (plain) {
-            var fname = "Styles_Style-" + plain.name.replace(/\//g, "").toLowerCase() + ".txt";
+                var current_style = cache.get("Current_Style");
 
-            if (this.styles.hasOwnProperty(plain.name.toLowerCase())) {
-                return;
-            }
-
-            sys.writeToFile(fname, JSON.stringify(plain));
-            this.styleInfo.push([plain.name, "", fname, true]);
-            sys.writeToFile("Styles_Metadata.txt", JSON.stringify({
-                'meta': this.styleInfo
-            }));
-        }
-
-        StyleManager.prototype.loadStyle = function (plain_style) {
-            var style = new Style();
-            try {
-                style.name = plain_style.name;
-                if (typeof(this.styles[plain_style.name]) == "undefined") {
-                    style.main = false;
+                if (!stylesCache.hasOwnProperty(current_style)) {
+                    current_style = "default";
                 }
-                style.author = plain_style.author;
-                style.footer = plain_style.styling.footer;
-                style.header = plain_style.styling.header;
-                style.icon = plain_style.styling.icon;
-                style.color = plain_style.styling.color;
-                style.formatting = plain_style.styling.formatting;
-                style.message = plain_style.styling.message;
-                style.span = plain_style.styling.span;
-                return style;
-            }
-            catch (err) {
-                botEscapeAll(FormatError("Couldn't use style: " + plain_style.name + ".", e), 0);
-            }
-        }
 
-        StyleManager.prototype.mainOn = function (src, name, s) {
-            if (this.styles[name] == undefined) return;
-            if (!s) {
-                if (this.styles[name].main === true) {
-                    botMessage(src, "That rank icon pack is already the main!");
+                stylesCache[current_style].active = true;
+                style = stylesCache[current_style];
+            }
+
+            this.setActiveStyle = function (src, name, chan) {
+                var m_styles = this.styles,
+                    dataToLower = name.toLowerCase();
+
+                if (!m_styles.hasOwnProperty(dataToLower)) {
+                    botEscapeMessage(src, "The style " + name + " doesn't exist.", chan);
                     return;
                 }
-            }
-            this.styles[name].main = true;
-            cache.write("DefaultStyle", name);
-            if (!s) botEscapeAll("Style " + name + " was made main style.", 0);
-            style = this.styles[name];
-        }
 
-        StyleManager.prototype.mainOff = function (src, name, s) {
-            if (!s) {
-                if (this.styles[name].main === false) {
-                    botMessage(src, "That Style isn't the main.");
+                var selectedStyle = m_styles[dataToLower];
+                if (selectedStyle.active) {
+                    botMessage(src, "This style is already active.", chan);
                     return;
                 }
+
+                style.active = false; // the old style
+                selectedStyle.active = true;
+
+                cache.write("Current_Style", dataToLower);
+                botEscapeAll("The style " + selectedStyle.name + " is now the active style.", 0);
+
+                style = selectedStyle;
             }
-            this.styles[name].main = false;
-            cache.remove("DefaultStyle");
-            if (!s) botEscapeAll("Style " + name + " was removed as main.", 0);
-            style = this.styles["default"];
-        }
 
-        StyleManager.prototype.importOld = function () {
-            (function () {
-                this.saveToFile(defaultStyle);
-                this.saveToFile(greenStyle);
-                this.loadStyle(defaultStyle);
-                this.loadStyle(greenStyle);
-                this.loadStyles();
+            this.styleInfo = function (src, chan) {
+                var tt = new Table_Templater("Styles", "green", "3");
+                tt.register(["Name", "Author", "Active"], true);
 
-                try {
-                    if (cache.get("DefaultStyle") != "") {
-                        this.styles[cache.get("DefaultStyle")].main = true;
-                    }
-                }
-                catch (e) {}
-                style = this.mainStyle();
+                var m_styles = this.styles,
+                    x, curr, isActive;
+                for (x in m_styles) {
+                    curr = m_styles[x];
 
-            }).apply(this, []);
-        }
-
-        StyleManager.prototype.loadStyles = function () {
-            var content = sys.getFileContent("Styles_Metadata.txt");
-            if (!content) return;
-            var parsed = JSON.parse(content);
-            if (parsed.hasOwnProperty("meta")) {
-                this.styleInfo = parsed.meta;
-            }
-            for (var i = 0; i < this.styleInfo.length; ++i) {
-                if (!this.styleInfo[i][3]) continue;
-                try {
-                    var style = this.loadStyle(JSON.parse(sys.getFileContent(this.styleInfo[i][2])));
-                    this.styles[style.name] = style;
-                }
-                catch (err) {
-                    botEscapeAll(FormatError("Error loading cached style \"" + this.styleInfo[i][0] + "\".", e), 0);
-                }
-            }
-        }
-
-        StyleManager.prototype.loadWebStyle = function (url, ann) {
-            if (typeof sys != 'object') return;
-            var manager = this;
-            sys.webCall(url, function (resp) {
-                try {
-                    var plain_theme = JSON.parse(resp);
-                    var theme = manager.loadStyle(plain_theme);
-                    var lower = theme.name.toLowerCase();
-
-                    if (manager.styles.hasOwnProperty(lower)) {
-                        return;
+                    if (curr.active) {
+                        isActive = "yes";
+                    } else {
+                        isActive = "no";
                     }
 
-                    manager.styles[lower] = theme;
-                    manager.save(theme.name, url, resp);
-
-                    if (ann != "no") botAll("Loaded style from <a href='" + url + "'>" + url + "</a>", 0);
+                    tt.register([curr.name, curr.author, isActive]);
                 }
-                catch (err) {
-                    if (ann != "no") {
-                        botAll("Couldn't download style from " + url, 0);
-                        botAll(FormatError("", e), 0);
-                    }
-                    return;
-                }
-            });
-        }
 
-        StyleManager.prototype.mainStyle = function () {
-            for (var x in this.styles) {
-                if (this.styles[x].main == true) {
-                    return this.styles[x];
-                }
+                tt.end();
+                tt.render(src, chan);
             }
-            return this.styles["default"];
-        }
 
-        StyleManager.prototype.showStyles = function (src, chan) {
-            var l = [];
-            for (var t in this.styles) {
-                l.push(this.styles[t].name);
-            }
-            var text = "Installed styles are: " + l.join(", ");
-            botMessage(src, text, chan);
-        };
-        StyleManager.prototype.showStyleInfo = function (src, chan) {
-            this.styleInfo.sort(function (a, b) {
-                return a[0].localeCompare(b[0]);
-            });
-            var mess = [];
-            mess.push("<table><tr><th>Style</th><th>URL</th><th>Author</th><th>Main</th></tr>");
-            for (var i = 0; i < this.styleInfo.length; ++i) {
-                var info = this.styleInfo[i];
-                var style = this.styles[info[0].toLowerCase()];
-                if (!style) continue;
-                mess.push('<tr><td>' + style.name + '</td><td><a href="' + info[1] + '">' + info[1] + '</a></td><td>' + (style.author ? style.author : "unknown") + '</td><td>' + (style.main ? "yes" : "no") + '</td></tr>');
-            }
-            mess.push("</table>");
-            sys.sendHtmlMessage(src, mess.join(""), chan);
-        }
+        })();
 
-        styleManager = new StyleManager();
-        styleManager.importOld();
-
+        StyleManager.loadAll();
     },
 
-    // TODO: Rewrite
-    loadRankicons: function () {
-        var defaultIcons = {
+    loadRankIcons: function () {
+        var Icons = [{
             "name": "default",
             "author": "Astruvis",
             "ranks": {
@@ -13014,249 +12746,109 @@ if(message == "Maximum Players Changed.") {
                 "Owner": "\u2248"
             }
         },
-            iconBurst = {
-                "name": "Iconburst",
-                "author": "TheUnknownOne",
-                "ranks": {
-                    "User": "",
-                    "Mod": "\xB1",
-                    "Admin": "\xB1",
-                    "Owner": "\xB1"
-                }
-            },
-            PO = {
-                "name": "Pokemon Online",
-                "author": "TheUnknownOne",
-                "ranks": {
-                    "User": "",
-                    "Mod": "</b>+<i><b>",
-                    "Admin": "</b>+<i><b>",
-                    "Owner": "</b>+<i><b>"
-                }
-            },
-            POA = {
-                "name": "PO Advanced",
-                "author": "TheUnknownOne",
-                "ranks": {
-                    "User": "",
-                    "Mod": "</b>\xBB<i><b>",
-                    "Admin": "</b>\xBB<i><b>",
-                    "Owner": "</b>\xBB<i><b>"
-                }
-            },
-            money = {
-                "name": "Money",
-                "author": "TheUnknownOne",
-                "ranks": {
-                    "User": "",
-                    "Mod": "$",
-                    "Admin": "\x80",
-                    "Owner": "¥"
-                }
-            },
-            pokeballs = {
-                "name": "Pokeballs",
-                "author": "TheUnknownOne",
-                "ranks": {
-                    "User": "<img src='Themes/Classic/Client/uAvailable.png' width='15'>",
-                    "Mod": "<img src='Themes/Classic/Client/mAvailable.png' width='15'>",
-                    "Admin": "<img src='Themes/Classic/Client/aAvailable.png' width='15'>",
-                    "Owner": "<img src='Themes/Classic/Client/oAvailable.png' width='15'>"
-                }
+        {
+            "name": "Pokemon Online",
+            "author": "TheUnknownOne",
+            "ranks": {
+                "User": "",
+                "Mod": "</b>+<i><b>",
+                "Admin": "</b>+<i><b>",
+                "Owner": "</b>+<i><b>"
             }
+        },
+        {
+            "name": "PO Advanced",
+            "author": "TheUnknownOne",
+            "ranks": {
+                "User": "",
+                "Mod": "</b>\xBB<i><b>",
+                "Admin": "</b>\xBB<i><b>",
+                "Owner": "</b>\xBB<i><b>"
+            }
+        },
+        {
+            "name": "Pokeballs",
+            "author": "TheUnknownOne",
+            "ranks": {
+                "User": "<img src='Themes/Classic/Client/uAvailable.png' width='15'>",
+                "Mod": "<img src='Themes/Classic/Client/mAvailable.png' width='15'>",
+                "Admin": "<img src='Themes/Classic/Client/aAvailable.png' width='15'>",
+                "Owner": "<img src='Themes/Classic/Client/oAvailable.png' width='15'>"
+            }
+        }];
 
 
-            var iconArr = [defaultIcons, iconBurst, PO, POA, money, pokeballs];
-
-        function RankIconList() {}
-
-        function IconManager() {
-            this.iconInfo = [];
+        IconManager = new(function () {
             this.icons = {};
-        }
-        IconManager.prototype.save = function (name, url, resp) {
-            var fname = "RankIcons_List-" + name.replace(/\//g, "").toLowerCase() + ".txt";
-            sys.writeToFile(fname, resp);
-            var done = false;
-            for (var i = 0; i < this.iconInfo.length; ++i) {
-                if (cmp(name, this.iconInfo[i][0])) {
-                    done = true;
-                    this.iconInfo[i] = [name, url, fname, true];
-                    break;
-                }
-            }
-            if (!done) {
-                this.iconInfo.push([name, url, fname, true]);
-            }
-            sys.writeToFile("RankIcons_Metadata.txt", JSON.stringify({
-                'meta': this.iconInfo
-            }));
-        }
-        IconManager.prototype.saveToFile = function (plain) {
-            if (typeof sys != "object") return;
-            var fname = "RankIcons_List-" + plain.name.replace(/\//g, "").toLowerCase() + ".txt";
 
-            if (this.icons.hasOwnProperty(plain.name.toLowerCase())) {
-                return;
-            }
+            this.loadAll = function () {
+                var x, curr, iconCache = this.icons;
+                for (x in Icons) {
+                    curr = Icons[x];
 
-            sys.writeToFile(fname, JSON.stringify(plain));
-
-            this.iconInfo.push([plain.name, "", fname, true]);
-
-            sys.writeToFile("RankIcons_Metadata.txt", JSON.stringify({
-                'meta': this.iconInfo
-            }));
-        }
-
-        IconManager.prototype.mainIcons = function () {
-            for (var x in this.icons) {
-                if (this.icons[x].main == true) {
-                    return this.icons[x];
-                }
-            }
-            return this.icons["default"];
-        }
-
-        IconManager.prototype.importOld = function () {
-            (function () {
-                var a_l = iconArr.length;
-
-                for (var y = 0; y < a_l; y++) {
-                    var ar = iconArr[y];
-                    this.saveToFile(ar);
-                    this.loadRankIconList(ar);
+                    curr.active = false;
+                    iconCache[curr.name.toLowerCase()] = curr; // Correct case is stored in the rank icon pack.
                 }
 
-                this.loadRankIcons();
+                var current_icons = cache.get("Current_Icons");
 
-                try {
-                    if (cache.get("DefaultIcons") != "") {
-                        this.icons[cache.get("DefaultIcons")].main = true;
-                    }
+                if (!iconCache.hasOwnProperty(current_icons)) {
+                    current_icons = "default";
                 }
-                catch (e) {}
-            }).apply(this, []);
-        }
 
-        IconManager.prototype.mainOn = function (src, name, s) {
-            if (this.icons[name] == undefined) return;
-            if (!s) {
-                if (this.icons[name].main === true) {
-                    botMessage(src, "That Rank Icon List is already the main.");
+                iconCache[current_icons].active = true;
+                Icons = iconCache[current_icons];
+            }
+
+            this.setActiveIcons = function (src, name, chan) {
+                var m_icons = this.icons,
+                    dataToLower = name.toLowerCase();
+
+                if (!m_icons.hasOwnProperty(dataToLower)) {
+                    botEscapeMessage(src, "The rank icon pack " + name + " doesn't exist.", chan);
                     return;
                 }
-            }
-            this.icons[name].main = true;
-            cache.write("DefaultIcons", name);
-            if (!s) botEscapeAll("Rank Icon List " + name + " is now the main.", 0);
-        }
 
-        IconManager.prototype.mainOff = function (src, name, s) {
-            if (!s) {
-                if (this.icons[name].main === false) {
-                    botMessage(src, "Those Rank Icons aren't the main.");
+                var selectedIcons = m_icons[dataToLower];
+                if (selectedIcons.active) {
+                    botMessage(src, "This rank icon pack is already active.", chan);
                     return;
                 }
-            }
-            this.icons[name].main = false;
-            cache.remove("DefaultIcons");
-            if (!s) botEscapeAll("Rank Icon List " + name + " was removed as main.", 0);
-        }
 
-        IconManager.prototype.loadRankIconList = function (plain_icons) {
-            var icon = new RankIconList();
-            try {
+                Icons.active = false; // the old rank icon pack
+                selectedIcons.active = true;
 
-                if (typeof(this.icons[plain_icons.name]) == "undefined") {
-                    icon.main = false;
-                }
-                icon.name = plain_icons.name;
-                icon.author = plain_icons.author;
-                icon.user = plain_icons.ranks.User
-                icon.mod = plain_icons.ranks.Mod
-                icon.admin = plain_icons.ranks.Admin
-                icon.owner = plain_icons.ranks.Owner
-                return icon;
-            }
-            catch (err) {
-                botEscapeAll(FormatError("Couldn't use rank icon list: " + plain_icons.name + ".", e), 0);
-            }
-        }
+                cache.write("Current_Icons", dataToLower);
+                botEscapeAll("The rank icon pack " + selectedIcons.name + " is now the active rank pack.", 0);
 
-        IconManager.prototype.loadRankIcons = function () {
-            var content = sys.getFileContent("RankIcons_Metadata.txt");
-            if (!content) return;
-            var parsed = JSON.parse(content);
-            if (parsed.hasOwnProperty("meta")) {
-                this.iconInfo = parsed.meta;
+                Icons = selectedIcons;
             }
-            for (var i = 0; i < this.iconInfo.length; ++i) {
-                if (!this.iconInfo[i][3]) continue;
-                try {
-                    var icon = this.loadRankIconList(JSON.parse(sys.getFileContent(this.iconInfo[i][2])));
-                    this.icons[icon.name] = icon;
-                }
-                catch (err) {
-                    botEscapeAll(FormatError("Error loading cached rankiconlist \"" + this.iconInfo[i][0] + "\".", e), 0);
-                }
-            }
-        }
 
-        IconManager.prototype.showIcons = function (src, chan) {
-            var l = [];
-            for (var t in this.icons) {
-                l.push(this.icons[t].name);
-            }
-            var text = "Installed rank icon lists are: " + l.join(", ");
-            botMessage(src, text, chan);
-        };
-        IconManager.prototype.showIconInfo = function (src, chan) {
-            this.iconInfo.sort(function (a, b) {
-                return a[0].localeCompare(b[0]);
-            });
-            var mess = [];
-            mess.push("<table><tr><th>Name</th><th>URL</th><th>Author</th><th>Main</th></tr>");
-            for (var i = 0; i < this.iconInfo.length; ++i) {
-                var info = this.iconInfo[i];
-                var theme = this.icons[info[0].toLowerCase()];
-                if (!theme) continue;
-                mess.push('<tr><td>' + theme.name + '</td><td><a href="' + info[1] + '">' + info[1] + '</a></td><td>' + (theme.author ? theme.author : "unknown") + '</td><td>' + (theme.main ? "yes" : "no") + '</td></tr>');
-            }
-            mess.push("</table>");
-            sys.sendHtmlMessage(src, mess.join(""), chan);
-        }
+            this.iconInfo = function (src, chan) {
+                var tt = new Table_Templater("Rank Icons", "green", "3");
+                tt.register(["Name", "Author", "Active"], true);
 
-        IconManager.prototype.loadWebIcons = function (url, a, update) {
-            if (typeof sys != 'object') return;
-            var manager = this;
-            sys.webCall(url, function (resp) {
-                try {
-                    var plain_theme = JSON.parse(resp);
-                    var theme = manager.loadRankIconList(plain_theme);
-                    var lower = theme.name.toLowerCase();
-                    if (manager.icons.hasOwnProperty(lower) && update) {
-                        return;
+                var m_icons = this.icons,
+                    x, curr, isActive;
+                for (x in m_icons) {
+                    curr = m_icons[x];
+
+                    if (curr.active) {
+                        isActive = "yes";
+                    } else {
+                        isActive = "no";
                     }
-                    manager.icons[lower] = theme;
-                    manager.save(theme.name, url, resp);
-                    if (a !== "no") botAll("Loaded RIs from <a href='" + url + "'>" + url + "</a>", 0);
-                }
-                catch (err) {
-                    if (a != "no") {
-                        botAll("Couldn't download RIs from " + url, 0);
-                        botAll(FormatError("", e), 0);
-                    }
-                    return;
-                }
-            });
-        }
 
+                    tt.register([curr.name, curr.author, isActive]);
+                }
 
-        iconManager = new IconManager();
-        styleManager.importOld();
-        iconManager.importOld();
-        Icons = iconManager.mainIcons();
+                tt.end();
+                tt.render(src, chan);
+            }
+
+        })();
+
+        IconManager.loadAll();
     },
 
     loadPokemonStats: function () {
@@ -13985,15 +13577,15 @@ if(message == "Maximum Players Changed.") {
             return false;
         }
 
-        WatchPlayer = function (player, message, type, channel) {
+        WatchPlayer = function (player, type, message, channel) {
             var chan = "";
             if (typeof channel != "undefined") {
                 chan = "[" + ChannelLink(sys.channel(channel)) + "]";
             }
 
-            var src = "<font color=" + script.namecolor(player) + ">" + sys.name(player) + "</font>";
+            var src = "<font color=" + script.namecolor(player) + ">" + sys.name(player) + ":</font>";
 
-            sys.sendHtmlAll("<timestamp/>" + chan + " " + type + " -- <b>" + src + ":</b> " + html_escape(message), watch);
+            sys.sendHtmlAll("<timestamp/><b>" + chan + " " + type + " -- " + src + "</b> " + html_escape(message), watch);
         }
 
         WatchEvent = function (player, message, channel) {
@@ -14002,9 +13594,9 @@ if(message == "Maximum Players Changed.") {
                 chan = "[" + ChannelLink(sys.channel(channel)) + "]";
             }
 
-            var src = "<font color=" + script.namecolor(player) + ">" + sys.name(player) + "</font>";
+            var src = "<font color=" + script.namecolor(player) + ">" + sys.name(player) + ":</font>";
 
-            sys.sendHtmlAll("<timestamp/>" + chan + " <b>" + src + ":</b> " + message, watch);
+            sys.sendHtmlAll("<timestamp/><b>" + chan + " " + src + " " + message, watch);
         }
 
         WatchChannelEvent = function (channel, message) {
@@ -14135,12 +13727,13 @@ if(message == "Maximum Players Changed.") {
                 "Champion": "",
                 "gym": {},
                 "elite": {}
-            }, ENABLED_JSON = {
-			"me": true,
-			"_catch_": true,
-			"attack": true,
-			"roulette": true
-			};
+            },
+            ENABLED_JSON = {
+                "me": true,
+                "_catch_": true,
+                "attack": true,
+                "roulette": true
+            };
 
         cache.ensure("Bot", JSON.stringify(BOT_JSON));
         cache.ensure("CommandsEnabled", JSON.stringify(ENABLED_JSON));
@@ -14303,11 +13896,7 @@ if(message == "Maximum Players Changed.") {
             "rankiconon": "mainicon",
             "icon": "changeicon",
             "rankicons": "icons",
-            "rankiconinfo": "iconinfo",
-            "rankinfo": "iconinfo",
-            "loadicon": "loadicons",
             "rankiconcommands": "iconcommands",
-            "style": "mainstyle",
             "sendhtmlall": "html",
             "sendall": "send",
             "announce": "wall",
@@ -14410,20 +13999,24 @@ if(message == "Maximum Players Changed.") {
             }
 
             this.write = function (command, user) {
-                var stats = this.stats.commands;
-                if (stats[command] == undefined) {
-                    stats[command] = {
+                var stats = this.stats;
+                if (typeof stats.commands == "undefined") {
+                    stats.commands = {};
+                }
+
+                if (typeof stats.commands[command] == "undefined") {
+                    stats.commands[command] = {
                         used: 0,
                         last: ""
                     };
                 }
 
-                var query = stats[command];
+                var query = stats.commands[command];
                 query.used += 1;
                 query.last = user;
 
                 if (command != "commandstats") {
-                    this.lastCommandTime = sys.time() * 1;
+                    this.stats.lastCommandTime = sys.time() * 1;
                 }
             }
 
@@ -15006,7 +14599,7 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "No questions exist.", trivreview);
                         return;
                     }
-                    if (!this.isQuestion( /*TODO*/ )) {
+                    if (!this.isQuestion()) {
                         botMessage(src, "That question doesn't exist. For a list of questions, type /questions", trivreview);
                         return;
                     }
@@ -17884,8 +17477,6 @@ if(message == "Maximum Players Changed.") {
             };
         };
 
-        mafia = new Mafia(sys.channelId("Mafia Channel"));
-
         if (typeof poGlobal == 'undefined') {
             poGlobal = JSESSION.global();
         }
@@ -17899,6 +17490,7 @@ if(message == "Maximum Players Changed.") {
             if (Mafia.version > poGlobal.mafiaVersion) {
                 poGlobal.mafiaVersion = Mafia.version;
 
+                delete mafia;
                 mafia = new Mafia(mafiachan);
                 mafia.importOld();
 
