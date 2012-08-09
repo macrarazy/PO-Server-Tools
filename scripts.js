@@ -7862,8 +7862,8 @@ if(message == "Maximum Players Changed.") {
                     tt.register(["Tier", "Pokemon", "Abilities"], true);
 
                     var b, poke, k, obc;
-                    for (b in range) {
-                        poke = range[b];
+                    for (b in banned) {
+                        poke = banned[b];
                         for (k in poke) {
                             obc = poke[k];
                             tt.register([b, k, obc.join(", ")], false);
