@@ -5333,15 +5333,15 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     Prune.channelBans(chan);
-                    var list = poChan.banlist;
+                    var bans = poChan.banlist;
 
-                    if (objLength(list) === 0) {
-                        botMessage(src, "No banned ips.", chan);
+                    if (objLength(bans) === 0) {
+                        botMessage(src, "No one is banned in this channel.", chan);
                         return;
                     }
 
-                    var list, lastname, l, add, t, n = sys.time() * 1,
-                        perm = !noPermission(src, 1).y;
+                    var last, lastname, l, add, t, n = sys.time() * 1,
+                        perm = !noPermission(src, 1), y;
 
                     var tt = new Table_Templater('Channel Banlist', 'red', '3');
                     if (perm) {
@@ -5352,8 +5352,9 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     tt.register(add, true);
-                    for (y in list) {
-                        last = "N/A", lastname = lastName(y), l = list[y], t = getTimeString(l.time - n);
+					
+                    for (y in bans) {
+                        last = "N/A", lastname = lastName(y), l = bans[y], t = getTimeString(l.time - n);
                         if (lastname !== undefined) {
                             last = lastname;
                         }
@@ -5365,8 +5366,7 @@ if(message == "Maximum Players Changed.") {
                         }
                         tt.register(add, false);
                     }
-                    tt.register(add, false);
-
+					
                     tt.render(src, chan);
                 },
 
@@ -5376,16 +5376,17 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    prune_channel_mutes(chan);
-                    var list = poChan.mutelist;
+                    Prune.channelMutes(chan);
+					
+                    var mutes = poChan.mutelist;
 
-                    if (Object.keys(list).length == 0) {
-                        botMessage(src, "No muted ips.", chan);
+                    if (objLength(mutes) == 0) {
+                        botMessage(src, "No one is muted in this channel.", chan);
                         return;
                     }
 
                     var last, lastname, l, add, tstr, now = sys.time() * 1,
-                        perm = !noPermission(src, 1);
+                        perm = !noPermission(src, 1), y;
 
                     var tt = new Table_Templater('Channel Mutelist', 'blue', '3');
 
@@ -5395,10 +5396,11 @@ if(message == "Maximum Players Changed.") {
                     else {
                         add = ["Muted Name", "Muted By", "Reason", "Length", "Last Used Name"];
                     }
+					
                     tt.register(add, true);
 
-                    for (var y in list) {
-                        last = "N/A", lastname = lastName(y), l = list[y], tstr = getTimeString(l.time - now);
+                    for (y in mutes) {
+                        last = "N/A", lastname = lastName(y), l = mutes[y], tstr = getTimeString(l.time - now);
                         if (lastname !== undefined) {
                             last = lastname;
                         }
@@ -6350,19 +6352,19 @@ if(message == "Maximum Players Changed.") {
                     Prune.rangeBans();
 
                     var range = DataHash.rangebans;
-                    if (Object.keys(range) == 0) {
-                        botMessage(src, 'There are currently no rangebans.', chan);
+                    if (objLength(range) == 0) {
+                        botMessage(src, 'No one is range banned.', chan);
                         return;
                     }
 
                     var t = sys.time() * 1,
                         r, i, s;
+						
                     var tt = new Table_Templater("Range Ban List", "darkviolet", "3");
                     tt.register(["Range IP", "By", "Reason", "Duration"], true);
 
                     for (i in range) {
-                        r = range[i];
-                        s = "for " + getTimeString(r.time - time);
+                        r = range[i], s = "for " + getTimeString(r.time - time);
 
                         if (r.time == 0) {
                             s = "forever";
@@ -6378,20 +6380,20 @@ if(message == "Maximum Players Changed.") {
                 tempbanlist: function () {
                     Prune.bans();
 
-                    var range = DataHash.tempbans;
-                    if (Object.keys(range) == 0) {
+                    var temp = DataHash.tempbans;
+                    if (objLength(temp) == 0) {
                         botMessage(src, "There are currently no temp bans.", chan);
                         return;
                     }
-
+					
+                    var last, lastname, i, r, s, t = sys.time() * 1;
+					
                     var tt = new Table_Templater('Temp Ban List', 'limegreen', '3');
-                    var t = sys.time() * 1;
                     tt.register(["IP", "Last Used Name", "By", "Reason", "Duration"], true);
-                    var last, lastname, i, r, s;
 
-                    for (i in range) {
-                        r = range[i];
-                        s = "forever";
+                    for (i in temp) {
+                        r = temp[i], s = "forever";
+						
                         if (r.time !== 0) {
                             s = "for " + getTimeString(r.time - t);
                         }
@@ -6411,9 +6413,9 @@ if(message == "Maximum Players Changed.") {
                 mutelist: function () {
                     Prune.mutes();
 
-                    var range = DataHash.mutes;
-                    if (Object.keys(range) == 0) {
-                        botMessage(src, 'There are currently no mutes.', chan);
+                    var mutes = DataHash.mutes;
+                    if (objLength(mutes) == 0) {
+                        botMessage(src, 'No one is muted.', chan);
                         return;
                     }
 
@@ -6423,9 +6425,8 @@ if(message == "Maximum Players Changed.") {
                     var s, last, lastname, r, t = sys.time() * 1,
                         i, r, s;
 
-                    for (i in range) {
-                        r = range[i];
-                        s = "forever";
+                    for (i in mutes) {
+                        r = mutes[i], s = "forever";
 
                         if (r.time !== 0) {
                             s = "for " + getTimeString(r.time - t);
@@ -6553,23 +6554,23 @@ if(message == "Maximum Players Changed.") {
 
                 banlist: function () {
                     var list = sys.banList().sort();
+					
                     if (list.length === 0) {
-                        botMessage(src, "No banned players.", chan);
+                        botMessage(src, "No one is banned.", chan);
                         return;
                     }
 
                     var tt = new Table_Templater("Ban List", "red", "3");
                     tt.register(["Name", "Last Used Name", "IP"], true);
+					
                     var last, lastname, ly, ip, y;
 
-                    for (y = 0; y < list.length; y++) {
-                        ly = list[y];
-                        ip = sys.dbIp(ly);
-                        last = "N/A";
-                        lastname = lastName(ip);
+                    for (y in list) {
+                        ly = list[y], ip = sys.dbIp(ly), last = "N/A", lastname = lastName(ip);
                         if (lastname !== undefined) {
                             last = lastname;
                         }
+						
                         tt.register([ly.name(), last, ip], false);
                     }
 
@@ -7848,18 +7849,18 @@ if(message == "Maximum Players Changed.") {
                     ct.register("updatetiers", ["{p <u>URL</u>}"], "Updates the server tiers. Tiers must be XML.");
                     ct.register("resetladder", ["{p Tier}"], "Resets a tier's ladder.");
                     ct.register("resetladders", "Resets all ladders.");
-                    ct.register("banfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Bans an ability on a pokemon..");
+                    ct.register("banfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Bans an ability on a pokemon.");
                     ct.register("unbanfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Unbans an ability on a Pokemon.");
                     ct.register("listbans", "Displays all banned abilities.");
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
-                /* -- Owner Commands: Table Templates */
+                /* -- Owner Commands: Table Templates -- */
                 listbans: function () {
                     var banned = DataHash.bannedAbilities;
 
-                    if (Object.keys(banned) === 0) {
+                    if (objLength(banned) === 0) {
                         botMessage(src, 'There are no banned abilities.', chan);
                         return;
                     }
@@ -7867,12 +7868,12 @@ if(message == "Maximum Players Changed.") {
                     var tt = new Table_Templater("Ability Bans", "brown", "3");
                     tt.register(["Tier", "Pokemon", "Abilities"], true);
 
-                    var b, poke, k, obc;
-                    for (b in range) {
-                        poke = range[b];
-                        for (k in poke) {
-                            obc = poke[k];
-                            tt.register([b, k, obc.join(", ")], false);
+                    var x, poke, z, abilities;
+                    for (x in banned) {
+                        poke = banned[x];
+                        for (z in poke) {
+                            abilities = poke[z];
+                            tt.register([x, z, abilities.join(", ")], false);
                         }
                     }
 
@@ -13568,7 +13569,7 @@ if(message == "Maximum Players Changed.") {
 
             if (type == "object") {
                 if (!Array.isArray(s)) {
-                    if (Object.keys(s) == 0) {
+                    if (objLength(s) == 0) {
                         return true;
                     }
                 }
