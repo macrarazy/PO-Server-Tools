@@ -12,7 +12,7 @@
 || # Lamperi, Mystra                                       # ||
 || #                                                       # ||
 || # Script Version:                                       # ||
-|| # 2.2.55                                                # ||
+|| # 2.2.56                                                # ||
 || #                                                       # ||
 || # Server Requirements:                                  # ||
 || # 2.0.05                                                # ||
@@ -27,46 +27,53 @@
 ===============================================================
 ||                     Config Chart                          ||
 ===============================================================
-|| @ DWAbilityCheck:                                         ||
-|| - true if you want to check for unreleased Dream World    ||
-|| - abilities.                                              ||
-|| - false if you don't.                                     ||
+|| DWAbilityCheck:                                           ||
+|| true if you want to check for unreleased Dream World      ||
+|| abilities.                                                ||
+|| false if you don't.                                       ||
 ===============================================================
-|| @ AutoChannelJoin:                                        ||
-|| - Automatically lets a player join all script defined     ||
-|| - if true. Not if false.                                  ||
+|| AutoChannelJoin:                                          ||
+|| Automatically lets a player join all script defined       ||
+|| if true. Not if false.                                    ||
 ===============================================================
-|| @ WelcomeMessages:                                        ||
-|| - If the script should publicly welcome/goodbye people.   ||
-|| - true = yes. false = no                                  ||
+|| WelcomeMessages:                                          ||
+|| If the script should publicly welcome/goodbye people.     ||
+|| true = yes. false = no                                    ||
 ===============================================================
-|| @ FixChallenges:                                          ||
-|| - If you have issues with no challenges being sent, turn  ||
-|| - this on.                                                ||
-|| - true = yes. false = no                                  ||
+|| FixChallenges:                                            ||
+|| If you have issues with no challenges being sent, turn    ||
+|| this on.                                                  ||
+|| true = yes. false = no                                    ||
 ===============================================================
-|| @ AutoBans:                                               ||
-|| - Automatically bans some proxies.                        ||
-|| - true = yes. false = no                                  ||
+|| AutoBans:                                                 ||
+|| Automatically bans some proxies.                          ||
+|| true = yes. false = no                                    ||
 ===============================================================
-|| @ ClearLogsAt:                                            ||
-|| - If file size of logs.txt is higher than given size      ||
-|| - Cleans all data. Gets checked every hour. 0 = off       ||
-|| - To help find a good nice number:                        ||
-|| - /eval botMessage(src, sTB(yournumberhere));             ||
-|| - Example: botMessage(src, sTB(1024*4));                  ||
-|| - NOTE: Might lag. If the lag is a problem, make this 0.  ||
-|| - NOTE2: Clearing logs removes lag, so it's recommended!  ||
-|| - NO LONGER WORKING ON PO v2                              ||
+|| NoCrash:                                                  ||
+|| This _can_ fix some crashes, but some things won't        ||
+|| work anymore. Only use this when you have trouble with    ||
+|| the server crashing.                                      ||
+|| true = yes. false = no                                    ||
 ===============================================================
-|| @ HighPermission users:                                   ||
-|| - Can use commands with an higher auth level required.    ||
-|| - Specify the auth level too.                             ||
-|| Array format: [minauth, recevingauth]                     ||
+|| ClearLogsAt:                                              ||
+|| If file size of logs.txt is higher than given size        ||
+|| clears all data. Gets checked every hour. 0 = off         ||
+||                                                           ||
+|| To help find the bytes you need:                          ||
+|| /eval botMessage(src, sTB(yournumberhere));               ||
+|| Example: botMessage(src, sTB(1024*4)); (=4 kb)            ||
+|| NOTE: Might lag. If the lag is a problem, make this 0.    ||
+|| Clearing logs removes lag, so it's recommended!           ||
+|| - NO LONGER WORKING ON POv2 (will be re-added when fixed) ||
+===============================================================
+|| HighPermission users:                                     ||
+|| Can use commands with an higher auth level required.      ||
+|| Specify the auth level too.                               ||
+|| Format: [AuthLvlOfReceiver, AuthLvlReceived]              ||
 \*===========================================================*/
 
 EvaluationTimeStart = new Date().getTime(); /* Do not modify this! This is only to count load speed! */
-ScriptVerData = ["2.2.55", ""];
+ScriptVerData = ["2.2.56", ""];
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
@@ -82,6 +89,7 @@ Config = {
     WelcomeMessages: false,
     FixChallenges: false,
     AutoBans: true,
+    NoCrash: false,
 
     ClearLogsAt: 36700160,
     // NO LONGER WORKING ON v2
@@ -890,6 +898,9 @@ cut = function (array, entry, join) {
 }
 
 firstTeamForTier = function (id, tier) {
+    if (Config.NoCrash) {
+        return 0;
+    }
     var ttl = tier.toLowerCase();
 
     for (var x = 0; x < sys.teamCount(id); x++) {
@@ -1966,21 +1977,35 @@ Tours.prototype.afterBattleStarted = function (src, dest, clauses, rated, srctea
         if (this.areOpponentsForTourBattle(src, dest)) {
             var n1 = sys.name(src),
                 n2 = sys.name(dest);
-            if (sys.tier(src, srcteam) == sys.tier(dest, destteam) && cmp(sys.tier(src, srcteam), this.tourtier)) {
+            if (Config.NoCrash) {
+                if (sys.tier(src, srcteam) == sys.tier(dest, destteam) && cmp(sys.tier(src, srcteam), this.tourtier)) {
+                    var idleBattleIndex = this.idleBattler(n1);
+                    if (this.roundStatus.idleBattles[idleBattleIndex] != undefined) {
+                        delete this.roundStatus.idleBattles[idleBattleIndex];
+                        this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [n1, n2];
+                    }
+                    if (!this.finals) {
+                        botAll("Round " + this.roundnumber + " Tournament match between " + n1 + " and " + n2 + " has started!", this.id);
+                    }
+                    else {
+                        botAll("Final Round Tournament match between " + n1 + " and " + n2 + " has started!", this.id);
+                    }
+                } else {
+                    botMessage(src, "Your or your opponents team does not match the tournament tier (the match is not official).");
+                    botMessage(dest, "Your or your opponents team does not match the tournament tier (the match is not official).");
+                }
+            } else {
                 var idleBattleIndex = this.idleBattler(n1);
                 if (this.roundStatus.idleBattles[idleBattleIndex] != undefined) {
                     delete this.roundStatus.idleBattles[idleBattleIndex];
                     this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [n1, n2];
                 }
                 if (!this.finals) {
-                    botAll("Round " + this.roundnumber + " Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
+                    botAll("Round " + this.roundnumber + " Tournament match between " + n1 + " and " + n2 + " has started!", this.id);
                 }
                 else {
-                    botAll("Final Round Tournament match between " + sys.name(src) + " and " + sys.name(dest) + " has started!", this.id);
+                    botAll("Final Round Tournament match between " + n1 + " and " + n2 + " has started!", this.id);
                 }
-            } else {
-                botMessage(src, "Your or your opponents team does not match the tournament tier (the match is not official).");
-                botMessage(dest, "Your or your opponents team does not match the tournament tier (the match is not official).");
             }
         }
     }
@@ -3075,7 +3100,7 @@ if(message == "Maximum Players Changed.") {
             return;
         }
 
-        if ((myAuth <= 0 && muteall && !voice)) {
+        if ((myAuth <= 0 && silence.level == 1 && !voice)) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             WatchPlayer(src, "Silence Message", message, chan);
@@ -3089,7 +3114,7 @@ if(message == "Maximum Players Changed.") {
             return;
         }
 
-        if ((myAuth < 2 && supermuteall)) {
+        if (myAuth < 2 && silence.level == 2 && !voice) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             WatchPlayer(src, "Silence Message", message, chan);
@@ -3103,7 +3128,7 @@ if(message == "Maximum Players Changed.") {
             return;
         }
 
-        if (myAuth < 3 && megamuteall) {
+        if (myAuth < 3 && silence.level == 3 && !voice) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             WatchPlayer(src, "Silence Message", message, chan);
@@ -3444,7 +3469,11 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater('Information Commands');
 
                     ct.register('team', 'Makes an importable of your team.');
-                    ct.register("ranking", ["<u>{r Name}</u>"], "Displays ranking of you or another person. Your ladder (and the person's if given) must be enabled.");
+
+                    if (!Config.NoCrash) {
+                        ct.register("ranking", ["<u>{r Name}</u>"], "Displays ranking of you or another person. Your ladder (and the person's if given) must be enabled.");
+                    }
+
                     ct.register('players', 'Displays information about all online players.');
                     ct.register('channels', 'Displays information about online channels.');
                     ct.register("tours", "Displays information about active tours.");
@@ -3916,53 +3945,35 @@ if(message == "Maximum Players Changed.") {
 
                     var g = function (str) {
                         return "<font color='green'><b>" + str + "</b></font>";
-                    }
+                    },
+                        r = function (str) {
+                            return "<font color='red'><b>" + str + "</b></font>";
+                        }
 
-                    var r = function (str) {
-                        return "<font color='red'><b>" + str + "</b></font>";
-                    }
+                        check = function (compare, name, on, off) {
+                            if (compare) {
+                                t.register(name + " " + g(on) + ".");
+                            } else {
+                                t.register(name + " " + r(off) + ".");
+                            }
+                        }
 
-                    if (AutoStartTours) t.register("AutoStartTours is " + g("on") + ".");
-                    else t.register("AutoStartTours is " + r("off") + ".");
+                        check(AutoStartTours, "AutoStartTours is", "on", "off");
 
-                    if (allowedit) t.register("Grammar Editor is " + g("on") + ".");
-                    else t.register("Grammar Editor is " + r("off") + ".");
+                    check(allowedit, "Grammar Corrector is", "on", "off");
+                    check(allowicon, "Rank Icons and BBCode are", "on", "off");
 
-                    if (allowicon) t.register("Rank Icons and BBCode are " + g("on") + ".");
-                    else t.register("Rank Icons and BBCode are " + r("off") + ".");
+                    check(evallock, "Eval is", "locked", "not locked");
 
-                    if (evallock) t.register("Eval is " + g("locked") + ".");
-                    else t.register("Eval is " + r("not locked") + ".");
+                    check(implock, "Impersonation for " + sLetter(UserName) + " is", "blocked", "not blocked");
 
-                    if (implock) t.register("Impersonation for " + sLetter(UserName) + " is " + g("blocked") + ".");
-                    else t.register("Impersonation for " + sLetter(UserName) + " is " + r("not blocked") + ".");
+                    check(CommandsEnabled.me, "Me is", "on", "off");
+                    check(CommandsEnabled._catch_, "Catch is", "on", "off");
+                    check(CommandsEnabled.roulette, "Roulette is", "on", "off");
+                    check(CommandsEnabled.attack, "Attack is", "on", "off");
 
-                    if (CommandsEnabled.me) t.register("Me is " + g("on") + ".");
-                    else t.register("Me is " + r("off") + ".");
-
-                    if (CommandsEnabled._catch_) t.register("Catch is " + g("on") + ".");
-                    else t.register("Catch is " + r("off") + ".");
-
-                    if (CommandsEnabled.roulette) t.register("Roulette is " + g("on") + ".");
-                    else t.register("Roulette is " + r("off") + ".");
-
-                    if (CommandsEnabled.attack) t.register("Attack is " + g("on") + ".");
-                    else t.register("Attack is " + r("off") + ".");
-
-                    if (muteall) t.register("Silence is " + g("on") + ".");
-                    else t.register("Silence is " + r("off") + ".");
-
-                    if (supermuteall) t.register("Super Silence is " + g("on") + ".");
-                    else t.register("Super Silence is " + r("off") + ".");
-
-                    if (megamuteall) t.register("Mega Silence is " + g("on") + ".");
-                    else t.register("Mega Silence is " + r("off") + ".");
-
-                    if (AutoKick) t.register("Auto Kick is " + g("on") + ".");
-                    else t.register("Auto Kick is " + r("off") + ".");
-
-                    if (AutoMute) t.register("Auto Mute is " + g("on") + ".<br/>");
-                    else t.register("Auto Mute is " + r("off") + ".<br/>");
+                    check(AutoKick, "Auto Kick is", "on", "off");
+                    check(AutoMute, "Auto Mute is", "on", "off");
 
                     t.register("Server Auth Level 0 Name is " + UserName.bold().fontcolor("green") + ".");
                     t.register("Server Auth Level 1 Name is " + ModName.bold().fontcolor("blue") + ".");
@@ -4206,6 +4217,10 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- User Templates: Tables -- */
                 ranking: function () {
+                    if (Config.NoCrash) {
+                        botMessage(src, "This command has been disabled.", chan);
+                        return;
+                    }
                     if (!sys.ladderEnabled(src)) {
                         botMessage(src, "You don't have your ladder enabled! Enable it at Options->Enable Ladder.", chan);
                         return;
@@ -4285,7 +4300,7 @@ if(message == "Maximum Players Changed.") {
 
                     }
 
-                    tt.end();
+
                     tt.render(src, chan);
                 },
 
@@ -5345,7 +5360,7 @@ if(message == "Maximum Players Changed.") {
                         tt.register(add, false);
                     }
                     tt.register(add, false);
-                    tt.end();
+
                     tt.render(src, chan);
                 },
 
@@ -5390,7 +5405,7 @@ if(message == "Maximum Players Changed.") {
                         tt.register(add, false);
                     }
 
-                    tt.end();
+
                     tt.render(src, chan);
                 },
                 /* -- Channel Commands: Wall -- */
@@ -6350,7 +6365,7 @@ if(message == "Maximum Players Changed.") {
                         tt.register([r.ip, r.by, r.why, s], false);
                     }
 
-                    tt.end();
+
                     tt.render(src, chan);
                 },
 
@@ -6384,7 +6399,7 @@ if(message == "Maximum Players Changed.") {
                         tt.register([r.ip, last, r.by, r.why, s], false);
                     }
 
-                    tt.end();
+
                     tt.render(src, chan);
                 },
                 mutelist: function () {
@@ -6419,7 +6434,7 @@ if(message == "Maximum Players Changed.") {
                         tt.register([r.ip, last, r.by, r.why, s], false);
                     }
 
-                    tt.end();
+
                     tt.render(src, chan);
                 },
 
@@ -6525,7 +6540,7 @@ if(message == "Maximum Players Changed.") {
                     tt.register([name, ip, range, laston, lastname, reg, auth, "<small>" + aliases + "</small>"], false);
                     tt.register(["Online", "Hex Color", "ID", "Muted", "Temp Banned", "Banned", "Country", "Hostname"], true);
                     tt.register([online, color, id, mute, tban, ban, country, hostname], false);
-                    tt.end();
+
 
                     tt.render(src, chan);
                 },
@@ -6552,7 +6567,7 @@ if(message == "Maximum Players Changed.") {
                         tt.register([ly.name(), last, ip], false);
                     }
 
-                    tt.end();
+
                     tt.render(src, chan);
                 },
 
@@ -6689,8 +6704,8 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Mod Commands: Silence -- */
                 silence: function () {
-                    if (muteall || supermuteall || megamuteall) {
-                        botMessage(src, "Chat is already silenced.", chan);
+                    if (silence.level) {
+                        botMessage(src, "The chat is already silenced.", chan);
                         return;
                     }
                     var time = commandData * 60,
@@ -6699,7 +6714,10 @@ if(message == "Maximum Players Changed.") {
                         timeStr = " for " + getTimeString(time) + "!";
                     }
 
-                    muteall = true;
+                    silence = {
+                        "by": sys.name(src),
+                        "level": 1
+                    };
                     botAll(sys.name(src) + " silenced the chat" + timeStr);
 
                     if (timeStr === "!") {
@@ -6707,24 +6725,30 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     timeOut = function () {
-                        if (!muteall) return;
+                        if (!silence.level) {
+                            return;
+                        }
+
+                        silence = {
+                            "by": "",
+                            "level": 0
+                        };
                         botAll("Silence is over.");
-                        muteall = false;
                     }
 
-                    sys.callLater('timeOut();', time);
+                    sys.delayedCall(timeOut, time);
                 },
 
                 silenceoff: function () {
-                    if (!muteall && !supermuteall & !megamuteall) {
-                        botMessage(src, "Chat isn't silenced.", chan);
+                    if (!silence.level) {
+                        botMessage(src, "The chat isn't silenced.", chan);
                         return;
                     }
 
-                    muteall = false;
-                    supermuteall = false;
-                    megamuteall = false;
-
+                    silence = {
+                        "by": "",
+                        "level": 0
+                    };
                     botAll(sys.name(src) + " unsilenced the chat!");
                 },
 
@@ -7161,7 +7185,7 @@ if(message == "Maximum Players Changed.") {
                 },
                 /* -- Admin Commands: Silence */
                 supersilence: function () {
-                    if (muteall || supermuteall || megamuteall) {
+                    if (silence.level) {
                         botMessage(src, "The chat is already silenced.", chan);
                         return;
                     }
@@ -7172,7 +7196,11 @@ if(message == "Maximum Players Changed.") {
                         timeStr = " for " + getTimeString(time) + "!";
                     }
 
-                    supermuteall = true;
+                    silence = {
+                        "by": sys.name(src),
+                        "level": 2
+                    };
+
                     botAll(sys.name(src) + " super-silenced the chat" + timeStr);
 
                     if (timeStr === "!") {
@@ -7180,12 +7208,19 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     timeOut = function () {
-                        if (!supermuteall) return;
-                        botAll("Silence is over");
-                        supermuteall = false;
+                        if (!silence.level) {
+                            return;
+                        }
+
+                        silence = {
+                            "by": "",
+                            "level": 0
+                        };
+
+                        botAll("Silence is over.");
                     }
 
-                    sys.callLater('timeOut();', time);
+                    sys.delayedCall(timeOut, time);
                 },
 
                 /* -- Admin Commands: Impersonation */
@@ -7801,16 +7836,6 @@ if(message == "Maximum Players Changed.") {
                     ct.render(src, chan);
                 },
 
-                jsessioncommands: function () {
-                    var ct = new Command_Templater("JSESSION Commands");
-
-                    ct.register("recreate", ["{p <u>Type</u>}"], "Resets JSESSION data and refills. Types can be: Channels, Global, Tours, Users, All. Default is All.");
-                    ct.register("refill", "Creates JSESSION data for unknown channels and users.");
-                    ct.register("identifyscript", ["{p Name}"], "Changes Script ID, resets all JSESSION data and refills.");
-                    ct.register(style.footer);
-                    ct.render(src, chan);
-                },
-
                 tiercommands: function () {
                     var ct = new Command_Templater("Tier Commands");
 
@@ -7826,26 +7851,26 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Owner Commands: Table Templates */
                 listbans: function () {
-                    var range = DataHash.bannedAbilities;
-                    if (Object.keys(range) === 0) {
-                        botMessage(src, 'Sorry, there are currently no banned abilities.', chan);
+                    var banned = DataHash.bannedAbilities;
+
+                    if (Object.keys(banned) === 0) {
+                        botMessage(src, 'There are no banned abilities.', chan);
                         return;
                     }
 
                     var tt = new Table_Templater("Ability Bans", "brown", "3");
                     tt.register(["Tier", "Pokemon", "Abilities"], true);
 
-                    for (var b in range) {
-                        var poketier = b;
-                        var poke = range[b];
-                        for (var k in poke) {
-                            var pkmn = k;
-                            var obc = poke[k];
-                            tt.register([poketier, pkmn, obc.join(", ")], false);
+                    var b, poke, k, obc;
+                    for (b in range) {
+                        poke = range[b];
+                        for (k in poke) {
+                            obc = poke[k];
+                            tt.register([b, k, obc.join(", ")], false);
                         }
                     }
 
-                    tt.end();
+
                     tt.render(src, chan);
                 },
 
@@ -7855,48 +7880,43 @@ if(message == "Maximum Players Changed.") {
                         spam_color = [],
                         spam_array = [],
                         spam_script = "Script Check",
-                        spam_script_color = Bot.botcolor;
-
-                    var x, pl = sys.playerIds(),
-                        cur, curn;
-                    var randomUser = function () {
-                        var ret = Math.round(pl.length * Math.random());
-                        if (ret === 0) {
-                            ret = "~~Server~~";
-                        }
-                        else {
-                            ret = sys.name(ret);
-                            if (ret === undefined) {
-                                ret = randomUser();
+                        spam_script_color = Bot.botcolor.
+                        x,
+                        pl = sys.playerIds(),
+                        cur, curn, randomUser = function () {
+                            var ret = Math.round(pl.length * Math.random());
+                            if (ret === 0) {
+                                ret = "~~Server~~";
                             }
-                        }
-                        return ret;
-                    }
+                            else {
+                                ret = sys.name(ret);
+                                if (ret === undefined) {
+                                    ret = randomUser();
+                                }
+                            }
+                            return ret;
+                        },
+                        rCmdList = ["rangeban", "ban", "mute", "kick", "tempban"],
+                        reasons = ["Existance", "Spam", "None. I'm just abusive.", "pro", "STFU!"],
+                        randomCommand = function () {
+                            var ret = Math.floor(rCmdList.length * Math.random());
 
-                    var rCmdList = ["rangeban", "ban", "mute", "kick", "tempban"],
-                        reasons = ["Existance", "Spam", "None. I'm just abusive.", "pro", "STFU!"];
+                            if (ret === undefined || ret === "undefined") {
+                                ret = randomCommand();
+                            }
 
-                    var randomCommand = function () {
-                        var ret = Math.floor(rCmdList.length * Math.random());
+                            return rCmdList[ret];
+                        },
+                        randomReason = function () {
+                            var ret = Math.floor(reasons.length * Math.random());
 
-                        if (ret === undefined || ret === "undefined") {
-                            ret = randomCommand();
-                        }
+                            if (ret === undefined || ret === "undefined") {
+                                ret = randomReason();
+                            }
 
-                        return rCmdList[ret];
-                    }
-
-                    var randomReason = function () {
-                        var ret = Math.floor(reasons.length * Math.random());
-
-                        if (ret === undefined || ret === "undefined") {
-                            ret = randomReason();
-                        }
-
-                        return reasons[ret];
-                    }
-
-                    var min = parseInt(commandData),
+                            return reasons[ret];
+                        },
+                        min = parseInt(commandData),
                         currentRand;
 
                     if (isNaN(min) || min > 75) {
@@ -7973,11 +7993,13 @@ if(message == "Maximum Players Changed.") {
                         type = "Channels";
                     }
                     else if (m === "tour" || m === "tours") {
-                        var x, z = JSESSION.ChannelData;
+                        var x, z = JSESSION.ChannelData,
+                            curr;
                         for (x in z) {
-                            if (z[x].toursEnabled) {
-                                delete z[x].tour;
-                                z[x].tour = new Tours(x);
+                            curr = z[x];
+                            if (curr.toursEnabled) {
+                                delete curr.tour;
+                                curr.tour = new Tours(x);
                             }
                         }
                         type = "Channel Tournaments";
@@ -7986,31 +8008,11 @@ if(message == "Maximum Players Changed.") {
                         JSESSION.ChannelData = {};
                         JSESSION.UserData = {};
                         JSESSION.GlobalData = {};
-                        type = "Channels, Users and Globals";
+                        type = "Channels, Users and Global";
                     }
 
                     JSESSION.refill();
                     botAll("JSESSION " + type + " have been reset by " + sys.name(src) + "!", 0);
-                },
-
-                refill: function () {
-                    JSESSION.refill();
-                    botMessage(src, "JSESSION Data has been refilled.", chan);
-                },
-
-                identifyscript: function () {
-                    if (mcmd[0] === undefined) {
-                        botMessage(src, "Specify a name!", chan);
-                        return;
-                    }
-                    if (JSESSION.ScriptID === mcmd[0]) {
-                        botMessage(src, "Identical Script ID.", chan);
-                        return;
-                    }
-
-                    JSESSION.identifyScriptAs(mcmd[0]);
-                    JSESSION.refill();
-                    botAll(src, sys.name(src) + " changed the Script ID and resetted all JSESSION data!", 0);
                 },
 
                 /* -- Owner Commands: Rank Icons */
@@ -8545,8 +8547,8 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Owner Commands: Silence */
                 megasilence: function () {
-                    if (muteall || supermuteall || megamuteall) {
-                        botMessage(src, "Chat is already silenced.", chan);
+                    if (silence.level) {
+                        botMessage(src, "The chat is already silenced.", chan);
                         return;
                     }
 
@@ -8556,18 +8558,30 @@ if(message == "Maximum Players Changed.") {
                         timeStr = " for " + getTimeString(time) + "!";
                     }
 
-                    megamuteall = true;
+                    silence = {
+                        "by": sys.name(src),
+                        "level": 3
+                    };
+
                     botAll(sys.name(src) + " mega-silenced the chat" + timeStr);
 
-                    if (timeStr === "!") return;
-
-                    timeOut = function () {
-                        if (!megamuteall) return;
-                        botAll("Silence is over.");
-                        megamuteall = false;
+                    if (timeStr === "!") {
+                        return;
                     }
 
-                    sys.callLater('timeOut();', time);
+                    timeOut = function () {
+                        if (!silence.level) {
+                            return;
+                        }
+
+                        silence = {
+                            "by": "",
+                            "level": 0
+                        };
+                        botAll("Silence is over.");
+                    }
+
+                    sys.delayedCall(timeOut, time);
 
                 },
 
@@ -8876,15 +8890,14 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var toSend = sys.name(src) + " made " + m.name() + " Eval Operator!";
-                    botAll(toSend, scriptchannel);
                     DataHash.evalops[m] = {
                         'by': sys.name(src)
                     };
 
-                    putInAuthChan(m, "evalop");
                     cache.write("evalops", JSON.stringify(DataHash.evalops));
 
+                    putInAuthChan(m, "evalop");
+                    botAll(sys.name(src) + " made " + m.name() + " Eval Operator!", scriptchannel);
                 },
 
                 evaluser: function () {
@@ -8899,8 +8912,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var toSend = sys.name(src) + " made " + m.name() + " Eval User!";
-                    botAll(toSend, scriptchannel);
+                    botAll(sys.name(src) + " made " + m.name() + " Eval User!", scriptchannel);
 
                     delete DataHash.evalops[m];
                     if (tar != undefined) {
@@ -8925,6 +8937,7 @@ if(message == "Maximum Players Changed.") {
                 ct.register("eval", ["{p Code}"], "Evaluates a QtScript code and returns the result.");
                 ct.register("randomspam", ["{o Number}"], "Spams the chat with random messages.");
                 ct.register("resetcommandstats", "Resets command stats.");
+                ct.register("recreate", ["{p <u>Type</u>}"], "Resets JSESSION data and refills. Types can be: Channels, Global, Tours, Users, All. Default is All.");
                 ct.register(style.footer);
                 ct.render(src, chan);
             }
@@ -9032,12 +9045,14 @@ if(message == "Maximum Players Changed.") {
                     }
                 }
 
+                var m_name = sys.name(src),
+                    t_name = commandData.name();
                 if (tar != undefined) {
                     for (x in sendArr3) {
-                        botMessage(sendArr3[x], sys.name(tar) + " has been made " + InvisName + " by " + sys.name(src) + ".", 0);
+                        botMessage(sendArr3[x], t_name + " has been made " + InvisName + " by " + m_name + ".", 0);
                     }
                     for (x in sendArr0) {
-                        botMessage(sendArr0[x], sys.name(tar) + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
+                        botMessage(sendArr0[x], t_name + " has been made " + UserName + " by " + m_name + ".", 0);
                     }
                     sys.changeAuth(tar, 127);
                     putInAuthChan(commandData, "admin");
@@ -9045,10 +9060,10 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 for (x in sendArr3) {
-                    botMessage(sendArr3[x], commandData + " has been made " + InvisName + " by " + sys.name(src) + ".", 0);
+                    botMessage(sendArr3[x], t_name + " has been made " + InvisName + " by " + m_name + ".", 0);
                 }
                 for (x in sendArr0) {
-                    botMessage(sendArr0[x], commandData + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
+                    botMessage(sendArr0[x], t_name + " has been made " + UserName + " by " + m_name + ".", 0);
                 }
 
                 sys.changeDbAuth(commandData, 127);
@@ -9121,7 +9136,8 @@ if(message == "Maximum Players Changed.") {
                     }
                 }
             });
-            var op = sys.auth(src);
+            var op = sys.auth(src),
+                ch = Config.HighPermission;
 
             if (op > 3) {
                 op = 3;
@@ -9131,13 +9147,11 @@ if(message == "Maximum Players Changed.") {
                 op = 0;
             }
 
-            var ch = Config.HighPermission;
-
             if (ch[sys.name(src)] !== undefined && ch[sys.name(src)][0] === sys.auth(src)) {
                 op = ch[sys.name(src)][1];
             }
 
-            if ((command == "eval") && DataHash.evalops[sys.name(src).toLowerCase()] != undefined) {
+            if (command == "eval" && DataHash.evalops[sys.name(src).toLowerCase()] != undefined) {
                 op = 3;
             }
 
@@ -9425,8 +9439,10 @@ if(message == "Maximum Players Changed.") {
                 }
             }
 
-            if (!TierBans.isLegalTeam(src, team, sys.tier(src, team))) {
-                TierBans.findGoodTier(src, team);
+            if (!Config.NoCrash) {
+                if (!TierBans.isLegalTeam(src, team, sys.tier(src, team))) {
+                    TierBans.findGoodTier(src, team);
+                }
             }
 
         }
@@ -9518,15 +9534,17 @@ if(message == "Maximum Players Changed.") {
             return;
         }
 
-        if (sys.tier(src, team).indexOf("Doubles") != -1 && destTier.indexOf("Doubles") != -1 && mode != 1) {
-            botMessage(src, "To fight in doubles, enable doubles in the challenge window!");
-            sys.stopEvent();
-            return;
-        }
-        if (sys.tier(src, team).indexOf("Triples") != -1 && destTier.indexOf("Triples") != -1 && mode != 2) {
-            botMessage(src, "To fight in triples, enable triples in the challenge window!");
-            sys.stopEvent();
-            return;
+        if (!Config.NoCrash) {
+            if (sys.tier(src, team).indexOf("Doubles") != -1 && destTier.indexOf("Doubles") != -1 && mode != 1) {
+                botMessage(src, "To fight in doubles, enable doubles in the challenge window!");
+                sys.stopEvent();
+                return;
+            }
+            if (sys.tier(src, team).indexOf("Triples") != -1 && destTier.indexOf("Triples") != -1 && mode != 2) {
+                botMessage(src, "To fight in triples, enable triples in the challenge window!");
+                sys.stopEvent();
+                return;
+            }
         }
     },
 
@@ -10965,7 +10983,8 @@ if(message == "Maximum Players Changed.") {
             }
             else if (!sys.away(x)) {
                 status = 'Available';
-            } else if (sys.battling(x)) {
+            }
+            else if (sys.battling(x)) {
                 status = 'Battle';
             }
 
@@ -10973,12 +10992,20 @@ if(message == "Maximum Players Changed.") {
             return '<img src="Themes/Classic/Client/' + n + '">';
         }
 
-        sendSTFUTruck = function (src, c) {
-            botMessage(src, '|^^^^^^^^^^^\||____', c);
-            botMessage(src, '| The STFU Truck  |||""\'|""\__,_', c);
-            botMessage(src, '| _____________ l||__|__|__|)', c);
-            botMessage(src, '...|(@)@)"""""""**|(@)(@)**|(@)', c);
-            botMessage(src, "The chat is silenced!", c);
+        sendSTFUTruck = function (src, chan) {
+            var name = "",
+                message = "The chat is silenced";
+            if (silence.by) {
+                name = " by " + silence.by + "!";
+            }
+            if (!silence.level) {
+                name = "STFU!";
+            }
+            botMessage(src, '|^^^^^^^^^^^\||____', chan);
+            botMessage(src, '| The STFU Truck  |||""\'|""\__,_', chan);
+            botMessage(src, '| _____________ l||__|__|__|)', chan);
+            botMessage(src, '...|(@)@)"""""""**|(@)(@)**|(@)', chan);
+            botMessage(src, message + name + "!", chan);
         }
 
         sendFailWhale = function (id, chan) {
@@ -11009,16 +11036,11 @@ if(message == "Maximum Players Changed.") {
             return newobj;
         }
 
-        if (typeof muteall == "undefined") {
-            muteall = false;
-        }
-
-        if (typeof supermuteall == 'undefined') {
-            supermuteall = false;
-        }
-
-        if (typeof megamuteall == 'undefined') {
-            megamuteall = false;
+        if (typeof silence == "undefined") {
+            silence = {
+                "by": "",
+                "level": 0
+            };
         }
 
         if (typeof ChatColorRandomizers == 'undefined') {
@@ -11574,7 +11596,12 @@ if(message == "Maximum Players Changed.") {
         }
 
         lastName = function (ip) {
-            return DataHash.names[ip];
+            var name = DataHash.names[ip];
+            if (name == undefined) { // Unknown Player :/
+                name = "~Unknown~";
+            }
+
+            return name;
         }
 
         html_escape = function (str) {
@@ -11797,13 +11824,14 @@ if(message == "Maximum Players Changed.") {
             }
 
             this.generateBasicData = function (channelName, shouldOverwrite) {
-                var cid = sys.channelId(channelName);
-                if (JSESSION.channels(cid) == undefined || sys.channel(cid) == undefined) {
+                var cid = sys.channelId(channelName),
+                    cData = this.channelData,
+                    cChan = JSESSION.channels(cid);
+
+                if (cChan == undefined || sys.channel(cid) == undefined) {
                     return "ERROR: No Channel"; /* No such channel. Probally called by /eval */
                 }
 
-                var cData = this.channelData,
-                    cChan = JSESSION.channels(cid);
 
                 if (cData.hasOwnProperty(channelName) && !shouldOverwrite) {
                     return;
@@ -11965,7 +11993,6 @@ if(message == "Maximum Players Changed.") {
             print("Starting import.");
 /* Lutra is developing new scripts.
             var _GLOBAL = this;
-            print("Began importing Lutra Script data.");
             var regValCache = {};
 
             var readVal = function (val) {
@@ -12012,12 +12039,10 @@ if(message == "Maximum Players Changed.") {
                 print("Changed script registered date.");
             }
 
-            if (v("silence")) {
-                var s = v("silence");
-                if (s == 1) muteall = true;
-                else if (s == 2) supermuteall = true;
-                else megamuteall = true;
-                botAll("Modified silence level to " + s + ".", 0);
+            if (v("silence") && typeof silence == "number") {
+			var old_silence = silence;
+			silence = {"by": silencer, "level": old_silence};
+                botAll("Modified silence level to " + old_silence + ".", 0);
             }
 
             if (set("RangeBanEx_List")) {
@@ -12148,8 +12173,6 @@ if(message == "Maximum Players Changed.") {
             if (v("commanddescriptions")) {
                 delete commanddescriptions;
             }
-
-            print("Ended importing Lutra Script data.");
 			*/
 
             function MemoryHash(filename) {
@@ -12535,7 +12558,7 @@ if(message == "Maximum Players Changed.") {
             if (arguments.length == 2) {
                 desc = args;
                 desc += aliases;
-                this.template.push(form[0] + style["command-icon"] + " <font color='" + style["command-color"] + "'>" + name + "</font>" + form[1] + ": " + desc);
+                this.template.push(form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font>" + form[1] + ": " + desc);
                 return;
             }
 
@@ -12550,7 +12573,7 @@ if(message == "Maximum Players Changed.") {
             desc += aliases;
             args_joined = args_joined.substring(0, args_joined.length - form[0].length);
 
-            this.template.push(form[0] + style["command-icon"] + " <font color='" + style["command-color"] + "'>" + name + "</font> " + args_joined + " " + desc);
+            this.template.push(form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font> " + args_joined + " " + desc);
         }
 
         Command_Templater.prototype.span = function (name) {
@@ -12621,11 +12644,8 @@ if(message == "Maximum Players Changed.") {
             this.template.push(mess);
         }
 
-        Table_Templater.prototype.end = function () {
-            this.template.push("</table><br/>", style.footer);
-        }
-
         Table_Templater.prototype.render = function (id, chan) {
+            this.template.push("</table><br/>", style.footer);
             sys.sendHtmlMessage(id, this.template.join(''), chan);
 
             if (ChatColorRandomizers.hasOwnProperty(chan)) { // Tables reset
@@ -12644,7 +12664,7 @@ if(message == "Maximum Players Changed.") {
 
             "header": "<font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
             "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
-            "command-icon": "\u2022",
+            "command-icon": "\u2022 ",
             "command-style": ["<b>", "</b>"],
             "command-color": "green",
             "help": "<b><font color='orangered'>The following commands need to be entered into a channel's main chat:</font></b>",
@@ -12655,10 +12675,10 @@ if(message == "Maximum Players Changed.") {
             "author": "TheUnknownOne",
             "header": "<font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB<b></font><br/>",
             "footer": "<br><font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
-            "command-icon": "<font color=orange>\u2022</font>",
+            "command-icon": "/",
             "command-style": ["<b>", "</b>"],
             "command-color": "green",
-            "help": "<i>Enter the following commands into a channel prefixed '/'. For help with arguments, type in /arglist.</i>",
+            "help": "Enter the following commands into a channel of choice. For help with arguments, type in /arglist.",
             "span": "<font size=5><b>{{Name}}</b></font>"
         }];
 
@@ -12726,7 +12746,7 @@ if(message == "Maximum Players Changed.") {
                     tt.register([curr.name, curr.author, isActive]);
                 }
 
-                tt.end();
+
                 tt.render(src, chan);
             }
 
@@ -12842,7 +12862,7 @@ if(message == "Maximum Players Changed.") {
                     tt.register([curr.name, curr.author, isActive]);
                 }
 
-                tt.end();
+
                 tt.render(src, chan);
             }
 
@@ -14760,6 +14780,8 @@ if(message == "Maximum Players Changed.") {
                 return "";
             }
         }
+
+        createFile(Config.Mafia.stats_file, "[]");
 
         function Mafia(mafiachan) {
             // Remember to update this if you are updating mafia
