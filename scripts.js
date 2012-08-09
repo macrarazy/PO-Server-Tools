@@ -6329,19 +6329,19 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater("Silence Commands", true);
                     ct.span("Silence " + ModName + " Commands");
 
-                    ct.register("silence", ["<u>{o Time}</u>"], "Silences the Chat for " + sLetter(UserName) + ". Time goes in minutes.");
-                    ct.register("silenceoff", "Unsilences the Chat.");
+                    ct.register("silence", ["<u>{o Time}</u>"], "Silences the chat for " + sLetter(UserName) + ". Time goes in minutes.");
+                    ct.register("unsilence", "Unsilences the chat.");
                     ct.register("voice", ["{or Player}"], "Gives someone Voice (the ability to talk through channel silences and normal silence).");
                     ct.register("unvoice", ["{or Player}"], "Removes someones Voice.");
 
                     if (sys.auth(src) < 2) {
                         ct.span("Silence " + AdminName + " Commands");
-                        ct.register("supersilence", ["<u>{o Time}</u>"], "Silences the Chat for " + sLetter(UserName) + " and " + sLetter(ModName) + ". Time goes in minutes.");
+                        ct.register("supersilence", ["<u>{o Time}</u>"], "Silences the chat for " + sLetter(UserName) + " and " + sLetter(ModName) + ". Time goes in minutes.");
                     }
 
                     if (sys.auth(src) < 3) {
                         ct.span("Silence " + OwnerName + " Commands");
-                        ct.register("megasilence", ["<u>{o Time}</u>"], "Silences the Chat for " + sLetter(UserName) + ", " + sLetter(ModName) + " and " + sLetter(AdminName) + ". Time goes in minutes.");
+                        ct.register("megasilence", ["<u>{o Time}</u>"], "Silences the chat for " + sLetter(UserName) + ", " + sLetter(ModName) + " and " + sLetter(AdminName) + ". Time goes in minutes.");
                     }
                     ct.register(style.footer);
                     ct.render(src, chan);
@@ -6746,7 +6746,7 @@ if(message == "Maximum Players Changed.") {
                     sys.delayedCall(timeOut, time);
                 },
 
-                silenceoff: function () {
+                unsilence: function () {
                     if (!silence.level) {
                         botMessage(src, "The chat isn't silenced.", chan);
                         return;
@@ -6756,6 +6756,7 @@ if(message == "Maximum Players Changed.") {
                         "by": "",
                         "level": 0
                     };
+					
                     botAll(sys.name(src) + " unsilenced the chat!");
                 },
 
@@ -13954,7 +13955,8 @@ if(message == "Maximum Players Changed.") {
             "evval": "eval",
             "eeval": "eval",
             "code": "eval",
-            "run": "eval"
+            "run": "eval",
+			"silenceoff": "unsilence"
         };
 
         var c = false,
