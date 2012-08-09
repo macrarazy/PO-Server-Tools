@@ -925,65 +925,71 @@ TourBox = function (message) {
 }
 
 TourNotification = function (src, chan, info) { // info is an object
-    var tourmode = JSESSION.channels(chan).tour.tourmode;
+    var tour = JSESSION.channels(chan).tour, mode = tour.tourmode;
     if (src != 0) {
-        var poChan = JSESSION.channels(chan).tour,
-            startTime = getTimeString(sys.time() * 1 - poChan.startTime);
+	if (mode == 0) {
+	return;
+	}
+	
+	var white = function () {
+	sys.sendMessage(src, "", chan);
+	}, border = function() {
+	sys.sendHtmlMessage(src, TOUR_BORDER, chan);
+	}, startTime = getTimeString(sys.time() * 1 - tour.startTime);
 
-        poChan.white();
-        poChan.border();
+        white();
+        border();
 
-        sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + poChan.tourstarter + " " + startTime + " ago! </b></font>", chan);
-        sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + poChan.tournumber, chan);
-        sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + poChan.identify(), chan);
-        sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + poChan.tourtier, chan);
+        sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + tour.tourstarter + " " + startTime + " ago! </b></font>", chan);
+        sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + tour.tournumber, chan);
+        sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + tour.identify(), chan);
+        sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tourtier, chan);
 
-        if (!isEmpty(poChan.prize)) {
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + poChan.prize, chan);
+        if (!isEmpty(tour.prize)) {
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + tour.prize, chan);
         }
 
-        poChan.border();
+        border();
 
-        if (poChan.tourmode == 1) {
+        if (mode == 1) {
             sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
         }
-        else if (poChan.tourmode == 2) {
+        else if (mode == 2) {
             var finalsSTr = "";
-            if (poChan.tour.finals) {
+            if (tour.finals) {
                 finalsStr = " (<B>Finals</B>)";
             }
 
-            sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + poChan.roundnumber + finalsStr + ". " + poChan.remaining + " players remaining.", chan);
+            sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + tour.roundnumber + finalsStr + ". " + tour.remaining + " players remaining.", chan);
 
         }
 
-        poChan.border();
-        poChan.white();
+        border();
+        white();
     } else {
-        var channel = JSESSION.channels(chan).tour;
         if (display == 1) {
-            channel.white()
-            channel.border();
+            tour.white()
+            tour.border();
             sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + info.starter + "! </b></font>", chan);
-            sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + channel.tournumber, chan);
-            sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + channel.identify(), chan);
-            sys.sendHtmlAll("<timestamp/><b><font color=orange>Tier:</b></font> " + channel.tourtier, chan);
-            if (!isEmpty(channel.prize)) {
-                sys.sendHtmlAll("<timestamp/><b><font color=brown>Prize:</b></font> " + channel.prize, chan);
+            sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + tour.tournumber, chan);
+            sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + tour.identify(), chan);
+            sys.sendHtmlAll("<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tourtier, chan);
+            if (!isEmpty(tour.prize)) {
+                sys.sendHtmlAll("<timestamp/><b><font color=brown>Prize:</b></font> " + tour.prize, chan);
             }
-            channel.border();
+            tour.border();
             sys.sendHtmlAll("<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
-            channel.border();
-            channel.white()
+            tour.border();
+            tour.white()
         }
         else {
             var prize = '';
 
-            if (!isEmpty(channel.prize)) {
-                prize = '<b style="color: brown;">Prize:</b> ' + channel.prize + '<br/>';
+            if (!isEmpty(tour.prize)) {
+                prize = '<b style="color: brown;">Prize:</b> ' + tour.prize + '<br/>';
             }
 
-            sys.sendHtmlAll(TourBox("A Tournament was started by <b style='color:" + info.color + "'>" + info.starter + "</b>! <br/> <b style='color:red'>Players:</b> " + channel.tournumber + " <br/> <b style='color: blue'>Type:</b> " + channel.identify() + " <br/> <b style='color: orange'>Tier:</b> " + channel.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!"), chan);
+            sys.sendHtmlAll(TourBox("A Tournament was started by <b style='color:" + info.color + "'>" + info.starter + "</b>! <br/> <b style='color:red'>Players:</b> " + tour.tournumber + " <br/> <b style='color: blue'>Type:</b> " + tour.identify() + " <br/> <b style='color: orange'>Tier:</b> " + tour.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!"), chan);
         }
     }
 }
@@ -1010,7 +1016,7 @@ function Tours(id) {
 }
 
 Tours.prototype.border = function () {
-    sys.sendHtmlAll(tour, this.id);
+    sys.sendHtmlAll(TOUR_BORDER, this.id);
 }
 
 Tours.prototype.white = function () {
@@ -5418,14 +5424,14 @@ if(message == "Maximum Players Changed.") {
                     var color = script.namecolor(src),
                         l = '';
 
-                    sys.sendHtmlAll(darkBorder + "<br>", chan);
+                    sys.sendHtmlAll(BORDER + "<br>", chan);
 
                     if (allowicon) {
                         l = rankico;
                     }
 
                     sys.sendHtmlAll('<font color=' + script.namecolor(src) + '><timestamp/><b>' + l + html_escape(sys.name(src)) + ':</font></b> ' + commandData, chan);
-                    sys.sendHtmlAll("<br>" + darkBorder, chan);
+                    sys.sendHtmlAll("<br>" + BORDER, chan);
                 },
 
                 channelwall: function () {
@@ -5437,7 +5443,7 @@ if(message == "Maximum Players Changed.") {
                     var color = script.namecolor(src);
                     var srcname = sys.name(src)
 
-                    sys.sendHtmlAll(darkBorder + "<br>", chan);
+                    sys.sendHtmlAll(BORDER + "<br>", chan);
 
                     var l = '',
                         send = sys.sendAll,
@@ -5452,7 +5458,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     send(displaystr, chan);
-                    sys.sendHtmlAll("<br>" + darkBorder, chan);
+                    sys.sendHtmlAll("<br>" + BORDER, chan);
                 },
 
                 /* -- Channel Commands: HTML -- */
@@ -6143,11 +6149,11 @@ if(message == "Maximum Players Changed.") {
 
                     if (cmdData == 'on' && !AutoStartTours) {
                         if (display == 1) {
-                            sys.sendHtmlAll(tour, 0);
+                            sys.sendHtmlAll(TOUR_BORDER, 0);
                             sys.sendAll("", 0);
                             botEscapeAll(sys.name(src) + " turned auto start tours on.", 0);
                             sys.sendAll("", 0);
-                            sys.sendHtmlAll(tour, 0);
+                            sys.sendHtmlAll(TOUR_BORDER, 0);
                         }
                         else {
                             sys.sendHtmlAll(TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours on."), 0);
@@ -6159,11 +6165,11 @@ if(message == "Maximum Players Changed.") {
 
                     if (cmdData == 'off' && AutoStartTours) {
                         if (display == 1) {
-                            sys.sendHtmlAll(tour, 0);
+                            sys.sendHtmlAll(TOUR_BORDER, 0);
                             sys.sendAll("", 0);
                             botEscapeAll(sys.name(src) + " turned auto start tours off.", 0);
                             sys.sendAll("", 0);
-                            sys.sendHtmlAll(tour, 0);
+                            sys.sendHtmlAll(TOUR_BORDER, 0);
                         }
                         else {
                             sys.sendHtmlAll(TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours off."), 0);
@@ -6672,14 +6678,14 @@ if(message == "Maximum Players Changed.") {
                     var color = script.namecolor(src),
                         l = '';
 
-                    sys.sendHtmlAll(darkBorder + "<br>");
+                    sys.sendHtmlAll(BORDER + "<br>");
 
                     if (allowicon) {
                         l = rankico;
                     }
 
                     sys.sendHtmlAll('<font color=' + color + '><timestamp/><b>' + l + html_escape(srcname) + ':</font></b> ' + commandData);
-                    sys.sendHtmlAll("<br>" + darkBorder);
+                    sys.sendHtmlAll("<br>" + BORDER);
                 },
 
                 wall: function () {
@@ -6689,7 +6695,7 @@ if(message == "Maximum Players Changed.") {
                         f = commandData,
                         displaystr = sys.name(src) + ': ' + f;
 
-                    sys.sendHtmlAll(darkBorder + "<br>");
+                    sys.sendHtmlAll(BORDER + "<br>");
 
                     if (allowicon) {
                         l = rankico;
@@ -6699,7 +6705,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     send(displaystr);
-                    sys.sendHtmlAll("<br>" + darkBorder);
+                    sys.sendHtmlAll("<br>" + BORDER);
                 },
 
                 /* -- Mod Commands: Silence -- */
@@ -7862,8 +7868,8 @@ if(message == "Maximum Players Changed.") {
                     tt.register(["Tier", "Pokemon", "Abilities"], true);
 
                     var b, poke, k, obc;
-                    for (b in banned) {
-                        poke = banned[b];
+                    for (b in range) {
+                        poke = range[b];
                         for (k in poke) {
                             obc = poke[k];
                             tt.register([b, k, obc.join(", ")], false);
@@ -8314,10 +8320,10 @@ if(message == "Maximum Players Changed.") {
                     }
                     var srcname = sys.name(src),
                         code = commandData;
-                    sys.sendHtmlAll(darkBorder, scriptchannel);
+                    sys.sendHtmlAll(BORDER, scriptchannel);
                     botAll(srcname + " evaluated the following code:", scriptchannel);
                     sys.sendHtmlAll("<code>" + html_escape(code) + "</code>", scriptchannel);
-                    sys.sendHtmlAll(darkBorder, scriptchannel);
+                    sys.sendHtmlAll(BORDER, scriptchannel);
 
                     try {
 
@@ -11292,8 +11298,8 @@ if(message == "Maximum Players Changed.") {
         }
 
 
-        darkBorder = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
-        tour = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
+        BORDER = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
+        TOUR_BORDER = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
 
         an = function (thingy, u) {
             var thing = thingy.toString();
