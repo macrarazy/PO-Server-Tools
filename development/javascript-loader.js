@@ -1,8 +1,8 @@
 /* 
 
-List:
-TODO: Add support for commands.
-TODO: Test script.
+To-do List:
+ADD: Support for commands.
+TEST: Whole script
 
 */
 
@@ -86,8 +86,8 @@ if (typeof include === "undefined") {
         }
     }
 
-    include.fileExists = function (FileName) {
-        return sys.getFileContent(FileName) != undefined;
+    include.fileExists = function (file) {
+        return sys.getFileContent(file) != undefined;
     }
 
     include.moduleProperty = function (module, property, secondary_type) {
@@ -128,13 +128,13 @@ if (typeof include === "undefined") {
         return include(FileName, GetMethod);
     }
 
-    getplugins = function (event) {
+    getplugins = function (Event) {
         var ret = [],
             x, current_plugin, Modules = include.modules;
 
         for (x in Modules) {
             current_plugin = Modules[x];
-            if (typeof current_plugin.plugins[event] !== "undefined") {
+            if (typeof current_plugin.plugins[Event] !== "undefined") {
                 ret.push(current_plugin);
             }
         }
@@ -142,7 +142,7 @@ if (typeof include === "undefined") {
         return ret;
     }
 
-    callplugins = function () {
+    callplugins = function (plugin_args) {
         var args = Array.prototype.slice.call(arguments),
             event = args.splice(0, 1),
             plugins = getplugins(event),
@@ -177,6 +177,13 @@ Version can be a function (returns the version (number), preferred) or a number.
 Plugins can be a function (returns the plugins (object), preferred) or an object.
 
 Name, Version, and Plugins are case-sensitive and can be defined in or outside of ({ }) ( Name: "foo" can be put inside ({ }) instead of a function)
+include.GetMethod.Full is the default get method.
 
 sys., SESSION., gc(), and script. are available inside ({ }) (probably outside too (except script.), but untested). They are available in the modules global scope.
+
+Examples:
+include("script_constants.js", include.GetMethod.Source); // gets the code from ({ }) (global scope)
+include("script_constants.js", include.GetMethod.Version); // gets the script version. you might prefer to do include.get
+include("script_constants.js", include.GetMethod.Full); // gets the module
+
 */
