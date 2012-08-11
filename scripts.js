@@ -341,13 +341,9 @@ function POUser(id) {
     this.teamChanges = 0;
 
     if (typeof DataHash == "undefined") { /* Shouldn't matter. */
-        this.muted = false;
-        this.megauser = false;
-        this.icon = "";
-        this.voice = false;
-        this.macro = ["%m1", "%m2", "%m3", "%m4", "%m5"];
         return;
     }
+
     var dh = DataHash;
 
     var d = dh.mutes;
@@ -723,11 +719,11 @@ JSESSIONInst.prototype.refill = function () {
 
 JSESSIONInst.prototype.users = function (id) {
     if (!this.UsesUser) {
-        return undefined;
+        return;
     }
 
     if (typeof this.UserData[id] == 'undefined') {
-        return undefined;
+        return;
     }
 
     return this.UserData[id];
@@ -735,11 +731,11 @@ JSESSIONInst.prototype.users = function (id) {
 
 JSESSIONInst.prototype.channels = function (id) {
     if (!this.UsesChannel) {
-        return undefined;
+        return;
     }
 
     if (typeof this.ChannelData[id] == 'undefined') {
-        return undefined;
+        return;
     }
 
     return this.ChannelData[id];
@@ -747,11 +743,11 @@ JSESSIONInst.prototype.channels = function (id) {
 
 JSESSIONInst.prototype.global = function () {
     if (!this.UsesGlobal) {
-        return undefined;
+        return;
     }
 
     if (typeof this.GlobalData == 'undefined') {
-        return undefined;
+        return;
     }
 
     return this.GlobalData;
@@ -920,22 +916,25 @@ hasTeam = function (id, tier) {
     return sys.hasTier(id, tier);
 }
 
-TourBox = function (message) {
-    return "<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>";
+TourBox = function (message, chan) {
+    sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
 }
 
 TourNotification = function (src, chan, info) { // info is an object
-    var tour = JSESSION.channels(chan).tour, mode = tour.tourmode;
+    var tour = JSESSION.channels(chan).tour,
+        mode = tour.tourmode;
     if (src != 0) {
-	if (mode == 0) {
-	return;
-	}
-	
-	var white = function () {
-	sys.sendMessage(src, "", chan);
-	}, border = function() {
-	sys.sendHtmlMessage(src, TOUR_BORDER, chan);
-	}, startTime = getTimeString(sys.time() * 1 - tour.startTime);
+        if (mode == 0) {
+            return;
+        }
+
+        var white = function () {
+            sys.sendMessage(src, "", chan);
+        },
+            border = function () {
+                sys.sendHtmlMessage(src, TOUR_BORDER, chan);
+            },
+            startTime = getTimeString(sys.time() * 1 - tour.startTime);
 
         white();
         border();
@@ -989,7 +988,7 @@ TourNotification = function (src, chan, info) { // info is an object
                 prize = '<b style="color: brown;">Prize:</b> ' + tour.prize + '<br/>';
             }
 
-            sys.sendHtmlAll(TourBox("A Tournament was started by <b style='color:" + info.color + "'>" + info.starter + "</b>! <br/> <b style='color:red'>Players:</b> " + tour.tournumber + " <br/> <b style='color: blue'>Type:</b> " + tour.identify() + " <br/> <b style='color: orange'>Tier:</b> " + tour.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!"), chan);
+            TourBox("A Tournament was started by <b style='color:" + info.color + "'>" + info.starter + "</b>! <br/> <b style='color:red'>Players:</b> " + tour.tournumber + " <br/> <b style='color: blue'>Type:</b> " + tour.identify() + " <br/> <b style='color: orange'>Tier:</b> " + tour.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!", chan);
         }
     }
 }
@@ -1105,6 +1104,10 @@ Tours.prototype.identify = function (test) {
     }
 }
 
+Tours.prototype.TourBox = function (message) {
+    TourBox(message, this.id);
+}
+
 Tours.prototype.command_autostartbattles = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
         noPermissionMessage(src, fullCommand, this.id);
@@ -1126,7 +1129,7 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
             this.border();
         }
         else {
-            sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> turned auto start battles on."), this.id);
+            this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> turned auto start battles on.");
         }
         this.AutoStartBattles = true;
         return;
@@ -1142,7 +1145,7 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
             this.AutoStartBattles = false;
         }
         else {
-            sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> turned auto start battles off."), this.id);
+            this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> turned auto start battles off.");
             this.AutoStartBattles = false;
         }
         return;
@@ -1186,7 +1189,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         if (display == 1) {
             botEscapeAll(sys.name(src) + " joined the tournament! " + this.tourSpots() + " more spot(s) left!", this.id);
         } else {
-            sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> joined the tournament! <b>" + this.tourSpots() + "</b> more spot(s) left!"), this.id);
+            this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> joined the tournament! <b>" + this.tourSpots() + "</b> more spot(s) left!");
         }
 
         if (this.tourSpots() == 0) {
@@ -1219,7 +1222,7 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
     if (display == 1) {
         botEscapeAll(sys.name(src) + " left the tournament " + (this.tourSpots() + 1) + " spots left!", this.id);
     } else {
-        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> left the tournament! <b>" + (this.tourSpots() + 1) + "</b> spots left!"), this.id);
+        this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> left the tournament! <b>" + (this.tourSpots() + 1) + "</b> spots left!");
     }
 
     if (this.tourmode == 2 && this.players[name2].couplesid != -1) {
@@ -1339,7 +1342,7 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
         this.border();
     }
     else {
-        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(sys.id(commandData)) + "'>" + commandData.name() + "</b> was removed from the tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!"), this.id);
+        this.TourBox("<b style='color: " + script.namecolor(sys.id(commandData)) + "'>" + commandData.name() + "</b> was removed from the tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!");
     }
 
 
@@ -1410,7 +1413,7 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
             spots = "<br><b>" + this.tourSpots() + "</b> more spot(s) left!";
         }
 
-        sys.sendHtmlAll(TourBox(parts[0] + " was switched with " + parts[1] + " by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots), this.id);
+        this.TourBox(parts[0] + " was switched with " + parts[1] + " by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots);
     }
 }
 
@@ -1462,7 +1465,7 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
             spots = "<br/><b>" + this.tourSpots() + "</b> more spot(s) left!";
         }
 
-        sys.sendHtmlAll(TourBox("<b style='color:" + script.namecolor(sys.id(commandData)) + "'>" + name + "</b> was added to the tournament by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots), this.id);
+        this.TourBox("<b style='color:" + script.namecolor(sys.id(commandData)) + "'>" + name + "</b> was added to the tournament by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spots);
     }
 
     if (this.tourmode == 1 && this.tourSpots() == 0) {
@@ -1506,7 +1509,7 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
         this.border();
     }
     else {
-        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(sys.id(startername)) + "'>" + startername + "</b> can forfeit their battle and rematch now."), this.id);
+        this.TourBox("<b style='color: " + script.namecolor(sys.id(startername)) + "'>" + startername + "</b> can forfeit their battle and rematch now.");
     }
     return;
 }
@@ -1638,7 +1641,7 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
         this.border();
     }
     else {
-        sys.sendHtmlAll(TourBox("<b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b> changed the numbers of entrants to " + count + "!<br/><b>" + this.tourSpots() + "</b> more spot(s) left!"), this.id);
+        this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b> changed the numbers of entrants to " + count + "!<br/><b>" + this.tourSpots() + "</b> more spot(s) left!");
     }
 
     if (this.tourSpots() == 0) {
@@ -1666,7 +1669,7 @@ Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
             this.border();
         }
         else {
-            sys.sendHtmlAll(TourBox("The tournament has been ended by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!"), this.id);
+            this.TourBox("The tournament has been ended by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!");
         }
         return;
     }
@@ -5341,7 +5344,8 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var last, lastname, l, add, t, n = sys.time() * 1,
-                        perm = !noPermission(src, 1), y;
+                        perm = !noPermission(src, 1),
+                        y;
 
                     var tt = new Table_Templater('Channel Banlist', 'red', '3');
                     if (perm) {
@@ -5352,7 +5356,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     tt.register(add, true);
-					
+
                     for (y in bans) {
                         last = "N/A", lastname = lastName(y), l = bans[y], t = getTimeString(l.time - n);
                         if (lastname !== undefined) {
@@ -5366,7 +5370,7 @@ if(message == "Maximum Players Changed.") {
                         }
                         tt.register(add, false);
                     }
-					
+
                     tt.render(src, chan);
                 },
 
@@ -5377,7 +5381,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     Prune.channelMutes(chan);
-					
+
                     var mutes = poChan.mutelist;
 
                     if (objLength(mutes) == 0) {
@@ -5386,7 +5390,8 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var last, lastname, l, add, tstr, now = sys.time() * 1,
-                        perm = !noPermission(src, 1), y;
+                        perm = !noPermission(src, 1),
+                        y;
 
                     var tt = new Table_Templater('Channel Mutelist', 'blue', '3');
 
@@ -5396,7 +5401,7 @@ if(message == "Maximum Players Changed.") {
                     else {
                         add = ["Muted Name", "Muted By", "Reason", "Length", "Last Used Name"];
                     }
-					
+
                     tt.register(add, true);
 
                     for (y in mutes) {
@@ -6158,7 +6163,7 @@ if(message == "Maximum Players Changed.") {
                             sys.sendHtmlAll(TOUR_BORDER, 0);
                         }
                         else {
-                            sys.sendHtmlAll(TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours on."), 0);
+                            TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours on.", 0);
                         }
                         AutoStartTours = true;
                         cache.write("AutoStartTours", true);
@@ -6174,7 +6179,7 @@ if(message == "Maximum Players Changed.") {
                             sys.sendHtmlAll(TOUR_BORDER, 0);
                         }
                         else {
-                            sys.sendHtmlAll(TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours off."), 0);
+                            TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours off.", 0);
                         }
                         AutoStartTours = false;
                         cache.write("AutoStartTours", false);
@@ -6359,7 +6364,7 @@ if(message == "Maximum Players Changed.") {
 
                     var t = sys.time() * 1,
                         r, i, s;
-						
+
                     var tt = new Table_Templater("Range Ban List", "darkviolet", "3");
                     tt.register(["Range IP", "By", "Reason", "Duration"], true);
 
@@ -6385,15 +6390,15 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "There are currently no temp bans.", chan);
                         return;
                     }
-					
+
                     var last, lastname, i, r, s, t = sys.time() * 1;
-					
+
                     var tt = new Table_Templater('Temp Ban List', 'limegreen', '3');
                     tt.register(["IP", "Last Used Name", "By", "Reason", "Duration"], true);
 
                     for (i in temp) {
                         r = temp[i], s = "forever";
-						
+
                         if (r.time !== 0) {
                             s = "for " + getTimeString(r.time - t);
                         }
@@ -6554,7 +6559,7 @@ if(message == "Maximum Players Changed.") {
 
                 banlist: function () {
                     var list = sys.banList().sort();
-					
+
                     if (list.length === 0) {
                         botMessage(src, "No one is banned.", chan);
                         return;
@@ -6562,7 +6567,7 @@ if(message == "Maximum Players Changed.") {
 
                     var tt = new Table_Templater("Ban List", "red", "3");
                     tt.register(["Name", "Last Used Name", "IP"], true);
-					
+
                     var last, lastname, ly, ip, y;
 
                     for (y in list) {
@@ -6570,7 +6575,7 @@ if(message == "Maximum Players Changed.") {
                         if (lastname !== undefined) {
                             last = lastname;
                         }
-						
+
                         tt.register([ly.name(), last, ip], false);
                     }
 
@@ -6756,7 +6761,7 @@ if(message == "Maximum Players Changed.") {
                         "by": "",
                         "level": 0
                     };
-					
+
                     botAll(sys.name(src) + " unsilenced the chat!");
                 },
 
@@ -13956,7 +13961,7 @@ if(message == "Maximum Players Changed.") {
             "eeval": "eval",
             "code": "eval",
             "run": "eval",
-			"silenceoff": "unsilence"
+            "silenceoff": "unsilence"
         };
 
         var c = false,
