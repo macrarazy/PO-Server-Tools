@@ -141,8 +141,9 @@ botEscapeMessage = function (src, message, channel) {
         return;
     }
 
-    var color = Bot.botcolor;
-    var name = Bot.bot;
+    var color = Bot.botcolor,
+        name = Bot.bot;
+
     if (typeof channel != "undefined") {
         sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + html_escape(message), channel);
     }
@@ -156,8 +157,9 @@ botMessage = function (src, message, channel) {
         return;
     }
 
-    var color = Bot.botcolor;
-    var name = Bot.bot;
+    var color = Bot.botcolor,
+        name = Bot.bot;
+
     if (typeof channel != "undefined") {
         sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
     }
@@ -171,8 +173,9 @@ botEscapeAll = function (message, channel) {
         return;
     }
 
-    var color = Bot.botcolor;
-    var name = Bot.bot;
+    var color = Bot.botcolor,
+        name = Bot.bot;
+
     if (typeof channel != "undefined") {
         sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + html_escape(message), channel);
     }
@@ -186,8 +189,9 @@ botAll = function (message, channel) {
         return;
     }
 
-    var color = Bot.botcolor;
-    var name = Bot.bot;
+    var color = Bot.botcolor,
+        name = Bot.bot;
+
     if (typeof channel != "undefined") {
         sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
     }
@@ -197,8 +201,7 @@ botAll = function (message, channel) {
 }
 
 teamAlert = function (src, team, message) {
-    team += 1;
-    botMessage(src, "Team #" + team + ": " + message, undefined);
+    botMessage(src, "Team #" + (team + 1) + ": " + message);
 }
 
 /* Invalid Command Messages */
@@ -462,11 +465,13 @@ function POChannel(id) {
 }
 
 POChannel.prototype.giveTourAuth = function (name) {
-    if (this.tourAuth[name.toLowerCase()] !== undefined) {
+    var toLower = name.toLowerCase();
+
+    if (this.tourAuth.has(toLower)) {
         return;
     }
 
-    this.tourAuth[name.toLowerCase()] = {
+    this.tourAuth[toLower] = {
         'name': name.name()
     };
 
@@ -478,11 +483,13 @@ POChannel.prototype.giveTourAuth = function (name) {
 }
 
 POChannel.prototype.takeTourAuth = function (name) {
-    if (this.tourAuth[name.toLowerCase()] == undefined) {
+    var toLower = name.toLowerCase();
+
+    if (!this.tourAuth.has(toLower)) {
         return;
     }
 
-    delete this.tourAuth[name.toLowerCase()];
+    delete this.tourAuth[toLower];
 
     if (typeof cData == 'undefined') {
         return;
@@ -491,28 +498,28 @@ POChannel.prototype.takeTourAuth = function (name) {
     cData.changeTourAuth(this.id, this.tourAuth);
 }
 
-POChannel.prototype.changeTopic = function (source, topic, fullCommand) {
+POChannel.prototype.changeTopic = function (src, topic, fullCommand) {
     if (isEmpty(topic)) {
         if (this.topic == '') {
-            botMessage(source, "No Topic exists!", this.id);
+            botMessage(src, "There is no topic.", this.id);
             return;
         }
 
-        botEscapeMessage(source, "Topic: " + this.topic, this.id);
+        botEscapeMessage(src, "Topic: " + this.topic, this.id);
 
         if (this.topicsetter != '') {
-            botEscapeMessage(source, "Set by: " + this.topicsetter, this.id)
+            botEscapeMessage(src, "Set by: " + this.topicsetter, this.id)
         }
 
         if (this.defaultTopic) {
-            botMessage(source, "This is a default topic.", this.id);
+            botMessage(src, "This is a default topic.", this.id);
         }
 
         return;
     }
 
-    if (!this.isChanMod(source)) {
-        noPermissionMessage(source, fullCommand, this.id);
+    if (!this.isChanMod(src)) {
+        noPermissionMessage(src, fullCommand, this.id);
         return;
     }
 
@@ -520,69 +527,18 @@ POChannel.prototype.changeTopic = function (source, topic, fullCommand) {
         this.topic = "Welcome to " + this.name + "!";
         this.defaultTopic = true;
         this.topicsetter = '';
-        botAll("The topic was changed by " + sys.name(source) + " to: " + this.topic, this.id);
+        botAll("The topic was changed by " + sys.name(src) + " to: " + this.topic, this.id);
         return;
     }
 
     this.topic = topic;
-    this.topicsetter = sys.name(source);
+    this.topicsetter = sys.name(src);
     this.defaultTopic = false;
-    botAll("The topic was changed by " + sys.name(source) + " to: " + this.topic, this.id);
+    botAll("The topic was changed by " + sys.name(src) + " to: " + this.topic, this.id);
     return;
 }
 
-POChannel.prototype.updateAuth = function () {
-    if (typeof sys == 'undefined' || typeof cData == 'undefined') {
-        return;
-    }
-
-    var x, update = false,
-        cauth = this.chanAuth,
-        authlist = sys.dbAuths(),
-        cauthcur, curauth;
-
-    for (x in authlist) {
-        authlistcur = authlist[x];
-        cauthcur = cauth[authlistcur];
-        curauth = sys.dbAuth(authlistcur);
-
-        if (curauth > 3) curauth = 3;
-
-        if (cauthcur == undefined || curauth > cauthcur) {
-            cauth[authlistcur] = curauth;
-            update = true;
-        }
-    }
-
-    if (update) {
-        cData.changeChanAuth(this.id, cauth);
-    }
-}
-
-POChannel.prototype.clearUsers = function () {
-    if (typeof cData == 'undefined') {
-        return;
-    }
-
-    var x, update = false,
-        authlist = this.chanAuth;
-    for (x in authlist) {
-        if (authlist[x] == 0) {
-            delete authlist[x];
-            update = true;
-        }
-    }
-
-    if (update) {
-        cData.changeChanAuth(this.id, authlist);
-    }
-}
-
 POChannel.prototype.changeAuth = function (name, newauth) {
-    if (this.chanAuth == undefined) {
-        this.chanAuth = {};
-    }
-
     var nh;
     if (typeof name == "number") {
         nh = sys.name(name).toLowerCase();
@@ -590,7 +546,7 @@ POChannel.prototype.changeAuth = function (name, newauth) {
         nh = name.toLowerCase();
     }
 
-    if (newauth == 0 && nh in this.chanAuth) {
+    if (newauth == 0 && this.chanAuth.has(name)) {
         delete this.chanAuth[nh];
         return;
     }
@@ -599,17 +555,13 @@ POChannel.prototype.changeAuth = function (name, newauth) {
 }
 
 POChannel.prototype.canIssue = function (src, tar) {
-    if (this.chanAuth == undefined) {
-        this.chanAuth = {};
-        return false;
-    }
     if (typeof hpAuth == 'undefined') {
         return false;
     }
 
-    var selfName = sys.name(src);
-    targetName = sys.name(tar);
-    var srcID = src;
+    var selfName = sys.name(src),
+        targetName = sys.name(tar),
+        srcID = src;
 
     if (typeof src == 'string') {
         selfName = src.toLowerCase();
@@ -626,51 +578,41 @@ POChannel.prototype.canIssue = function (src, tar) {
         targetName = targetName.toLowerCase();
     }
 
-    if (this.chanAuth[targetName] == undefined || sys.dbIp(targetName) == undefined) {
-        return true;
+    if (sys.dbIp(targetName) == undefined || sys.dbIp(selfName) == undefined) {
+        return false;
     }
 
-    if (hpAuth(src) <= hpAuth(tar) || this.chanAuth[selfName] == undefined || srcID == undefined || this.chanAuth[selfName] <= this.chanAuth[targetName] && !this.isChanOwner(src)) {
+    if (hpAuth(src) <= hpAuth(tar) || srcID == undefined || this.chanAuth[selfName] <= this.chanAuth[targetName] && !this.isChanOwner(src)) {
         return false;
     }
 
     return true;
 }
 
-POChannel.prototype.isBannedInChannel = function (srcip) {
-    if (typeof(this.banlist) == "undefined") {
-        this.banlist = {};
-    }
-
-    return typeof this.banlist[srcip] == "object";
+POChannel.prototype.isBannedInChannel = function (ip) {
+    return this.banlist.has(ip);
 }
 
 POChannel.prototype.isMutedInChannel = function (ip) {
-    if (this.mutelist == undefined) {
-        this.mutelist = {};
-    }
-    return typeof this.mutelist[ip] == "object";
+    return this.mutelist.has(ip);
 }
 
-POChannel.prototype.isChanMod = function (userid) {
-    if (this.chanAuth == undefined) {
-        this.chanAuth = {};
-    }
-    return this.chanAuth[sys.name(userid).toLowerCase()] >= 1;
+POChannel.prototype.isChanMod = function (src) {
+    var toLower = sys.name(src).toLowerCase();
+
+    return this.chanAuth[toLower] >= 1 || sys.auth(src) >= 1;
 }
 
-POChannel.prototype.isChanAdmin = function (userid) {
-    if (this.chanAuth == undefined) {
-        this.chanAuth = {};
-    }
-    return this.chanAuth[sys.name(userid).toLowerCase()] >= 2;
+POChannel.prototype.isChanAdmin = function (src) {
+    var toLower = sys.name(src).toLowerCase();
+
+    return this.chanAuth[toLower] >= 2 || sys.auth(src) >= 2;
 }
 
-POChannel.prototype.isChanOwner = function (userid) {
-    if (this.chanAuth == undefined) {
-        this.chanAuth = {};
-    }
-    return this.chanAuth[sys.name(userid).toLowerCase()] >= 3;
+POChannel.prototype.isChanOwner = function (src) {
+    var toLower = sys.name(src).toLowerCase();
+
+    return this.chanAuth[toLower] >= 3 || sys.auth(src) >= 3;
 }
 
 function POGlobal(id) {
@@ -696,6 +638,7 @@ JSESSIONInst = function () {
 JSESSIONInst.prototype.refill = function () {
     var x, users = sys.playerIds(),
         channels = sys.channelIds();
+
     if (this.UsesUser) {
         for (x in users) {
             if (this.users(users[x]) == undefined) {
@@ -759,7 +702,9 @@ JSESSIONInst.prototype.identifyScriptAs = function (script) {
     if (this.ScriptID == undefined || this.ScriptID != script) {
         this.clearAll();
     }
+
     this.ScriptID = script;
+    this.refill();
 }
 
 JSESSIONInst.prototype.registerUser = function (func) {
@@ -899,9 +844,11 @@ firstTeamForTier = function (id, tier) {
     if (Config.NoCrash) {
         return 0;
     }
-    var ttl = tier.toLowerCase();
 
-    for (var x = 0; x < sys.teamCount(id); x++) {
+    var ttl = tier.toLowerCase(),
+        x;
+
+    for (x = 0; x < sys.teamCount(id); x++) {
         if (sys.tier(id, x).toLowerCase() == ttl) {
             return x;
         }
@@ -925,6 +872,7 @@ TourBox = function (message, chan) {
 TourNotification = function (src, chan, info) { // info is an object
     var tour = JSESSION.channels(chan).tour,
         mode = tour.tourmode;
+
     if (src != 0) {
         if (mode == 0) {
             return;
@@ -1715,7 +1663,8 @@ Tours.prototype.playerName = function (hash, hashno) {
 }
 
 Tours.prototype.first = function (hash) {
-    for (var x in hash)
+var x;
+    for (x in hash)
     return hash[x];
 }
 
@@ -2281,21 +2230,33 @@ function Mail(sender, text, title) {
     this.sendAgo = sys.time() * 1;
 }
 
-String.prototype.reverse = function () {
-    var strThis = thism
+Object.defineProperty(String.prototype, "reverse", {
+    "value": function () {
+    var strThis = thism;
     strThisArr = strThis.split("").reverse().join("");
 
     this = strThisArr;
     return this;
-}
+    },
 
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
 
-String.prototype.contains = function (string) {
+Object.defineProperty(String.prototype, "contains", {
+    "value": function (string) {
     var str = this;
     return str.indexOf(string) > -1;
-}
+    },
 
-String.prototype.name = function () {
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(String.prototype, "name", {
+    "value": function () {
     var str = this;
     if (typeof DataHash.names == "undefined") {
         return str;
@@ -2307,11 +2268,16 @@ String.prototype.name = function () {
     }
 
     return str;
-}
+    },
 
-String.prototype.format = function () {
-    var str = this;
-    var exp, i, args = arguments.length,
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(String.prototype, "format", {
+    "value": function () {
+    var str = this, exp, i, args = arguments.length,
         icontainer = 0;
     for (i = 0; i < args; i++) {
         icontainer++;
@@ -2319,21 +2285,48 @@ String.prototype.format = function () {
         str = str.replace(exp, arguments[i]);
     }
     return str;
-}
+    },
 
-String.prototype.fontsize = function (size) {
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(String.prototype, "fontsize", {
+    "value": function (size) {
     var str = this;
 
     return "<font size='" + size + "'>" + str + "</font>";
-}
+    },
 
-String.prototype.scramble = function () {
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(String.prototype, "scramble", {
+    "value": function () {
     var thisString = this.split("");
     for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
     return thisString.join("");
-}
+    },
 
-JSESSION.identifyScriptAs("JSESSION Original");
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Object.prototype, "has", {
+    "value": function (prop) {
+        return typeof this[prop] !== "undefined";
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+JSESSION.identifyScriptAs("TheUnknownOne's Server Script");
 JSESSION.registerUser(POUser);
 JSESSION.registerChannel(POChannel);
 JSESSION.registerGlobal(POGlobal);
@@ -2462,8 +2455,6 @@ JSESSION.refill();
         var chan = JSESSION.channels(c),
             srcname = sys.name(src).toLowerCase(),
             user = JSESSION.users(src);
-
-        chan.updateAuth();
 
         if (chan.isChanMod(src) || (sys.auth(src) >= 1 && sys.auth(src) <= 2 && channel != scriptchannel) || sys.auth(src) > 2 || DataHash.megausers[sys.name(src).toLowerCase()] != undefined && c == staffchannel || DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase()) && c == scriptchannel) {
             return;
@@ -5258,9 +5249,6 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 cauth: function () {
-                    poChan.updateAuth();
-                    poChan.clearUsers();
-
                     var authList = poChan.chanAuth,
                         x, cauth, auths = {
                             'mods': [],
@@ -5270,7 +5258,7 @@ if(message == "Maximum Players Changed.") {
                         authTotal = objLength(authList);
 
                     if (authTotal == 0) {
-                        botMessage(src, "No channel authority at the moment!", chan);
+                        botMessage(src, "No one is auth in this channel.", chan);
                         return;
                     }
 
@@ -5552,11 +5540,13 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var X = sys.playersOfChannel(chan);
-                    for (var x in X) {
-                        var lc = sys.name(X[x]).toLowerCase()
-                        if ((poChan.chanAuth[lc] == 0 || !poChan.chanAuth.hasOwnProperty(lc)) && sys.auth(sys.id(lc)) < 1) {
-                            sys.kick(X[x], chan);
+                    var players = sys.playersOfChannel(chan), x, lc, curr;
+					
+                    for (x in players) {
+					curr = players[x];
+                        lc = sys.name(curr).toLowerCase();
+                        if (!poChan.chanAuth.has(lc) && hpAuth(curr) < 1) {
+                            sys.kick(curr, chan);
                         }
                     }
 
@@ -9413,12 +9403,6 @@ if(message == "Maximum Players Changed.") {
                 kick(src);
                 return;
             }
-
-            var x, chanList = sys.channelsOfPlayer(src);
-            for (x in chanList) {
-                JSESSION.channels(chanList[x]).updateAuth();
-            }
-
         } /* END OF LOGGING */
 
         var myMail = DataHash.mail[lc];
@@ -10374,13 +10358,17 @@ if(message == "Maximum Players Changed.") {
 
         TierBans.newBan(EXCLUDING, cc, function eventMovesCheck(src, team, tier) {
             var ret = [],
-                i, poke, x;
+                i, poke, x, y, nat, move;
             for (i = 0; i < 6; i++) {
                 poke = sys.teamPoke(src, team, i);
-                if (poke in pokeNatures) {
+                if (pokeNatures.has(poke)) {
                     for (x in pokeNatures[poke]) {
-                        if (sys.hasTeamPokeMove(src, team, i, x) && sys.teamPokeNature(src, team, i) != pokeNatures[poke][x]) {
-                            ret.push(sys.pokemon(poke) + " with " + sys.move(x) + " must be a " + sys.nature(pokeNatures[poke][x]) + " nature. Change it in the teambuilder.\n");
+                        nat = pokeNatures[poke][x];
+                        for (y in nat[0]) {
+                            move = nat[0][y];
+                            if (sys.hasTeamPokeMove(src, team, i, sys.moveNum(move)) && sys.teamPokeNature(src, team, i) != sys.natureNum(nat[1])) {
+                                ret.push(sys.pokemon(poke) + " with " + move + " must be a " + nat[1] + " nature. Change it in the teambuilder.");
+                            }
                         }
                     }
                 }
@@ -10694,24 +10682,19 @@ if(message == "Maximum Players Changed.") {
         bannedGSCSleep = [sys.moveNum("Spore"), sys.moveNum("Hypnosis"), sys.moveNum("Lovely Kiss"), sys.moveNum("Sing"), sys.moveNum("Sleep Powder")];
         bannedGSCTrap = [sys.moveNum("Mean Look"), sys.moveNum("Spider Web")];
 
-        pokeNatures = [];
-        var list = "Heatran-Eruption/Quiet=Suicune-ExtremeSpeed/Relaxed|Sheer Cold/Relaxed|Aqua Ring/Relaxed|Air Slash/Relaxed=Raikou-ExtremeSpeed/Rash|Weather Ball/Rash|Zap Cannon/Rash|Aura Sphere/Rash=Entei-ExtremeSpeed/Adamant|Flare Blitz/Adamant|Howl/Adamant|Crush Claw/Adamant=Snivy-Aromatherapy/Hardy|Synthesis/Hardy";
+        pokeNatures = {
+            "Heatran": [
+                ["Eruption"], "Quiet"],
+            "Suicune": [
+                ["ExtremeSpeed", "Sheer Cold", "Aqua Ring", "Air Slash"], "Relaxed"],
+            "Raikou": [
+                ["ExtremeSpeed", "Weather Ball", "Zap Cannon", "Aura Sphere"], "Rash"],
+            "Entei": [
+                ["ExtremeSpeed", "Flare Blitz", "Howl", "Crush Claw"], "Adamant"],
+            "Snivy": [
+                ["Aromatherapy", "Synthesis"], "Hardy"]
+        };
 
-        var sepPokes = list.split('=');
-
-        for (var x in sepPokes) {
-            var sepMovesPoke = sepPokes[x].split('-');
-            var sepMoves = sepMovesPoke[1].split('|');
-
-            var poke = sys.pokeNum(sepMovesPoke[0]);
-            pokeNatures[poke] = [];
-
-            for (var y = 0; y < sepMoves.length; ++y) {
-                var movenat = sepMoves[y].split('/');
-                pokeNatures[poke][sys.moveNum(movenat[0])] = sys.natureNum(movenat[1]);
-            }
-
-        }
         breedingpokemons = [];
 
         if (Config.DWAbilityCheck) {
@@ -11708,7 +11691,7 @@ if(message == "Maximum Players Changed.") {
         var isUndefined = typeof cData == "undefined";
 
         cData = new(function () {
-            var file = "cData.json";
+            var file = "Channel Data.json";
             createFile(file, "{}");
 
             this.channelData = {};
@@ -12961,10 +12944,10 @@ if(message == "Maximum Players Changed.") {
                     i = 1;
 
                 /* Lets begin with moves. */
-
                 var importMoves = function (moveArray, Obj) {
                     for (x in moveArray) {
                         current_move = moveArray[x];
+
                         c_m_spl = current_move.split(":");
                         c_m_space = current_move.split(" ");
                         c_poke = Number(c_m_spl[0]);
@@ -13857,9 +13840,16 @@ if(message == "Maximum Players Changed.") {
         defineDataProp("locations", playerscache);
 
         var ids = sys.playerIds(),
-            x, n, l, names = dHash.names;
+            x, n, l, names = dHash.names,
+            curr;
+
         for (x in ids) {
-            n = sys.name(ids[x]);
+            curr = ids[x];
+            if (!sys.loggedIn(curr)) {
+                continue;
+            }
+
+            n = sys.name(curr);
             l = n.toLowerCase();
             names[l] = n;
         }
