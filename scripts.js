@@ -368,6 +368,7 @@ function POUser(id) {
     }
 }
 
+/*
 POUser.prototype.muteCheck = function () {
     if (DataHash.mutes == undefined) {
         return;
@@ -377,9 +378,10 @@ POUser.prototype.muteCheck = function () {
         this.muted = false;
     }
 }
+*/
 
 POUser.prototype.addFlood = function () {
-    if (sys.auth(this.id) < 1) {
+    if (typeof hpAuth == 'undefined' || hpAuth(this.id) < 1) {
         this.floodCount++;
         sys.callLater('JSESSION.users(' + this.id + ').floodCount--', 6);
     }
@@ -441,7 +443,7 @@ function POChannel(id) {
     this.topicsetter = '';
     this.toursEnabled = false;
 
-    if (typeof(channels) != "undefined" && channels.indexOf(id) != -1 || typeof(channels) == "undefined") {
+    if (typeof DefaultChannels != "undefined" && DefaultChannels.indexOf(id) != -1 || typeof DefaultChannels == "undefined") {
         this.perm = true;
         this.tour = new Tours(this.id);
         this.toursEnabled = true;
@@ -2997,7 +2999,7 @@ if(message == "Maximum Players Changed.") {
             ip = sys.ip(src),
             srcname = sys.name(src);
 
-        poUser.muteCheck();
+        // poUser.muteCheck();
         poUser.addFlood();
 
         if (poUser.floodCount >= 8 && AutoKick) {
@@ -9570,7 +9572,7 @@ if(message == "Maximum Players Changed.") {
     },
 
     beforePlayerKick: function (src, tar) {
-        JSESSION.users(src).muteCheck();
+        // JSESSION.users(src).muteCheck();
         sys.stopEvent();
 
         var myName = sys.name(src),
@@ -9607,7 +9609,7 @@ if(message == "Maximum Players Changed.") {
     },
 
     beforePlayerBan: function (src, tar) {
-        JSESSION.users(src).muteCheck();
+        // JSESSION.users(src).muteCheck();
         sys.stopEvent();
 
         var myName = sys.name(src),
@@ -9874,14 +9876,14 @@ if(message == "Maximum Players Changed.") {
             srcname = sys.name(src);
 
         if (theIP == undefined) {
-            botMessage(src, "Unknown target!", c);
+            botMessage(src, "This person doesn't exist.", c);
             return;
         }
 
         Prune.mutes();
 
-        if ((!DataHash.mutes.hasOwnProperty(theIP))) {
-            botMessage(src, "You cannot unmute a not muted player!", c);
+        if (!DataHash.mutes.hasOwnProperty(theIP)) {
+            botMessage(src, "You cannot unmute someone who isn't muted!", c);
             return;
         }
 
@@ -11994,10 +11996,10 @@ if(message == "Maximum Players Changed.") {
         staffchannel = makeChan("Staff Channel");
         scriptchannel = makeChan("Eval Area");
 
-        channels = [0, mafiachan, /*trivia, trivreview, */ staffchannel, watch, scriptchannel];
+        DefaultChannels = [0, mafiachan, /*trivia, trivreview, */ staffchannel, watch, scriptchannel];
 
-        for (y in channels) {
-            JSESSION.createChannel(channels[y]);
+        for (y in DefaultChannels) {
+            JSESSION.createChannel(DefaultChannels[y]);
         }
     },
 
