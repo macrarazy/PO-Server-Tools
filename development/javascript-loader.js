@@ -205,10 +205,10 @@ name => command name (string)
 handler => handler which will be called when command is used (function), passed arguments: src, commandData, mcmd, chan
 permission_handler => will be called when the command is used to test if the person can use it. use this for channel xxx auth and tour auth only commands. (function, optional). if omitted, uses command_category to "guess".
 command_category => can be: user, mod, admin, owner, channel, tour (string, optional). if omitted, the command category will be "user"
-help => [0] = args, [1] = description. (array, optional). if array is empty or missing, does not show the command
+help => [0] = args (array|string, uses same format as 2.2 templater), [1] = description (string). (array, optional).
 
 Commands lists should do:
 templater.list(COMMAND_OBJECT);
 
-Best done in a loop (an array contains the command objects, for example). do this with the include.getCommand function.
+Best done in a loop (an array contains the command objects, for example). do this with the getCommand function.
 */
