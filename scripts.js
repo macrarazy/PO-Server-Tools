@@ -45,10 +45,6 @@
 || this on.                                                  ||
 || true = yes. false = no                                    ||
 ===============================================================
-|| AutoBans:                                                 ||
-|| Automatically bans some proxies.                          ||
-|| true = yes. false = no                                    ||
-===============================================================
 || NoCrash:                                                  ||
 || This _can_ fix some crashes, but some things won't        ||
 || work anymore. Only use this when you have trouble with    ||
@@ -88,7 +84,6 @@ Config = {
     AutoChannelJoin: true,
     WelcomeMessages: false,
     FixChallenges: false,
-    AutoBans: true,
     NoCrash: false,
 
     ClearLogsAt: 36700160,
@@ -9723,17 +9718,6 @@ if(message == "Maximum Players Changed.") {
                 botAll('Player ' + name + ' (' + ip + ') has failed to log in. [Reason: Unicode characters]', watch);
             }
             return true;
-        }
-
-        if (Config.AutoBans && auth < 1) {
-            var ips = ["75.97.113.23", "174.97.200.137", "74.177.140.6", "71.200.127.248", "80.99.185.34", "98.224.59.142", "146.185.22.84", "80.57.218.225", "24.9.47.159", "202.109.143.36", "122.225.36.101", "96.21.77.178", "99.99.42.44", "1.23.90.54", "120.62.170.171", "120.63.37.210", "184.57.43.134", "24.220.22.51", "78.145.211.13", "172.131.113.123", "108.216.164.247", "86.42.2.61", "217.166.85.2", "172.129.68.11", "174.54.115.184", "178.165.60.119", "67.191.121.15", "121.8.124.42", "99.237.117.229", "187.133.50.253", "81.102.146.69", "70.126.60.11", "174.44.167.230", "128.227.113.21", "199.255.210.77"];
-            if (ips.indexOf(ip) > -1) {
-                if (!nomessage) {
-                    sendFailWhale(src, 0);
-                }
-                ban(name);
-                return true;
-            }
         }
 
         if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "T" && name[4] == "_") {
