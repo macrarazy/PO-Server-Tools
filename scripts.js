@@ -916,7 +916,7 @@ TourNotification = function (src, chan, info) { // info is an object
         border();
         white();
     } else {
-        if (TOUR_DISPLAY == 1) {
+        if (TourDisplay == 1) {
             tour.white()
             tour.border();
             sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + info.starter + "! </b></font>", chan);
@@ -1071,7 +1071,7 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
     }
 
     if (cmdlc == 'on' && !this.AutoStartBattles) {
-        if (TOUR_DISPLAY == 1) {
+        if (TourDisplay == 1) {
             this.border();
             this.white();
             botEscapeAll(sys.name(src) + " turned auto start battles on.", this.id);
@@ -1086,7 +1086,7 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
     }
 
     if (cmdlc == 'off' && this.AutoStartBattles) {
-        if (TOUR_DISPLAY == 1) {
+        if (TourDisplay == 1) {
             this.border();
             this.white();
             botEscapeAll(sys.name(src) + " turned auto start battles off.", this.id);
@@ -1136,7 +1136,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
     if (this.tourSpots() > 0) {
         this.buildHash(src);
 
-        if (TOUR_DISPLAY == 1) {
+        if (TourDisplay == 1) {
             botEscapeAll(sys.name(src) + " joined the tournament! " + this.tourSpots() + " more spot(s) left!", this.id);
         } else {
             this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> joined the tournament! <b>" + this.tourSpots() + "</b> more spot(s) left!");
@@ -1169,7 +1169,7 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
         this.remaining--;
     }
 
-    if (TOUR_DISPLAY == 1) {
+    if (TourDisplay == 1) {
         botEscapeAll(sys.name(src) + " left the tournament " + (this.tourSpots() + 1) + " spots left!", this.id);
     } else {
         this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> left the tournament! <b>" + (this.tourSpots() + 1) + "</b> spots left!");
@@ -1284,7 +1284,7 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
         this.remaining--;
     }
 
-    if (TOUR_DISPLAY == 1) {
+    if (TourDisplay == 1) {
         this.border();
         this.white();
         botEscapeAll(commandData.name() + " was removed from the tournament by " + sys.name(src) + "!", this.id);
@@ -1343,7 +1343,7 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
     this.players[parts[1]].name = switchN;
     delete this.players[parts[0].toLowerCase()];
 
-    if (TOUR_DISPLAY == 1) {
+    if (TourDisplay == 1) {
         this.border();
         this.white();
         botEscapeAll(parts[0] + " was switched with " + parts[1] + " by " + sys.name(src) + "!", this.id);
@@ -1398,7 +1398,7 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
     var name = commandData.name();
     this.buildHash(name);
 
-    if (TOUR_DISPLAY == 1) {
+    if (TourDisplay == 1) {
         this.border();
         this.white();
         botEscapeAll(commandData + " was added to the Tournament by " + sys.name(src) + "!", this.id);
@@ -1451,7 +1451,7 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
 
     delete this.roundStatus.startedBattles[bIndex];
 
-    if (TOUR_DISPLAY == 1) {
+    if (TourDisplay == 1) {
         this.border();
         this.white();
         botEscapeAll(startername + " can forfeit their battle and rematch now.", this.id);
@@ -1582,7 +1582,7 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
     }
     this.tournumber = count;
 
-    if (TOUR_DISPLAY == 1) {
+    if (TourDisplay == 1) {
         this.border();
         this.white();
         botEscapeAll(sys.name(src) + " changed the numbers of entrants to " + count + "!", this.id);
@@ -1611,7 +1611,7 @@ Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
     if (this.tourmode != 0) {
         this.clearVariables();
 
-        if (TOUR_DISPLAY == 1) {
+        if (TourDisplay == 1) {
             this.border();
             this.white();
             botAll("The tournament has been ended by " + sys.name(src) + "!", this.id);
@@ -3995,7 +3995,7 @@ if(message == "Maximum Players Changed.") {
                     t.register("Channel Tournament Auth Level 1 Name is " + ChanTour1.bold().fontcolor("mediumblue") + ".<br/>");
 
                     t.register("Maximum Message Length is " + String(MaxMessageLength).bold() + ".");
-                    t.register("Tournament Display Mode is " + TOUR_DISPLAY + ".");
+                    t.register("Tournament Display Mode is " + TourDisplay + ".");
                     t.register("The Future Limit is per " + FutureLimit + " seconds.<br/>");
 
                     t.register("The Bot name is " + Bot.bot.bold().fontcolor(Bot.botcolor) + "</i>.");
@@ -6124,14 +6124,14 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "Valid tournament display modes are 1 and 2.", chan);
                         return;
                     }
-                    if (TOUR_DISPLAY == num) {
-                        botMessage(src, "The tournament TOUR_DISPLAY mode is already " + num + ".", chan);
+                    if (TourDisplay == num) {
+                        botMessage(src, "The tournament display mode is already " + num + ".", chan);
                         return;
                     }
 
-                    botAll(sys.name(src) + " changed the tournament TOUR_DISPLAY mode to " + num + "!", 0);
-                    TOUR_DISPLAY = num;
-                    cache.write("TourTOUR_DISPLAY", num);
+                    botAll(sys.name(src) + " changed the tournament display mode to " + num + "!", 0);
+                    TourDisplay = num;
+                    cache.write("TourDisplay", num);
                 },
 
                 /* -- Tour Commands: AutoStartTours -- */
@@ -6147,7 +6147,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     if (cmdData == 'on' && !AutoStartTours) {
-                        if (TOUR_DISPLAY == 1) {
+                        if (TourDisplay == 1) {
                             sys.sendHtmlAll(TOUR_BORDER, 0);
                             sys.sendAll("", 0);
                             botEscapeAll(sys.name(src) + " turned auto start tours on.", 0);
@@ -6163,7 +6163,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     if (cmdData == 'off' && AutoStartTours) {
-                        if (TOUR_DISPLAY == 1) {
+                        if (TourDisplay == 1) {
                             sys.sendHtmlAll(TOUR_BORDER, 0);
                             sys.sendAll("", 0);
                             botEscapeAll(sys.name(src) + " turned auto start tours off.", 0);
@@ -6231,7 +6231,7 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Tour Commands: Tournament */
                 tour: function () {
-                    if (TOUR_DISPLAY == 2) {
+                    if (TourDisplay == 2) {
                         DisableChatColorRandomizer(chan);
                     }
 
@@ -13784,7 +13784,7 @@ if(message == "Maximum Players Changed.") {
 
         MaxMessageLength = cache.get("MaxMessageLength");
         maxPlayersOnline = cache.get("MaxPlayersOnline");
-        TOUR_DISPLAY = cache.get('TourDisplay');
+        TourDisplay = cache.get('TourDisplay');
         FutureLimit = cache.get("FutureLimit");
 
         Bot = JSON.parse(cache.get("Bot"));
