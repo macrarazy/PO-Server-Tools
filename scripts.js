@@ -1663,7 +1663,7 @@ Tours.prototype.playerName = function (hash, hashno) {
 }
 
 Tours.prototype.first = function (hash) {
-var x;
+    var x;
     for (x in hash)
     return hash[x];
 }
@@ -2232,11 +2232,11 @@ function Mail(sender, text, title) {
 
 Object.defineProperty(String.prototype, "reverse", {
     "value": function () {
-    var strThis = thism;
-    strThisArr = strThis.split("").reverse().join("");
+        var strThis = thism;
+        strThisArr = strThis.split("").reverse().join("");
 
-    this = strThisArr;
-    return this;
+        this = strThisArr;
+        return this;
     },
 
     writable: true,
@@ -2246,8 +2246,8 @@ Object.defineProperty(String.prototype, "reverse", {
 
 Object.defineProperty(String.prototype, "contains", {
     "value": function (string) {
-    var str = this;
-    return str.indexOf(string) > -1;
+        var str = this;
+        return str.indexOf(string) > -1;
     },
 
     writable: true,
@@ -2257,17 +2257,17 @@ Object.defineProperty(String.prototype, "contains", {
 
 Object.defineProperty(String.prototype, "name", {
     "value": function () {
-    var str = this;
-    if (typeof DataHash.names == "undefined") {
+        var str = this;
+        if (typeof DataHash.names == "undefined") {
+            return str;
+        }
+
+        var tl = str.toLowerCase();
+        if (typeof DataHash.names[tl] != "undefined") {
+            str = DataHash.names[tl];
+        }
+
         return str;
-    }
-
-    var tl = str.toLowerCase();
-    if (typeof DataHash.names[tl] != "undefined") {
-        str = DataHash.names[tl];
-    }
-
-    return str;
     },
 
     writable: true,
@@ -2277,14 +2277,15 @@ Object.defineProperty(String.prototype, "name", {
 
 Object.defineProperty(String.prototype, "format", {
     "value": function () {
-    var str = this, exp, i, args = arguments.length,
-        icontainer = 0;
-    for (i = 0; i < args; i++) {
-        icontainer++;
-        exp = new RegExp("%" + icontainer, "");
-        str = str.replace(exp, arguments[i]);
-    }
-    return str;
+        var str = this,
+            exp, i, args = arguments.length,
+            icontainer = 0;
+        for (i = 0; i < args; i++) {
+            icontainer++;
+            exp = new RegExp("%" + icontainer, "");
+            str = str.replace(exp, arguments[i]);
+        }
+        return str;
     },
 
     writable: true,
@@ -2294,9 +2295,9 @@ Object.defineProperty(String.prototype, "format", {
 
 Object.defineProperty(String.prototype, "fontsize", {
     "value": function (size) {
-    var str = this;
+        var str = this;
 
-    return "<font size='" + size + "'>" + str + "</font>";
+        return "<font size='" + size + "'>" + str + "</font>";
     },
 
     writable: true,
@@ -2306,9 +2307,9 @@ Object.defineProperty(String.prototype, "fontsize", {
 
 Object.defineProperty(String.prototype, "scramble", {
     "value": function () {
-    var thisString = this.split("");
-    for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
-    return thisString.join("");
+        var thisString = this.split("");
+        for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
+        return thisString.join("");
     },
 
     writable: true,
@@ -5540,10 +5541,11 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var players = sys.playersOfChannel(chan), x, lc, curr;
-					
+                    var players = sys.playersOfChannel(chan),
+                        x, lc, curr;
+
                     for (x in players) {
-					curr = players[x];
+                        curr = players[x];
                         lc = sys.name(curr).toLowerCase();
                         if (!poChan.chanAuth.has(lc) && hpAuth(curr) < 1) {
                             sys.kick(curr, chan);
@@ -12669,15 +12671,26 @@ if(message == "Maximum Players Changed.") {
             "span": "<br><font size=5><B>{{Name}}</b></font>"
         },
         {
-            "name": "Lime",
+            "name": "Solid",
             "author": "TheUnknownOne",
-            "header": "<font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB<b></font><br/>",
-            "footer": "<br><font color=limegreen><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
+            "header": "<hr/><br/>",
+            "footer": "<br><br/>",
             "command-icon": "/",
             "command-style": ["<b>", "</b>"],
-            "command-color": "green",
+            "command-color": "midnightblue",
             "help": "Enter the following commands into a channel of choice. For help with arguments, type in /arglist.",
             "span": "<font size=5><b>{{Name}}</b></font>"
+        },
+        {
+            "name": "PO",
+            "author": "TheUnknownOne",
+            "header": "",
+            "footer": "",
+            "command-icon": "/",
+            "command-style": ["<font color='mediumseagreen'><timestamp/></font>", ""],
+            "command-color": "mediumseagreen",
+            "help": "",
+            "span": "<font color=magenta><timestamp/> *** {{Name}} ***</font>"
         }];
 
         StyleManager = new(function () {
@@ -12792,6 +12805,16 @@ if(message == "Maximum Players Changed.") {
                 "Mod": "<img src='Themes/Classic/Client/mAvailable.png' width='15'>",
                 "Admin": "<img src='Themes/Classic/Client/aAvailable.png' width='15'>",
                 "Owner": "<img src='Themes/Classic/Client/oAvailable.png' width='15'>"
+            }
+        },
+        {
+            "name": "IRC",
+            "author": "TheUnknownOne",
+            "ranks": {
+                "User": "",
+                "Mod": "@",
+                "Admin": "%",
+                "Owner": "~"
             }
         }];
 
