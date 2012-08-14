@@ -2322,6 +2322,23 @@ Object.defineProperty(Object.prototype, "has", {
     configurable: true
 });
 
+Object.defineProperty(String.prototype, "linkify", {
+    "value": function () {
+        var urlPattern = /\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
+		pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
+		emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim;
+
+        return this
+            .replace(urlPattern, '<a target="_blank" href="$&">$&</a>')
+            .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
+            .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>');
+	},
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
 JSESSION.identifyScriptAs("TheUnknownOne's Server Script");
 JSESSION.registerUser(POUser);
 JSESSION.registerChannel(POChannel);
@@ -2779,9 +2796,9 @@ Trivia.start();
         else {
             var topic = chan.topic,
                 tsetter = chan.topicsetter,
-                dbAuth = sys.dbAuth(tsetter);
+                dbAuth = hpAuth(tsetter);
 
-            if (dbAuth != undefined && dbAuth < 0) {
+            if (dbAuth == undefined || dbAuth < 0) {
                 topic = format(html_escape(topic));
             }
 
@@ -3314,7 +3331,6 @@ if(message == "Maximum Players Changed.") {
                 }
                 catch (err) {
                     if (err != "no valid command") {
-
                         botEscapeAll(FormatError("A mafia error has occured.", err), mafiachan);
 
                         mafia.endGame(0);
@@ -11177,6 +11193,8 @@ if(message == "Maximum Players Changed.") {
                 str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
             }
 
+			str.linkify();
+			
             str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
             str = str.replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>');
             str = str.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
@@ -11188,7 +11206,6 @@ if(message == "Maximum Players Changed.") {
             str = str.replace(/\[servername\]/gi, servername.bold());
             str = str.replace(/\[spoiler\](.*?)\[\/spoiler\]/gi, '<a style="color: black; background-color:black;">$1</a>');
             str = str.replace(/\[time\]/gi, "<timestamp/>");
-            str = str.replace(/[a-z]{3,}:\/\/[^ ]+/i, atag);
             str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, '<font color=$1>$2</font>')
             str = str.replace(/\[face=(.*?)\](.*?)\[\/face\]/gi, '<font face=$1>$2</font>');
             str = str.replace(/\[font=(.*?)\](.*?)\[\/font\]/gi, '<font face=$1>$2</font>');
