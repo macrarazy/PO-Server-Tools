@@ -12666,7 +12666,7 @@ if(message == "Maximum Players Changed.") {
             "name": "Solid",
             "author": "TheUnknownOne",
             "header": "<hr/><br/>",
-            "footer": "<br><br/>",
+            "footer": "<br/><hr/>",
             "command-icon": "/",
             "command-style": ["<b>", "</b>"],
             "command-color": "midnightblue",
