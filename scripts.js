@@ -1471,10 +1471,10 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
 
     this.clearVariables();
 
-    var commandpart = commandData.split(':');
-    this.tournumber = parseInt(commandpart[1]);
+    var mcmd = commandData.split(':');
+    this.tournumber = parseInt(mcmd[1]);
 
-    var cp = parseInt(commandpart[2]);
+    var cp = parseInt(mcmd[2]);
     if (this.identify(cp) == "Unknown Mode") {
         cp = 1; /* set to Single Elimination */
     }
@@ -1504,25 +1504,15 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
         return;
     }
 
-    var tier = sys.getTierList(),
-        found = false,
-        x;
-
-    for (x in tier) {
-        if (cmp(tier[x], commandpart[0])) {
-            this.tourtier = tier[x];
-            found = true;
-            break;
-        }
-    }
-
-    if (!found) {
-        botMessage(src, "There does not seem to be a " + commandpart[0] + " tier.", this.id);
+    var tierName = validTier(mcmd[0]);
+    if (!tierName) {
+        botMessage(src, "There does not seem to be a " + mcmd[0] + " tier.", this.id);
         return;
     }
 
-    commandpart[3] = cut(commandpart, 3, ':');
-    this.prize = html_escape(commandpart[3]);
+    this.tourtier = tierName;
+    mcmd[3] = cut(mcmd, 3, ':');
+    this.prize = html_escape(mcmd[3]);
 
     if (isEmpty(this.prize)) {
         this.prize = "";
@@ -2315,14 +2305,11 @@ Object.defineProperty(String.prototype, "scramble", {
 Object.defineProperty(String.prototype, "linkify", {
     "value": function () {
         var urlPattern = /\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
-		pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
-		emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim;
+            pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
+            emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim;
 
-        return this
-            .replace(urlPattern, '<a target="_blank" href="$&">$&</a>')
-            .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
-            .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>');
-	},
+        return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>');
+    },
 
     writable: true,
     enumerable: false,
@@ -7586,17 +7573,11 @@ if(message == "Maximum Players Changed.") {
                         mcmd[4] = "";
                     }
 
-                    var x, found = false,
-                        clauses = 0,
-                        tierlist = sys.getTierList(),
-                        tier = mcmd[2].toLowerCase();
+                    var tierName = validTier(mcmd[2]),
+                        clauses = 0;
 
-                    for (x in tierlist) {
-                        if (tier === tierlist[x].toLowerCase()) {
-                            found = true;
-                            clauses = sys.getClauses(mcmd[2]);
-                            break;
-                        }
+                    if (tierName) {
+                        clauses = sys.getClauses(tierName);
                     }
 
                     var player1 = sys.id(mcmd[0]),
@@ -7652,7 +7633,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     sys.forceBattle(player1, player2, player1_team, player2_team, clauses, mode, rated);
-                    script.afterBattleStarted(src, dest, clauses, rated, 0, 0);
+                    script.afterBattleStarted(src, dest, clauses, rated, player1_team, player2_team);
                     botEscapeAll("A battle between " + pl1 + " and " + pl2 + " has been forced by " + sys.name(src) + "!", 0);
                     return;
                 }
@@ -11130,7 +11111,7 @@ if(message == "Maximum Players Changed.") {
         self = function (src, tarname) {
             return sys.ip(src) == sys.dbIp(tarname);
         }
-		
+
         function clink($1) {
             return ChannelLink(sys.channel($1));
         }
@@ -11189,8 +11170,8 @@ if(message == "Maximum Players Changed.") {
                 str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
             }
 
-			str.linkify();
-			
+            str.linkify();
+
             str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
             str = str.replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>');
             str = str.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
@@ -11650,6 +11631,20 @@ if(message == "Maximum Players Changed.") {
                 }
                 return true;
             }
+            return false;
+        }
+
+        validTier = function (name) {
+            var x, tierlist = sys.getTierList(),
+                tier = name.toLowerCase(),
+                curr;
+            for (x in tierlist) {
+                curr = tierlist[x];
+                if (curr.toLowerCase() === tier) {
+                    return curr; // Corrects case, sometimes.
+                }
+            }
+
             return false;
         }
 
