@@ -2312,16 +2312,6 @@ Object.defineProperty(String.prototype, "scramble", {
     configurable: true
 });
 
-Object.defineProperty(Object.prototype, "has", {
-    "value": function (prop) {
-        return typeof this[prop] !== "undefined";
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
 Object.defineProperty(String.prototype, "linkify", {
     "value": function () {
         var urlPattern = /\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
@@ -2333,6 +2323,16 @@ Object.defineProperty(String.prototype, "linkify", {
             .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
             .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>');
 	},
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Object.prototype, "has", {
+    "value": function (prop) {
+        return typeof this[prop] !== "undefined";
+    },
 
     writable: true,
     enumerable: false,
@@ -11130,11 +11130,7 @@ if(message == "Maximum Players Changed.") {
         self = function (src, tarname) {
             return sys.ip(src) == sys.dbIp(tarname);
         }
-
-        function atag(s) {
-            return '<a href="' + s + '">' + s + '</a>';
-        }
-
+		
         function clink($1) {
             return ChannelLink(sys.channel($1));
         }
