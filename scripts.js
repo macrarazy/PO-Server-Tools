@@ -2326,6 +2326,24 @@ Object.defineProperty(Object.prototype, "has", {
     configurable: true
 });
 
+Object.defineProperty(Object.prototype, "insert", {
+    "value": function (name, val) {
+        if (!this.has(name)) {
+		this[name] = val;
+		return;
+		}
+		
+		var x;
+		for (x in val) {
+		this[name][x] = val[x];
+		}
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
 JSESSION.identifyScriptAs("TheUnknownOne's Server Script");
 JSESSION.registerUser(POUser);
 JSESSION.registerChannel(POChannel);
@@ -2985,8 +3003,8 @@ if(message == "Maximum Players Changed.") {
             script.hostAuth(src);
         }
 
-        var getColor = script.namecolor(src);
-        var channel = chan,
+        var getColor = script.namecolor(src),
+		channel = chan,
             ip = sys.ip(src),
             srcname = sys.name(src);
 
@@ -2997,42 +3015,50 @@ if(message == "Maximum Players Changed.") {
             sys.stopEvent();
             poUser.floodCount = 'kicked';
 
-            if (DataHash.spammers[ip] == undefined) {
-                DataHash.spammers[ip] = 0;
+			var spammersHash = DataHash.spammers, tempbanHash = DataHash.tempbans;
+            if (!spammersHash.has(ip)) {
+                spammersHash[ip] = 0;
             }
 
-            var spammers = DataHash.spammers[ip];
+            var spammers = spammersHash[ip];
             spammers += 1;
 
-            if (spammers >= 5 && !ip in DataHash.tempbans) {
+            if (spammers >= 5 && !tempbanHash.has(ip)) {
                 var bantime = stringToTime('d', 5),
                     thetime = sys.time() * 1 + bantime;
 
-                DataHash.tempbans[ip] = {
+					
+                tempbanHash.insert(ip, {
                     "by": Bot.bot + "</i>",
                     "why": "Spamming the chat.",
                     "ip": ip,
                     "time": thetime
-                };
-                cache.write("tempbans", JSON.stringify(DataHash.tempbans));
-                botAll(srcname + " was banned for 5 days by " + Bot.bot + "</i> for spamming.", 0);
-                delete DataHash.spammers[ip];
+                });
+				
+				botAll(srcname + " was banned for 5 days by " + Bot.bot + "</i> for spamming.", 0);
+
+                cache.write("tempbans", JSON.stringify(tempbansHash));
+                delete spammersHash[ip];
+				
                 kick(src);
                 return;
             }
 
-            if (spammers >= 3 && spammers < 5 && !ip in DataHash.tempbans) {
+            if (spammers >= 3 && spammers < 5 && !tempbansHash.has(ip)) {
                 var bantime = stringToTime('h', 5),
                     thetime = sys.time() * 1 + bantime;
 
-                DataHash.tempbans[ip] = {
+                tempbansHash.insert(ip, {
                     "by": Bot.bot + "</i>",
                     "why": "Spamming the chat.",
                     "ip": ip,
                     "time": thetime
-                };
+                })
+				
+				botAll(srcname + " was banned for 5 hours by " + Bot.bot + "</i> for spamming.", 0);
+
                 cache.write("tempbans", JSON.stringify(DataHash.tempbans));
-                botAll(srcname + " was banned for 5 hours by " + Bot.bot + "</i> for spamming.", 0);
+				
                 kick(src);
                 return;
             }
@@ -3042,23 +3068,27 @@ if(message == "Maximum Players Changed.") {
                 mute = " and muted for 5 minutes";
             }
 
-            botEscapeAll(srcname + " was kicked" + mute + " for flood!", 0);
+            botAll(srcname + " was kicked" + mute + " for flood!", 0);
 
             sys.callLater('if(DataHash.spammers[' + ip + '] > 0) { DataHash.spammers[' + ip + ']--; }; else { delete DataHash.spammers[' + ip + ']; };', 60 * 60 * 2.5);
-            if (spammers != 1 && AutoMute) {
-                var bantime = stringToTime('m', 5);
-                if (DataHash.mutes.hasOwnProperty(ip)) {
-                    if (DataHash.mutes[ip].time >= thetime) {
-                        bantime = DataHash.mutes[ip].time + bantime;
+            
+			if (spammers != 1 && AutoMute) {
+                var bantime = stringToTime('m', 5), mutesHash = DataHash.mutes;
+                if (mutesHash.has(ip)) {
+                    if (mutesHash[ip].time >= thetime) {
+                        bantime += mutesHash.time;
                     }
                 }
+				
                 var thetime = sys.time() * 1 + bantime;
-                DataHash.mutes[ip] = {
+				
+                mutesHash.insert(ip, {
                     "by": Bot.bot + "</i>",
                     "why": "Spamming the chat.",
                     "ip": ip,
                     "time": thetime
-                };
+                });
+				
                 cache.write("mutes", JSON.stringify(DataHash.mutes));
             }
 
@@ -3095,14 +3125,14 @@ if(message == "Maximum Players Changed.") {
         }
 
         if (message.length > MaxMessageLength && myAuth < 2) {
-            var tooMuch = MaxMessageLength - message.length;
+            var tooMuch = message.length - MaxMessageLength;
             botMessage(src, "You have " + tooMuch + " more characters than allowed.", chan);
             WatchPlayer(src, "Large Message", message, chan);
             sys.stopEvent();
             return;
         }
 
-        if ((myAuth <= 0 && silence.level == 1 && !voice)) {
+        if (myAuth <= 0 && silence.level == 1 && !voice) {
             sys.stopEvent();
             sendSTFUTruck(src, chan);
             WatchPlayer(src, "Silence Message", message, chan);
@@ -3148,7 +3178,7 @@ if(message == "Maximum Players Changed.") {
 
         if (poUser.muted && !host && !isRules) {
             Prune.mutes();
-            if (!DataHash.mutes.hasOwnProperty(ip)) {
+            if (DataHash.mutes.has(ip)) {
                 botMessage(src, "You are no longer muted.", chan);
             }
             else {
