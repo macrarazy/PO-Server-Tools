@@ -2332,11 +2332,17 @@ Object.defineProperty(Object.prototype, "insert", {
             this[name] = val;
             return;
         }
-
-        var x;
-        for (x in val) {
-            this[name][x] = val[x];
-        }
+		
+		if (typeof val == "object" && !Array.isArray(val) && val !== null) {
+          var x;
+          for (x in val) {
+              this[name][x] = val[x];
+          }
+		  
+		  return;
+		}
+		
+		this[name] = val;
     },
 
     writable: true,
