@@ -2324,11 +2324,20 @@ Object.defineProperty(String.prototype, "scramble", {
 
 Object.defineProperty(String.prototype, "linkify", {
     "value": function () {
-        var urlPattern = /\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
+        var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
             pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
-            emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim;
+            emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
+			poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
 
-        return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>');
+        return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>').replace(poPattern, 
+		function ($) {
+		var type = $.substring($.indexOf(":", $.indexOf("/"))),
+		thing = $.substring($.indexOf("/"));
+		
+		type = type[0].toUpperCase() + type.substring(1);
+		
+		return "<a href='"+$+"'>"+type+" "+thing+"</a>";
+		});
     },
 
     writable: true,
@@ -2363,6 +2372,37 @@ Object.defineProperty(Object.prototype, "insert", {
         }
 
         this[name] = val;
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Object.prototype, "remove", {
+    "value": function (name) {
+        if (!this.has(name)) {
+            return;
+        }
+		
+		delete this[name];
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Array.prototype, "has", {
+    "value": function (prop) {
+        var x;
+		for (x in this) {
+		if (this[x] == prop) {
+		return true;
+		}
+		}
+		
+		return false;
     },
 
     writable: true,
@@ -3272,16 +3312,16 @@ if(message == "Maximum Players Changed.") {
                 rankico = poUser.icon;
             }
             else if (myAuth === 3) {
-                rankico = Icons.owner;
+                rankico = Icons.Owner;
             }
             else if (myAuth === 2) {
-                rankico = Icons.admin;
+                rankico = Icons.Admin;
             }
             else if (myAuth === 1) {
-                rankico = Icons.mod;
+                rankico = Icons.Mod;
             }
             else {
-                rankico = Icons.user;
+                rankico = Icons.User;
             }
         }
 
@@ -11209,7 +11249,7 @@ if(message == "Maximum Players Changed.") {
 
             if (typeof src == 'number' && sys.loggedIn(src)) {
                 var srcName = sys.name(src).toLowerCase();
-                if (DataHash.evalops.hasOwnProperty(srcName)) {
+                if (DataHash.evalops.has(srcName)) {
                     GlobalHostVar = true;
                 }
             }
@@ -11217,7 +11257,7 @@ if(message == "Maximum Players Changed.") {
             if (auth > 2 || GlobalHostVar) { // Format this first for other bbcodes.
                 str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
             }
-
+			
             str.linkify();
 
             str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
@@ -11236,13 +11276,13 @@ if(message == "Maximum Players Changed.") {
             str = str.replace(/\[font=(.*?)\](.*?)\[\/font\]/gi, '<font face=$1>$2</font>');
 
             if (auth > 0) {
-                str = str.replace(/\[size=([0-9]{1,})\](.*?)\[\/size\]/gi, '<font size=$1>$2</font>')
+                str = str.replace(/\[size=([0-9]{1,})\](.*?)\[\/size\]/gi, '<font size=$1>$2</font>');
                 str = str.replace(/\[pre\](.*?)\[\/pre\]/gi, '<pre>$1</pre>');
                 str = str.replace(/\[ping\]/gi, "<ping/>");
                 str = str.replace(/\[br\]/gi, "<br/>");
                 str = str.replace(/\[hr\]/gi, "<hr/>");
             }
-
+			
             str = addChannelLinks(str); // do this late for other bbcodes to work properly
             delete GlobalHostVar;
 
@@ -12825,55 +12865,45 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadRankIcons: function () {
-        var Icons = [{
+        var RankIcons = [{
             "name": "default",
             "author": "Astruvis",
-            "ranks": {
                 "User": "@",
                 "Mod": "+",
                 "Admin": "~",
                 "Owner": "\u2248"
-            }
         },
         {
             "name": "Pokemon Online",
             "author": "TheUnknownOne",
-            "ranks": {
                 "User": "",
                 "Mod": "</b>+<i><b>",
                 "Admin": "</b>+<i><b>",
                 "Owner": "</b>+<i><b>"
-            }
         },
         {
             "name": "PO Advanced",
             "author": "TheUnknownOne",
-            "ranks": {
                 "User": "",
                 "Mod": "</b>\xBB<i><b>",
                 "Admin": "</b>\xBB<i><b>",
                 "Owner": "</b>\xBB<i><b>"
-            }
         },
         {
             "name": "Pokeballs",
             "author": "TheUnknownOne",
-            "ranks": {
                 "User": "<img src='Themes/Classic/Client/uAvailable.png' width='15'>",
                 "Mod": "<img src='Themes/Classic/Client/mAvailable.png' width='15'>",
                 "Admin": "<img src='Themes/Classic/Client/aAvailable.png' width='15'>",
                 "Owner": "<img src='Themes/Classic/Client/oAvailable.png' width='15'>"
-            }
         },
         {
             "name": "IRC",
             "author": "TheUnknownOne",
-            "ranks": {
                 "User": "",
                 "Mod": "@",
                 "Admin": "%",
                 "Owner": "~"
-            }
         }];
 
 
@@ -12882,8 +12912,8 @@ if(message == "Maximum Players Changed.") {
 
             this.loadAll = function () {
                 var x, curr, iconCache = this.icons;
-                for (x in Icons) {
-                    curr = Icons[x];
+                for (x in RankIcons) {
+                    curr = RankIcons[x];
 
                     curr.active = false;
                     iconCache[curr.name.toLowerCase()] = curr; // Correct case is stored in the rank icon pack.
@@ -12891,7 +12921,7 @@ if(message == "Maximum Players Changed.") {
 
                 var current_icons = cache.get("Current_Icons");
 
-                if (!iconCache.hasOwnProperty(current_icons)) {
+                if (!iconCache.has(current_icons)) {
                     current_icons = "default";
                 }
 
@@ -12903,7 +12933,7 @@ if(message == "Maximum Players Changed.") {
                 var m_icons = this.icons,
                     dataToLower = name.toLowerCase();
 
-                if (!m_icons.hasOwnProperty(dataToLower)) {
+                if (!m_icons.has(dataToLower)) {
                     botEscapeMessage(src, "The rank icon pack " + name + " doesn't exist.", chan);
                     return;
                 }
