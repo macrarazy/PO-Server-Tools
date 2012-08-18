@@ -4037,14 +4037,13 @@ if(message == "Maximum Players Changed.") {
                     t.register("<b>8</b>) Do not advertise. Links like pictures and videos are Ok when they dont break the other rules.");
                     t.register("<b>9</b>) No obscene, pornographic, or illegal content. This will be an instant ban in most cases.");
                     t.register("<b>10</b>) Do not ask to be auth. Doing this will usually ruin your chances to ever be one.");
-                    t.register("<b>11</b>) Do not mini-moderate. Mini-Moderating means you act like a Moderator, while your not. Contact an Authority instead.");
+                    t.register("<b>11</b>) Do not mini-moderate. Mini-Moderating means you act like a moderator, while your not. Contact an Authority instead.");
                     t.register("<b>12</b>) Do not ban evade. Doing so will result in an instant ban, or rangeban.");
                     t.register("<b>13</b>) Do not blackmail. This will result in an instant mute/ban/rangeban.");
                     t.register("<b>14</b>) Do not complain or brag.");
 
-                    t.register("<br/><i>The authority of " + servername + " <u>do not</u> have to apply these rules.</i>");
-                    t.register("<i>If the authority of " + servername + " think it is necessary to punish someone, then they are allowed to do so.</i>");
-                    t.register("<br/>These rules may be changed at any time without notification.");
+                    t.register("<br/><b>If the server authority think it is necessary to punish someone, then they are allowed to do so. Report them to higher powers if you think you have been abused.</b>");
+					t.register("The server authority <u>do not</u> have to apply these rules.");
 
                     t.register(style.footer);
                     t.render(src, chan);
