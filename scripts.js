@@ -2705,27 +2705,14 @@ Trivia.start();
         WatchEvent(src, "Log In");
 
         if (sendWelcomeMessage) {
-            botAllExcept(src, UserName + " <b><font color=" + getColor + ">" + srcname + "</font></b> joined " + servername + "!", 0);
-        }
-        else if (self.megauser && myAuth < 1) {
-            botAllExcept(src, Tour1 + " <b><font color=" + getColor + ">" + srcname + "</font></b> joined " + servername + "!", 0);
-        }
-        else if (myAuth == 1) {
-            botAllExcept(src, ModName + " <b><font color=" + getColor + ">" + srcname + "</font></b> joined " + servername + "!", 0);
-        }
-        else if (myAuth == 2) {
-            botAllExcept(src, AdminName + " <b><font color=" + getColor + ">" + srcname + "</font></b> joined " + servername + "!", 0);
-        }
-        else if (myAuth == 3) {
-            botAllExcept(src, OwnerName + " <b><font color=" + getColor + ">" + srcname + "</font></b> joined " + servername + "!", 0);
+            botAllExcept(src, "<b><font color=" + getColor + ">" + srcname + "</font></b> joined the server!", 0);
         }
 
-        if (!sendWelcomeMessage) {
-            botMessage(src, "Welcome, <b><font color=" + getColor + ">" + srcname + "</font></b>!</b>", 0);
-        }
+        botMessage(src, "Welcome, <b><font color=" + getColor + ">" + srcname + "</font></b>!</b>", 0);
 
-        botMessage(src, "Type in <b><font color=green>/commands</font></b> to see the commands and <b><font color=green>/rules</font></b> to see the rules.", 0);
-        if (typeof startupTime == 'number' && startupTime != NaN) {
+        botMessage(src, "Type in <b><font color=green>/Commands</font></b> to see the commands and <b><font color=green>/Rules</font></b> to see the rules.", 0);
+        
+		if (typeof startupTime == 'number' && startupTime != NaN) {
             botMessage(src, "The server has been up for " + startUpTime() + "</b>.", 0);
         }
 
