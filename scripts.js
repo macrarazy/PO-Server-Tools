@@ -2329,14 +2329,14 @@ Object.defineProperty(Object.prototype, "has", {
 Object.defineProperty(Object.prototype, "insert", {
     "value": function (name, val) {
         if (!this.has(name)) {
-		this[name] = val;
-		return;
-		}
-		
-		var x;
-		for (x in val) {
-		this[name][x] = val[x];
-		}
+            this[name] = val;
+            return;
+        }
+
+        var x;
+        for (x in val) {
+            this[name][x] = val[x];
+        }
     },
 
     writable: true,
@@ -2711,8 +2711,8 @@ Trivia.start();
         botMessage(src, "Welcome, <b><font color=" + getColor + ">" + srcname + "</font></b>!</b>", 0);
 
         botMessage(src, "Type in <b><font color=green>/Commands</font></b> to see the commands and <b><font color=green>/Rules</font></b> to see the rules.", 0);
-        
-		if (typeof startupTime == 'number' && startupTime != NaN) {
+
+        if (typeof startupTime == 'number' && startupTime != NaN) {
             botMessage(src, "The server has been up for " + startUpTime() + "</b>.", 0);
         }
 
@@ -2991,7 +2991,7 @@ if(message == "Maximum Players Changed.") {
         }
 
         var getColor = script.namecolor(src),
-		channel = chan,
+            channel = chan,
             ip = sys.ip(src),
             srcname = sys.name(src);
 
@@ -3002,7 +3002,8 @@ if(message == "Maximum Players Changed.") {
             sys.stopEvent();
             poUser.floodCount = 'kicked';
 
-			var spammersHash = DataHash.spammers, tempbanHash = DataHash.tempbans;
+            var spammersHash = DataHash.spammers,
+                tempbanHash = DataHash.tempbans;
             if (!spammersHash.has(ip)) {
                 spammersHash[ip] = 0;
             }
@@ -3014,19 +3015,19 @@ if(message == "Maximum Players Changed.") {
                 var bantime = stringToTime('d', 5),
                     thetime = sys.time() * 1 + bantime;
 
-					
+
                 tempbanHash.insert(ip, {
                     "by": Bot.bot + "</i>",
                     "why": "Spamming the chat.",
                     "ip": ip,
                     "time": thetime
                 });
-				
-				botAll(srcname + " was banned for 5 days by " + Bot.bot + "</i> for spamming.", 0);
+
+                botAll(srcname + " was banned for 5 days by " + Bot.bot + "</i> for spamming.", 0);
 
                 cache.write("tempbans", JSON.stringify(tempbansHash));
                 delete spammersHash[ip];
-				
+
                 kick(src);
                 return;
             }
@@ -3041,11 +3042,11 @@ if(message == "Maximum Players Changed.") {
                     "ip": ip,
                     "time": thetime
                 })
-				
-				botAll(srcname + " was banned for 5 hours by " + Bot.bot + "</i> for spamming.", 0);
+
+                botAll(srcname + " was banned for 5 hours by " + Bot.bot + "</i> for spamming.", 0);
 
                 cache.write("tempbans", JSON.stringify(DataHash.tempbans));
-				
+
                 kick(src);
                 return;
             }
@@ -3058,24 +3059,25 @@ if(message == "Maximum Players Changed.") {
             botAll(srcname + " was kicked" + mute + " for flood!", 0);
 
             sys.callLater('if(DataHash.spammers[' + ip + '] > 0) { DataHash.spammers[' + ip + ']--; }; else { delete DataHash.spammers[' + ip + ']; };', 60 * 60 * 2.5);
-            
-			if (spammers != 1 && AutoMute) {
-                var bantime = stringToTime('m', 5), mutesHash = DataHash.mutes;
+
+            if (spammers != 1 && AutoMute) {
+                var bantime = stringToTime('m', 5),
+                    mutesHash = DataHash.mutes;
                 if (mutesHash.has(ip)) {
                     if (mutesHash[ip].time >= thetime) {
                         bantime += mutesHash.time;
                     }
                 }
-				
+
                 var thetime = sys.time() * 1 + bantime;
-				
+
                 mutesHash.insert(ip, {
                     "by": Bot.bot + "</i>",
                     "why": "Spamming the chat.",
                     "ip": ip,
                     "time": thetime
                 });
-				
+
                 cache.write("mutes", JSON.stringify(DataHash.mutes));
             }
 
@@ -4043,7 +4045,7 @@ if(message == "Maximum Players Changed.") {
                     t.register("<b>14</b>) Do not complain or brag.");
 
                     t.register("<br/><b>If the server authority think it is necessary to punish someone, then they are allowed to do so. Report them to higher powers if you think you have been abused.</b>");
-					t.register("The server authority <u>do not</u> have to apply these rules.");
+                    t.register("The server authority <u>do not</u> have to apply these rules.");
 
                     t.register(style.footer);
                     t.render(src, chan);
