@@ -8,5 +8,5 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
-# Batch files
-*.bat
+# test-script.bat
+test-scripts.bat
