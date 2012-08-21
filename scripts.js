@@ -583,19 +583,19 @@ POChannel.prototype.isMutedInChannel = function (ip) {
 POChannel.prototype.isChanMod = function (src) {
     var toLower = sys.name(src).toLowerCase();
 
-    return this.chanAuth[toLower] >= 1 || sys.auth(src) >= 1;
+    return this.chanAuth[toLower] >= 1 || hpAuth(src) >= 1;
 }
 
 POChannel.prototype.isChanAdmin = function (src) {
     var toLower = sys.name(src).toLowerCase();
 
-    return this.chanAuth[toLower] >= 2 || sys.auth(src) >= 2;
+    return this.chanAuth[toLower] >= 2 || hpAuth(src) >= 2;
 }
 
 POChannel.prototype.isChanOwner = function (src) {
     var toLower = sys.name(src).toLowerCase();
 
-    return this.chanAuth[toLower] >= 3 || sys.auth(src) >= 3;
+    return this.chanAuth[toLower] >= 3 || hpAuth(src) >= 3;
 }
 
 function POGlobal(id) {
@@ -899,7 +899,7 @@ TourNotification = function (src, chan, info) { // info is an object
         border();
         white();
     } else {
-        if (TourDisplay == 1) {
+        if (tour.TourDisplay == tour.Displays.Normal) {
             tour.white()
             tour.border();
             sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + info.starter + "! </b></font>", chan);
@@ -945,6 +945,12 @@ function Tours(id) {
     this.players = {};
     this.roundplayers = 0;
     this.startTime = 0;
+    this.TourDisplay = 1;
+
+    this.Displays = {
+        Normal: 1,
+        Clean: 2
+    };
 }
 
 Tours.prototype.border = function () {
@@ -958,25 +964,8 @@ Tours.prototype.white = function () {
 Tours.prototype.hasTourAuth = function (id) {
     var poUser = JSESSION.users(id),
         poChannel = JSESSION.channels(this.id),
-        test = function () {
-            if (noPermission) {
-                return !noPermission(id, 1);
-            }
 
-            return sys.auth(id) > 0;
-        }
-
-        return poChannel.tourAuth[poUser.lowername] != undefined || test() || poUser.megauser || poChannel.isChanMod(id);
-}
-
-Tours.prototype.roundStatusGenerate = function () {
-    var rethash = {
-        'winLose': {},
-        'idleBattles': {},
-        'ongoingBattles': {}
-    };
-
-    return rethash;
+        return poChannel.tourAuth[poUser.lowername] != undefined || poUser.megauser || poChannel.isChanMod(id);
 }
 
 Tours.prototype.idleBattler = function (name) {
@@ -1041,20 +1030,47 @@ Tours.prototype.TourBox = function (message) {
     TourBox(message, this.id);
 }
 
+Tours.prototype.command_display = function (src, commandData, fullCommand) {
+    if (!this.hasTourAuth(src)) {
+        noPermissionMessage(src, fullCommand, this.id);
+        return;
+    }
+
+    var num = parseInt(commandData);
+    if (num != 1 && num != 2) {
+        botMessage(src, "Valid tournament display modes are 1 (Normal) and 2 (Clean).", chan);
+        return;
+    }
+    if (this.TourDisplay == num) {
+        botMessage(src, "The tournament display mode is already " + num + ".", chan);
+        return;
+    }
+
+    if (num == this.Displays.Normal) {
+
+        this.border();
+        this.white();
+        botEscapeAll(sys.name(src) + " changed the tournament display mode to Normal.", this.id);
+        this.white();
+        this.border();
+    } else { // this.Displays.Clean
+        this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> changed the tournament display mode to Clean.");
+    }
+
+    botAll(sys.name(src) + " changed the tournament display mode to " + num + "!", 0);
+    this.TourDisplay = num;
+}
+
 Tours.prototype.command_autostartbattles = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
         noPermissionMessage(src, fullCommand, this.id);
         return;
     }
 
-    var cmdlc = commandData.toLowerCase();
-    if (cmdlc != 'on' && cmdlc != 'off') {
-        botMessage(src, "Pick either on or off.", this.id);
-        return;
-    }
+    var isOn = on(commandData);
 
-    if (cmdlc == 'on' && !this.AutoStartBattles) {
-        if (TourDisplay == 1) {
+    if (isOn && !this.AutoStartBattles) {
+        if (this.TourDisplay == this.Displays.Normal) {
             this.border();
             this.white();
             botEscapeAll(sys.name(src) + " turned auto start battles on.", this.id);
@@ -1066,10 +1082,8 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
         }
         this.AutoStartBattles = true;
         return;
-    }
-
-    if (cmdlc == 'off' && this.AutoStartBattles) {
-        if (TourDisplay == 1) {
+    } else if (!isOn && this.AutoStartBattles) {
+        if (this.TourDisplay == this.Displays.Normal) {
             this.border();
             this.white();
             botEscapeAll(sys.name(src) + " turned auto start battles off.", this.id);
@@ -1084,7 +1098,7 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
         return;
     }
 
-    botMessage(src, "Auto Start Battles is already " + cmdlc, this.id);
+    botMessage(src, "Auto Start Battles is already " + commandData.toLowerCase(), this.id);
     return;
 }
 
@@ -1107,7 +1121,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         return;
     }
     var name = sys.name(src).toLowerCase();
-    if (this.players[name] != undefined) {
+    if (this.players.has(name)) {
         botMessage(src, "You are already in the tournament. You are not able to join more than once.", this.id);
         return;
     }
@@ -1119,7 +1133,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
     if (this.tourSpots() > 0) {
         this.buildHash(src);
 
-        if (TourDisplay == 1) {
+        if (this.TourDisplay == this.Displays.Normal) {
             botEscapeAll(sys.name(src) + " joined the tournament! " + this.tourSpots() + " more spot(s) left!", this.id);
         } else {
             this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> joined the tournament! <b>" + this.tourSpots() + "</b> more spot(s) left!");
@@ -1143,7 +1157,7 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
     }
 
     var name2 = sys.name(src).toLowerCase();
-    if (this.players[name2] == undefined) {
+    if (!this.players.has(name2)) {
         botMessage(src, "You have not joined the tournament.", this.id);
         return;
     }
@@ -1152,7 +1166,7 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
         this.remaining--;
     }
 
-    if (TourDisplay == 1) {
+    if (this.TourDisplay == this.Displays.Normal) {
         botEscapeAll(sys.name(src) + " left the tournament " + (this.tourSpots() + 1) + " spots left!", this.id);
     } else {
         this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> left the tournament! <b>" + (this.tourSpots() + 1) + "</b> spots left!");
@@ -1267,7 +1281,7 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
         this.remaining--;
     }
 
-    if (TourDisplay == 1) {
+    if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
         botEscapeAll(commandData.name() + " was removed from the tournament by " + sys.name(src) + "!", this.id);
@@ -1328,7 +1342,7 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
 
     var spots = this.tourSpots();
 
-    if (TourDisplay == 1) {
+    if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
         botAll(parts[0] + " was switched with " + parts[1] + " by " + sys.name(src) + "!", this.id);
@@ -1384,7 +1398,7 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
         spots = this.tourSpots();;
     this.buildHash(name);
 
-    if (TourDisplay == 1) {
+    if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
         botAll(name + " was added to the tournament by " + sys.name(src) + "!", this.id);
@@ -1438,7 +1452,7 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
 
     delete this.roundStatus.startedBattles[bIndex];
 
-    if (TourDisplay == 1) {
+    if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
         botAll(startername + " can forfeit their battle and rematch now.", this.id);
@@ -1560,7 +1574,7 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
 
     this.tournumber = count;
     var spots = sys.tourSpots();
-    if (TourDisplay == 1) {
+    if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
         botAll(sys.name(src) + " changed the numbers of entrants to " + count + "!", this.id);
@@ -1589,7 +1603,7 @@ Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
     if (this.tourmode != 0) {
         this.clearVariables();
 
-        if (TourDisplay == 1) {
+        if (this.TourDisplay == this.Displays.Normal) {
             this.border();
             this.white();
             botAll("The tournament has been ended by " + sys.name(src) + "!", this.id);
@@ -2327,17 +2341,16 @@ Object.defineProperty(String.prototype, "linkify", {
         var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
             pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
             emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
-			poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+            poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
 
-        return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>').replace(poPattern, 
-		function ($) {
-		var type = $.substring($.indexOf(":", $.indexOf("/"))),
-		thing = $.substring($.indexOf("/"));
-		
-		type = type[0].toUpperCase() + type.substring(1);
-		
-		return "<a href='"+$+"'>"+type+" "+thing+"</a>";
-		});
+        return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>').replace(poPattern, function ($) {
+            var type = $.substring($.indexOf(":", $.indexOf("/"))),
+                thing = $.substring($.indexOf("/"));
+
+            type = type[0].toUpperCase() + type.substring(1);
+
+            return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
+        });
     },
 
     writable: true,
@@ -2384,8 +2397,8 @@ Object.defineProperty(Object.prototype, "remove", {
         if (!this.has(name)) {
             return;
         }
-		
-		delete this[name];
+
+        delete this[name];
     },
 
     writable: true,
@@ -2396,13 +2409,13 @@ Object.defineProperty(Object.prototype, "remove", {
 Object.defineProperty(Array.prototype, "has", {
     "value": function (prop) {
         var x;
-		for (x in this) {
-		if (this[x] == prop) {
-		return true;
-		}
-		}
-		
-		return false;
+        for (x in this) {
+            if (this[x] == prop) {
+                return true;
+            }
+        }
+
+        return false;
     },
 
     writable: true,
@@ -2712,7 +2725,7 @@ Trivia.start();
     },
 
     beforeChannelCreated: function (name, cid, src) {
-        if (typeof ChannelsAllowed != 'undefined' && ChannelsAllowed === false && src != 0 && !noPermission(src, 1)) {
+        if (typeof ChannelsAllowed != 'undefined' && ChannelsAllowed === false && src != 0 && permission(src, 1)) {
             botMessage(src, "You cannot create channels at the moment.");
             sys.stopEvent();
             return;
@@ -3444,15 +3457,15 @@ if(message == "Maximum Players Changed.") {
 /*
                     ct.register("triviacommands", "Displays the Trivia Commands.");
 					*/
-                    if (!noPermission(src, 1)) {
+                    if (permission(src, 1)) {
                         ct.register(removespaces(ModName).toLowerCase() + "commands", "Displays the " + ModName + " commands.");
                     }
 
-                    if (!noPermission(src, 2)) {
+                    if (permission(src, 2)) {
                         ct.register(removespaces(AdminName).toLowerCase() + "commands", "Displays the " + AdminName + " commands.");
                     }
 
-                    if (!noPermission(src, 3)) {
+                    if (permission(src, 3)) {
                         ct.register(removespaces(OwnerName).toLowerCase() + "commands", "Displays the " + OwnerName + " commands.");
                     }
 
@@ -3467,7 +3480,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register('attack', ['{p Thing}'], 'Attack something or someone with a random attack!');
                     ct.register("future", ["{o Time}", "{p Message}"], "Sends a message into the future! Time must be over 4 seconds and under 5 hours. Message can also be a command(with command start).");
 
-                    if (!noPermission(src, 2)) {
+                    if (permission(src, 2)) {
                         ct.span("Fun " + AdminName + " Commands");
                         ct.register("ify", ["{p Name}"], "Changes everyones name on the server. Changes names of those who change team and login as well.");
                         ct.register("unify", "Changes everyones name back.");
@@ -3482,7 +3495,7 @@ if(message == "Maximum Players Changed.") {
                     ct.span("Style " + UserName + " Commands");
                     ct.register("styles", "Displays all currently installed styles.");
 
-                    if (!noPermission(src, 2)) {
+                    if (permission(src, 2)) {
                         ct.span("Style " + AdminName + " Commands");
                         ct.register("activestyle", ["{p Style}"], "Makes a style active.");
                     }
@@ -3497,7 +3510,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("icons", "Displays all currently installed rank icon packs.");
                     ct.register("changeicon", ["{p Icon}"], "Changes your icon. If Icon is remove, removes your icon.");
 
-                    if (!noPermission(src, 2)) {
+                    if (permission(src, 2)) {
                         ct.span("Icon " + AdminName + " Commands");
                         ct.register("activeicons", ["{p Icons}"], "Makes a rank icon pack active.");
                     }
@@ -3521,7 +3534,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("submit", ["{p Question}", "{p Hint}", "{p Answers}"], "Submit a question. Use '|' to serperate new answers.");
                     ct.register("questions", "Displays all questions names.");
 
-                    if (!noPermission(src, 1)) {
+                    if (permission(src, 1)) {
                         ct.span("Trivia " + ModName + " Commands");
 
                         ct.register("start", "Start a Trivia session.");
@@ -3539,7 +3552,7 @@ if(message == "Maximum Players Changed.") {
                     ct.span("Messaging " + UserName + " Commands");
                     ct.register("me", ["{p Message}"], "Sends a message to everyone with *** prefixed. BBCode is allowed and will be parsed.");
 
-                    if (!noPermission(src, 1)) {
+                    if (permission(src, 1)) {
                         ct.span("Messaging " + ModName + " Commands");
                         ct.register("htmlme", ["{p Message}"], "Sends a message to everyone with *** prefixed. HTML is allowed and will be parsed");
                         ct.register("send", ["{p Message}"], "Sends a message to everyone.");
@@ -3639,7 +3652,7 @@ if(message == "Maximum Players Changed.") {
                     t.register("• [servername]Server Name in bold - " + servername.bold())
                     t.register("• [time]A timestamp - <timestamp/>");
 
-                    if (!noPermission(src, 1)) {
+                    if (permission(src, 1)) {
                         t.register(formatBB("[pre]Preformatted text[/pre]"))
                         t.register(formatBB("[size=5]Any size[/size]"))
                         t.register("• [br]Skips a line");
@@ -3647,7 +3660,7 @@ if(message == "Maximum Players Changed.") {
                         t.register("• [ping]Pings everybody");
                     }
 
-                    if (!noPermission(src, 3) && !evallock || host) {
+                    if (permission(src, 3) && !evallock || host) {
                         t.register(formatEvalBB("[eval]sys.name(src)[/eval]", "sys.name(src)"));
                     }
 
@@ -4090,8 +4103,7 @@ if(message == "Maximum Players Changed.") {
                     t.register("Channel Tournament Auth Level 1 Name is " + ChanTour1.bold().fontcolor("mediumblue") + ".<br/>");
 
                     t.register("Maximum Message Length is " + String(MaxMessageLength).bold() + ".");
-                    t.register("Tournament Display Mode is " + TourDisplay + ".");
-                    t.register("The Future Limit is per " + FutureLimit + " seconds.<br/>");
+                    t.register("Futures allowed every " + FutureLimit + " seconds.<br/>");
 
                     t.register("The Bot name is " + Bot.bot.bold().fontcolor(Bot.botcolor) + "</i>.");
 
@@ -5186,10 +5198,10 @@ if(message == "Maximum Players Changed.") {
                     ct.register("cauth", "Displays Channel Authority.");
                     ct.register("topic", "Displays Channel Topic.");
 
-                    if (poChan.isChanMod(src) || !noPermission(src, 1)) {
+                    if (poChan.isChanMod(src)) {
                         ct.span(ChanMod + " Commands");
 
-                        if (!noPermission(src, 1)) {
+                        if (permission(src, 1)) {
                             ct.register("perm", ["{b On/Off}"], "Makes the channel permanent or temporally.");
                         }
                         ct.register("channelwall", ["{p Message}"], "Announces something in this channel.");
@@ -5208,10 +5220,10 @@ if(message == "Maximum Players Changed.") {
                         ct.register("chatcoloroff", "Removes Chat Color in the channel.");
                     }
 
-                    if (poChan.isChanAdmin(src) || !noPermission(src, 2)) {
+                    if (poChan.isChanAdmin(src)) {
                         ct.span(ChanAdmin + " Commands");
 
-                        if (!noPermission(src, 2)) {
+                        if (permission(src, 2)) {
                             ct.register("destroychannel", "Destroys this channel.");
                         }
 
@@ -5226,7 +5238,7 @@ if(message == "Maximum Players Changed.") {
                         ct.register("channel", ["{b Ban/Unban}", "{or Person}", "<u>{o Time}</u>", "{bv <u>Time Unit</b>}", "<u>{p Reason}</u>"], "Bans or unbans someone from this channel.", true);
                     }
 
-                    if (poChan.isChanOwner(src) || !noPermission(src, 2)) {
+                    if (poChan.isChanOwner(src)) {
                         ct.span(ChanOwner + " Commands");
 
                         if (noPermission(src, 2)) {
@@ -5273,66 +5285,42 @@ if(message == "Maximum Players Changed.") {
                     },
                         r = function (str) {
                             return "<font color='red'><b>" + str + "</b></font>";
-                        }
-
-                        if (poChan.perm) {
-                            t.register("The Channel is " + g("permanent") + ".");
-                        }
-                        else {
-                            t.register("The Channel is " + r("temporal") + ".");
-                        }
-
-                        if (!poChan.private) {
-                            t.register("The Channel is " + g("open") + ".");
-                        }
-                        else {
-                            t.register("The Channel is " + r("private") + ".");
-                        }
-
-                        if (poChan.defaultTopic) {
-                            t.register("The Channel is " + g("using a default topic") + ".");
-                        }
-                        else {
-                            t.register("The Channel is " + r("using a custom topic") + ".");
-                        }
-
-                        if (poChan.toursEnabled) {
-                            t.register("The Channel has " + g("tours installed") + ".");
-                        }
-                        else {
-                            t.register("The Channel doesn't have " + r("tours installed") + ".");
-                        }
-
-                        if (chatcolor) {
-                            t.register("The Channel has " + g("chat color enabled") + ".");
-                        } else {
-                            t.register("The Channel has " + r("chat color disabled") + ".");
-                        }
-
-                        if (poChan.toursEnabled) {
-                            if (poChan.tour.AutoStartBattles) {
-                                t.register("Auto Start Battles for this channel is " + g("on") + ".");
+                        },
+                        check = function (compare, name, on, off) {
+                            if (compare) {
+                                t.register(name + " " + g(on) + ".");
+                            } else {
+                                t.register(name + " " + r(off) + ".");
                             }
-                            else {
-                                t.register("Auto Start Battles for this channel is " + r("off") + ".<br/>");
-                            }
-                        }
+                        };
 
-                        if (poChan.creator != '' && poChan.creator != '~Unknown~') {
-                            t.register("The Channel Creator is " + poChan.creator.bold().fontcolor("green") + ".");
-                        }
+                    check(poChan.perm, "The channel is", "permanent", "temporally");
+                    check(poChan.private, "The channel is", "private", "public"); // private = when the channel is private
+                    check(!poChan.defaultTopic, "The channel is using a", "custom topic", "default topic"); //  give custom topic green, not red.
+                    check(poChan.toursEnabled, "The channel has", "tours enabled", "tours disabled");
+                    check(chatcolor, "The channel has", "chat color enabled", "chat color disabled");
 
-                        t.register("The Channel Topic is " + poChan.topic + ".");
+
+
+                    if (poChan.toursEnabled) {
+                        check(poChan.tour.AutoStartBattles, "Auto Start Battles for this channel is", "on", "off");
+                    }
+
+                    if (poChan.creator != '' && poChan.creator != '~Unknown~') {
+                        t.register("The channel creator is " + poChan.creator.bold().fontcolor("green") + ".");
+                    }
+
+                    t.register("The channel topic is " + poChan.topic + ".");
                     if (poChan.topicsetter != '') {
-                        t.register("The Channel Topic Setter is " + poChan.topicsetter + ".");
+                        t.register("The channel topic setter is " + poChan.topicsetter + ".");
                     }
 
                     t.register("");
 
-                    t.register("The Channel Silence level is " + String(poChan.silence).bold().fontcolor("blue") + ".");
-                    t.register("The Channel ID is " + String(chan).bold().fontcolor("orange") + ".<br/>");
+                    t.register("The channel silence level is " + String(poChan.silence).bold().fontcolor("blue") + ".");
+                    t.register("The channel ID is " + String(chan).bold().fontcolor("orange") + ".<br/>");
 
-                    t.register("The Channel Name is " + poChan.name.bold().fontcolor("red") + ".");
+                    t.register("The channel name is " + poChan.name.bold().fontcolor("red") + ".");
 
                     t.register(style.footer);
                     t.render(src, chan);
@@ -5424,7 +5412,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var last, lastname, l, add, t, n = sys.time() * 1,
-                        perm = !noPermission(src, 1),
+                        perm = permission(src, 1),
                         y;
 
                     var tt = new Table_Templater('Channel Banlist', 'red', '3');
@@ -5470,7 +5458,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var last, lastname, l, add, tstr, now = sys.time() * 1,
-                        perm = !noPermission(src, 1),
+                        perm = permission(src, 1),
                         y;
 
                     var tt = new Table_Templater('Channel Mutelist', 'blue', '3');
@@ -5706,28 +5694,29 @@ if(message == "Maximum Players Changed.") {
                         noPermissionMessage(src, fullCommand, chan);
                         return;
                     }
-                    var cmdlc = cmdData
-                    if (cmdlc != 'on' && cmdlc != 'off') {
-                        botMessage(src, "Pick either on or off", chan);
-                        return;
-                    }
 
-                    if (cmdlc == 'on' && poChan.perm != true) {
-                        botEscapeAll(sys.name(src) + " made this channel permanent.", chan);
+                    var isOn = on(commandData);
+
+                    if (isOn && !poChan.perm) {
+                        botAll(sys.name(src) + " made this channel permanent.", chan);
                         poChan.perm = true;
                         cData.changeStatus(chan, true, poChan.private, poChan.silence);
                         return;
-                    }
-
-                    if (cmdlc == 'off' && poChan.perm != false) {
-                        botEscapeAll(sys.name(src) + " made this channel temporally.", chan);
+                    } else(!isOn && poChan.perm) {
+                        botAll(sys.name(src) + " made this channel temporally.", chan);
                         poChan.perm = false;
                         cData.changeStatus(chan, false, poChan.private, poChan.silence);
                         return;
                     }
 
-                    botMessage(src, "Perm status is already " + cmdlc, chan);
+                    var status = "permanent";
+                    if (!isOn) {
+                        status = "temporally";
+                    }
+
+                    botMessage(src, "The channel is already " + status, chan);
                 },
+
                 /* -- Channel Commands: Topic */
                 topic: function () {
                     if (!poChan.isChanMod(src) && noPermission(src, 1)) {
@@ -6193,84 +6182,13 @@ if(message == "Maximum Players Changed.") {
                         ct.register("autostartbattles", ["{b On/Off}"], "Turns auto start battles on or off in the channel.");
                     }
 
-                    if (!noPermission(src, 1) || poUser.megauser) {
+/*
+                    if (permission(src, 1) || poUser.megauser) {
                         ct.span("Tournament " + Tour1 + " Commands");
-                        ct.register("autostarttours", ["{b On/Off}"], "Turns auto start tours on or off.");
-                        ct.register("display", ["{b 1/2}"], "Changes the tournament display mode.");
-                    }
+                    }*/
 
                     ct.register(style.footer);
                     ct.render(src, chan);
-                },
-
-                /* -- Tour Commands: Style -- */
-                display: function () {
-                    if (noPermission(src, 1) && !poUser.megauser) {
-                        noPermissionMessage(src, chan);
-                        return;
-                    }
-
-                    var num = parseInt(commandData);
-                    if (num != 1 && num != 2) {
-                        botMessage(src, "Valid tournament display modes are 1 and 2.", chan);
-                        return;
-                    }
-                    if (TourDisplay == num) {
-                        botMessage(src, "The tournament display mode is already " + num + ".", chan);
-                        return;
-                    }
-
-                    botAll(sys.name(src) + " changed the tournament display mode to " + num + "!", 0);
-                    TourDisplay = num;
-                    cache.write("TourDisplay", num);
-                },
-
-                /* -- Tour Commands: AutoStartTours -- */
-                autostarttours: function () {
-                    if (noPermission(src, 1) && !poUser.megauser) {
-                        noPermissionMessage(src, chan);
-                        return;
-                    }
-
-                    if (cmdData != 'on' && cmdData != 'off') {
-                        botMessage(src, "Use on or off.", chan);
-                        return;
-                    }
-
-                    if (cmdData == 'on' && !AutoStartTours) {
-                        if (TourDisplay == 1) {
-                            sys.sendHtmlAll(TOUR_BORDER, 0);
-                            sys.sendAll("", 0);
-                            botEscapeAll(sys.name(src) + " turned auto start tours on.", 0);
-                            sys.sendAll("", 0);
-                            sys.sendHtmlAll(TOUR_BORDER, 0);
-                        }
-                        else {
-                            TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours on.", 0);
-                        }
-                        AutoStartTours = true;
-                        cache.write("AutoStartTours", true);
-                        return;
-                    }
-
-                    if (cmdData == 'off' && AutoStartTours) {
-                        if (TourDisplay == 1) {
-                            sys.sendHtmlAll(TOUR_BORDER, 0);
-                            sys.sendAll("", 0);
-                            botEscapeAll(sys.name(src) + " turned auto start tours off.", 0);
-                            sys.sendAll("", 0);
-                            sys.sendHtmlAll(TOUR_BORDER, 0);
-                        }
-                        else {
-                            TourBox("<b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b> turned auto start tours off.", 0);
-                        }
-                        AutoStartTours = false;
-                        cache.write("AutoStartTours", false);
-                        return;
-                    }
-
-                    cmdData += '.';
-                    botMessage(src, "Auto Start Tours is already " + cmdData, chan);
                 },
 
                 /* -- Tour Commands: Switch -- */
@@ -6342,13 +6260,13 @@ if(message == "Maximum Players Changed.") {
                     ct.register("enable", ["{p Command}"], "Enables a command. Valid commands are: me, attack, roulette, catch.");
                     ct.register("disable", ["{p Command}"], "Disables a command. Valid commands are: me, attack, roulette, catch.");
 
-                    if (!noPermission(src, 2)) {
+                    if (permission(src, 2)) {
                         ct.span("Command " + AdminName + " Commands");
                         ct.register("implock", "Locks impersonation commands for " + sLetter(UserName) + ".");
                         ct.register("impunlock", "Unlocks impersonation commands for " + sLetter(UserName) + ".");
                     }
 
-                    if (!noPermission(src, 3)) {
+                    if (permission(src, 3)) {
                         ct.span("Command " + OwnerName + " Commands");
                         ct.register("pointercommand", ["{p Name}", "{p Command}"], "Creates a pointer command.");
                         ct.register("delpointercommand", ["{p Name}"], "Deletes a pointer command.");
@@ -6371,22 +6289,22 @@ if(message == "Maximum Players Changed.") {
                     ct.span("Moderation " + ModName + " Commands");
 
                     ct.register("kick", ["{r Person}", "{p <u>Reason</u>}"], "Kicks someone.");
-                    ct.register("mute", ["{or Person}", "{o <u>Time</u>}", "{bv <u>Time Unit</u>}", "{p <u>Reason</u>}"], "Mutes someone");
+                    ct.register("mute", ["{or Person}", "{o <u>Time</u>}", "{bv <u>Time Unit</u>}", "{p <u>Reason</u>}"], "Mutes someone.");
                     ct.register("unmute", ["{or Person}", "{p <u>Reason</u>}"], "Unmutes someone.");
-                    ct.register("tempban", ["{or Person}", "{o Time}", "{bv <u>Time Unit</u>}", "{p <u>Reason</u>}"], "Bans someone for a given time. " + (!noPermission(src, 2) ? "" : "You can not ban for longer than 5 days."));
+                    ct.register("tempban", ["{or Person}", "{o Time}", "{bv <u>Time Unit</u>}", "{p <u>Reason</u>}"], "Bans someone for a given time.");
                     ct.register("untempban", ["{or Person}", "{p <u>Reason</u>}"], "Unbans someone who has been tempbanned.");
                     ct.register("rangebanlist", "Displays Range Ban List.");
                     ct.register("banlist", "Displays Banlist.");
                     ct.register("tempbanlist", "Displays Temp Ban List.");
                     ct.register("mutelist", "Displays Mute List.");
 
-                    if (!noPermission(src, 2)) {
+                    if (permission(src, 2)) {
                         ct.span("Moderation " + AdminName + " Commands");
                         ct.register("ban", ["{or Person}", "{p <u>Reason</u>}"], "Bans someone.");
                         ct.register("unban", ["{or Person}", "{p <u>Reason</u>}"], "Unbans someone.");
                     }
 
-                    if (!noPermission(src, 3)) {
+                    if (permission(src, 3)) {
                         ct.span("Moderation " + OwnerName + " Commands");
                         ct.register("rangeban", ["{p RangeIP}", "{o <u>Time</u>}", "{bv <u>Time Unit</u>}", "{p <u>Reason</u>}"], "Bans a range IP.");
                         ct.register("rangeunban", ["{p RangeIP}"], "Removes a rangeban.");
@@ -7247,7 +7165,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register(removespaces(ModName).toLowerCase(), ["{or Person}"], "Makes someone " + ModName + " Server Authority.");
                     ct.register("tempauth", ["{or Person}", "{o AuthLevel}", "{o Time}", "{bv Time Unit}"], "Makes someone temporal authority. Any other authing command(exclusing tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4. Only " + sLetter(OwnerName) + " can do 2, 3, or 4.");
 
-                    if (!noPermission(src, 3)) {
+                    if (permission(src, 3)) {
                         ct.span("Authority " + OwnerName + " Commands");
                         ct.register(removespaces(AdminName).toLowerCase(), ["{or Person}"], "Makes someone " + AdminName + " Server Authority.");
                         ct.register(removespaces(OwnerName).toLowerCase(), ["{or Person}"], "Makes someone " + OwnerName + " Server Authority.");
@@ -11257,7 +11175,7 @@ if(message == "Maximum Players Changed.") {
             if (auth > 2 || GlobalHostVar) { // Format this first for other bbcodes.
                 str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
             }
-			
+
             str.linkify();
 
             str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
@@ -11282,7 +11200,7 @@ if(message == "Maximum Players Changed.") {
                 str = str.replace(/\[br\]/gi, "<br/>");
                 str = str.replace(/\[hr\]/gi, "<hr/>");
             }
-			
+
             str = addChannelLinks(str); // do this late for other bbcodes to work properly
             delete GlobalHostVar;
 
@@ -11295,6 +11213,10 @@ if(message == "Maximum Players Changed.") {
                 auth = sys.auth(src),
                 maxAuth = sys.maxAuth(sys.ip(src));
 
+            if (!sys.loggedIn(src)) {
+                name = src, auth = sys.dbAuth(src), maxAuth = sys.maxAuth(auth);
+            }
+
             perms = perms[name];
 
             if (perms != undefined) {
@@ -11306,8 +11228,12 @@ if(message == "Maximum Players Changed.") {
             return maxAuth;
         }
 
+        permission = function (id, auth) {
+            return hpAuth(id) >= auth;
+        }
+
         noPermission = function (id, auth) {
-            return auth > hpAuth(id);
+            return !permission(id, auth);
         }
 
         testMafiaChat = function (src, chan) {
@@ -12868,42 +12794,42 @@ if(message == "Maximum Players Changed.") {
         var RankIcons = [{
             "name": "default",
             "author": "Astruvis",
-                "User": "@",
-                "Mod": "+",
-                "Admin": "~",
-                "Owner": "\u2248"
+            "User": "@",
+            "Mod": "+",
+            "Admin": "~",
+            "Owner": "\u2248"
         },
         {
             "name": "Pokemon Online",
             "author": "TheUnknownOne",
-                "User": "",
-                "Mod": "</b>+<i><b>",
-                "Admin": "</b>+<i><b>",
-                "Owner": "</b>+<i><b>"
+            "User": "",
+            "Mod": "</b>+<i><b>",
+            "Admin": "</b>+<i><b>",
+            "Owner": "</b>+<i><b>"
         },
         {
             "name": "PO Advanced",
             "author": "TheUnknownOne",
-                "User": "",
-                "Mod": "</b>\xBB<i><b>",
-                "Admin": "</b>\xBB<i><b>",
-                "Owner": "</b>\xBB<i><b>"
+            "User": "",
+            "Mod": "</b>\xBB<i><b>",
+            "Admin": "</b>\xBB<i><b>",
+            "Owner": "</b>\xBB<i><b>"
         },
         {
             "name": "Pokeballs",
             "author": "TheUnknownOne",
-                "User": "<img src='Themes/Classic/Client/uAvailable.png' width='15'>",
-                "Mod": "<img src='Themes/Classic/Client/mAvailable.png' width='15'>",
-                "Admin": "<img src='Themes/Classic/Client/aAvailable.png' width='15'>",
-                "Owner": "<img src='Themes/Classic/Client/oAvailable.png' width='15'>"
+            "User": "<img src='Themes/Classic/Client/uAvailable.png' width='15'>",
+            "Mod": "<img src='Themes/Classic/Client/mAvailable.png' width='15'>",
+            "Admin": "<img src='Themes/Classic/Client/aAvailable.png' width='15'>",
+            "Owner": "<img src='Themes/Classic/Client/oAvailable.png' width='15'>"
         },
         {
             "name": "IRC",
             "author": "TheUnknownOne",
-                "User": "",
-                "Mod": "@",
-                "Admin": "%",
-                "Owner": "~"
+            "User": "",
+            "Mod": "@",
+            "Admin": "%",
+            "Owner": "~"
         }];
 
 
@@ -17141,11 +17067,11 @@ if(message == "Maximum Players Changed.") {
             };
             // Auth commands
             this.isMafiaAdmin = function (src) {
-                if (!noPermission(src, 1)) return true;
+                if (permission(src, 1)) return true;
                 return false;
             };
             this.isMafiaSuperAdmin = function (src) {
-                if (!noPermission(src, 1)) return true;
+                if (permission(src, 1)) return true;
                 return false;
             };
             this.pushUser = function (src, name) {
