@@ -6180,6 +6180,7 @@ if(message == "Maximum Players Changed.") {
                         ct.register("endtour", "Ends the tournament.");
                         ct.register("switch", ["{g Player}", "{r NewPlayer}"], "Switches 2 players in the tournament.");
                         ct.register("autostartbattles", ["{b On/Off}"], "Turns auto start battles on or off in the channel.");
+						ct.register("display", ["{b 1/2}"], "Changes the tournament display mode in this channel. 1 is Normal, 2 is Clean.");
                     }
 
 /*
