@@ -940,7 +940,12 @@ function Tours(id) {
 
     this.battlemode = 0;
 
-    this.roundStatus = this.roundStatusGenerate();
+    this.roundStatus = {
+	idleBattles: {},
+	ongoingBattles: {},
+	winLose: {}
+	};
+	
     this.couples = {};
     this.players = {};
     this.roundplayers = 0;
@@ -1188,7 +1193,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         botMessage(src, "You are unable to view the round because a tournament is not currently running or is in signing up phase.", this.id);
         return;
     }
-
+	
     var chan = this.id;
 
     sys.sendMessage(src, "", chan);
@@ -1632,7 +1637,12 @@ Tours.prototype.clearVariables = function () {
     this.battlemode = 0;
 
     this.couples = {};
-    this.roundStatus = this.roundStatusGenerate();
+    this.roundStatus = {
+	idleBattles: {},
+	ongoingBattles: {},
+	winLose: {}
+	};
+	
     this.winners = [];
     this.players = {};
     this.roundplayers = 0;
@@ -1640,7 +1650,12 @@ Tours.prototype.clearVariables = function () {
 }
 
 Tours.prototype.cleanRoundVariables = function () {
-    this.roundStatus = this.roundStatusGenerate();
+    this.roundStatus = {
+	idleBattles: {},
+	ongoingBattles: {},
+	winLose: {}
+	};
+	
     this.roundplayers = 0;
 }
 
@@ -5702,7 +5717,7 @@ if(message == "Maximum Players Changed.") {
                         poChan.perm = true;
                         cData.changeStatus(chan, true, poChan.private, poChan.silence);
                         return;
-                    } else(!isOn && poChan.perm) {
+                    } else if (!isOn && poChan.perm) {
                         botAll(sys.name(src) + " made this channel temporally.", chan);
                         poChan.perm = false;
                         cData.changeStatus(chan, false, poChan.private, poChan.silence);
