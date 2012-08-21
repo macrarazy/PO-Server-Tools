@@ -941,11 +941,11 @@ function Tours(id) {
     this.battlemode = 0;
 
     this.roundStatus = {
-	idleBattles: {},
-	ongoingBattles: {},
-	winLose: {}
-	};
-	
+        idleBattles: {},
+        ongoingBattles: {},
+        winLose: {}
+    };
+
     this.couples = {};
     this.players = {};
     this.roundplayers = 0;
@@ -1193,7 +1193,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         botMessage(src, "You are unable to view the round because a tournament is not currently running or is in signing up phase.", this.id);
         return;
     }
-	
+
     var chan = this.id;
 
     sys.sendMessage(src, "", chan);
@@ -1638,11 +1638,11 @@ Tours.prototype.clearVariables = function () {
 
     this.couples = {};
     this.roundStatus = {
-	idleBattles: {},
-	ongoingBattles: {},
-	winLose: {}
-	};
-	
+        idleBattles: {},
+        ongoingBattles: {},
+        winLose: {}
+    };
+
     this.winners = [];
     this.players = {};
     this.roundplayers = 0;
@@ -1651,11 +1651,11 @@ Tours.prototype.clearVariables = function () {
 
 Tours.prototype.cleanRoundVariables = function () {
     this.roundStatus = {
-	idleBattles: {},
-	ongoingBattles: {},
-	winLose: {}
-	};
-	
+        idleBattles: {},
+        ongoingBattles: {},
+        winLose: {}
+    };
+
     this.roundplayers = 0;
 }
 
@@ -1895,8 +1895,8 @@ Tours.prototype.roundPairing = function () {
         for (t in this.couples) {
             p = this.couples[t][0].toLowerCase(), op = this.couples[t][1].toLowerCase();
             if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
-                meteams = firstTeamFor(sys.id(p), this.tourtier);
-                oppteams = firstTeamFor(sys.id(op), tourtier);
+                meteams = firstTeamForTier(sys.id(p), this.tourtier);
+                oppteams = firstTeamForTier(sys.id(op), this.tourtier);
                 if (meteams != -1 && oppteams != -1) {
                     if (!this.ongoingTourneyBattle(p) && !this.ongoingTourneyBattle(op)) {
                         sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(this.tourtier), 0, false);
@@ -2448,9 +2448,22 @@ JSESSION.refill();
     serverStartUp: function () {
         startupTime = sys.time() * 1;
         StartUp = true;
+
+        if (sys.getFileContent(".scriptsession") === "") {
+            Config.NoCrash = true;
+            sys.writeToFile("nocrash.txt", "Delete this file to turn NoCrash off (in case of a system crash or something similar).");
+        } else if (sys.getFileContent("nocrash.txt") != undefined) {
+            Config.NoCrash = true;
+        }
+
         script.beforeNewMessage("Script Check: OK");
 
         sys.updateDatabase();
+
+    },
+
+    serverShutDown: function () {
+        sys.deleteFile(".scriptsession");
     },
 
     loadAll: function () {
@@ -2948,7 +2961,7 @@ Trivia.start();
 
         if (message.substring(0, 14) == "Script Warning") {
             sys.stopEvent();
-            if (watch != undefined) {
+            if (typeof watch != "undefined") {
                 botAll(message, watch);
             }
             return;
@@ -2988,6 +3001,8 @@ if(message == "Maximum Players Changed.") {
         }
 
         if (message == "Script Check: OK") {
+            sys.appendToFile(".scriptsession", "");
+
             script.loadAll();
 
             var startingUp = false;
@@ -6195,7 +6210,7 @@ if(message == "Maximum Players Changed.") {
                         ct.register("endtour", "Ends the tournament.");
                         ct.register("switch", ["{g Player}", "{r NewPlayer}"], "Switches 2 players in the tournament.");
                         ct.register("autostartbattles", ["{b On/Off}"], "Turns auto start battles on or off in the channel.");
-						ct.register("display", ["{b 1/2}"], "Changes the tournament display mode in this channel. 1 is Normal, 2 is Clean.");
+                        ct.register("display", ["{b 1/2}"], "Changes the tournament display mode in this channel. 1 is Normal, 2 is Clean.");
                     }
 
 /*
