@@ -779,7 +779,7 @@ JSESSIONInst.prototype.destroyUser = function (id) {
     if (!this.UsesUser) {
         return false;
     }
-    if (typeof this.UserData[id] != "undefined") {
+    if (typeof this.UserData[id] == "undefined") {
         return false;
     }
     if (sys.name(id) == undefined) {
@@ -2289,6 +2289,16 @@ Object.defineProperty(String.prototype, "contains", {
     configurable: true
 });
 
+Object.defineProperty(String.prototype, "has", {
+    "value": function (string) {
+        return this.contains(string);
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
 Object.defineProperty(String.prototype, "name", {
     "value": function () {
         var str = this;
@@ -2383,6 +2393,16 @@ Object.defineProperty(Object.prototype, "has", {
     configurable: true
 });
 
+Object.defineProperty(Object.prototype, "contains", {
+    "value": function (prop) {
+        return this.has(prop);
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
 Object.defineProperty(Object.prototype, "insert", {
     "value": function (name, val) {
         if (!this.has(name)) {
@@ -2421,6 +2441,29 @@ Object.defineProperty(Object.prototype, "remove", {
     configurable: true
 });
 
+Object.defineProperty(Object.prototype, "first", {
+    "value": function () {
+        var x;
+        for (x in this) {
+            return this[x]; // Grab the first property
+        }
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Object.prototype, "length", {
+    "value": function () {
+        return Object.keys(this).length;
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
 Object.defineProperty(Array.prototype, "has", {
     "value": function (prop) {
         var x;
@@ -2431,6 +2474,16 @@ Object.defineProperty(Array.prototype, "has", {
         }
 
         return false;
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Array.prototype, "contains", {
+    "value": function (prop) {
+        return this.has(prop);
     },
 
     writable: true,
@@ -2967,6 +3020,21 @@ Trivia.start();
             return;
         }
 
+        if (message.substring(0, 14) == "~~Server~~: >>") {
+            sys.stopEvent();
+            print(">> " + message.substring(14));
+
+            var result;
+            try {
+                result = eval(message.substring(14));
+            } catch (e) {
+                result = FormatError("", e);
+            }
+
+            print("<< " + result);
+            return;
+        }
+
         if (message.toLowerCase() == "~~server~~: !importdata") {
             ImportData();
             sys.stopEvent();
@@ -3282,10 +3350,8 @@ if(message == "Maximum Players Changed.") {
             WatchPlayer(src, "Channel Silence Message", message, chan);
             return;
         }
-
-        var isRules = hasCommandStart(message) && message.substr(1, 6) == "rules";
-
-        if (poUser.muted && !host && !isRules) {
+		
+        if (poUser.muted && !host) {
             Prune.mutes();
             if (!DataHash.mutes.has(ip)) {
                 botMessage(src, "You are no longer muted.", chan);
@@ -3402,7 +3468,7 @@ if(message == "Maximum Players Changed.") {
             }
 
             var fnt = RandFont(),
-                namestr = RandomColorSpan() + '<font color=' + script.namecolor(src) + ' face="' + fnt + '"><timestamp/><b>' + rankicon + html_escape(srcname) + ':</font></b></i> <font face="' + fnt + '">' + msg;
+                namestr = '<font color=' + script.namecolor(src) + ' face="' + fnt + '"><timestamp/><b>' + rankicon + html_escape(srcname) + ':</font></b></i> <font face="' + fnt + '">' + msg;
         }
 
         if (hasCommandStart(message) && message.length > 1 && !ignoreCommandStart(message)) {
@@ -4550,13 +4616,13 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "Invalid option.", chan);
                         return;
                     }
-                    if (Poll.options[datanum].votes.indexOf(ip) > -1) {
+                    if (Poll.options[datanum].votes.has(ip)) {
                         botMessage(src, "You already voted!", chan);
                         return;
                     }
                     Poll.options[datanum].votes.push(ip);
                     Poll.votes++;
-                    botMessage(src, "Voted option " + datanum + " (" + Poll.options[datanum].name + ") on the poll", chan);
+                    botMessage(src, "Voted option " + datanum + " (" + Poll.options[datanum].name + ") on the poll.", chan);
                 },
 
                 viewpoll: function () {
@@ -4885,7 +4951,7 @@ if(message == "Maximum Players Changed.") {
                     }
                     var resets = ['reset', 'remove', 'delete', 'off'];
 
-                    if (resets.indexOf(cmdData) > -1 && DataHash.rankicons[sys.name(src).toLowerCase()] != undefined) {
+                    if (resets.has(cmdData) && DataHash.rankicons.has(sys.name(src).toLowerCase())) {
                         botMessage(src, "Removed rank icon.", chan);
 
                         poUser.icon = "";
@@ -5769,21 +5835,23 @@ if(message == "Maximum Players Changed.") {
                         noPermissionMessage(src, fullCommand, chan);
                         return;
                     }
-                    if (channels.indexOf(chan) != -1) {
+                    if (channels.has(chan)) {
                         botMessage(src, "This channel can't be destoryed!", chan);
                         return;
                     }
 
-                    var players = sys.playersOfChannel(chan);
+                    var players = sys.playersOfChannel(chan),
+                        curr;
                     delete cData.channelData[sys.channel(chan)];
                     cData.save();
 
                     poChan.perm = false;
 
                     for (x in players) {
-                        sys.kick(players[x], chan)
-                        if (sys.isInChannel(players[x], 0) != true) {
-                            sys.putInChannel(players[x], 0)
+                        curr = players[x];
+                        sys.kick(curr, chan)
+                        if (sys.isInChannel(curr, 0) != true) {
+                            sys.putInChannel(curr, 0)
                         }
                     }
                 },
@@ -5811,10 +5879,11 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var unitTime = stringToTime(mcmd[2], mcmd[1]);
-                    var time = 0,
+                    var unitTime = stringToTime(mcmd[2], mcmd[1]),
+                        time = 0,
                         timestr = "forever",
                         time_now = sys.time() * 1;
+
                     if (!isNaN(unitTime)) {
                         mcmd[1] = unitTime;
                         time = time_now + unitTime
@@ -8797,7 +8866,7 @@ if(message == "Maximum Players Changed.") {
                         abilityarr.push(sys.ability(sys.pokeAbility(num, y, 5)).toLowerCase());
                     }
 
-                    if (abilityarr.indexOf(mcmd[2].toLowerCase()) === -1) {
+                    if (!abilityarr.has(mcmd[2].toLowerCase())) {
                         botEscapeMessage(src, "The ability " + mcmd[2] + " for pokemon " + mcmd[1] + " doesn't exist!", chan);
                         return;
                     }
@@ -8811,7 +8880,7 @@ if(message == "Maximum Players Changed.") {
                         bans[name][pN] = [];
                     }
 
-                    if (bans[name][pN].indexOf(mcmd[2].toLowerCase()) != -1) {
+                    if (bans[name][pN].has(mcmd[2].toLowerCase())) {
                         botMessage(src, "The ability " + mcmd[2] + " is already banned on " + mcmd[1] + " in tier " + mcmd[0], chan);
                         return;
                     }
@@ -8856,7 +8925,7 @@ if(message == "Maximum Players Changed.") {
                         abilityarr.push(sys.ability(sys.pokeAbility(num, y, 5)).toLowerCase());
                     }
 
-                    if (abilityarr.indexOf(mcmd[2].toLowerCase()) === -1) {
+                    if (!abilityarr.has(mcmd[2].toLowerCase())) {
                         botEscapeMessage(src, "The ability " + mcmd[2] + " for pokemon " + mcmd[1] + " doesn't exist!", chan);
                         return;
                     }
@@ -8872,7 +8941,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    if (bans[name][pN].indexOf(mcmd[2].toLowerCase()) === -1) {
+                    if (!bans[name][pN].has(mcmd[2].toLowerCase())) {
                         botMessage(src, "The ability " + mcmd[2] + " isn't banned on " + mcmd[1] + " in tier " + mcmd[0], chan);
                         return;
                     }
@@ -9231,7 +9300,7 @@ if(message == "Maximum Players Changed.") {
             send = sys.sendAll;
 
         if (chatcolor) {
-            namestr += "</font></span>";
+            namestr += "</font>";
         }
 
         if (unicodeAbuse(src, message)) {
@@ -9567,12 +9636,12 @@ if(message == "Maximum Players Changed.") {
         }
 
         if (!Config.NoCrash) {
-            if (sys.tier(src, team).indexOf("Doubles") != -1 && destTier.indexOf("Doubles") != -1 && mode != 1) {
+            if (sys.tier(src, team).contains("Doubles") && destTier.contains("Doubles") && mode != 1) {
                 botMessage(src, "To fight in doubles, enable doubles in the challenge window!");
                 sys.stopEvent();
                 return;
             }
-            if (sys.tier(src, team).indexOf("Triples") != -1 && destTier.indexOf("Triples") != -1 && mode != 2) {
+            if (sys.tier(src, team).contains("Triples") && destTier.contains("Triples") && mode != 2) {
                 botMessage(src, "To fight in triples, enable triples in the challenge window!");
                 sys.stopEvent();
                 return;
@@ -10293,9 +10362,9 @@ if(message == "Maximum Players Changed.") {
                 for (x in b) {
                     cban = b[x];
                     if (cban.method == this.Include) {
-                        correct = cban.tiers.indexOf(tier) != -1;
+                        correct = cban.tiers.has(tier);
                     } else {
-                        correct = cban.tiers.indexOf(tier) == -1;
+                        correct = !cban.tiers.has(tier);
                     }
 
                     if (correct) {
@@ -10348,7 +10417,7 @@ if(message == "Maximum Players Changed.") {
                 for (slot = 0; slot < 6; slot++) {
                     if (sys.teamPoke(player, team, slot) == beast) {
                         for (i = 0; i < 4; i++) {
-                            if (beasts[beast].indexOf(sys.teamPokeMove(player, team, slot, i)) != -1) {
+                            if (beasts[beast].has(sys.teamPokeMove(player, team, slot, i))) {
                                 sys.changePokeShine(player, team, slot, true);
                             }
                         }
@@ -10793,6 +10862,7 @@ if(message == "Maximum Players Changed.") {
         }
 
         checkForUpdates = function (noresume) {
+            return; // TODO: Modify.
             var commitData = "";
             try {
                 commitData = JSON.parse(cache.get("LastCommitData"));
@@ -11761,7 +11831,7 @@ if(message == "Maximum Players Changed.") {
                     this.channelData = {};
                     this.save();
 
-                    if (e.toString().indexOf("JSON") == -1) {
+                    if (!e.toString().contains("JSON")) {
                         print(FormatError("Could not load " + file, e));
                     }
                 }
@@ -13083,7 +13153,7 @@ if(message == "Maximum Players Changed.") {
 
                     for (i in mTA) {
                         c_mTA = sys.move(Number(mTA[i]));
-                        if (doneMoves.indexOf(c_mTA) !== -1) {
+                        if (doneMoves.has(c_mTA)) {
                             mTA.splice(i, 3);
                             continue;
                         }
@@ -13473,7 +13543,7 @@ if(message == "Maximum Players Changed.") {
                 t.register("Type" + s + ": " + pokeType(pokemon));
 
                 if (eggstr != "") {
-                    if (eggstr.indexOf("and ") === -1) {
+                    if (!eggstr.contains("and ")) {
                         t.register("Egg Group: " + eggstr);
                     } else {
                         t.register("Egg Groups: " + eggstr);
@@ -13682,7 +13752,7 @@ if(message == "Maximum Players Changed.") {
 
             var src = "<font color=" + script.namecolor(player) + ">" + sys.name(player) + ":</font>";
 
-            sys.sendHtmlAll("<timestamp/><b>" + chan + " " + src + " " + message, watch);
+            sys.sendHtmlAll("<timestamp/><b>" + chan + " " + src + "</b> " + message, watch);
         }
 
         WatchChannelEvent = function (channel, message) {
