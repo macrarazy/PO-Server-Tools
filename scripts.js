@@ -345,23 +345,23 @@ function POUser(id) {
     var dh = DataHash;
 
     var d = dh.mutes;
-    this.muted = d.hasOwnProperty(this.ip);
+    this.muted = d.has(this.ip);
 
-    this.megauser = dh.megausers.hasOwnProperty(mn_lc);
+    this.megauser = dh.megausers.has(mn_lc);
 
     var i = dh.rankicons;
 
-    if (i.hasOwnProperty(mn_lc)) {
+    if (i.has(mn_lc)) {
         this.icon = i[mn_lc];
     }
 
     i = dh.voices;
-    this.voice = i.hasOwnProperty(mn_lc);
+    this.voice = i.has(mn_lc);
 
     i = dh.macros;
     this.macro = ["%m1", "%m2", "%m3", "%m4", "%m5"];
 
-    if (i.hasOwnProperty(mn_lc)) {
+    if (i.has(mn_lc)) {
         this.macro = i[mn_lc];
     }
 }
@@ -1578,6 +1578,8 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
     }
 
     this.tournumber = count;
+    this.remaining = count;
+
     var spots = sys.tourSpots();
     if (this.TourDisplay == this.Displays.Normal) {
         this.border();
@@ -2634,7 +2636,7 @@ JSESSION.refill();
             srcname = sys.name(src).toLowerCase(),
             user = JSESSION.users(src);
 
-        if (chan.isChanMod(src) || (sys.auth(src) >= 1 && sys.auth(src) <= 2 && channel != scriptchannel) || sys.auth(src) > 2 || DataHash.megausers[sys.name(src).toLowerCase()] != undefined && c == staffchannel || DataHash.evalops.hasOwnProperty(sys.name(src).toLowerCase()) && c == scriptchannel) {
+        if (chan.isChanMod(src) || (sys.auth(src) >= 1 && sys.auth(src) <= 2 && channel != scriptchannel) || sys.auth(src) > 2 || DataHash.megausers[sys.name(src).toLowerCase()] != undefined && c == staffchannel || DataHash.evalops.has(sys.name(src).toLowerCase()) && c == scriptchannel) {
             return;
         }
 
@@ -2904,7 +2906,7 @@ Trivia.start();
                 ChanIds.push(staffchannel);
             }
 
-            if (sys.auth(src) > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.hasOwnProperty(srcToLower)) {
+            if (sys.auth(src) > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
                 ChanIds.push(scriptchannel);
             }
 /*
@@ -2933,7 +2935,7 @@ Trivia.start();
             srcname = sys.name(src).toLowerCase(),
             user = JSESSION.users(src);
 
-        if (ChatColorRandomizers.hasOwnProperty(channel)) {
+        if (ChatColorRandomizers.has(channel)) {
             var index = ChatColorRandomizers[channel],
                 code = '<center><hr width="150"/><b>Party Time!</b><hr width="150"/></center><div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
 
@@ -3135,7 +3137,7 @@ if(message == "Maximum Players Changed.") {
         var host = isHost(src),
             poChan = JSESSION.channels(chan),
             poUser = JSESSION.users(src),
-            chatcolor = ChatColorRandomizers.hasOwnProperty(chan),
+            chatcolor = ChatColorRandomizers.has(chan),
             voice = poUser.voice,
             macro = poUser.macro,
             macroX, macroRegExp, macroXNum, myAuth = sys.auth(src);
@@ -3350,7 +3352,7 @@ if(message == "Maximum Players Changed.") {
             WatchPlayer(src, "Channel Silence Message", message, chan);
             return;
         }
-		
+
         if (poUser.muted && !host) {
             Prune.mutes();
             if (!DataHash.mutes.has(ip)) {
@@ -4612,7 +4614,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
                     var datanum = parseInt(commandData);
-                    if (!Poll.options.hasOwnProperty(datanum)) {
+                    if (!Poll.options.has(datanum)) {
                         botMessage(src, "Invalid option.", chan);
                         return;
                     }
@@ -5298,7 +5300,7 @@ if(message == "Maximum Players Changed.") {
                         ct.span(ChanMod + " Commands");
 
                         if (permission(src, 1)) {
-                            ct.register("perm", ["{b On/Off}"], "Makes the channel permanent or temporally.");
+                            ct.register("perm", "Makes the channel permanent or temporally.");
                         }
                         ct.register("channelwall", ["{p Message}"], "Announces something in this channel.");
                         ct.register("channelhtmlwall", ["{p Message}"], "Announces something with HTML in this channel.");
@@ -6278,7 +6280,7 @@ if(message == "Maximum Players Changed.") {
                         ct.register("push", ["{or Person}"], "Adds someone to the tournament. In Tag Team Tournaments, you cannot add players after the signup.");
                         ct.register("endtour", "Ends the tournament.");
                         ct.register("switch", ["{g Player}", "{r NewPlayer}"], "Switches 2 players in the tournament.");
-                        ct.register("autostartbattles", ["{b On/Off}"], "Turns auto start battles on or off in the channel.");
+                        ct.register("autostartbattles", "Toggles auto start battles in the channel.");
                         ct.register("display", ["{b 1/2}"], "Changes the tournament display mode in this channel. 1 is Normal, 2 is Clean.");
                     }
 
@@ -6693,7 +6695,7 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "No such player!", chan);
                         return;
                     }
-                    if (v.hasOwnProperty(n.toLowerCase())) {
+                    if (v.has(n.toLowerCase())) {
                         botMessage(src, "That player already has Voice!", chan);
                         return;
                     }
@@ -6712,7 +6714,7 @@ if(message == "Maximum Players Changed.") {
                     var v = DataHash.voices,
                         n = mcmd[0];
 
-                    if (!v.hasOwnProperty(n.toLowerCase())) {
+                    if (!v.has(n.toLowerCase())) {
                         botMessage(src, "That player does not have Voice!", chan);
                         return;
                     }
@@ -7915,11 +7917,11 @@ if(message == "Maximum Players Changed.") {
                 chatcommands: function () {
                     var ct = new Command_Templater("Chat Commands");
 
-                    ct.register("rankicon", ["{b On/Off}"], "Turns Rank Icons and BB Code on or off.");
-                    ct.register("autoedit", ["{b On/Off}"], "Automaticly corrects messages if on.");
+                    ct.register("rankicon", "Toggles Rank Icons and BB Code.");
+                    ct.register("autoedit", "Automaticly corrects messages if on.");
                     ct.register("messagelimit", ["{o Number}"], "Sets a character limit for players under " + AdminName + " authority.");
-                    ct.register("autokick", ["{b On/Off}"], "Turns automatic kicks on or off. Temp bans (and kicks involving them) still enabled.");
-                    ct.register("automute", ["{b On/Off}"], "Turns automatic mutes on or off.");
+                    ct.register("autokick", "Toggles automatic kicks.");
+                    ct.register("automute", "Toggles automatic mutes.");
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -7929,7 +7931,7 @@ if(message == "Maximum Players Changed.") {
 
                     ct.register("public", "Makes the server public.");
                     ct.register("private", "Makes the server private.");
-                    ct.register("allowchannels", ["{b On/Off}"], "To allow or disallow the creation of non-script channels.");
+                    ct.register("allowchannels", "Toggles allowance of creation of non-script channels.");
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -8125,24 +8127,9 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Owner Commands: Rank Icons */
                 rankicon: function () {
-                    if (cmdData != "on" && cmdData != "off") {
-                        botMessage(src, "Use /rankicon on or /rankicon off", chan);
-                        return;
-                    }
-                    if (cmdData === "on" && !UseIcons) {
-                        botEscapeAll('Rank Icons has been turned on by ' + sys.name(src) + '!', 0);
-                        UseIcons = true;
-                        cache.write("UseIcons", true);
-                        return;
-                    }
-
-                    if (cmdData === "off" && UseIcons) {
-                        botEscapeAll('Rank Icons has been turned off by ' + sys.name(src) + '!', 0);
-                        UseIcons = false;
-                        cache.write("UseIcons", false);
-                        return;
-                    }
-                    botMessage(src, "Rank Icons are already " + cmdData, chan);
+                    UseIcons = !UseIcons;
+                    botAll("Rank Icons have been turned " + isOn(UseIcons) + " by " + sys.name(src) + "!", 0);
+                    cache.write("UseIcons", UseIcons);
                 },
 
                 /* -- Owner Commands: Future -- */
@@ -8169,32 +8156,9 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Owner Commands: Editing -- */
                 autoedit: function () {
-                    if (cmdData != "on" && cmdData != "off") {
-                        botMessage(src, "Use /autoedit on or /autoedit off", chan);
-                        return;
-                    }
-                    if (cmdData === "on") {
-                        if (MessageEditor) {
-                            botMessage(src, "Auto Editing is already on!", chan);
-                            return;
-                        }
-                        botEscapeAll('Auto Editing has been turned on by ' + sys.name(src) + '!', 0);
-                        MessageEditor = true;
-                        cache.write("MessageEditor", true);
-                        return;
-                    }
-
-                    if (cmdData === "off") {
-                        if (MessageEditor) {
-                            botMessage(src, "Auto Editing is already off!", chan);
-                            return;
-                        }
-                        botEscapeAll('Auto Editing has been turned off by ' + sys.name(src) + '!', 0);
-                        MessageEditor = false;
-                        cache.write("MessageEditor", false);
-                        return;
-                    }
-                    botMessage(src, "Auto Editing is already " + cmdData, chan);
+                    MessageEditor = !MessageEditor;
+                    botEscapeAll("Auto Editing has been turned " + toOn(MessageEditor) + " by " + sys.name(src) + "!", 0);
+                    cache.write("MessageEditor", MessageEditor);
                 },
 
                 /* -- Owner Commands: Limiting */
@@ -8402,7 +8366,7 @@ if(message == "Maximum Players Changed.") {
                 rangeunban: function () {
                     Prune.rangeBans();
 
-                    if (DataHash.rangebans.hasOwnProperty(commandData)) {
+                    if (DataHash.rangebans.has(commandData)) {
                         botMessage(src, "Removed rangeban for " + commandData + ".", chan);
 
                         delete DataHash.rangebans[commandData];
@@ -8565,67 +8529,23 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Owner Commands: Automatic Disabling -- */
                 autokick: function () {
-                    if (cmdData != "on" && cmdData != "off") {
-                        botMessage(src, "Use 'on' or 'off'.", chan);
-                        return;
-                    }
-
-                    if (!AutoKick && cmdData == "on") {
-                        AutoKick = true;
-                    }
-                    else if (AutoKick && cmdData == "off") {
-                        AutoKick = false;
-                    }
-                    else {
-                        botMessage(src, "Auto Kick is already " + cmdData + ".", chan);
-                        return;
-                    }
-
+                    AutoKick = !AutoKick;
                     cache.write("AutoKick", AutoKick);
-                    botAll("Auto Kick was turned " + cmdData + " by " + sys.name(src) + "!", 0);
+                    botAll("Auto Kick was turned " + toOn(AutoKick) + " by " + sys.name(src) + "!", 0);
                 },
 
                 automute: function () {
-                    if (cmdData != "on" && cmdData != "off") {
-                        botMessage(src, "Use 'on' or 'off'.", chan);
-                        return;
-                    }
-
-                    if (!AutoMute && cmdData == "on") {
-                        AutoMute = true;
-                    }
-                    else if (AutoMute && cmdData == "off") {
-                        AutoMute = false;
-                    }
-                    else {
-                        botMessage(src, "Auto Mute is already " + cmdData + ".", chan);
-                        return;
-                    }
+                    AutoMute = !AutoMute;
 
                     cache.write("AutoMute", AutoMute);
-                    botAll("Auto Mute was turned " + cmdData + " by " + sys.name(src) + "!", 0);
+                    botAll("Auto Mute was turned " + toOn(AutoMute) + " by " + sys.name(src) + "!", 0);
                 },
 
                 /* -- Owner Commands: Channels -- */
                 allowchannels: function () {
-                    if (cmdData != "on" && cmdData != "off") {
-                        botMessage(src, "Use 'on' or 'off'.", chan);
-                        return;
-                    }
-
-                    if (!ChannelsAllowed && cmdData == "on") {
-                        ChannelsAllowed = true;
-                    }
-                    else if (ChannelsAllowed && cmdData == "off") {
-                        ChannelsAllowed = false;
-                    }
-                    else {
-                        botMessage(src, "Channels are already " + cmdData + ".", chan);
-                        return;
-                    }
-
+                    ChannelsAllowed = !ChannelsAllowed;
                     cache.write("ChannelsAllowed", ChannelsAllowed);
-                    botAll("Channels were turned " + cmdData + " by " + sys.name(src) + "!", 0);
+                    botAll("Channels were turned " + toOn(ChannelsAllowed) + " by " + sys.name(src) + "!", 0);
                 },
 
                 /* -- Owner Commands: Player -- */
@@ -8801,7 +8721,7 @@ if(message == "Maximum Players Changed.") {
 
                     PointerCommands[rmPoint] = rmCmd;
                     var points = PointerCommands["!!/Reverse/!!"];
-                    if (!points.hasOwnProperty(rmPoint)) {
+                    if (!points.has(rmPoint)) {
                         points[rmPoint] = {};
                     }
                     points[rmPoint][rmCmd] = '';
@@ -8986,7 +8906,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
                     var d = DataHash.evalops;
-                    if (d.hasOwnProperty(m)) {
+                    if (d.has(m)) {
                         botMessage(src, "This player already is Eval Operator.", chan);
                         return;
                     }
@@ -9015,7 +8935,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
                     var d = DataHash.evalops;
-                    if (!d.hasOwnProperty(m)) {
+                    if (!d.has(m)) {
                         botMessage(src, "This player isn't an Eval Operator.", chan);
                         return;
                     }
@@ -9446,11 +9366,11 @@ if(message == "Maximum Players Changed.") {
 
             myUser.name = myName;
             myUser.lowername = lc;
-            myUser.megauser = dh.megausers.hasOwnProperty(lc);
-            myUser.voice = dh.voices.hasOwnProperty(lc);
+            myUser.megauser = dh.megausers.has(lc);
+            myUser.voice = dh.voices.has(lc);
             myUser.icon = undefined;
 
-            if (dh.rankicons.hasOwnProperty(lc)) {
+            if (dh.rankicons.has(lc)) {
                 myIcon = dh.icons[lc];
             }
 
@@ -9880,7 +9800,7 @@ if(message == "Maximum Players Changed.") {
 
         Prune.mutes();
         var oldtime = 0;
-        if (DataHash.mutes.hasOwnProperty(theIP)) {
+        if (DataHash.mutes.has(theIP)) {
             oldtime = DataHash.mutes[theIP].time - now_time;
         }
 
@@ -9955,7 +9875,7 @@ if(message == "Maximum Players Changed.") {
 
         Prune.mutes();
 
-        if (!DataHash.mutes.hasOwnProperty(theIP)) {
+        if (!DataHash.mutes.has(theIP)) {
             botMessage(src, "You cannot unmute someone who isn't muted!", c);
             return;
         }
@@ -9995,7 +9915,7 @@ if(message == "Maximum Players Changed.") {
 
         Prune.bans();
 
-        if (DataHash.tempbans.hasOwnProperty(theIP)) {
+        if (DataHash.tempbans.has(theIP)) {
             botMessage(src, "You cannot ban an already banned player!", c);
             return;
         }
@@ -10054,7 +9974,7 @@ if(message == "Maximum Players Changed.") {
 
         Prune.bans();
 
-        if (!DataHash.tempbans.hasOwnProperty(theIP)) {
+        if (!DataHash.tempbans.has(theIP)) {
             botMessage(src, "You cannot unban someone who isn't banned!", c);
             return;
         }
@@ -10935,7 +10855,7 @@ if(message == "Maximum Players Changed.") {
         }
 
         DisableChatColorRandomizer = function (channel) {
-            if (!ChatColorRandomizers.hasOwnProperty(channel)) {
+            if (!ChatColorRandomizers.has(channel)) {
                 return;
             }
 
@@ -11033,10 +10953,10 @@ if(message == "Maximum Players Changed.") {
         kickFromChannel = function (name, chan) {
             var ownTL = name.toLowerCase(),
                 cObj = JSESSION.channels(chan),
-                isMU = DataHash.megausers.hasOwnProperty(ownTL),
-                isOp = DataHash.evalops.hasOwnProperty(ownTL);
+                isMU = DataHash.megausers.has(ownTL),
+                isOp = DataHash.evalops.has(ownTL);
 
-            if (cObj.chanAuth.hasOwnProperty(ownTL) && cObj.chanAuth[ownTL] > 0) {
+            if (cObj.chanAuth.has(ownTL) && cObj.chanAuth[ownTL] > 0) {
                 return;
             }
 
@@ -11958,7 +11878,7 @@ if(message == "Maximum Players Changed.") {
                 }
 
 
-                if (cData.hasOwnProperty(channelName) && !shouldOverwrite) {
+                if (cData.has(channelName) && !shouldOverwrite) {
                     return;
                 }
 
@@ -12121,7 +12041,7 @@ if(message == "Maximum Players Changed.") {
             var regValCache = {};
 
             var readVal = function (val) {
-                if (regValCache.hasOwnProperty(val)) return regValCache[val];
+                if (regValCache.has(val)) return regValCache[val];
 
                 var vald = sys.getVal(val);
                 regValCache[val] = vald;
@@ -12183,7 +12103,7 @@ if(message == "Maximum Players Changed.") {
                 var dhr = DataHash.rangebans,
                     x;
                 for (x in rbEx) {
-                    if (!DataHash.rangebans.hasOwnProperty(rbEx[x])) {
+                    if (!DataHash.rangebans.has(rbEx[x])) {
                         DataHash.rangebans[rbEx[x]] = {
                             by: "Data Import",
                             why: "Unknown",
@@ -12208,7 +12128,7 @@ if(message == "Maximum Players Changed.") {
                 var dhm = DataHash.mutes,
                     x;
                 for (x in dhm) {
-                    if (!DataHash.mutes.hasOwnProperty(mEx[x])) {
+                    if (!DataHash.mutes.has(mEx[x])) {
                         DataHash.mutes[mEx[x]] = {
                             by: "Data Import",
                             why: "Unknown",
@@ -12344,7 +12264,7 @@ if(message == "Maximum Players Changed.") {
 
                 for (y in poMuteHash) {
                     x = poMuteHash[y].split(":");
-                    if (!DataHash.mutes.hasOwnProperty(y) || DataHash.mutes[y].time < x[1] * 1) {
+                    if (!DataHash.mutes.has(y) || DataHash.mutes[y].time < x[1] * 1) {
                         DataHash.mutes[y] = {
                             by: x[1],
                             why: x[4],
@@ -12357,7 +12277,7 @@ if(message == "Maximum Players Changed.") {
 
                 for (y in poRangeHash) {
                     x = poRangeHash[y];
-                    if (!DataHash.rangebans.hasOwnProperty(y)) {
+                    if (!DataHash.rangebans.has(y)) {
                         DataHash.rangebans[y] = {
                             by: "Data Import",
                             why: x,
@@ -12370,7 +12290,7 @@ if(message == "Maximum Players Changed.") {
 
                 for (y in POMU) {
                     x = POMU[y].toLowerCase();
-                    if (!DataHash.megausers.hasOwnProperty(x) && sys.dbIp(x) != undefined) {
+                    if (!DataHash.megausers.has(x) && sys.dbIp(x) != undefined) {
                         DataHash.megausers[x] = {
                             "name": x.name()
                         };
@@ -12773,7 +12693,7 @@ if(message == "Maximum Players Changed.") {
             this.template.push("</table><br/>", style.footer);
             sys.sendHtmlMessage(id, this.template.join(''), chan);
 
-            if (ChatColorRandomizers.hasOwnProperty(chan)) { // Tables reset
+            if (ChatColorRandomizers.has(chan)) { // Tables reset
                 var index = ChatColorRandomizers[chan],
                     code = '<div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
 
@@ -12832,7 +12752,7 @@ if(message == "Maximum Players Changed.") {
 
                 var current_style = cache.get("Current_Style");
 
-                if (!stylesCache.hasOwnProperty(current_style)) {
+                if (!stylesCache.has(current_style)) {
                     current_style = "default";
                 }
 
@@ -12844,7 +12764,7 @@ if(message == "Maximum Players Changed.") {
                 var m_styles = this.styles,
                     dataToLower = name.toLowerCase();
 
-                if (!m_styles.hasOwnProperty(dataToLower)) {
+                if (!m_styles.has(dataToLower)) {
                     botEscapeMessage(src, "The style " + name + " doesn't exist.", chan);
                     return;
                 }
@@ -13643,18 +13563,21 @@ if(message == "Maximum Players Changed.") {
                 });
             }
             else if (Proto == POChannel || Proto == Tours) {
-                var list = sys.channelIds();
-                var PROTOTOUR = Proto == Tours;
+                var list = sys.channelIds(),
+                    PROTOTOUR = Proto == Tours,
+                    channel;
+
                 list.forEach(function (id) {
+                    channel = JSESSION.channels(id);
                     if (sys.existChannel(sys.channel(id))) {
                         if (PROTOTOUR) {
-                            if (JSESSION.channels(id).toursEnabled && JSESSION.channels(id).tour.__proto__ != p) {
-                                JSESSION.channels(id).tour.__proto__ = p;
+                            if (channel.toursEnabled && channel.tour.__proto__ != p) {
+                                channel.tour.__proto__ = p;
                             }
                         }
                         else {
-                            if (JSESSION.channels(id).__proto__ != p) {
-                                JSESSION.channels(id).__proto__ = p;
+                            if (channel.__proto__ != p) {
+                                channel.__proto__ = p;
                                 cData.loadDataFor(sys.channel(id));
                             }
                         }
@@ -13733,6 +13656,14 @@ if(message == "Maximum Players Changed.") {
             return false;
         }
 
+        toOn = function (bool) {
+            if (bool) {
+                return "on";
+            }
+
+            return "off";
+        }
+
         WatchPlayer = function (player, type, message, channel) {
             var chan = "";
             if (typeof channel != "undefined") {
@@ -13770,8 +13701,18 @@ if(message == "Maximum Players Changed.") {
                 this.hash = JSON.parse(sys.getFileContent(this.file));
             }
             catch (e) {
+                sys.writeToFile(file + "-corrupt.json", JSON.stringify(this.hash));
                 this.hash = {};
-                print(FormatError("Could not load cache from file " + this.file + "!", e))
+                this.saveAll();
+                var cacheName = file;
+                if (file != "Cache") {
+                    cacheName += " cache";
+                } else {
+                    cacheName = "cache";
+                }
+
+                print(FormatError("Could not load " + cacheName + " from file " + this.file + ".json!", e));
+                print("Old cache available in " + file + "-corrupt.json. Cache has been cleared and " + file + ".json has been cleared.");
             }
         }
 
@@ -13942,7 +13883,7 @@ if(message == "Maximum Players Changed.") {
                 if (!cacheobj) {
                     cacheobj = cache;
                 }
-                if (!dHash.hasOwnProperty(name)) {
+                if (!dHash.has(name)) {
                     dHash[name] = {};
                     var query = cacheobj.get(name);
                     if (query != "") {
@@ -13956,11 +13897,9 @@ if(message == "Maximum Players Changed.") {
                         DataHash[name] = {};
                     }
                 }
-            }
+            };
 
-
-
-            defineDataProp("mutes");
+        defineDataProp("mutes");
         defineDataProp("voices");
         defineDataProp("evalops");
         defineDataProp("names", playerscache);
@@ -14096,19 +14035,19 @@ if(message == "Maximum Players Changed.") {
 
         var c = false,
             pc = PointerCommands,
-            cur;
-        for (var y in Required_Pointers) {
-            if (!pc.hasOwnProperty(y)) {
+            cur, y;
+
+        for (y in Required_Pointers) {
+            if (!pc.has(y)) {
                 pc[y] = Required_Pointers[y];
                 c = true;
             }
         }
 
-        if (!PointerCommands.hasOwnProperty("!!/Reverse/!!")) {
+        if (!PointerCommands.has("!!/Reverse/!!")) {
             PointerCommands["!!/Reverse/!!"] = {};
         }
 
-        var y;
         for (y in pc) {
             if (y == "!!/Reverse/!!") {
                 break;
@@ -14120,7 +14059,7 @@ if(message == "Maximum Players Changed.") {
                 pc["!!/Reverse/!!"][pc[y]] = {};
             }
 
-            if (!cur.hasOwnProperty(y)) {
+            if (!cur.has(y)) {
                 pc["!!/Reverse/!!"][pc[y]][y] = '';
                 c = true;
             }
@@ -14798,7 +14737,7 @@ if(message == "Maximum Players Changed.") {
                         this.sendMessage(src, "No questions exist.");
                         return;
                     }
-                    if (!this.questions.hasOwnProperty(commandData)) {
+                    if (!this.questions.has(commandData)) {
                         this.sendMessage(src, "That question doesn't exist. For a list of questions, type /questions.");
                         return;
                     }
