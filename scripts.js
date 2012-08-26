@@ -4170,6 +4170,7 @@ if(message == "Maximum Players Changed.") {
 
                     check(MessageEditor, "Grammar Corrector is", "on", "off");
                     check(UseIcons, "Rank Icons and BBCode are", "on", "off");
+					check(ChannelsAllowed, "Channels are", "allowed", "disallowed");
 
                     check(evallock, "Eval is", "locked", "not locked");
 
