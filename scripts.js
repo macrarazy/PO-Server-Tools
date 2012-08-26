@@ -4170,7 +4170,7 @@ if(message == "Maximum Players Changed.") {
 
                     check(MessageEditor, "Grammar Corrector is", "on", "off");
                     check(UseIcons, "Rank Icons and BBCode are", "on", "off");
-					check(ChannelsAllowed, "Channels are", "allowed", "disallowed");
+                    check(ChannelsAllowed, "Channels are", "allowed", "disallowed");
 
                     check(evallock, "Eval is", "locked", "not locked");
 
@@ -4240,8 +4240,8 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 tourauthlist: function () {
-                    var authlist = DataHash.megausers;
-                    var count = objLength(authlist),
+                    var authlist = DataHash.megausers,
+                        count = objLength(authlist),
                         x;
 
                     if (count == 0) {
@@ -10985,12 +10985,12 @@ if(message == "Maximum Players Changed.") {
             }
 
             var status, ats = authToString(sys.auth(x), true),
-                n;
+                n, away = sys.away(x);
 
-            if (sys.away(x)) {
+            if (away) {
                 status = 'Away';
             }
-            else if (!sys.away(x)) {
+            else if (!away) {
                 status = 'Available';
             }
             else if (sys.battling(x)) {
@@ -11121,7 +11121,7 @@ if(message == "Maximum Players Changed.") {
 
             for (x in ids) {
                 current = ids[x];
-                if (sys.auth(current) <= 0 && !JSESSION.users(current).megauser) {
+                if (hpAuth(current) <= 0 && !JSESSION.users(current).megauser) {
                     sys.kick(current);
                 }
             }
@@ -11392,15 +11392,15 @@ if(message == "Maximum Players Changed.") {
             return false;
         }
 
-        var offline = function () {
+        function offline() {
             return "<small>Offline</small>".fontcolor("red").bold();
         }
 
-        var online = function () {
+        function online() {
             return "<small>Online</small>".fontcolor("green").bold();
         }
 
-        var lastOn = function (name) {
+        function lastOn(name) {
             var lastOnline = sys.dbLastOn(name);
 
             if (lastOnline == undefined) {
@@ -11415,7 +11415,12 @@ if(message == "Maximum Players Changed.") {
                 auth = sys.dbAuth(name);
 
             if (sys.dbIp(name) == undefined) {
-                return "<img src='Themes/Classic/Client/uAway.png'> " + name.bold() + " " + offline() + " " + lastOn(name);
+                var status = online(),
+                    icon = AuthIMG(id);
+                if (id == undefined) {
+                    status = offline();
+                }
+                return "<img src='Themes/Classic/Client/" + icon + ".png'> " + name.bold() + " " + status + " " + lastOn(name);
             }
 
             if (id == undefined) {
