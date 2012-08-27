@@ -506,18 +506,20 @@ POChannel.prototype.changeTopic = function (src, topic, fullCommand) {
         return;
     }
 
+    var me = sys.name(src),
+        mePlayer = player(me);
+
     if (topic.toLowerCase() == "default") {
         this.topic = "Welcome to " + this.name + "!";
         this.defaultTopic = true;
         this.topicsetter = '';
-        botAll("The topic was changed by " + sys.name(src) + " to: " + this.topic, this.id);
-        return;
+    } else {
+        this.topic = topic;
+        this.topicsetter = me;
+        this.defaultTopic = false;
     }
 
-    this.topic = topic;
-    this.topicsetter = sys.name(src);
-    this.defaultTopic = false;
-    botAll("The topic was changed by " + sys.name(src) + " to: " + this.topic, this.id);
+    botAll("The topic was changed by " + mePlayer + " to: " + this.topic, this.id);
     return;
 }
 
@@ -872,7 +874,7 @@ TourNotification = function (src, chan, info) { // info is an object
         white();
         border();
 
-        sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + tour.tourstarter + " " + startTime + " ago! </b></font>", chan);
+        sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + player(tour.tourstarter) + " " + startTime + " ago! </b></font>", chan);
         sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + tour.tournumber, chan);
         sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + tour.identify(), chan);
         sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tourtier, chan);
@@ -902,7 +904,8 @@ TourNotification = function (src, chan, info) { // info is an object
         if (tour.TourDisplay == tour.Displays.Normal) {
             tour.white()
             tour.border();
-            sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + info.starter + "! </b></font>", chan);
+            // TODO: Implement color support for bot.
+            sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + player(info.starter) + "! </b></font>", chan);
             sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + tour.tournumber, chan);
             sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + tour.identify(), chan);
             sys.sendHtmlAll("<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tourtier, chan);
@@ -921,7 +924,8 @@ TourNotification = function (src, chan, info) { // info is an object
                 prize = '<b style="color: brown;">Prize:</b> ' + tour.prize + '<br/>';
             }
 
-            TourBox("A Tournament was started by <b style='color:" + info.color + "'>" + info.starter + "</b>! <br/> <b style='color:red'>Players:</b> " + tour.tournumber + " <br/> <b style='color: blue'>Type:</b> " + tour.identify() + " <br/> <b style='color: orange'>Tier:</b> " + tour.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!", chan);
+            // Bots
+            TourBox("A Tournament was started by <b style='color:" + info.color + "'>" + html_escape(info.starter) + "</b>! <br/> <b style='color:red'>Players:</b> " + tour.tournumber + " <br/> <b style='color: blue'>Type:</b> " + tour.identify() + " <br/> <b style='color: orange'>Tier:</b> " + tour.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!", chan);
         }
     }
 }
@@ -1051,19 +1055,21 @@ Tours.prototype.command_display = function (src, commandData, fullCommand) {
         return;
     }
 
-    if (num == this.Displays.Normal) {
+    var me = player(src);
 
+    if (num == this.Displays.Normal) {
         this.border();
         this.white();
-        botEscapeAll(sys.name(src) + " changed the tournament display mode to Normal.", this.id);
+        botAll(me + " changed the tournament display mode to Normal.", this.id);
         this.white();
         this.border();
     } else { // this.Displays.Clean
-        this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> changed the tournament display mode to Clean.");
+        this.TourBox(me + " changed the tournament display mode to Clean.");
     }
 
-    botAll(sys.name(src) + " changed the tournament display mode to " + num + "!", 0);
     this.TourDisplay = num;
+
+    cData.changeTourOptions(this.id, num, this.AutoStartBattles);
 }
 
 Tours.prototype.command_autostartbattles = function (src, commandData, fullCommand) {
@@ -1072,39 +1078,22 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
         return;
     }
 
-    var isOn = on(commandData);
+    this.AutoStartBattles = !this.AutoStartBattles;
+    var to_on = toOn(this.AutoStartBattles),
+        me = player(src);
 
-    if (isOn && !this.AutoStartBattles) {
-        if (this.TourDisplay == this.Displays.Normal) {
-            this.border();
-            this.white();
-            botEscapeAll(sys.name(src) + " turned auto start battles on.", this.id);
-            this.white();
-            this.border();
-        }
-        else {
-            this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> turned auto start battles on.");
-        }
-        this.AutoStartBattles = true;
-        return;
-    } else if (!isOn && this.AutoStartBattles) {
-        if (this.TourDisplay == this.Displays.Normal) {
-            this.border();
-            this.white();
-            botEscapeAll(sys.name(src) + " turned auto start battles off.", this.id);
-            this.white();
-            this.border();
-            this.AutoStartBattles = false;
-        }
-        else {
-            this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> turned auto start battles off.");
-            this.AutoStartBattles = false;
-        }
-        return;
+    if (this.TourDisplay == this.Displays.Normal) {
+        this.border();
+        this.white();
+        botAll(me + " turned auto start battles " + to_on + ".", this.id);
+        this.white();
+        this.border();
+    }
+    else {
+        this.TourBox(me + " turned auto start battles " + to_on + ".");
     }
 
-    botMessage(src, "Auto Start Battles is already " + commandData.toLowerCase(), this.id);
-    return;
+    cData.changeTourOptions(this.id, this.TourDisplay, this.AutoStartBattles);
 }
 
 Tours.prototype.command_tourprize = function (src, commandData, fullCommand) {
@@ -1113,11 +1102,10 @@ Tours.prototype.command_tourprize = function (src, commandData, fullCommand) {
         return;
     }
     if (isEmpty(this.prize)) {
-        botMessage(src, "No tournament prize.", this.id);
+        botMessage(src, "There is no prize.", this.id);
         return;
     }
     botMessage(src, "The tournament prize is: " + this.prize, this.id);
-    return;
 }
 
 Tours.prototype.command_join = function (src, commandData, fullCommand) {
@@ -1125,8 +1113,9 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         botMessage(src, "You are unable to join because a tournament is not currently running or has passed the signups phase.", this.id);
         return;
     }
-    var name = sys.name(src).toLowerCase();
-    if (this.players.has(name)) {
+
+    var self = sys.name(src).toLowerCase();
+    if (this.players.has(self)) {
         botMessage(src, "You are already in the tournament. You are not able to join more than once.", this.id);
         return;
     }
@@ -1135,13 +1124,14 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         return;
     }
 
+    var me = player(src);
     if (this.tourSpots() > 0) {
         this.buildHash(src);
 
         if (this.TourDisplay == this.Displays.Normal) {
-            botEscapeAll(sys.name(src) + " joined the tournament! " + this.tourSpots() + " more spot(s) left!", this.id);
+            botEscapeAll(me + " joined the tournament! " + this.tourSpots() + " more spot(s) left!", this.id);
         } else {
-            this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> joined the tournament! <b>" + this.tourSpots() + "</b> more spot(s) left!");
+            this.TourBox(me + " joined the tournament! <b>" + this.tourSpots() + "</b> more spot(s) left!");
         }
 
         if (this.tourSpots() == 0) {
@@ -1151,8 +1141,8 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         }
         return;
     }
+
     botMessage(src, "There are no spots remaining.", this.id);
-    return;
 }
 
 Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
@@ -1161,8 +1151,8 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
         return;
     }
 
-    var name2 = sys.name(src).toLowerCase();
-    if (!this.players.has(name2)) {
+    var self = sys.name(src).toLowerCase();
+    if (!this.players.has(self)) {
         botMessage(src, "You have not joined the tournament.", this.id);
         return;
     }
@@ -1171,17 +1161,19 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
         this.remaining--;
     }
 
+    var me = player(src),
+        spotsNow = this.tourSpots() + 1;
     if (this.TourDisplay == this.Displays.Normal) {
-        botEscapeAll(sys.name(src) + " left the tournament " + (this.tourSpots() + 1) + " spots left!", this.id);
+        botAll(me + " left the tournament " + spotsNow + " spots left!", this.id);
     } else {
-        this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + html_escape(sys.name(src)) + "</b> left the tournament! <b>" + (this.tourSpots() + 1) + "</b> spots left!");
+        this.TourBox(me + " left the tournament! <b>" + spotsNow + "</b> spots left!");
     }
 
-    if (this.tourmode == 2 && this.players[name2].couplesid != -1) {
-        this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
+    if (this.tourmode == 2 && this.players[self].couplesid != -1) {
+        this.tourBattleEnd(this.tourOpponent(self.name()), self.name(), true);
     }
 
-    delete this.players[name2];
+    delete this.players[self];
 
     if (objLength(this.couples) == 0 && this.tourmode == 2) {
         this.roundPairing();
@@ -1205,7 +1197,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         ongoingBattles = battleHash.ongoingBattles,
         winLose = battleHash.winLose,
         anyFinishedBattles = objLength(winLose) > 0,
-        x;
+        x, curr;
 
     var roundInfoStr = "Round " + this.roundnumber;
     if (this.finals) {
@@ -1218,7 +1210,8 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         botMessage(src, "Battles finished", chan);
         sys.sendMessage(src, "", chan);
         for (x in winLose) {
-            botMessage(src, html_escape(winLose[x][0]) + " won against " + html_escape(winLose[x][1]), chan);
+            curr = winLose[x];
+            botMessage(src, player(curr[0]) + " won against " + player(curr[1]), chan);
         }
 
         sys.sendMessage(src, "", chan);
@@ -1229,7 +1222,8 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         botMessage(src, "Ongoing battles:", chan);
         sys.sendMessage(src, "", chan);
         for (x in ongoingBattles) {
-            botMessage(src, html_escape(ongoingBattles[x][0]) + " VS " + html_escape(ongoingBattles[x][1]), chan);
+            curr = ongoingBattles[x];
+            botMessage(src, player(curr[0]) + " VS " + player(curr[1]), chan);
         }
 
         sys.sendMessage(src, "", chan);
@@ -1240,7 +1234,8 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         botMessage(src, "Yet to start battles:", chan);
         sys.sendMessage(src, "", chan);
         for (x in idleBattles) {
-            botMessage(src, html_escape(idleBattles[x][0]) + " VS " + html_escape(idleBattles[x][1]), chan);
+            curr = idleBattles[x];
+            botMessage(src, player(curr[0]) + " VS " + player(curr[1]), chan);
         }
         sys.sendMessage(src, "", chan);
     }
@@ -1252,7 +1247,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
 
         var str = "";
         for (x in winLose) {
-            str += winLose[x][0] + ", ";
+            str += player(winLose[x][0]) + ", ";
         }
 
         str = str.substr(0, str.lastIndexOf(","));
@@ -1263,7 +1258,6 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
 
     sys.sendMessage(src, "", chan);
     sys.sendHtmlMessage(src, style.footer, chan);
-    return;
 }
 
 Tours.prototype.command_dq = function (src, commandData, fullCommand) {
@@ -1276,8 +1270,9 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
         botMessage(src, "Wait until the tournament has started.", this.id);
         return;
     }
-    var name2 = commandData.toLowerCase();
-    if (!this.players.has(name2)) {
+
+    var target = commandData.toLowerCase();
+    if (!this.players.has(target)) {
         botMessage(src, "This player is not in the tournament.", this.id);
         return;
     }
@@ -1289,20 +1284,20 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
     if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
-        botEscapeAll(commandData.name() + " was removed from the tournament by " + sys.name(src) + "!", this.id);
+        botAll(player(target) + " was removed from the tournament by " + player(src) + "!", this.id);
         this.white();
         this.border();
     }
     else {
-        this.TourBox("<b style='color: " + script.namecolor(sys.id(commandData)) + "'>" + commandData.name() + "</b> was removed from the tournament by <b style='color:" + script.namecolor(src) + "'>" + sys.name(src) + "</b>!");
+        this.TourBox(player(target) + " was removed from the tournament by " + player(src) + "!");
     }
 
 
-    if (this.tourmode == 2 && this.players[name2].couplesid != -1) {
-        this.tourBattleEnd(this.tourOpponent(name2.name()), name2.name(), true);
+    if (this.tourmode == 2 && this.players[target].couplesid != -1) {
+        this.tourBattleEnd(this.tourOpponent(target.name()), target.name(), true);
     }
 
-    delete this.players[name2];
+    delete this.players[target];
 }
 
 Tours.prototype.command_switch = function (src, commandData, fullCommand) {
@@ -1350,7 +1345,7 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
     if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
-        botAll(parts[0] + " was switched with " + parts[1] + " by " + sys.name(src) + "!", this.id);
+        botAll(player(parts[0]) + " was switched with " + player(parts[1]) + " by " + player(src) + "!", this.id);
         if (this.tourmode == 1) {
             botAll(spot + " more " + s("spot", spots) + " left!", this.id);
         }
@@ -1358,16 +1353,12 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
         this.border();
     }
     else {
-        parts = parts.map(function (pname) {
-            return '<b style="color: ' + script.namecolor(sys.id(pname)) + '">' + pname.name() + '</b>';
-        });
-
         var spotsStr = "";
         if (this.tourmode == 1) {
             spotsStr = "<br><b>" + spots + "</b> more " + s("spot", spots) + " left!";
         }
 
-        this.TourBox(parts[0] + " was switched with " + parts[1] + " by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spotsStr);
+        this.TourBox(player(parts[0]) + " was switched with " + player(parts[1]) + " by " + player(src) + "!" + spotsStr);
     }
 }
 
@@ -1381,17 +1372,19 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
         return;
     }
 
+    if (sys.dbIp(commandData) == undefined) {
+        botMessage(src, "This person doesn't exist.", this.id);
+        return;
+    }
+
     if (this.tourmode == 2 && this.tagteam_tour()) {
         botMessage(src, "You cannot add players to a running tag team tour!", this.id);
         return;
     }
 
+    var target = player(commandData);
     if (this.isInTourney(commandData.toLowerCase())) {
-        botMessage(src, commandData + " is already in the tournament.", this.id);
-        return;
-    }
-    if (sys.dbIp(commandData) == undefined) {
-        botMessage(src, "This person doesn't exist.", this.id);
+        botMessage(src, target + " is already in the tournament.", this.id);
         return;
     }
 
@@ -1400,13 +1393,15 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
     }
 
     var name = commandData.name(),
-        spots = this.tourSpots();;
+        spots = this.tourSpots(),
+        me = player(src);
+
     this.buildHash(name);
 
     if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
-        botAll(name + " was added to the tournament by " + sys.name(src) + "!", this.id);
+        botAll(target + " was added to the tournament by " + me + "!", this.id);
         if (this.tourmode == 1) {
             botAll(spots + " more " + s("spot", spots) + " left!", this.id);
         }
@@ -1420,7 +1415,7 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
             spotsStr = "<br/><b>" + spots + "</b> more " + s("spot", spots) + " left!";
         }
 
-        this.TourBox("<b style='color:" + script.namecolor(sys.id(commandData)) + "'>" + name + "</b> was added to the tournament by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!" + spotsStr);
+        this.TourBox(target + " was added to the tournament by " + me + "!" + spotsStr);
     }
 
     if (this.tourmode == 1 && spots == 0) {
@@ -1457,15 +1452,17 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
 
     delete this.roundStatus.startedBattles[bIndex];
 
+    var target = player(startername);
+
     if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
-        botAll(startername + " can forfeit their battle and rematch now.", this.id);
+        botAll(target + " can forfeit their battle and rematch now.", this.id);
         this.white();
         this.border();
     }
     else {
-        this.TourBox("<b style='color: " + script.namecolor(sys.id(startername)) + "'>" + startername + "</b> can forfeit their battle and rematch now.");
+        this.TourBox(target + " can forfeit their battle and rematch now.");
     }
     return;
 }
@@ -2699,7 +2696,9 @@ JSESSION.refill();
             JSESSION.createChannel(chan);
         }
 
-        cData.loadDataFor(name);
+        if (typeof cData != "undefined") {
+            cData.loadDataFor(name);
+        }
 
         var POChan = JSESSION.channels(chan);
         if (sys.loggedIn(src) && POChan.creator == src) {
@@ -2712,6 +2711,7 @@ JSESSION.refill();
             POChan.changeAuth(src, 3);
         }
 
+        WatchChannelEvent(channel, "Created");
     },
 
     step: function () {
@@ -7098,7 +7098,7 @@ if(message == "Maximum Players Changed.") {
                         cache.remove("MOTDSetter");
 
                         botEscapeMessage(src, "You changed the MOTD back to default.", chan);
-                        botAllExcept(src, "The MOTD has been changed to default by <font color=" + getColor + "><b> " + sys.name(src) + "</b></font>!", 0, "");
+                        botAllExcept(src, "The MOTD has been changed to default by " + player(src) + ".", 0, "");
                         return;
                     }
 
@@ -7109,7 +7109,7 @@ if(message == "Maximum Players Changed.") {
                     cache.write("MOTDSetter", sys.name(src));
 
                     botEscapeMessage(src, "You changed the MOTD to: " + commandData, chan);
-                    botAllExcept(src, "The MOTD has been changed by <font color=" + getColor + "><b> " + sys.name(src) + "</b></font>!", 0, "");
+                    botAllExcept(src, "The MOTD has been changed by " + player(src) + ".", 0, "");
                 },
 
                 /* -- Mod Commands: Kick -- */
@@ -11410,6 +11410,14 @@ if(message == "Maximum Players Changed.") {
             return "<b><font color='blue' size='2'>Last Online:</font></b> " + lastOnline.italics();
         }
 
+        player = function (user) {
+            if (typeof user == "string") {
+                return "<b><font color='" + script.namecolor(sys.id(user)) + "'>" + html_escape(user.name()) + "</font></b>";
+            }
+
+            return "<b><font color='" + script.namecolor(user) + "'>" + html_escape(sys.name(user)) + "</font></b>";
+        }
+
         playerInfo = function (name) {
             var id = sys.id(name),
                 auth = sys.dbAuth(name);
@@ -11420,15 +11428,14 @@ if(message == "Maximum Players Changed.") {
                 if (id == undefined) {
                     status = offline();
                 }
-                return "<img src='Themes/Classic/Client/" + icon + ".png'> " + name.bold() + " " + status + " " + lastOn(name);
+                return "<img src='Themes/Classic/Client/" + icon + ".png'> " + player(name) + " " + status + " " + lastOn(name);
             }
 
             if (id == undefined) {
-                return AuthIMG(name) + " " + name.name().bold() + " " + offline() + " " + lastOn(name);
+                return AuthIMG(name) + " " + player(name) + " " + offline() + " " + lastOn(name);
             }
 
-            var color = script.namecolor(id);
-            return AuthIMG(id) + " " + sys.name(id).bold().fontcolor(color) + " " + online() + " <small>(<font color='blue'><b>Player ID: " + id + "</b></font>)</small>";
+            return AuthIMG(id) + " " + player(name) + " " + online() + " <small>(<font color='blue'><b>Player ID: " + id + "</b></font>)</small>";
         }
 
         formatPoke = function (num, isShiny, fromBack, Gender, generation) {
@@ -11741,6 +11748,24 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadChannelUtilities: function () {
+        var makeChan = function (name) {
+            if (!sys.existChannel(name)) {
+                return sys.createChannel(name);
+            }
+            return sys.channelId(name);
+        },
+            y;
+
+        mafiachan = makeChan("Mafia Channel");
+/*
+        trivia = makeChan("Trivia");
+        trivreview = makeChan("Trivia Review");*/
+        watch = makeChan("Watch");
+        staffchannel = makeChan("Staff Channel");
+        scriptchannel = makeChan("Eval Area");
+
+        DefaultChannels = [0, mafiachan, /*trivia, trivreview, */ staffchannel, watch, scriptchannel];
+
         var isUndefined = typeof cData == "undefined";
 
         cData = new(function () {
@@ -11763,60 +11788,36 @@ if(message == "Maximum Players Changed.") {
                 }
             }
 
+            this.importValue = function (from, to, property_name, default_value) {
+                if (typeof from[property_name] == "undefined") {
+                    to[property_name] = default_value;
+                } else {
+                    to[property_name] = from[property_name];
+                }
+            }
+
+            this.importJSONValue = function (from, to, property_name) {
+                if (typeof from[property_name] == "undefined") {
+                    to[property_name] = {};
+                } else {
+                    to[property_name] = JSON.parse(from[property_name]);
+                }
+            }
+
+            this.exportValue = function (to, property, value) {
+                to[property] = value;
+            }
+
+            this.exportJSONValue = function (to, property, value) {
+                to[property] = JSON.stringify(value);
+            }
+
             this.loadDataForAll = function () {
                 var cd = JSESSION.ChannelData,
-                    x, data = this.channelData,
-                    cChan, cData;
+                    x;
 
                 for (x in cd) {
-                    cChan = cd[x];
-                    if (typeof data[cChan.name] == "undefined") {
-                        this.generateBasicData(cChan.name);
-                        continue;
-                    }
-
-                    cData = data[cChan.name];
-
-                    try {
-                        cChan.chanAuth = JSON.parse(cData.chanAuth);
-                    }
-                    catch (e) {
-                        cChan.chanAuth = {};
-                    }
-
-                    cChan.creator = cData.creator;
-                    cChan.topic = cData.topic;
-                    cChan.topicsetter = cData.topicsetter;
-                    cChan.perm = cData.perm;
-
-                    try {
-                        cChan.banlist = JSON.parse(cData.banlist);
-                    }
-                    catch (e) {
-                        cChan.banlist = {};
-                    }
-
-                    try {
-                        cChan.mutelist = JSON.parse(cData.mutelist);
-                    }
-                    catch (e) {
-                        cChan.mutelist = {};
-                    }
-
-                    cChan.private = cData.private;
-                    cChan.defaultTopic = cData.defaultTopic;
-                    cChan.silence = cData.silence;
-
-                    try {
-                        cChan.tourAuth = JSON.parse(cData.tourAuth);
-                    }
-                    catch (e) {
-                        cChan.tourAuth = {};
-                    }
-
-                    if (cData.toursEnabled && cChan.tour == undefined) {
-                        cChan.tour = new Tours(cChan.id);
-                    }
+                    this.loadDataFor(cd[x]);
                 }
             }
 
@@ -11832,45 +11833,38 @@ if(message == "Maximum Players Changed.") {
                     return;
                 }
 
-                var cData = this.channelData[cChan.name];
-                try {
-                    cChan.chanAuth = JSON.parse(cData.chanAuth);
+                var cData = this.channelData[cChan.name],
+                    defaultChan = DefaultChannels.has(cChan.id),
+                    properties = {
+                        "creator": "~Unknown~",
+                        "topic": "Welcome to " + cChan.name + "!",
+                        "topicsetter": "",
+                        "perm": defaultChan,
+                        "private": false,
+                        "defaultTopic": true,
+                        "silence": 0,
+                        "toursEnabled": defaultChan
+                    },
+                    json_properties = ["chanAuth", "banlist", "mutelist", "tourAuth"],
+                    tour_properties = {
+                        "TourDisplay": 1,
+                        "AutoStartBattles": false
+                    },
+                    x;
+
+                for (x in properties) {
+                    this.importValue(cData, cChan, x, properties[x]);
                 }
-                catch (e) {
-                    cChan.chanAuth = {};
+                for (x in json_properties) {
+                    this.importJSONValue(cData, cChan, json_properties[x]);
                 }
 
-                cChan.creator = cData.creator;
-                cChan.topic = cData.topic;
-                cChan.topicsetter = cData.topicsetter;
-                cChan.perm = cData.perm;
-
-                try {
-                    cChan.banlist = JSON.parse(cData.banlist);
-                }
-                catch (e) {
-                    cChan.banlist = {};
-                }
-                try {
-                    cChan.mutelist = JSON.parse(cData.mutelist);
-                }
-                catch (e) {
-                    cChan.mutelist = {};
-                }
-
-                cChan.private = cData.private;
-                cChan.defaultTopic = cData.defaultTopic;
-                cChan.silence = cData.silence;
-
-                try {
-                    cChan.tourAuth = JSON.parse(cData.tourAuth);
-                }
-                catch (e) {
-                    cChan.tourAuth = {};
-                }
-
-                if (cData.toursEnabled && cChan.tour == undefined) {
+                if (cChan.toursEnabled && cChan.tour == undefined) {
                     cChan.tour = new Tours(cChan.id);
+                    var tour = cChan.tour;
+                    for (x in tour_properties) {
+                        this.importValue(cData, tour, x, tour_properties[x]);
+                    }
                 }
             }
 
@@ -11900,6 +11894,9 @@ if(message == "Maximum Players Changed.") {
                 newHash.private = false;
                 newHash.defaultTopic = true;
                 newHash.silence = 0;
+                newHash.TourDisplay = 1;
+                newHash.AutoStartBattles = false;
+                newHash.toursEnabled = DefaultChannels.has(cid);
 
                 cData[channelName] = newHash;
 
@@ -11909,60 +11906,65 @@ if(message == "Maximum Players Changed.") {
             this.changeChanAuth = function (chan, auth) {
                 var name = sys.channel(chan);
 
-                if (this.channelData[name] == undefined) {
+                if (!this.channelData.has(name)) {
                     this.generateBasicData(name);
                 }
 
-                try {
-                    this.channelData[name].chanAuth = JSON.stringify(auth);
-                }
-                catch (e) {}
-
+                this.exportJSONValue(this.channelData[name], "chanAuth", auth);
                 this.save();
             }
 
             this.changeTourAuth = function (chan, auth) {
                 var name = sys.channel(chan);
 
-                if (this.channelData[name] == undefined) {
+                if (!this.channelData.has(name)) {
                     this.generateBasicData(name);
                 }
 
-                try {
-                    this.channelData[name].tourAuth = JSON.stringify(auth);
+                this.exportJSONValue(this.channelData[name], "tourAuth", auth);
+                this.save();
+            }
+
+            this.changeTopic = function (chan, topic, topicsetter, defaultTopic) {
+                var name = sys.channel(chan);
+
+                if (!this.channelData.has(name)) {
+                    this.generateBasicData(name);
                 }
-                catch (e) {}
+
+                var data = this.channelData[name],
+                    properties = {
+                        "topic": topic,
+                        "topicsetter": topicsetter,
+                        "defaultTopic": defaultTopic
+                    },
+                    x;
+
+                for (x in properties) {
+                    this.exportValue(data, x, properties[x]);
+                }
 
                 this.save();
             }
 
-            this.changeTopic = function (chan, topic, setter, defaultT) {
+            this.changeStatus = function (chan, perm, private, silence) {
                 var name = sys.channel(chan);
 
-                if (this.channelData[name] == undefined) {
+                if (!this.channelData.has(name)) {
                     this.generateBasicData(name);
                 }
 
-                var data = this.channelData[name];
-                data.topic = topic;
-                data.topicsetter = setter;
-                data.defaultTopic = defaultT;
+                var data = this.channelData[name],
+                    properties = {
+                        "perm": perm,
+                        "private": private,
+                        "silence": silence
+                    },
+                    x;
 
-                this.save();
-            }
-
-            this.changeStatus = function (chan, perm, priv, sil) {
-                var name = sys.channel(chan);
-
-                if (this.channelData[name] == undefined) {
-                    this.generateBasicData(name);
+                for (x in properties) {
+                    this.exportValue(data, x, properties[x]);
                 }
-
-                var ddd = this.channelData[name];
-
-                ddd.perm = perm;
-                ddd.private = priv;
-                ddd.silence = sil;
 
                 this.save();
             }
@@ -11970,27 +11972,52 @@ if(message == "Maximum Players Changed.") {
             this.changeBans = function (chan, mutes, bans) {
                 var name = sys.channel(chan);
 
-                if (this.channelData[name] == undefined) {
+                if (!this.channelData.has(name)) {
                     this.generateBasicData(name);
                 }
 
-                var cdata = this.channelData[name];
+                var data = this.channelData[name],
+                    properties = {
+                        "mutelist": mutes,
+                        "banlist": bans
+                    },
+                    x;
 
-                cdata.mutelist = JSON.stringify(mutes);
-                cdata.banlist = JSON.stringify(bans);
+                for (x in properties) {
+                    this.exportJSONValue(data, x, properties[x]);
+                }
+
                 this.save();
             }
 
-            this.changeToursEnabled = function (chan, e) {
+            this.changeToursEnabled = function (chan, enabled) {
                 var name = sys.channel(chan);
 
-                if (this.channelData[name] == undefined) {
+                if (!this.channelData.has(name)) {
                     this.generateBasicData(name);
                 }
 
-                var name = sys.channel(chan);
-                this.channelData[name].toursEnabled = e;
+                this.exportValue(this.channelData[name], "toursEnabled", enabled);
                 this.save();
+            }
+
+            this.changeTourOptions = function (chan, display, autostartbattles) {
+                var name = sys.channel(chan);
+
+                if (!this.channelData.has(name)) {
+                    this.generateBasicData(name);
+                }
+
+                var data = this.channelData[name],
+                    properties = {
+                        "TourDisplay": display,
+                        "AutoStartBattles": autostartbattles
+                    },
+                    x;
+
+                for (x in data) {
+                    this.exportValue(data, x, data[x]);
+                }
             }
 
             this.save = function () {
@@ -12015,24 +12042,6 @@ if(message == "Maximum Players Changed.") {
                 }
             }
         }
-
-        var makeChan = function (name) {
-            if (!sys.existChannel(name)) {
-                sys.createChannel(name);
-            }
-            return sys.channelId(name);
-        },
-            y;
-
-        mafiachan = makeChan("Mafia Channel");
-/*
-        trivia = makeChan("Trivia");
-        trivreview = makeChan("Trivia Review");*/
-        watch = makeChan("Watch");
-        staffchannel = makeChan("Staff Channel");
-        scriptchannel = makeChan("Eval Area");
-
-        DefaultChannels = [0, mafiachan, /*trivia, trivreview, */ staffchannel, watch, scriptchannel];
 
         for (y in DefaultChannels) {
             JSESSION.createChannel(DefaultChannels[y]);
