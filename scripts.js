@@ -11561,7 +11561,7 @@ if(message == "Maximum Players Changed.") {
                 if (n > 0) {
                     sL = "";
                     if (n > 1) {
-                        sL = "s";
+                        sL = "<b>s</b>";
                     }
 
                     s.push((n + " " + d[j][1] + sL));
