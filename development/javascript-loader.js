@@ -203,14 +203,7 @@ if (typeof include === "undefined") {
     include.update = function (Source, FileName, GetMethod) {
         download(Source, FileName, true);
         delete include.cache[FileName];
-
-        var x, modules = include.modules;
-        for (x in modules) {
-            if (modules[x].file == FileName) {
-                modules.splice(x, 1);
-                break;
-            }
-        }
+		delete include.modules[FileName];
 
         return include(FileName, GetMethod);
     }
@@ -309,7 +302,8 @@ Does message limit, (channel) silence, and (channel) mute
 (Optional, default is true)
 
 Commands lists should do:
-templater.list(COMMAND_OBJECT);
+templater.list(COMMAND_OBJECT); -> templater.list("me");
+.list reads getCommand("commands.js", given_command) if the second argument is empty. Do: templater.list("join", "tours.js"), for example, to read the data from tours.js commands obj
 
 Best done in a loop (an array contains the command objects, for example). do this with the getCommand function.
 

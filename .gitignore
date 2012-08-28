@@ -8,5 +8,6 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
-# test-script.bat
+# My test files
 test-scripts.bat
+move-scripts.bat

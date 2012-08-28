@@ -1577,17 +1577,18 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
     this.tournumber = count;
     this.remaining = count;
 
-    var spots = sys.tourSpots();
+    var spots = sys.tourSpots(),
+        me = player(src);
     if (this.TourDisplay == this.Displays.Normal) {
         this.border();
         this.white();
-        botAll(sys.name(src) + " changed the numbers of entrants to " + count + "!", this.id);
+        botAll(me + " changed the numbers of entrants to " + count + "!", this.id);
         botAll(spots + " more " + s("spot", spots) + " left!", this.id);
         this.white();
         this.border();
     }
     else {
-        this.TourBox("<b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b> changed the numbers of entrants to " + count + "!<br/><b>" + spots + "</b> more " + s("spot", spots) + " left!");
+        this.TourBox(me + " changed the numbers of entrants to " + count + "!<br/><b>" + spots + "</b> more " + s("spot", spots) + " left!");
     }
 
     if (this.tourSpots() == 0) {
@@ -1607,20 +1608,21 @@ Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
     if (this.tourmode != 0) {
         this.clearVariables();
 
+        var me = player(src);
         if (this.TourDisplay == this.Displays.Normal) {
             this.border();
             this.white();
-            botAll("The tournament has been ended by " + sys.name(src) + "!", this.id);
+            botAll("The tournament has been ended by " + me + "!", this.id);
             this.white();
             this.border();
         }
         else {
-            this.TourBox("The tournament has been ended by <b style='color: " + script.namecolor(src) + "'>" + sys.name(src) + "</b>!");
+            this.TourBox("The tournament has been ended by " + me + "!");
         }
         return;
     }
 
-    botMessage(src, "You are unable to end the tournament because it is not currently running.", this.id);
+    botMessage(src, "No tournament is running.", this.id);
 }
 
 Tours.prototype.clearVariables = function () {
@@ -1990,9 +1992,11 @@ Tours.prototype.tie = function (src, dest) {
     var s = sys.name(src),
         d = sys.name(dest),
         sTL = s.toLowerCase,
-        dTL = d.toLowerCase();
+        dTL = d.toLowerCase(),
+        me = player(src),
+        target = player(dest);
 
-    botAll(s + " and " + d + " tied and has to battle again for the tournament!", this.id);
+    botAll(me + " and " + target + " tied and has to battle again for the tournament!", this.id);
 
     if (this.AutoStartBattles) {
         sys.forceBattle(src, dest, sys.getClauses(this.tourtier), 0, false);
@@ -2611,7 +2615,7 @@ JSESSION.refill();
                 continue;
             }
             if (chan.tour.tourmode == 2 && chan.tour.finals) {
-                botMessage(src, "Enjoy the finals, " + sys.name(src) + "!", chan.id);
+                botMessage(src, "Enjoy the finals!", chan.id);
                 return "allow";
             }
         }
@@ -2633,14 +2637,14 @@ JSESSION.refill();
             srcname = sys.name(src).toLowerCase(),
             user = JSESSION.users(src);
 
-        if (chan.isChanMod(src) || (sys.auth(src) >= 1 && sys.auth(src) <= 2 && channel != scriptchannel) || sys.auth(src) > 2 || DataHash.megausers[sys.name(src).toLowerCase()] != undefined && c == staffchannel || DataHash.evalops.has(sys.name(src).toLowerCase()) && c == scriptchannel) {
+        if (chan.isChanMod(src) || (sys.auth(src) >= 1 && sys.auth(src) <= 2 && channel != scriptchannel) || sys.auth(src) > 2 || DataHash.megausers.has(srcname) && c == staffchannel || DataHash.evalops.has(srcname) && c == scriptchannel) {
             return;
         }
 
         var ip = sys.ip(src);
         if (chan.isBannedInChannel(ip)) {
             Prune.channelBans(c);
-            if (chan.isBannedInChannel(ip)) { // repeat this because of ban prune
+            if (chan.isBannedInChannel(ip)) { // repeat this because of ban pruning
                 sys.stopEvent();
                 var ban = chan.banlist[ip],
                     time;
@@ -2710,8 +2714,6 @@ JSESSION.refill();
         if (src) {
             POChan.changeAuth(src, 3);
         }
-
-        WatchChannelEvent(channel, "Created");
     },
 
     step: function () {
@@ -2855,10 +2857,9 @@ Trivia.start();
     },
 
     afterLogIn: function (src) {
-        var getColor = "'" + script.namecolor(src) + "'",
+        var me = player(src),
             self = JSESSION.users(src),
-            srcname = sys.name(src),
-            srcToLower = srcname.toLowerCase(),
+            srcToLower = sys.name(src).toLowerCase(),
             myAuth = sys.auth(src),
             sendWelcomeMessage = Config.WelcomeMessages && (myAuth < 1 || myAuth > 3),
             temp = "",
@@ -2867,10 +2868,10 @@ Trivia.start();
         WatchEvent(src, "Log In on IP " + sys.ip(src));
 
         if (sendWelcomeMessage) {
-            botAllExcept(src, "<b><font color=" + getColor + ">" + srcname + "</font></b> joined the server!", 0);
+            botAllExcept(src, me + " joined the server!", 0);
         }
 
-        botMessage(src, "Welcome, <b><font color=" + getColor + ">" + srcname + "</font></b>!</b>", 0);
+        botMessage(src, "Welcome, " + me + "!", 0);
 
         botMessage(src, "Type in <b><font color=green>/Commands</font></b> to see the commands and <b><font color=green>/Rules</font></b> to see the rules.", 0);
 
@@ -3284,7 +3285,7 @@ if(message == "Maximum Players Changed.") {
             var ctime = sys.time() * 1;
             if (ctime - poUser.autoAFKTime > 15) {
                 if (sys.away(src)) {
-                    botMessage(src, "Welcome back, " + sys.name(src) + "!", chan);
+                    botMessage(src, "Welcome back, " + player(src) + "!", chan);
                     sys.changeAway(src, false);
                 }
                 poUser.isAutoAFK = false;
@@ -3299,7 +3300,7 @@ if(message == "Maximum Players Changed.") {
                 sys.changeAway(src, true);
                 poUser.isAutoAFK = true;
                 poUser.autoAFKTime = sys.time() * 1;
-                botMessage(src, "We hope you come back soon, " + sys.name(src) + "!", chan);
+                botMessage(src, "We hope you come back soon, " + player(src) + "!", chan);
             }
         }
 
@@ -3543,14 +3544,14 @@ if(message == "Maximum Players Changed.") {
             userCommands = ({ /* -- User Templates: Commands -- */
                 commands: function () {
                     var ct = new Command_Templater('Commands');
-                    ct.register("arglist", "Displays the argument descriptions.");
+                    ct.register("help", "Displays a list of helpful topics.");
                     ct.register(removespaces(UserName).toLowerCase() + "commands", "Displays the " + UserName + " commands.");
-                    ct.register("messagecommands", "Displays the Messaging commands.");
-                    ct.register("stylecommands", "Displays the Style commands.");
-                    ct.register("iconcommands", "Displays the Rank Icon commands.");
-                    ct.register("channelcommands", "Displays the Channel commands.");
+                    ct.register("messagecommands", "Displays the messaging commands.");
+                    ct.register("stylecommands", "Displays the style commands.");
+                    ct.register("iconcommands", "Displays the rank icon commands.");
+                    ct.register("channelcommands", "Displays the channel commands.");
                     if (poChan.toursEnabled) {
-                        ct.register("tourcommands", "Displays the Tournament commands.");
+                        ct.register("tourcommands", "Displays the tournament commands.");
                     }
 /*
                     ct.register("triviacommands", "Displays the Trivia Commands.");
@@ -3575,7 +3576,7 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater('Fun User Commands');
                     ct.register("roulette", "Win a randon Pokemon!");
                     ct.register("catch", "Catch a random Pokemon!");
-                    ct.register('attack', ['{p Thing}'], 'Attack something or someone with a random attack!');
+                    ct.register("attack", ["{p Person}", "{p <u>Attack</u>}"], "Attack something or someone with a(n) (random) attack! Attack is optional and has to be an attacking move.");
                     ct.register("future", ["{o Time}", "{p Message}"], "Sends a message into the future! Time must be over 4 seconds and under 5 hours. Message can also be a command(with command start).");
 
                     if (permission(src, 2)) {
@@ -3706,25 +3707,35 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- User Templates: Normal -- */
 
-                arglist: function () {
-                    var arg = function (c, m) {
-                        return "<font color=" + c + "><b>" + c + "</b></font> colored arguments: " + m + ".";
+                help: function () {
+                    if (cmdData == "arguments") {
+                        var arg = function (c, m) {
+                            return "<font color=" + c + "><b>" + c + "</b></font> colored arguments: " + m + ".";
+                        }
+
+                        var t = new Templater('Argument List');
+                        t.register("Arguments are used in <b>almost every</b> command list.");
+                        t.register("Here are their descriptions:<br/>");
+
+                        t.register(arg("red", "Specify an online player"));
+                        t.register(arg("orangered", "Specify an online player or one in the members database"));
+                        t.register(arg("orange", "Specify a number"));
+                        t.register(arg("purple", "Specify some text"));
+                        t.register(arg("blue", "Select one of the given choices"));
+                        t.register(arg("blueviolet", "Specify a time unit that starts with the following: s (second), m (minute), h (hour), d (day), w (week), mo (month), y (year), de (decade). The default is minutes if none specified"));
+                        t.register(arg("green", "Specify a player in the channels tournament") + "<br/>");
+                        t.register("Any argument with an <u>underline</u> is optional.");
+                        t.register(style.footer);
+
+                        t.render(src, chan);
+                        return;
                     }
 
-                    var t = new Templater('Argument List');
-                    t.register("Arguments are used in <b>almost every</b> command list.");
-                    t.register("Here are their descriptions:<br/>");
-
-                    t.register(arg("red", "Specify an online player"));
-                    t.register(arg("orangered", "Specify an online player or one in the members database"));
-                    t.register(arg("orange", "Specify a number"));
-                    t.register(arg("purple", "Specify some text"));
-                    t.register(arg("blue", "Select one of the given choices"));
-                    t.register(arg("blueviolet", "Specify a time unit that starts with the following: s (second), m (minute), h (hour), d (day), w (week), mo (month), y (year), de (decade). The default is minutes if none specified"));
-                    t.register(arg("green", "Specify a player in the channels tournament") + "<br/>");
-                    t.register("Any argument with an <u>underline</u> is optional.");
+                    // Default
+                    var t = new Templater("Help");
+                    t.register("<b>The following help topics are available:</b><br/>");
+                    t.register("- arguments: Help for command arguments.");
                     t.register(style.footer);
-
                     t.render(src, chan);
                 },
 
@@ -4586,7 +4597,9 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var msg = true;
+                    var msg = true,
+                        me = player(src),
+                        target = player(tar);
                     if (isEmpty(mcmd[1])) {
                         mcmd[1] = "", msg = false;
                     }
@@ -4595,17 +4608,17 @@ if(message == "Maximum Players Changed.") {
                         if (!sys.loggedIn(src)) {
                             return;
                         }
-                        botMessage(src, "Ping sent to " + sys.name(tar) + "!", chan);
+                        botMessage(src, "Ping sent to " + target + "!", chan);
                         return;
                     }
 
-                    botMessage(src, "Ping sent to " + sys.name(tar) + "!", chan);
+                    botMessage(src, "Ping sent to " + target + "!", chan);
                     if (msg) {
                         mcmd[1] = cut(mcmd, 1, ':');
-                        botMessage(tar, sys.name(src) + " has pinged you and sent the following message: " + html_escape(mcmd[1]) + "<ping/>");
+                        botMessage(tar, me + " has pinged you and sent the following message: " + html_escape(mcmd[1]) + "<ping/>");
                         return;
                     }
-                    botMessage(tar, sys.name(src) + " has pinged you!<ping/>");
+                    botMessage(tar, me + " has pinged you!<ping/>");
                 },
 
                 /* -- User Commands: Poll */
@@ -4675,12 +4688,16 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     poUser.macro[num - 1] = mcmd[1];
-                    var toL = sys.name(src).toLowerCase();
-                    if (typeof DataHash.macros[toL] != "object") DataHash.macros[toL] = ["%m1", "%m2", "%m3", "%m4", "%m5"];
+                    var toL = sys.name(src).toLowerCase(),
+                        macros = DataHash.macros;
 
-                    DataHash.macros[toL] = poUser.macro;
+                    if (typeof macros[toL] != "object") {
+                        macros[toL] = ["%m1", "%m2", "%m3", "%m4", "%m5"];
+                    }
 
-                    botMessage(src, "You changed macro " + num + " to: " + mcmd[1], chan);
+                    macros[toL] = poUser.macro;
+
+                    botMessage(src, "You changed macro " + num + " to " + mcmd[1], chan);
                 },
 
                 /* -- User Commands: Fun -- */
@@ -4708,13 +4725,13 @@ if(message == "Maximum Players Changed.") {
 
                     if (shiny != rand) {
                         botMessage(src, formatPoke(num, false, false, 0, 5) + " " + formatPoke(num, false, true, 0, 5), chan);
-                        botAll(sys.name(src) + " has caught a level " + lvl + " " + pokemon + " with a " + nature + " nature!", chan);
+                        botAll(player(src) + " caught a level " + lvl + " " + pokemon + " with a " + nature + " nature!", chan);
                         botMessage(pokemon + " has the following IVs:", chan);
                         botMessage(src, "HP: " + ivs[0] + " Atk: " + ivs[1] + " Def: " + ivs[2] + " SpA: " + ivs[3] + " SpD: " + ivs[4] + " Spd: " + ivs[5] + ".", chan);
                     }
                     else {
                         botMessage(formatPoke(num, true, false, 0, 5) + " " + formatPoke(num, true, true, 0, 5), chan);
-                        botAll(sys.name(src) + " has caught a level " + lvl + " shiny " + pokemon + " with a " + nature + " nature!", chan);
+                        botAll(player(src) + " has caught a level " + lvl + " shiny " + pokemon + " with a " + nature + " nature!", chan);
                         botMessage(src, pokemon + " has the following IVs:", chan);
                         botMessage(src, "HP: " + ivs[0] + " Atk: " + ivs[1] + " Def: " + ivs[2] + " SpA: " + ivs[3] + " SpD: " + ivs[4] + " Spd: " + ivs[5] + ".", chan);
                         botAll("This is truly a rare event", chan);
@@ -4723,13 +4740,13 @@ if(message == "Maximum Players Changed.") {
 
                 attack: function () {
                     if (!CommandsEnabled.attack) {
-                        botMessage(src, "/attack is turned off!", chan);
+                        botMessage(src, fullCommand + " is turned off.", chan);
                         return;
                     }
                     if (testMafiaChat(src, chan)) {
                         return;
                     }
-                    if (poUser.capsMute(commandData, chan)) {
+                    if (poUser.capsMute(commandData, chan)) { // Combine both.
                         return;
                     }
 
@@ -4753,25 +4770,23 @@ if(message == "Maximum Players Changed.") {
                         }
                     }
 
-                    var attack = AttackingMoves[Math.floor(AttackingMoves.length * Math.random())],
-                        getcolor = script.namecolor(tar);
-                    attack = sys.move(attack);
+                    var attack = sys.move(AttackingMoves[Math.floor(AttackingMoves.length * Math.random())]),
+                        movenum = sys.moveNum(mcmd[1]);
+                    if (AttackingMoves.has(movenum)) {
+                        attack = sys.move(movenum); // Corrects case.
+                    }
+
 
                     if (unicodeAbuse(src, commandData)) {
-                        if (!sys.loggedIn(src)) {
-                            return;
-                        }
-                        botMessage(src, "<font color=" + getColor + "><b>" + html_escape(sys.name(src)) + "</b></font></font> has used " + attack + " on <b><font color=" + getcolor + ">" + html_escape(commandData) + "</font></b>!", chan);
                         return;
                     }
 
-                    botAll("<font color=" + getColor + "><b>" + html_escape(sys.name(src)) + "</b></font></font> has used " + attack + " on <b><font color=" + getcolor + ">" + html_escape(commandData) + "</font></b>!", chan);
-                    return;
+                    botAll(player(src) + " used " + attack + " on " + player(mcmd[0]) + "!", chan);
                 },
 
                 roulette: function () {
                     if (!CommandsEnabled.roulette) {
-                        botMessage(src, fullCommand + " is turned off!", chan);
+                        botMessage(src, fullCommand + " is turned off.", chan);
                         return;
                     }
                     if (testMafiaChat(src, message)) {
@@ -4791,12 +4806,10 @@ if(message == "Maximum Players Changed.") {
                         shine = "Shiny ";
                     }
 
-                    var toAll = "<font color='" + getColor + "'><b>" + html_escape(sys.name(src)) + "</b></font> got " + an(shine + sys.pokemon(randpoke)) + "!";
+                    var toAll = player(src) + " got " + an(shine + sys.pokemon(randpoke)) + "!";
 
                     botMessage(src, toAll + " " + poke, chan);
                     botAllExcept(src, toAll, chan, botAllExcept.Normal);
-
-                    return;
                 },
 
                 /* -- User Commands: CommandStats */
@@ -4840,7 +4853,7 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, "Mail sent! A copy of the mail was also sent to your sent mails box. Type /sentmails to view.", chan);
 
                     if (tar != undefined) {
-                        botMessage(tar, "You got mail from " + sys.name(src) + "! Type /readmail to view .<ping/>", 0);
+                        botMessage(tar, "You got mail from " + player(src) + "! Type /readmail to view .<ping/>", 0);
                     }
 
                     cache.write("mail", JSON.stringify(DataHash.mail));
@@ -5054,10 +5067,6 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     if (unicodeAbuse(src, commandData)) {
-                        if (!sys.loggedIn(src)) {
-                            return;
-                        }
-                        sys.sendHtmlMessage(src, "<font color=" + getColor + "><timestamp/><i><b>*** " + sys.name(src) + "</b> " + format(src, html_escape(commandData)) + "</font></b></i>", chan);
                         return;
                     }
 
@@ -5071,18 +5080,17 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var h = mcmd[0].toLowerCase();
+                    var h = mcmd[0].toLowerCase(),
+                        l = function (v) {
+                            return v.toLowerCase()
+                        }
 
-                    var l = function (v) {
-                        return String(v).toLowerCase();
-                    }
+                        if (h != "1" && h != "2" && h != "3" && h != l(ModName) && h != l(AdminName) && h != l(OwnerName)) {
+                            botMessage(src, "Please select an auth level or auth name for the /callauth", chan);
+                            return;
+                        }
 
-                    if (h != "1" && h != "2" && h != "3" && h != l(ModName) && h != l(AdminName) && h != l(OwnerName)) {
-                        botMessage(src, "Please select an auth level or auth name for the /callauth", chan);
-                        return;
-                    }
-
-                    var a = h;
+                        var a = h;
                     if (l(ModName) == a) {
                         a = 1;
                     }
@@ -5104,7 +5112,7 @@ if(message == "Maximum Players Changed.") {
                         if (sys.auth(t) == a) {
                             count++;
 
-                            botMessage(t, sys.name(src) + " has called you!<ping/>", 0);
+                            botMessage(t, player(src) + " has called you!<ping/>", 0);
                         }
                     };
 
@@ -5167,10 +5175,10 @@ if(message == "Maximum Players Changed.") {
                     poUser.impersonation = commandData;
 
                     if (sys.auth(src) == 0) {
-                        sendAuth(poUser.impersonation + " was impersonated by " + sys.name(src) + "!");
+                        sendAuth(poUser.impersonation + " was impersonated by " + player(src) + "!");
                     }
 
-                    botMessage(src, "Now you are " + poUser.impersonation + "!", chan);
+                    botMessage(src, "You now are " + poUser.impersonation + "!", chan);
                 },
 
                 impoff: function () {
@@ -5189,20 +5197,24 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- User Commands: Battle Points */
                 battlepoints: function () {
-                    var name = sys.name(src).toLowerCase();
-                    var hash = DataHash.money;
-                    if (hash[name] == undefined) hash[name] = 0;
-                    var displaystr = 'You have {{{money}}} battle points.';
+                    var name = sys.name(src).toLowerCase(),
+                        hash = DataHash.money,
+                        displaystr = 'You have %1 battle points.';
+                    if (hash[name] == undefined) {
+                        hash[name] = 0;
+                    }
 
                     if (dbIp != undefined && !isEmpty(commandData)) {
-                        if (hash[cmdData] == undefined) hash[cmdData] = 0;
+                        if (hash[cmdData] == undefined) {
+                            hash[cmdData] = 0;
+                        }
 
-                        displaystr = commandData + ' has {{{money}}} battle points.';
+                        displaystr = commandData + ' has %1 battle points.';
                         name = cmdData;
                     }
 
                     hash = hash[name];
-                    botMessage(src, displaystr.replace(/{{{money}}}/gi, hash), chan);
+                    botMessage(src, displaystr.format(hash), chan);
                     return;
                 }
             });
@@ -5261,7 +5273,7 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "Please make your name shorter.", chan);
                         return;
                     }
-                    botAll(sys.name(src) + " joined the " + Clantag.full.bold() + " clan!", 0);
+                    botAll(player(src) + " joined the " + Clantag.full.bold() + " clan!", 0);
                     sys.changeName(src, newName);
                 }
 
@@ -5278,10 +5290,10 @@ if(message == "Maximum Players Changed.") {
 
                     var without = name.substr(Clantag.full.length);
                     if (sys.id(without) != src && sys.id(without) != undefined) {
-                        botMessage(src, "Someone with your name without the tag is already online.", chan);
+                        botMessage(src, "Someone with your name without the clan tag is already online.", chan);
                         return;
                     }
-                    botAll(sys.name(src) + " unjoined the " + Clantag.full.bold() + " clan!", 0);
+                    botAll(player(src) + " unjoined the " + Clantag.full.bold() + " clan!", 0);
                     sys.changeName(src, without);
                 }
             }
@@ -5614,10 +5626,10 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var color = script.namecolor(src);
-                    var srcname = sys.name(src)
+                    var color = script.namecolor(src),
+                        srcname = sys.name(src)
 
-                    sys.sendHtmlAll(BORDER + "<br>", chan);
+                        sys.sendHtmlAll(BORDER + "<br>", chan);
 
                     var l = '',
                         send = sys.sendAll,
@@ -13685,9 +13697,11 @@ if(message == "Maximum Players Changed.") {
                 chan = "[" + ChannelLink(sys.channel(channel)) + "]";
             }
 
-            var src = "<font color=" + script.namecolor(player) + ">" + sys.name(player) + ":</font>";
+            var src = "<font color=" + script.namecolor(player) + ">" + html_escape(sys.name(player)) + ":</font>";
 
-            sys.sendHtmlAll("<timestamp/><b>" + chan + " " + type + " -- " + src + "</b> " + html_escape(message), watch);
+            if (typeof watch != "undefined") {
+                sys.sendHtmlAll("<timestamp/><b>" + chan + " " + type + " -- " + src + "</b> " + html_escape(message), watch);
+            }
         }
 
         WatchEvent = function (player, message, channel) {
@@ -13696,13 +13710,17 @@ if(message == "Maximum Players Changed.") {
                 chan = "[" + ChannelLink(sys.channel(channel)) + "]";
             }
 
-            var src = "<font color=" + script.namecolor(player) + ">" + sys.name(player) + ":</font>";
+            var src = "<font color=" + script.namecolor(player) + ">" + html_escape(sys.name(player)) + ":</font>";
 
-            sys.sendHtmlAll("<timestamp/><b>" + chan + " " + src + "</b> " + message, watch);
+            if (typeof watch != "undefined") {
+                sys.sendHtmlAll("<timestamp/><b>" + chan + " " + src + "</b> " + message, watch);
+            }
         }
 
         WatchChannelEvent = function (channel, message) {
-            sys.sendHtmlAll("<timestamp/><b>" + sys.channel(channel) + ":</b> " + message, watch);
+            if (typeof watch != "undefined") {
+                sys.sendHtmlAll("<timestamp/><b>" + sys.channel(channel) + ":</b> " + message, watch);
+            }
         }
     },
 
