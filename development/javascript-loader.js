@@ -309,7 +309,7 @@ Example inside module:
 addCommand({
 	"name": "me",
 	"handler": function (command) {
-		command.nativeHtml("<font color=magneta><timestamp/> *** " + command.selfPlayer + " " + command.data, command.chan);
+		command.nativeHtml("<font color=magneta><timestamp/> *** " + command.selfPlayer + " " + command.escape(command.data), command.chan);
 	},
 	"category": "0", // Even though this optional, it's still recommended to add readability.
 	"help": ["{p Message}", "Send a message to everyone which starts with ***"],
@@ -319,7 +319,7 @@ addCommand({
 or:
 addCommand("me", // name
 	function (command) {
-		command.nativeHtml("<font color=magneta><timestamp/> *** " + command.selfPlayer + " " + command.data, command.chan);
+		command.nativeHtml("<font color=magneta><timestamp/> *** " + command.selfPlayer + " " + command.escape(command.data), command.chan);
 	}, // handler
 	null, // permissionHandler
 	"0", // category. (can be null too)
@@ -334,7 +334,7 @@ An object, containing the following:
 -	src: Player who used this command. Number
 -	self: Name of src. String
 -	selfLower: self in lowercase. String
--   selfPlayer: Same as player(src). String
+-	selfPlayer: Same as player(src). String
 -	data: User specified data with command. String
 -	chan: Channel that this command was used in. Number
 -	channel: JSESSION object of chan. Object
