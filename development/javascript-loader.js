@@ -23,11 +23,11 @@ defaultPermissionHandler = function (category) {
         return function () {
             return true;
         }
-    } else if (category == "mod") {
+    } else if (category == "1") {
         return permissionHandlerForAuth(1);
-    } else if (category == "admin") {
+    } else if (category == "2") {
         return permissionHandlerForAuth(2);
-    } else if (category == "owner") {
+    } else if (category == "3") {
         return permissionHandlerForAuth(3);
     }
 
@@ -55,7 +55,7 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
     }
 
     if (category == undefined) {
-        category = "user"; // Default
+        category = "0"; // Default
     }
 
     if (permissionHandler == undefined) {
@@ -274,11 +274,11 @@ include("script_constants.js", include.GetMethod.Full); // gets the module
 */
 
 /*
--- Command Struct API --
+-- Command API --
 name => command name (string)
 
 handler => Handler which will be called when command is used (function)
-Passed arguments: src, commandData, mcmd, chan
+Passed argument: command (look down for help)
 
 permissionHandler => Will be called when the command is used to test if the person can use it. Use this for channel xxx auth and tour auth only commands (function, optional) 
 If omitted, uses category to "guess". Stuff WILL break (the command won't be added, actually) when you dont add a permission handler for tour and channel categories.
@@ -287,45 +287,70 @@ Return true if it's ok, false if not. If nothing is returned, assumes true (usef
 If a string is returned, then it is ok too. (Displays this instead of the default. Useful for various checks normally inside the command. Overall better to use in user commands)
 Passed argument: src
 
-category => Can be: user, mod, admin, owner, channel, tour (string, optional). 
-If omitted, the command category will be "user"
+category => Can be: 0, 1, 2, 3, channel, tournament (string, optional). 
+If omitted, the command category will be "0". You can specify something else, but these are generally supported.
 
 help => Array, optional because of "hidden" commands.
-Index 0:
-args (array|string, uses same format as 2.2 templater)
-Index 1:
-description (string) 
-
+Index 0: args (array|string, uses same format as 2.2 templater)
+Index 1: description (string) 
 
 allowedWhenMuted => If the command can be used when muted (Don't worry about pointer commands here)
-Does message limit, (channel) silence, and (channel) mute 
-(Optional, default is true)
+	Does message limit, (channel) silence, and (channel) mute. (Optional, default is true)
 
 Commands lists should do:
 templater.list(COMMAND_OBJECT); -> templater.list("me");
-.list reads getCommand("commands.js", given_command) if the second argument is empty. Do: templater.list("join", "tours.js"), for example, to read the data from tours.js commands obj
+.list reads getCommand("commands.js", given_command) if the second argument is empty. 
+Do: templater.list("join", "tours.js"), for example, to read the data from tours.js commands object
 
 Best done in a loop (an array contains the command objects, for example). do this with the getCommand function.
 
 Example inside module:
 
 addCommand({
-"name": "me",
-"handler": function (src, commandData, mcmd, chan) {
-	sys.sendAll("*** " + sys.name(src) + " " + commandData, chan);
-},
-"category": "user", // Even though this optional, it's still recommended to add readability.
-"help": ["{p Message}", "Send a message to everyone which starts with ***"],
-allowedWhenMuted: false
+	"name": "me",
+	"handler": function (src, commandData, mcmd, chan) {
+		sys.sendAll("*** " + sys.name(src) + " " + commandData, chan);
+	},
+	"category": "0", // Even though this optional, it's still recommended to add readability.
+	"help": ["{p Message}", "Send a message to everyone which starts with ***"],
+	allowedWhenMuted: false
 });
 
 or:
-addCommand("me", function (src, commandData, mcmd, chan) {
-	sys.sendAll("*** " + sys.name(src) + " " + commandData, chan);
-}, null, // permissionHandler
-"user", // this can be null too
-["{p Message}", "Send a message to everyone which starts with ***"],
-false
+addCommand("me", // name
+	function (src, commandData, mcmd, chan) {
+		sys.sendAll("*** " + sys.name(src) + " " + commandData, chan);
+	}, // handler
+	null, // permissionHandler
+	"0", // category. (can be null too)
+	["{p Message}", "Send a message to everyone which starts with ***"], // help
+	false // allowedWhenMuted
 );
 
+
+
+Handler passed argument "command":
+An object, containing the following:
+-	src: Player who used this command. Number
+-	self: Name of src. String
+-	selfLower: self in lowercase. String
+-   selfPlayer: Same as player(src). String
+-	commandData: User specified data with command. String
+-	chan: Channel that this command was used in. Number
+-	channel: JSESSION object of chan. Object
+-	data: User specified data with command, in lowercase. String
+-	mcmd: User specified data, separated by ':' (no quotes). Array
+-	tar: Player who was targetted by the user (uses mcmd[0]). Can be undefined if the player doesn't exist or isn't online. Number
+-	tarName: Name of tar. Can be undefined. String
+-	tarLower: tarName in lowercase. Can be undefined. String
+-	tarPlayer: Same as player(tar). Can be undefined. String
+-	user: JSESSION object of src. Object
+-	target: JSESSION object of tar. Can be undefined. Object
+-	command: Command used in lowercase (pointer commands already done). String
+-	fullCommand: Command in the case used (pointer commands not done yet). String
+-	ip: IP of mcmd[0]. Can be undefined. String
+-	auth: Auth of src (including auth given by HighPermission). Number
+-	sendMessage: Equal to botMessage(src, "message", chan); except that src and chan parameters are already specified.
+-	sendAll: Equal to botAll("message", chan); except that chan parameter is already specified.
+-	sendOthers: Equal to botAllExcept(src, "message", chan, botAllExcept.Normal); except that src, chan, and type(botAllExcept.Normal) parameters are already specified.
 */
