@@ -308,8 +308,8 @@ Example inside module:
 
 addCommand({
 	"name": "me",
-	"handler": function (src, commandData, mcmd, chan) {
-		sys.sendAll("*** " + sys.name(src) + " " + commandData, chan);
+	"handler": function (command) {
+		command.nativeHtml("<font color=magneta><timestamp/> *** " + command.selfPlayer + " " + command.data, command.chan);
 	},
 	"category": "0", // Even though this optional, it's still recommended to add readability.
 	"help": ["{p Message}", "Send a message to everyone which starts with ***"],
@@ -318,8 +318,8 @@ addCommand({
 
 or:
 addCommand("me", // name
-	function (src, commandData, mcmd, chan) {
-		sys.sendAll("*** " + sys.name(src) + " " + commandData, chan);
+	function (command) {
+		command.nativeHtml("<font color=magneta><timestamp/> *** " + command.selfPlayer + " " + command.data, command.chan);
 	}, // handler
 	null, // permissionHandler
 	"0", // category. (can be null too)
@@ -335,10 +335,10 @@ An object, containing the following:
 -	self: Name of src. String
 -	selfLower: self in lowercase. String
 -   selfPlayer: Same as player(src). String
--	commandData: User specified data with command. String
+-	data: User specified data with command. String
 -	chan: Channel that this command was used in. Number
 -	channel: JSESSION object of chan. Object
--	data: User specified data with command, in lowercase. String
+-	dataLower: User specified data with command, in lowercase. String
 -	mcmd: User specified data, separated by ':' (no quotes). Array
 -	tar: Player who was targetted by the user (uses mcmd[0]). Can be undefined if the player doesn't exist or isn't online. Number
 -	tarName: Name of tar. Can be undefined. String
@@ -350,7 +350,13 @@ An object, containing the following:
 -	fullCommand: Command in the case used (pointer commands not done yet). String
 -	ip: IP of mcmd[0]. Can be undefined. String
 -	auth: Auth of src (including auth given by HighPermission). Number
+-	escape: Equal to html_escape.
 -	sendMessage: Equal to botMessage(src, "message", chan); except that src and chan parameters are already specified.
 -	sendAll: Equal to botAll("message", chan); except that chan parameter is already specified.
 -	sendOthers: Equal to botAllExcept(src, "message", chan, botAllExcept.Normal); except that src, chan, and type(botAllExcept.Normal) parameters are already specified.
+-	sendWhite: Equal to sys.sendMessage(src, "", chan);
+-	sendWhiteAll: Equal to sys.sendAll("", chan);
+-	sendMain: Equal to botAll("message", 0);
+-	nativeSend: Equal to sys.sendAll
+-	nativeHtml: Equal to sys.sendHtmlAll
 */
