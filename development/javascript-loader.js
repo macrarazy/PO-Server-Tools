@@ -104,11 +104,6 @@ if (typeof include === "undefined") {
             sys.sendAll("Could not include module in file " + FileName + ": " + Exception + " on line " + Exception.lineNumber);
         }
 
-        source["script"] = source;
-        source["sys"] = sys;
-        source["SESSION"] = SESSION;
-        source["addCommand"] = addCommand;
-
         source = include.moduleProperty(module, source, "Hooks", "object");
         source = include.moduleProperty(module, source, "Version", "string");
         source = include.moduleProperty(module, source, "Name", "string");
@@ -248,10 +243,10 @@ if (typeof include === "undefined") {
 /* 
 -- Modules --
 
-Modules behave the same way as PO script files (sort of). 
-Everything outside of ({ }) is considered local. Everything in ({ }) can be read by the script.
+Modules behave the same way as PO script files. 
+Everything outside of ({ }) is inserted in the script's (and modules) global scope as expected (so you can do function calls here). Everything in ({ }) is in module.source.
 
-Init is called if it exists - do this for addCommand and the like (or hook).
+Init is called if it exists (inside ({ }) as function) - addCommand can be done here.
 
 Name can be a function (returns the name (string), preferred) or a string.
 Version can be a function (returns the version (string), preferred) or a string.
@@ -261,12 +256,12 @@ Commands can be a function (returns the commands (object), preferred) or an obje
 Name, Version, Hooks, Commands are case-sensitive and can be defined in or outside of ({ }) ( Name: "foo" can be put inside ({ }) instead of a function)
 include.GetMethod.Full is the default get method.
 
-sys., SESSION., gc(), and script. are available inside ({ }) (probably outside too (except script.), but untested). They are available in the modules global scope.
+Everything from the script's global scope is available in the module.
 
 Examples:
-include("script_constants.js", include.GetMethod.Source); // gets the code from ({ }) (global scope)
+include("script_constants.js", include.GetMethod.Source); // gets the code from ({ })
 include("script_constants.js", include.GetMethod.Version); // gets the script version. you might prefer to do include.get
-include("script_constants.js", include.GetMethod.Full); // gets the module
+include("script_constants.js", include.GetMethod.Full); // gets the module (including version, hooks, commands, source, etc.)
 
 */
 
