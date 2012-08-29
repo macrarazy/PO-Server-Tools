@@ -178,11 +178,14 @@ if (typeof include === "undefined") {
     }
 
     include.moduleProperty = function (module, source, property, secondary_type) {
-        if (typeof source[property] === "function") {
-            module[property.toLowerCase()] = source[property]();
+        var source_prop = source[property],
+            type = typeof source_prop,
+            propertyToLower = property.toLowerCase();
+        if (type === "function") {
+            module[propertyToLower] = source_prop();
             delete source[property];
-        } else if (typeof source[property] === secondary_type) {
-            module[property.toLowerCase()] = source[property];
+        } else if (type === secondary_type) {
+            module[propertyToLower] = source_prop;
             delete source[property];
         }
 
@@ -203,7 +206,7 @@ if (typeof include === "undefined") {
     include.update = function (Source, FileName, GetMethod) {
         download(Source, FileName, true);
         delete include.cache[FileName];
-		delete include.modules[FileName];
+        delete include.modules[FileName];
 
         return include(FileName, GetMethod);
     }
@@ -212,13 +215,13 @@ if (typeof include === "undefined") {
         return include.modules[module].commands[name];
     }
 
-    gethooks = function (Event) {
+    gethooks = function (event) {
         var ret = [],
             x, current_mod, Modules = include.modules;
 
         for (x in Modules) {
             current_mod = Modules[x];
-            if (typeof current_mod.hook[Event] !== "undefined") {
+            if (typeof current_mod.hook[event] !== "undefined") {
                 ret.push(current_mod);
             }
         }
@@ -226,7 +229,7 @@ if (typeof include === "undefined") {
         return ret;
     }
 
-    callplugins = function (hook_args) {
+    callhooks = function (hook_args) {
         var args = Array.prototype.slice.call(arguments),
             event = args.splice(0, 1),
             hooks = gethooks(event),
@@ -281,7 +284,7 @@ handler => Handler which will be called when command is used (function)
 Passed argument: command (look down for help)
 
 permissionHandler => Will be called when the command is used to test if the person can use it. Use this for channel xxx auth and tour auth only commands (function, optional) 
-If omitted, uses category to "guess". Stuff WILL break (the command won't be added, actually) when you dont add a permission handler for tour and channel categories.
+If omitted, uses category to "guess". Stuff WILL break (the command won't be added, actually) when you dont add a permission handler for categories other than 0, 1, 2, or 3.
 
 Return true if it's ok, false if not. If nothing is returned, assumes true (useful for the thing below)
 If a string is returned, then it is ok too. (Displays this instead of the default. Useful for various checks normally inside the command. Overall better to use in user commands)
@@ -291,8 +294,10 @@ category => Can be: 0, 1, 2, 3, channel, tournament (string, optional).
 If omitted, the command category will be "0". You can specify something else, but these are generally supported.
 
 help => Array, optional because of "hidden" commands.
-Index 0: args (array|string, uses same format as 2.2 templater)
-Index 1: description (string) 
+Index 0: 
+	args (array|string, uses same format as 2.2 templater)
+Index 1: 
+	description (string) 
 
 allowedWhenMuted => If the command can be used when muted (Don't worry about pointer commands here)
 	Does message limit, (channel) silence, and (channel) mute. (Optional, default is true)
@@ -335,28 +340,38 @@ An object, containing the following:
 -	self: Name of src. String
 -	selfLower: self in lowercase. String
 -	selfPlayer: Same as player(src). String
+-	user: JSESSION object of src. Object
+-	auth: Auth of src (including auth given by HighPermission). Number
+
 -	data: User specified data with command. String
+-	dataLower: User specified data with command, in lowercase. String
+
 -	chan: Channel that this command was used in. Number
 -	channel: JSESSION object of chan. Object
--	dataLower: User specified data with command, in lowercase. String
+
 -	mcmd: User specified data, separated by ':' (no quotes). Array
+
 -	tar: Player who was targetted by the user (uses mcmd[0]). Can be undefined if the player doesn't exist or isn't online. Number
 -	tarName: Name of tar. Can be undefined. String
 -	tarLower: tarName in lowercase. Can be undefined. String
 -	tarPlayer: Same as player(tar). Can be undefined. String
--	user: JSESSION object of src. Object
 -	target: JSESSION object of tar. Can be undefined. Object
+-	ip: IP of mcmd[0]. Can be undefined. String
+
 -	command: Command used in lowercase (pointer commands already done). String
 -	fullCommand: Command in the case used (pointer commands not done yet). String
--	ip: IP of mcmd[0]. Can be undefined. String
--	auth: Auth of src (including auth given by HighPermission). Number
+
 -	escape: Equal to html_escape.
+
 -	sendMessage: Equal to botMessage(src, "message", chan); except that src and chan parameters are already specified.
 -	sendAll: Equal to botAll("message", chan); except that chan parameter is already specified.
 -	sendOthers: Equal to botAllExcept(src, "message", chan, botAllExcept.Normal); except that src, chan, and type(botAllExcept.Normal) parameters are already specified.
+
 -	sendWhite: Equal to sys.sendMessage(src, "", chan);
 -	sendWhiteAll: Equal to sys.sendAll("", chan);
+
 -	sendMain: Equal to botAll("message", 0);
+
 -	nativeSend: Equal to sys.sendAll
 -	nativeHtml: Equal to sys.sendHtmlAll
 */
