@@ -363,14 +363,14 @@ An object, containing the following:
 
 -	escape: Equal to html_escape.
 
--	sendMessage: Equal to botMessage(src, "message", chan); except that src and chan parameters are already specified.
--	sendAll: Equal to botAll("message", chan); except that chan parameter is already specified.
--	sendOthers: Equal to botAllExcept(src, "message", chan, botAllExcept.Normal); except that src, chan, and type(botAllExcept.Normal) parameters are already specified.
+-	sendMessage: Equal to botMessage(src, "message", chan); Message is the only argument.
+-	sendAll: Equal to botAll("message", chan); Message is the only argument.
+-	sendOthers: Equal to botAllExcept(src, "message", chan, botAllExcept.Normal); Message is the only argument.
 
--	sendWhite: Equal to sys.sendMessage(src, "", chan);
--	sendWhiteAll: Equal to sys.sendAll("", chan);
+-	sendWhite: Equal to sys.sendMessage(src, "", chan); No arguments.
+-	sendWhiteAll: Equal to sys.sendAll("", chan); No arguments.
 
--	sendMain: Equal to botAll("message", 0);
+-	sendMain: Equal to botAll("message", 0); Message is the only argument.
 
 -	nativeSend: Equal to sys.sendAll
 -	nativeHtml: Equal to sys.sendHtmlAll
