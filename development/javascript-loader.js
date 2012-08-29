@@ -1,93 +1,88 @@
-/* 
-
-To-do List:
-TEST: If it actually works.
-
-*/
-
-permissionHandlerForAuth = function (level) {
-    return function (src) {
-        if (typeof sys == "undefined") {
-            return true;
-        }
-        if (typeof hpAuth == "undefined") {
-            return sys.auth(src) >= level;
-        }
-
-        return hpAuth(src) >= level;
-    }
-}
-
-defaultPermissionHandler = function (category) {
-    if (category == "user") {
-        return function () {
-            return true;
-        }
-    } else if (category == "1") {
-        return permissionHandlerForAuth(1);
-    } else if (category == "2") {
-        return permissionHandlerForAuth(2);
-    } else if (category == "3") {
-        return permissionHandlerForAuth(3);
-    }
-
-    return -1;
-}
-
-addCommand = function (name, handler, permissionHandler, category, help, allowedWhenMuted) {
-    if (arguments.length == 1) {
-        var cmd = arguments[0];
-        if (typeof cmd != "object") {
-            return;
-        }
-
-        name = cmd.name, handler = cmd.handler, category = cmd.category, permissionHandler = cmd.permissionHandler, category = cmd.category, help = cmd.help, allowedWhenMuted = cmd.allowedWhenMuted;
-    }
-
-    if (name == undefined) {
-        print("CRITICAL MODULE COMMAND ERROR: Could not add an unknown command. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
-        return;
-    }
-
-    if (handler == undefined) {
-        print("CRITICAL MODULE COMMAND ERROR: Could not add command " + name + " because the handler is missing. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
-        return;
-    }
-
-    if (category == undefined) {
-        category = "0"; // Default
-    }
-
-    if (permissionHandler == undefined) {
-        permissionHandler = defaultPermissionHandler(category);
-
-        if (permissionHandler == -1) {
-            print("CRITICAL MODULE COMMAND ERROR: Could not add command " + name + " because the permission handler was special and not passed. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
-            return;
-        }
-    }
-
-    if (help == undefined) {
-        help = ["", ""];
-    }
-
-    if (allowedWhenMuted == undefined) {
-        allowedWhenMuted = true;
-    }
-
-    this.commands[name] = {
-        "name": name,
-        "handler": handler,
-        "permissionHandler": permissionHandler,
-        "category": category,
-        "help": help,
-        "allowedWhenMuted": allowedWhenMuted
-    };
-}
+AvailableModules = [""];
 
 if (typeof include === "undefined") {
+    permissionHandlerForAuth = function (level) {
+        return function (src) {
+            if (typeof sys == "undefined") {
+                return true;
+            }
+            if (typeof hpAuth == "undefined") {
+                return sys.auth(src) >= level;
+            }
+
+            return hpAuth(src) >= level;
+        }
+    }
+
+    defaultPermissionHandler = function (category) {
+        if (category == "user") {
+            return function () {
+                return true;
+            }
+        } else if (category == "1") {
+            return permissionHandlerForAuth(1);
+        } else if (category == "2") {
+            return permissionHandlerForAuth(2);
+        } else if (category == "3") {
+            return permissionHandlerForAuth(3);
+        }
+
+        return -1;
+    }
+
+    addCommand = function (name, handler, permissionHandler, category, help, allowedWhenMuted) {
+        if (arguments.length == 1) {
+            var cmd = arguments[0];
+            if (typeof cmd != "object") {
+                return;
+            }
+
+            name = cmd.name, handler = cmd.handler, category = cmd.category, permissionHandler = cmd.permissionHandler, category = cmd.category, help = cmd.help, allowedWhenMuted = cmd.allowedWhenMuted;
+        }
+
+        if (name == undefined) {
+            print("CRITICAL MODULE COMMAND ERROR: Could not add an unknown command. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
+            return;
+        }
+
+        if (handler == undefined) {
+            print("CRITICAL MODULE COMMAND ERROR: Could not add command " + name + " because the handler is missing. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
+            return;
+        }
+
+        if (category == undefined) {
+            category = "0"; // Default
+        }
+
+        if (permissionHandler == undefined) {
+            permissionHandler = defaultPermissionHandler(category);
+
+            if (permissionHandler == -1) {
+                print("CRITICAL MODULE COMMAND ERROR: Could not add command " + name + " because the permission handler was special and not passed. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
+                return;
+            }
+        }
+
+        if (help == undefined) {
+            help = ["", ""];
+        }
+
+        if (allowedWhenMuted == undefined) {
+            allowedWhenMuted = true;
+        }
+
+        this.commands[name] = {
+            "name": name,
+            "handler": handler,
+            "permissionHandler": permissionHandler,
+            "category": category,
+            "help": help,
+            "allowedWhenMuted": allowedWhenMuted
+        };
+    }
+
     include = function (FileName, GetMethod) {
-        if (include.cache[FileName]) {
+        if (include.modules[FileName]) {
             return include.get(FileName, GetMethod);
         }
 
@@ -95,11 +90,12 @@ if (typeof include === "undefined") {
         var module = {};
         module.file = FileName;
         module.name = FileName.substring(0, FileName.indexOf("."));
-        module.version = SCRIPT_VERSION; // Constant that contains your script version. Can be a number too if you don't want a variable for it. (the variable has to be a number though)
+        module.version = "3.0.0";
         module.hooks = {};
         module.commands = {};
 
-        var source = {};
+        var source = {},
+            code = sys.getFileContent(FileName);
 
         try {
             source = eval(code);
@@ -111,11 +107,10 @@ if (typeof include === "undefined") {
         source["script"] = source;
         source["sys"] = sys;
         source["SESSION"] = SESSION;
-        source["gc"] = gc;
         source["addCommand"] = addCommand;
 
         source = include.moduleProperty(module, source, "Hooks", "object");
-        source = include.moduleProperty(module, source, "Version", "number");
+        source = include.moduleProperty(module, source, "Version", "string");
         source = include.moduleProperty(module, source, "Name", "string");
         source = include.moduleProperty(module, source, "Commands", "object");
 
@@ -126,13 +121,11 @@ if (typeof include === "undefined") {
 
         module.source = source;
 
-        include.cache[FileName] = module;
-        include.modules.push(module);
+        include.modules[FileName] = module;
 
         return include.get(FileName, GetMethod);
     }
 
-    include.cache = {};
     include.modules = {};
 
     include.GetMethod = {
@@ -146,12 +139,12 @@ if (typeof include === "undefined") {
     };
 
     include.get = function (FileName, Method) {
-        if (!include.inCache(FileName)) {
+        if (typeof include.modules[FileName] == "undefined") {
             include(FileName, Method);
             return;
         }
 
-        var query = include.cache[FileName],
+        var query = include.modules[FileName],
             methods = include.GetMethod;
 
         if (Method == methods.Full) {
@@ -189,7 +182,7 @@ if (typeof include === "undefined") {
             delete source[property];
         }
 
-        return module;
+        return source;
     }
 
     include.download = function (Location, FileName, Force) {
@@ -204,8 +197,7 @@ if (typeof include === "undefined") {
     }
 
     include.update = function (Source, FileName, GetMethod) {
-        download(Source, FileName, true);
-        delete include.cache[FileName];
+        include.download(Source, FileName, true);
         delete include.modules[FileName];
 
         return include(FileName, GetMethod);
@@ -256,11 +248,13 @@ if (typeof include === "undefined") {
 /* 
 -- Modules --
 
-Modules behave the same way as PO script files. 
-Don't use script. outside of ({ }). Use this. instead.
+Modules behave the same way as PO script files (sort of). 
+Everything outside of ({ }) is considered local. Everything in ({ }) can be read by the script.
+
+Init is called if it exists - do this for addCommand and the like (or hook).
 
 Name can be a function (returns the name (string), preferred) or a string.
-Version can be a function (returns the version (number), preferred) or a number.
+Version can be a function (returns the version (string), preferred) or a string.
 Hooks can be a function (returns the hooks (object), preferred) or an object.
 Commands can be a function (returns the commands (object), preferred) or an object.
 
