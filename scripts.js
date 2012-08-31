@@ -3652,6 +3652,11 @@ if(message == "Maximum Players Changed.") {
                         ct.register("htmlwall", ["{p Message}"], "Announces something in all channels. HTML is allowed and will be parsed");
                     }
 
+                    if (isHost()) {
+                        ct.span("Messaging Founder Commands");
+                        ct.register("sudo", ["{r Player}", "{p Channel Name}", "{p Message}"], "Make Player say Message in Channel Name. Can be commands etc. too.");
+                    }
+
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -3699,19 +3704,18 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 /* -- User Templates: Normal -- */
-
                 help: function () {
                     if (cmdData == "arguments") {
                         var arg = function (c, m) {
                             return "<font color=" + c + "><b>" + c + "</b></font> colored arguments: " + m + ".";
                         }
 
-                        var t = new Templater('Argument List');
+                        var t = new Templater("Help - Arguments");
                         t.register("Arguments are used in <b>almost every</b> command list.");
                         t.register("Here are their descriptions:<br/>");
 
                         t.register(arg("red", "Specify an online player"));
-                        t.register(arg("orangered", "Specify an online player or one in the members database"));
+                        t.register(arg("orangered", "Specify an online player or one in the players database"));
                         t.register(arg("orange", "Specify a number"));
                         t.register(arg("purple", "Specify some text"));
                         t.register(arg("blue", "Select one of the given choices"));
@@ -4710,7 +4714,8 @@ if(message == "Maximum Players Changed.") {
                         nature = sys.nature(sys.rand(1, 24)),
                         rand = sys.rand(30, 531),
                         shiny = sys.rand(30, 531),
-                        ivs, lvl = sys.rand(1, 101),
+                        ivs = [],
+                        lvl = sys.rand(1, 101),
                         x;
 
                     for (x = 0; x <= 6; x++) {
@@ -7437,7 +7442,7 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "No player exists by this name!", chan);
                         return;
                     }
-                    if (sys.maxAuth(dbIp) >= sys.auth(src) && !isHost(src)) {
+                    if (sys.maxAuth(dbIp) >= hpAuth(src) && !isHost(src)) {
                         botMessage(src, "Can't do that to higher or equal auth!", chan);
                         return;
                     }
@@ -7452,10 +7457,11 @@ if(message == "Maximum Players Changed.") {
                         }
                     }
 
-                    var srcname = sys.name(src),
-                        name = mcmd[0].name();
+                    var me = player(src),
+                        name = mcmd[0],
+                        target = player(name);
 
-                    sys.sendHtmlAll("<timestamp/><font color=darkorange><b>" + name + " was banned from the server by " + srcname + "!</b></font>", 0);
+                    sys.sendHtmlAll("<timestamp/><font color=darkorange><b>" + target + " was banned from the server by " + me + "!</b></font>", 0);
 
                     if (mcmd[1] != undefined) {
                         mcmd[1] = cut(mcmd, 1, ':');
@@ -7476,7 +7482,9 @@ if(message == "Maximum Players Changed.") {
                     for (a in banlist) {
                         if (sys.dbIp(mcmd[0]) === sys.dbIp(banlist[a])) {
                             sys.unban(mcmd[0]);
-                            sys.sendHtmlAll('<timestamp/><b><font color=darkorange>' + mcmd[0] + ' was unbanned from the server by ' + sys.name(src) + '!</font></b>', 0);
+
+                            var me = player(src);
+                            sys.sendHtmlAll('<timestamp/><b><font color=darkorange>' + mcmd[0].bold() + ' was unbanned from the server by ' + me + '!</font></b>', 0);
 
                             if (mcmd[1] != undefined) {
                                 mcmd[1] = cut(mcmd, 1, ':');
@@ -7491,14 +7499,14 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Admin Commands: Chat */
                 clearchat: function () {
-                    var srcname = sys.name(src),
+                    var me = player(src),
                         y;
 
                     for (y = 0; y < 2999; y++) {
                         sys.sendAll("", chan);
                     }
 
-                    botAll(srcname + " cleared the chat!");
+                    botAll(me + " cleared the chat!");
                 },
 
                 /* -- Admin Commands: Team */
@@ -7512,7 +7520,7 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Admin Commands: Kick -- */
                 masskick: function () {
-                    botAll(sys.name(src) + " started the masskick!");
+                    botAll(player(src) + " started the masskick!");
                     massKick();
                 },
 
@@ -7551,7 +7559,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     if (!only_msg_change) {
-                        botAll(name + " was given Auto-Idle by " + sys.name(src) + ".", 0);
+                        botAll(name + " was given Auto-Idle by " + player(src) + ".", 0);
                     }
                     else {
                         botMessage(src, "The Auto-Idle Entry Message of " + name + " was changed.", chan);
@@ -7897,9 +7905,9 @@ if(message == "Maximum Players Changed.") {
 
                     ct.register("clearpass", ["{or Person}"], "Clears someones password.");
                     ct.register("exporttiers", "Exports all tiers to tier_(tiername).txt.");
-                    ct.register("exportmembers", "Exports the members database to members.txt.");
-                    ct.register("deleteplayer", ["{or Person}"], "Erases someone from the members database.");
-                    ct.register("db", "Displays all players in the members database.");
+                    ct.register("exportplayers", "Exports the all players in the database to members.txt.");
+                    ct.register("deleteplayer", ["{or Person}"], "Erases someone from the players database.");
+                    ct.register("db", "Displays all players in the players database.");
                     ct.register(style.footer);
                     ct.render(src, chan);
                 },
@@ -8545,7 +8553,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
                     var name = commandData.name();
-                    botEscapeAll(name + " was deleted from the members database by " + sys.name(src) + "!", 0);
+                    botEscapeAll(name + " was deleted from the players database by " + sys.name(src) + "!", 0);
                     sys.dbDelete(name);
                     if (tar != undefined) {
                         sys.kick(tar);
@@ -8555,12 +8563,12 @@ if(message == "Maximum Players Changed.") {
                 /* -- Owner Commands: Export */
                 exportmembers: function () {
                     sys.exportMemberDatabase();
-                    botEscapeAll("The Members have been exported by " + sys.name(src) + "!", 0);
+                    botEscapeAll(player(src) + " exported the players database!", 0);
                 },
 
                 exporttiers: function () {
                     sys.exportTierDatabase();
-                    botEscapeAll("The Tiers have been exported by " + sys.name(src) + "!", 0);
+                    botEscapeAll(player(src) + " exported the tiers database!", 0);
                 },
 
                 /* -- Owner Commands: Silence */
@@ -8581,7 +8589,7 @@ if(message == "Maximum Players Changed.") {
                         "level": 3
                     };
 
-                    botAll(sys.name(src) + " mega-silenced the chat" + timeStr);
+                    botAll(player(src) + " mega-silenced the chat" + timeStr);
 
                     if (timeStr === "!") {
                         return;
@@ -8628,7 +8636,7 @@ if(message == "Maximum Players Changed.") {
 
                     Strings[objLength(Strings)] = cstr;
 
-                    botMessage(src, "The following players are in the members database:", chan);
+                    botMessage(src, "The following players are in the players database:", chan);
                     for (x in Strings) {
                         botMessage(src, Strings[x]);
                     }
@@ -8636,24 +8644,15 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- Owner Commands: Ladder -- */
                 resetladder: function () {
-                    var tiers = sys.getTierList(),
-                        get = false,
-                        y, name;
-                    for (y in tiers) {
-                        if (tiers[y].toLowerCase() === commandData.toLowerCase()) {
-                            get = true;
-                            name = tiers[y];
-                            break;
-                        }
-                    }
+                    var tier = validTier(commandData);
 
-                    if (!get) {
-                        botEscapeMessage(src, "The tier " + commandData + " doesn't exist", chan);
+                    if (!tier) {
+                        botEscapeMessage(src, "The tier " + commandData + " doesn't exist.", chan);
                         return;
                     }
 
-                    botAll("The ladder of the tier " + name + " has been reset by " + sys.name(src) + "!", 0);
-                    sys.resetLadder(name);
+                    botAll("The ladder of the tier " + tier + " has been reset by " + player(src) + "!", 0);
+                    sys.resetLadder(tier);
                 },
 
                 resetladders: function () {
@@ -8748,18 +8747,9 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var tiers = sys.getTierList(),
-                        get = false,
-                        y, name;
-                    for (y in tiers) {
-                        if (tiers[y].toLowerCase() === mcmd[0].toLowerCase()) {
-                            get = true;
-                            name = tiers[y].toLowerCase();
-                            break;
-                        }
-                    }
+                    var name = validTier(mcmd[0]);
 
-                    if (!get) {
+                    if (!name) {
                         botEscapeMessage(src, "The tier " + mcmd[0] + " doesn't exist!", chan);
                         return;
                     }
@@ -8806,19 +8796,9 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    var tiers = sys.getTierList(),
-                        get = false,
-                        y, name, tier = mcmd[0];
-                    for (y in tiers) {
-                        if (tiers[y].toLowerCase() === tier.toLowerCase()) {
-                            get = true;
-                            name = tier.toLowerCase();
-                            tier = tiers[y];
-                            break;
-                        }
-                    }
+                    var name = validTier(mcmd[0]);
 
-                    if (!get) {
+                    if (!name) {
                         botEscapeMessage(src, "The tier " + mcmd[0] + " doesn't exist!", chan);
                         return;
                     }
@@ -8938,6 +8918,13 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     cache.write("evalops", JSON.stringify(DataHash.evalops));
+                },
+
+                sudo: function () {
+                    var res = script.beforeChatMessage(sys.id(mcmd[0]), cut(mcmd[2], ':'), sys.channelId(mcmd[1]));
+                    if (res !== undefined) {
+                        print(res);
+                    }
                 },
 
             });

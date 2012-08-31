@@ -1,6 +1,7 @@
 AvailableModules = [""];
 
 if (typeof include === "undefined") {
+    Commands = {};
     permissionHandlerForAuth = function (level) {
         return function (src) {
             if (typeof sys == "undefined") {
@@ -71,7 +72,7 @@ if (typeof include === "undefined") {
             allowedWhenMuted = true;
         }
 
-        this.commands[name] = {
+        var hash = {
             "name": name,
             "handler": handler,
             "permissionHandler": permissionHandler,
@@ -79,6 +80,8 @@ if (typeof include === "undefined") {
             "help": help,
             "allowedWhenMuted": allowedWhenMuted
         };
+
+        Commands[name] = this.commands[name] = hash;
     }
 
     include = function (FileName, GetMethod) {
@@ -198,8 +201,8 @@ if (typeof include === "undefined") {
         return include(FileName, GetMethod);
     }
 
-    getCommand = function (module, name) {
-        return include.modules[module].commands[name];
+    getCommand = function (name) {
+        return Commands[name];
     }
 
     gethooks = function (event) {
@@ -292,9 +295,8 @@ allowedWhenMuted => If the command can be used when muted (Don't worry about poi
 	Does message limit, (channel) silence, and (channel) mute. (Optional, default is true)
 
 Commands lists should do:
-templater.list(COMMAND_OBJECT); -> templater.list("me");
-.list reads getCommand("commands.js", given_command) if the second argument is empty. 
-Do: templater.list("join", "tours.js"), for example, to read the data from tours.js commands object
+templater.list(COMMAND); -> templater.list("me");
+Command is received from the global variable "Commands", which contains all of the commands.
 
 Best done in a loop (an array contains the command objects, for example). do this with the getCommand function.
 
