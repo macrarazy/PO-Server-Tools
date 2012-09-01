@@ -109,7 +109,8 @@ YAMLDumper.prototype.dump_map = function (node) {
         }
     }
 
-    for (var k in node) {
+    var k;
+    for (k in node) {
         this.print_indent();
         this.dump_scalar(k);
         this.stream += ':';
@@ -137,7 +138,10 @@ YAMLDumper.prototype.dump_seq = function (node) {
     if (node.length == 0) {
         return this.dump_seq_empty();
     }
-    for (var e = 0; e < node.length; e++) {
+
+    var e = 0,
+        len = node.length;
+    for (; e < len; e++) {
         this.print_indent_array();
         if (!(node[e] instanceof Object)) {
             this.stream += ' ';
@@ -156,10 +160,10 @@ YAMLDumper.prototype.dump_seq_empty = function () {
 }
 
 YAMLDumper.prototype.dump_scalar = function (node) {
-    if ((node == null) || (typeof(node) == 'undefined')) {
+    if (node == null || typeof node == 'undefined') {
         return this.dump_scalar_null();
     }
-    if (typeof(node) == 'boolean') {
+    if (typeof node == 'boolean') {
         return this.dump_scalar_plain(node);
     }
 
@@ -197,8 +201,10 @@ YAMLDumper.prototype.print_indent = function () {
         this.noindent = false;
         return;
     }
-    var n = this.indent_level;
-    for (var i = 0; i < n; i++) {
+
+    var n = this.indent_level,
+        i = 0;
+    for (; i < n; i++) {
         this.stream += '  ';
     }
 }
@@ -209,10 +215,13 @@ YAMLDumper.prototype.print_indent_array = function () {
         this.noindent = false;
         return;
     }
-    var n = this.indent_level;
-    for (var i = 0; i < n; i++) {
+
+    var n = this.indent_level,
+        i = 0;
+    for (; i < n; i++) {
         this.stream += '  ';
     }
+
     this.stream += '-';
 }
 
@@ -686,7 +695,7 @@ YAML = (function () {
 
 // JSON //
 json = function (file) {
-    this.file = file;
+    this.file = file + ".json";
 
     this.prototype = {
         "read": function () {
@@ -697,6 +706,18 @@ json = function (file) {
         },
         "get": function (property) {
             return this.read()[property];
+        },
+        "ensureResult": function () {
+            var res;
+            try {
+                res = this.read();
+            } catch (JSONException) {
+                res = {};
+                this.write({});
+            }
+
+            return res;
         }
+
     }
 }

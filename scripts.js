@@ -2274,6 +2274,17 @@ Object.defineProperty(String.prototype, "reverse", {
     configurable: true
 });
 
+Object.defineProperty(String.prototype, "isEmpty", {
+    "value": function () {
+        var mess = this;
+        return mess == "" || mess.trim() == "";
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
 Object.defineProperty(String.prototype, "contains", {
     "value": function (string) {
         var str = this;
@@ -2379,6 +2390,46 @@ Object.defineProperty(String.prototype, "linkify", {
     configurable: true
 });
 
+Object.defineProperty(Boolean.prototype, "isEmpty", {
+    "value": function () {
+        return this === false;
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Number.prototype, "isEmpty", {
+    "value": function () {
+        return isNaN(this) || this === 0;
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Object.prototype, "isEmpty", {
+    "value": function () {
+        return this.length() === 0;
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Object.prototype, "keys", {
+    "value": function () {
+        return Object.keys(this);
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
 Object.defineProperty(Object.prototype, "has", {
     "value": function (prop) {
         return typeof this[prop] !== "undefined";
@@ -2470,6 +2521,16 @@ Object.defineProperty(Array.prototype, "has", {
         }
 
         return false;
+    },
+
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+Object.defineProperty(Array.prototype, "isEmpty", {
+    "value": function () {
+        return this.length === 0;
     },
 
     writable: true,
@@ -4001,12 +4062,11 @@ if(message == "Maximum Players Changed.") {
                         numvar = [],
                         funvar = [],
                         nullvar = [],
-                        arrvar = [];
-
-                    var thisObj = this,
+                        arrvar = [],
+                        thisObj = this,
                         vars = Object.getOwnPropertyNames(thisObj),
                         thisObjArr = [],
-                        i, toO, thisObjCur;
+                        i, toO, thisObjCur, y;
 
                     for (i in vars) {
                         thisObjCur = thisObj[vars[i]];
@@ -4026,7 +4086,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     for (i in vars) {
-                        var y = thisObjArr[i];
+                        y = thisObjArr[i];
                         i = vars[i];
 
                         if (y === "boolean") {
@@ -14197,16 +14257,18 @@ if(message == "Maximum Players Changed.") {
 
         if (typeof Trivia === 'undefined' || !Trivia.loaded) {
             Trivia = new(function () {
+                var Flags = {
+                    "html": 1,
+                    "AutoGenerator": "Automatic Trivia Question Generator",
+                    "NoQuestionsAvailable": "No questions are available.",
+                };
 
-                this.qNum = function () {
-                    var quest = objLength(this.questions);
-                    return quest;
+                this.questionNumber = this.freeId = function () {
+                    return this.questions.length();
                 }
 
-                this.freeId = this.qNum;
-
-                this.sendAll = function (msg, type) {
-                    if (type) {
+                function sendAll(msg, html) {
+                    if (html == Flags.html) {
                         sys.sendHtmlAll(msg, trivia);
                         return;
                     }
@@ -14214,8 +14276,8 @@ if(message == "Maximum Players Changed.") {
                     botAll(msg, trivia);
                 }
 
-                this.sendMessage = function (id, msg, type) {
-                    if (type) {
+                function sendMessage(id, msg, html) {
+                    if (html == Flags.html) {
                         sys.sendHtmlMessage(id, msg, trivia);
                         return;
                     }
@@ -14223,27 +14285,28 @@ if(message == "Maximum Players Changed.") {
                     botMessage(id, msg, trivia);
                 }
 
-                this.escSM = function (id, msg) {
+                function escapeMessage(id, msg) {
                     botEscapeMessage(id, msg, trivia);
                 }
 
                 this.questionInfo = function () { /* No escaping on purpose; admins should review well */
-                    var qs = this.currentQuestion,
-                        quest = qs.display_question;
+                    var currentQuestion = this.currentQuestion,
+                        displayQuestion = currentQuestion.display;
 
-                    this.sendAll("<hr width='450'/><center><b>Category:</b> " + qs.category + " <br/> <b>Question</b>: " + quest + " </center><hr width='450'/>", true);
+                    sendAll("<hr width='450'/><center><b>Category:</b> " + currentQuestion.category + " <br/> <b>Question</b>: " + displayQuestion + " </center><hr width='450'/>", Flags.html);
                 }
 
                 this.leaderboardDisplay = function (src, match) {
                     var scores = this.leaderboard;
-                    if (objLength(scores) === 0) {
-                        this.sendMessage(src, "No leaderboard data available.");
+                    if (scores.isEmpty()) {
+                        sendMessage(src, "No leaderboard available.");
                         return;
                     }
 
-                    if (isEmpty(match) || scores[match] === undefined) {
-                        var l = [],
-                            i, num;
+                    var l = [],
+                        i, num, p;
+
+                    if (match.isEmpty()) {
                         for (i in scores) {
                             l.push([i, scores[i]]);
                         }
@@ -14252,16 +14315,20 @@ if(message == "Maximum Players Changed.") {
                             return b[1] - a[1];
                         });
 
-                        this.sendMessage(src, "<font size='4'>Trivia Leaderboard</font>");
+                        sendMessage(src, "<font size='4'>Trivia Leaderboard</font>");
+
+                        p = player(l[i][0]);
 
                         for (i in l) {
                             num = Number(i) + 1;
-                            this.escSM(src, num + ". Player " + l[i][0] + " with " + l[i][1] + " game wins.");
+                            escapeMessage(src, num + ". Player " + p + " with " + l[i][1] + " game wins.");
                         }
                         return;
                     }
-                    this.sendMessage(src, "<font size='4'>Leaderboard for " + html_escape(match) + "</font>");
-                    this.escSM(src, "Player " + match + " with " + scores[match] + " game wins.");
+
+                    p = player(match);
+                    sendMessage(src, "<font size='4'>Leaderboard for " + p + "</font>");
+                    escapeMessage(src, "Player " + p + " with " + scores[match] + " game wins.");
                 }
 
                 this.clearVariables = function (inLoad) {
@@ -14283,9 +14350,9 @@ if(message == "Maximum Players Changed.") {
                     this.players = {};
 
 /* Struct players:
-			nameToLower => "name", "points", "actionTime" 
-			(Correct case, points earned, time (in millisecs) of the /a if q was correct)
-			defaults: null, 0, -1
+				nameToLower => "name", "points", "actionTime" 
+				(Correct case, points earned, time (in millisecs) of the /a if q was correct)
+				defaults: null, 0, 0
 			*/
 
                     this.gamePoints = -1;
@@ -14309,15 +14376,15 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 this.randomQ = function () {
-                    var list = Object.keys(this.questions),
+                    var list = this.questions.keys(),
                         len = list.length;
 
                     if (len == 0) {
-                        return "no questions available";
+                        return Flags.NoQuestionsAvailable;
                     }
 
-                    var rand = Math.floor(len * Math.random());
-                    var result = this.questions[list[rand]],
+                    var rand = Math.floor(len * Math.random()),
+                        result = this.questions[list[rand]],
                         resn = result.name;
 
                     while (result === undefined) {
@@ -14328,15 +14395,26 @@ if(message == "Maximum Players Changed.") {
                     this.currentQuestion = result;
                 }
 
-                this.isQuestion = function (name) {
-                    var x, Q = this.questions;
-                    for (x in Q) {
-                        if (Q[x].question === name) {
-                            return true;
+                this.isQuestion = function (id) {
+                    var x, questions = this.questions,
+                        curr;
+                    for (x in questions) {
+                        curr = questions[x]
+                        if (curr != id) {
+                            continue;
                         }
+                        return true;
                     }
 
                     return false;
+                }
+
+                this.addQuestion = function (info) {
+                    if (!info.display_question) {
+                        info.display_question = info.question;
+                    }
+
+                    this.questions[this.freeId()] = info;
                 }
 
                 this.questionsLoad = function () {
@@ -14349,27 +14427,28 @@ if(message == "Maximum Players Changed.") {
 
                     if (TrivCache.get("init_pokes_done") == "") {
                         var nums = 1,
-                            poke, randchance, q = this.questions,
-                            scrambled;
+                            poke, randchance, scrambled;
+
                         for (; nums < 650; nums++) {
                             poke = sys.pokemon(nums);
                             randchance = sys.rand(0, 3) == 1 ? '&shiny=true' : '';
                             scrambled = poke.scrambled;
 
-                            q[this.freeId()] = {
-                                'by': '*Automatic Generate*',
+                            this.addQuestion({
+                                'by': Flags.AutoGenerator,
                                 'answers': [poke],
                                 'question': 'Who is this Pokémon? <br/> <img src="pokemon:' + nums + randchance + '&gen=5">',
                                 'category': 'Pokémon'
-                            };
-                            q[this.freeId()] = {
-                                'by': '*Automatic Generate*',
+                            });
+                            this.addQuestion({
+                                'by': Flags.AutoGenerator,
                                 'answers': [poke],
                                 'question': 'Who is this Pokemon? - ' + poke,
                                 'display_question': 'What is the correct Pokémon name? <br/> ' + scrambled.bold(),
                                 'category': 'Pokémon'
-                            };
+                            });
                         };
+
                         TrivCache.write("init_pokes_done", true);
                         this.saveQuestions();
                     }
@@ -14398,7 +14477,7 @@ if(message == "Maximum Players Changed.") {
                     TrivCache.write("Questions", JSON.stringify(this.questions));
                 }
 
-                this.saveBoard = function () {
+                this.saveLeaderBoard = function () {
                     TrivCache.write("LeaderBoard", JSON.stringify(this.leaderboard));
                 }
 
@@ -14409,43 +14488,59 @@ if(message == "Maximum Players Changed.") {
                 this.saveLeaderboard = function (user) {
                     user = user.toLowerCase();
 
-                    var num = this.leaderboard[user] === undefined ? 1 : this.leaderboard[user] + 1;
-                    this.leaderboard[user] = num;
-                    this.saveBoard();
+                    var lbNum = 1,
+                        board = this.leaderboard;
+                    if (board.has(user)) {
+                        lbNum + board[user];
+                    }
+
+                    board[user] = lbNum;
+                    this.saveLeaderBoard();
                 }
 
                 this.command_start = function (src, points) {
-                    var name = src ? sys.name(src) : Bot.bot + "</i>"
+                    var name = sys.name(src),
+                        send = function (mess) {
+                            if (src) {
+                                sendMessage(src, mess);
+                            }
+                        };
+
+                    if (!src) {
+                        name = Bot.bot + "</i>";
+                    }
+
                     if (this.isGameGoingOn()) {
-                        if (src) {
-                            this.sendMessage(src, "A Trivia game is already going on.");
-                        }
+                        send("A Trivia game is already going on.");
                         return;
                     }
-                    if (this.qNum() == 0) {
-                        if (src) {
-                            this.sendMessage(src, "No questions exist.");
-                        }
+                    if (this.questions.isEmpty()) {
+                        send("No questions exist.");
                         return;
                     }
 
                     points = parseInt(points);
 
                     if (points < 30) {
-                        this.sendMessage(src, "Specify atleast 30 points for this game.");
+                        send("Specify at least 30 points for this game.");
                         return;
                     }
 
                     if (points > 200) {
-                        this.sendMessage(src, "Specify less than 200 points for this game.");
+                        send("Specify less than 200 points for this game.");
                         return;
                     }
 
                     this.mode = 0;
                     this.gamePoints = points;
 
-                    botAll("A new trivia game was started by " + name + "! It will start in 60 seconds. Go to <a href='po:join/" + sys.channel(trivia) + "'>#Trivia</a> and type /join to join it! First to get " + points + " points or more wins!", 0);
-                    this.sendAll("A new trivia game was started by " + name + "! It will start in 60 seconds. Type /join to join the game! First to get " + points + " points or more wins! <ping/>");
+                    var me = player(src);
+                    if (!src) {
+                        me = name;
+                    }
+
+                    botAll("A new trivia game was started by " + me + "! It will start in 60 seconds. Go to " + ChannelLink(sys.channel(trivia)) + " and type /join to join it! First to get " + points + " points or more wins!", 0);
+                    sendAll("A new trivia game was started by " + me + "! It will start in 60 seconds. Type /join to join the game! First to get " + points + " points or more wins! <ping/>");
                     sys.callLater("Trivia.startGame();", 60);
                 }
 
@@ -14467,27 +14562,30 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var myName = sys.name(src).toLowerCase();
-                    if (!myName in this.players) {
+                    if (this.players.has(myName)) {
                         this.command_join(src);
                     }
 
                     var myPlayer = this.players[myName];
 
-                    if (isEmpty(message)) {
-                        this.sendMessage(src, "Please specify an answer.");
+                    if (message.isEmpty()) {
+                        sendMessage(src, "Specify an answer.");
                         return true;
                     }
 
                     var qList = this.currentQuestion.answers.map(function (q) {
                         return q.toLowerCase();
-                    });
+                    }),
+                        messageToLower = message.toLowerCase();
 
-                    if (qList.indexOf(message.toLowerCase()) > -1) {
+                    if (qList.has(messageToLower)) {
                         myPlayer.actionTime = new Date().getTime();
                     }
                     else {
-                        myPlayer.actionTime = -1; // Wrong, reset.
-                        this.roundWrongAnswers.push(message + " (by " + sys.name(src) + ")");
+                        if (myPlayer.actionTime != -1) {
+                            myPlayer.actionTime = -1; // Wrong, reset.
+                            this.roundWrongAnswers.push(message + " (by " + sys.name(src) + ")");
+                        }
                     }
 
 
@@ -14500,25 +14598,25 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 this.startGame = function () {
-                    var pList = Object.keys(this.players).map(function (n) {
-                        return n.name();
+                    var pList = this.players.keys().map(function (n) {
+                        return player(n);
                     });
 
                     if (pList.length != 0) {
-                        this.sendAll(fancyJoin(pList) + " joined the game!");
+                        sendAll(fancyJoin(pList) + " joined the game!");
                     }
 
                     this.displayQInfo();
                     this.callNewRound();
                 }
 
-                this.sendToTrivReview = function (src, QHash) {
+                this.sendToTrivReview = function (src, question) {
                     if (sys.playersOfChannel(trivreview) != 0) {
                         sys.sendHtmlAll("<timestamp/> <i><b>" + sys.name(src) + "</b> has submit a question.</i> <ping/>", trivreview);
-                        sys.sendHtmlAll("<timestamp/> <i>" + QHash.question + " | " + html_escape(QHash.category) + " | " + QHash.answers.join(" & ") + "</i>", trivreview);
-                        var QContainHTML = html_strip(QHash.display_question) != QHash.display_question;
-                        var QCatContainHTML = html_strip(QHash.category) != QHash.category;
-                        sys.sendHtmlAll("<timestamp/> <i>Contains HTML in Question name: " + QContainHTML + " | Contains HTML in Category name: " + QCatContainHTML, trivreview);
+                        sys.sendHtmlAll("<timestamp/> <i>" + question.question + " | " + html_escape(question.category) + " | " + question.answers.join(" & ") + "</i>", trivreview);
+                        var questionContainHTML = html_strip(question.display_question) != question.display_question;
+                        var categoryContainHTML = html_strip(question.category) != question.category;
+                        sys.sendHtmlAll("<timestamp/> <i>Contains HTML in displayed question: " + questionContainHTML + " | Contains HTML in category: " + categoryContainHTML, trivreview);
                     }
                 }
 
@@ -14528,10 +14626,12 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var longestAnswer = 0,
-                        x, q = this.currentQuestion.answers;
+                        x, q = this.currentQuestion.answers,
+                        curr;
                     for (x in q) {
-                        if (q[x].length > longestAnswer) {
-                            longestAnswer = q[x].length;
+                        curr = q[x].length;
+                        if (curr > longestAnswer) {
+                            longestAnswer = curr
                         }
                     }
 
@@ -14546,7 +14646,7 @@ if(message == "Maximum Players Changed.") {
                     var rand = sys.rand(13, 21);
 
                     this.mode = 2;
-                    this.sendAll("Have a " + rand + " second break before the next question!");
+                    sendAll("Have a " + rand + " second break before the next question!");
                     sys.callLater("Trivia.displayQInfo(); Trivia.callNewRound();", rand);
                 }
 
@@ -14579,7 +14679,7 @@ if(message == "Maximum Players Changed.") {
                         }
                     }
 
-                    if (objLength(winners) != 0) {
+                    if (!winners.isEmpty()) {
                         var winnersList = [],
                             win = " is";
 
@@ -14591,7 +14691,7 @@ if(message == "Maximum Players Changed.") {
                             win = "s are";
                         }
 
-                        this.sendAll("The winner" + win + ": " + fancyJoin(winnersList));
+                        sendAll("The winner" + win + ": " + fancyJoin(winnersList));
 
                         for (x in winnersList) {
                             this.saveLeaderboard(winnersList[x]);
@@ -14602,7 +14702,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     this.sendAll("Time's up!");
-                    if (correct.length != 0) {
+                    if (!correct.isEmpty()) {
                         this.sendAll("Correct Answered: " + fancyJoin(correct));
                     } else {
                         this.sendAll("No one was correct!");
@@ -14615,12 +14715,13 @@ if(message == "Maximum Players Changed.") {
                         lbStr = "",
                         i = 0,
                         c_pl;
+
                     for (x in this.players) {
                         c_pl = this.players[x];
                         lbArr.push([c_pl.name, c_pl.points]);
                         i++;
 
-                        c_pl.actionTime = -1; /* Do this while we can! */
+                        c_pl.actionTime = 0; /* Do this while we can! */
                     }
 
                     lbArr = lbArr.sort(function (a, b) {
@@ -14636,8 +14737,8 @@ if(message == "Maximum Players Changed.") {
                         }
                     }
 
-                    this.sendAll("Leaderboard:");
-                    this.sendAll(lbStr);
+                    sendAll("Leaderboard:");
+                    sendAll(lbStr);
 
                     this.roundWrongAnswers = [];
                     this.startWait();
@@ -14653,7 +14754,7 @@ if(message == "Maximum Players Changed.") {
                         c_quest;
                     for (x in quest) {
                         c_quest = quest[x].category;
-                        if (catArr.indexOf(c_quest) === -1) {
+                        if (!catArr.has(c_quest)) {
                             catArr.push(c_quest);
                         }
                     }
@@ -14673,44 +14774,45 @@ if(message == "Maximum Players Changed.") {
 
                 this.end = function (src) {
                     if (this.mode === -1) {
-                        this.sendMessage(src, "No game is going on.");
+                        sendMessage(src, "No game is going on.");
                         return;
                     }
 
-                    this.sendAll("Trivia game ended by " + sys.name(src) + "!");
+                    sendAll("Trivia game ended by " + player(src) + "!");
                     this.endGame();
                 }
 
                 this.command_questions = function (src) {
-                    var qn = this.qNum();
-                    if (qn == 0) {
-                        this.sendMessage(src, "No questions exist.");
+                    var len = this.questionsLength();
+                    if (len === 0) {
+                        sendMessage(src, "No questions exist.");
                         return;
                     }
 
-                    if (qn > 2998) {
-                        this.sendMessage(src, "There are too many questions to display. You will not see them all.");
+                    if (len > 2998) {
+                        sendMessage(src, "There are too many questions to display. You will not see them all.");
                     }
 
                     var q = this.questions,
-                        y;
+                        y, curr;
                     for (y in q) {
-                        this.escSM(src, q[y].display_question + " in category " + q[y].category);
+                        curr = q[y];
+                        escapeMessage(src, y + ": " + curr.question);
                     }
                 }
 
                 this.command_categories = function (src) {
-                    if (this.qNum() === 0) {
+                    if (this.questions.isEmpty()) {
                         this.sendMessage(src, "No questions exist. There can't be any categories.");
                         return;
                     }
 
                     var catArr = this.getCategories();
-                    this.sendMessage("Question Categories: " + catArr.join(", "));
+                    sendMessage(src, "Question Categories: " + catArr.join(", "));
                 }
 
                 this.command_rmquestion = function (src, commandData) {
-                    if (this.qNum() == 0) {
+                    if (this.questionNumber() === 0) {
                         botMessage(src, "No questions exist.", trivreview);
                         return;
                     }
@@ -14718,9 +14820,9 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "That question doesn't exist. For a list of questions, type /questions", trivreview);
                         return;
                     }
-                    if (objLength(this.currentQuestion) !== 0) {
+                    if (!this.currentQuestion.isEmpty()) {
                         if (this.currentQuestion.question == commandData) {
-                            botMessage(src, "A round is going on with this question. Please use /skip first.", trivreview);
+                            botMessage(src, "A round is going on with this question. Use /skip first.", trivreview);
                             return;
                         }
                     }
@@ -14733,46 +14835,45 @@ if(message == "Maximum Players Changed.") {
 
                 this.command_skip = function (src) {
                     if (!this.isGameGoingOn()) {
-                        this.sendMessage(src, "No trivia game is going on.");
+                        sendMessage(src, "No trivia game is going on.");
                         return;
                     }
                     if (this.mode === 2) {
-                        this.sendMessage(src, "You can't skip a round durning a break.");
+                        sendMessage(src, "You can't skip a round durning a break.");
                         return;
                     }
-                    this.sendAll(sys.name(src) + " skipped this round!");
+                    sendAll(player(src) + " skipped this round!");
                     this.startWait();
                 }
 
                 this.command_qdata = function (src, commandData) {
-                    if (this.qNum == 0) {
-                        this.sendMessage(src, "No questions exist.");
+                    if (this.questionNumber() === 0) {
+                        sendMessage(src, "No questions exist.");
                         return;
                     }
                     if (!this.questions.has(commandData)) {
-                        this.sendMessage(src, "That question doesn't exist. For a list of questions, type /questions.");
+                        sendMessage(src, "That question doesn't exist. For a list of questions, type /questions.");
                         return;
                     }
 
-                    var qData = this.questions[commandData];
+                    var qData = this.questions[commandData],
+                        question = qData.question,
+                        by = qData.by,
+                        t = qData.category;
 
-                    var question = qData.question;
-                    var by = qData.by;
-                    var cat = qData.category;
+                    sendMessage(src, "Question: " + html_escape(r));
+                    sendMessage(src, "Category: " + cat);
 
-                    this.sendMessage(src, "Question: " + html_escape(r));
-                    this.sendMessage(src, "Category: " + cat);
-
-                    if (by !== "*Automatic Generate*") {
-                        this.sendMessage(src, "By: " + by);
+                    if (by !== Flags.AutoGenerator) {
+                        sendMessage(src, "By: " + by);
                     }
 
-                    if (sys.auth(src) > 0) {
-                        if (objLength(this.currentQuestion) != 0 && this.currentQuestion.question != commandData) {
-                            var answers = qData.answers;
-                            var s = answers.length == 1 ? " is" : "s are";
+                    if (hpAuth(src) > 0) {
+                        if (!this.currentQuestion.isEmpty() && this.currentQuestion.question != commandData) {
+                            var answers = qData.answers,
+                                s = answers.length == 1 ? " is" : "s are";
 
-                            this.sendMessage(src, "The Answer" + s + ": " + answers.join(", "));
+                            sendMessage(src, "The answer" + s + ": " + answers.join(", "));
                         }
                     }
                 }
