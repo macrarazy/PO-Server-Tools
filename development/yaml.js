@@ -1,5 +1,6 @@
+// YAML //
 /*
-General:
+Parser:
 YAML parser for Javascript
 Author: Diogo Costa
 
@@ -25,19 +26,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  
- -------------------------------------------------------------------------
- Modified by TheUnknownOne to match coding style and make it work with PO.
+-------------------------------------------------------------------------
+
+Modified by TheUnknownOne to match coding style and make it work with PO.
  
- ==============================================================================
+==============================================================================
  
- Dump:
+Dump:
  
 YAML - YAML Data Serialization for JavaScript
-
-DESCRIPTION:
-
-This library defines the YAML.dump function which can be used to serialize
-JavaScript nodes in YAML.
 
 AUTHORS:
 
@@ -61,8 +58,10 @@ General Public License for more details.
 
     http://www.gnu.org/copyleft/lesser.txt
 
- =============================================================================
- Modified by TheUnknownOne */
+=============================================================================
+
+Modified by TheUnknownOne 
+*/
 
 YAMLDumper = function () {
     this.stream = '';
@@ -684,3 +683,20 @@ YAML = (function () {
         dump: dump
     }
 })();
+
+// JSON //
+json = function (file) {
+    this.file = file;
+
+    this.prototype = {
+        "read": function () {
+            return JSON.parse(sys.getFileContent(this.file));
+        },
+        "write": function (code) {
+            sys.writeToFile(this.file, JSON.stringify(code));
+        },
+        "get": function (property) {
+            return this.read()[property];
+        }
+    }
+}
