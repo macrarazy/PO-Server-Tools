@@ -12,7 +12,7 @@
 || # Lamperi, Mystra                                       # ||
 || #                                                       # ||
 || # Script Version:                                       # ||
-|| # 2.2.56                                                # ||
+|| # 2.2.60                                                # ||
 || #                                                       # ||
 || # Server Requirements:                                  # ||
 || # 2.0.02 (2.0.05 recommended)                           # ||
@@ -69,7 +69,7 @@
 \*===========================================================*/
 
 EvaluationTimeStart = new Date().getTime(); /* Do not modify this! This is only to count load speed! */
-ScriptVerData = ["2.2.56", ""];
+ScriptVerData = ["2.2.60", ""];
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
@@ -1029,8 +1029,37 @@ Tours.prototype.identify = function (test) {
     }
 }
 
-Tours.prototype.TourBox = function (message) {
-    TourBox(message, this.id);
+Tours.prototype.TourBox = function (message, Display) {
+    var x, curr;
+
+    if (typeof message == "string") {
+        message = [message]; // Make it an array.
+    }
+
+    if (Display !== this.Displays.Normal && Display !== this.Displays.Clean) {
+        Display = this.TourDisplay;
+    }
+
+    if (Display == this.Displays.Normal) {
+        this.white();
+        this.border();
+        this.white();
+
+        for (x in message) {
+            curr = message[x];
+            if (curr.isEmpty()) {
+                sys.sendAll("", this.id);
+            } else {
+                botAll(message[x], this.id);
+            }
+        }
+
+        this.white();
+        this.border();
+        this.white();
+    } else { // this.Displays.Clean
+        TourBox(message.join("<br/>"), this.id);
+    }
 }
 
 Tours.prototype.command_display = function (src, commandData, fullCommand) {
@@ -1040,26 +1069,23 @@ Tours.prototype.command_display = function (src, commandData, fullCommand) {
     }
 
     var num = parseInt(commandData);
-    if (num != 1 && num != 2) {
-        botMessage(src, "Valid tournament display modes are 1 (Normal) and 2 (Clean).", chan);
+    if (num !== 1 && num !== 2) {
+        botMessage(src, "Valid tournament display modes are 1 (Normal) and 2 (Clean).", this.id);
         return;
     }
-    if (this.TourDisplay == num) {
-        botMessage(src, "The tournament display mode is already " + num + ".", chan);
+    if (this.TourDisplay === num) {
+        botMessage(src, "The tournament display mode is already " + num + ".", this.id);
         return;
     }
 
-    var me = player(src);
+    var me = player(src),
+        mode = "Normal";
 
-    if (num == this.Displays.Normal) {
-        this.border();
-        this.white();
-        botAll(me + " changed the tournament display mode to Normal.", this.id);
-        this.white();
-        this.border();
-    } else { // this.Displays.Clean
-        this.TourBox(me + " changed the tournament display mode to Clean.");
+    if (num === this.Displays.Clean) {
+        mode = "Clean";
     }
+
+    this.TourBox(me + " changed the tournament display mode to " + mode + ".", num);
 
     this.TourDisplay = num;
 
@@ -1076,16 +1102,7 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
     var to_on = toOn(this.AutoStartBattles),
         me = player(src);
 
-    if (this.TourDisplay == this.Displays.Normal) {
-        this.border();
-        this.white();
-        botAll(me + " turned auto start battles " + to_on + ".", this.id);
-        this.white();
-        this.border();
-    }
-    else {
-        this.TourBox(me + " turned auto start battles " + to_on + ".");
-    }
+    this.TourBox(me + " turned auto start battles " + to_on + ".");
 
     cData.changeTourOptions(this.id, this.TourDisplay, this.AutoStartBattles);
 }
@@ -1118,17 +1135,23 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         return;
     }
 
-    var me = player(src);
-    if (this.tourSpots() > 0) {
+    var me = player(src),
+        spots = this.tourSpots(),
+        message;
+    if (spots > 0) {
         this.buildHash(src);
 
-        if (this.TourDisplay == this.Displays.Normal) {
-            botEscapeAll(me + " joined the tournament! " + this.tourSpots() + " more spot(s) left!", this.id);
+        spots--;
+        message = me + " joined the tournament! <b>" + spots + "</b> more " + s("spot", spots) + " left!";
+
+        if (this.tournumber < 9) { // Max spots is 8 for the bigger message.
+            this.TourBox(message);
         } else {
-            this.TourBox(me + " joined the tournament! <b>" + this.tourSpots() + "</b> more spot(s) left!");
+            botAll(message, this.id);
         }
 
-        if (this.tourSpots() == 0) {
+
+        if (spot == 0) {
             this.tourmode = 2;
             this.roundnumber = 0;
             this.roundPairing();
@@ -1157,11 +1180,8 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
 
     var me = player(src),
         spotsNow = this.tourSpots() + 1;
-    if (this.TourDisplay == this.Displays.Normal) {
-        botAll(me + " left the tournament " + spotsNow + " spots left!", this.id);
-    } else {
-        this.TourBox(me + " left the tournament! <b>" + spotsNow + "</b> spots left!");
-    }
+
+    this.TourBox(me + " left the tournament! <b>" + spotsNow + "</b> spots left!");
 
     if (this.tourmode == 2 && this.players[self].couplesid != -1) {
         this.tourBattleEnd(this.tourOpponent(self.name()), self.name(), true);
@@ -1190,7 +1210,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         idleBattles = battleHash.idleBattles,
         ongoingBattles = battleHash.ongoingBattles,
         winLose = battleHash.winLose,
-        anyFinishedBattles = objLength(winLose) > 0,
+        anyFinishedBattles = !winLose.isEmpty(),
         x, curr;
 
     var roundInfoStr = "Round " + this.roundnumber;
@@ -1198,7 +1218,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         roundInfoStr = "Finals";
     }
 
-    botMessage(src, roundInfoStr + " " + this.tourtier + " tournament:", chan);
+    botMessage(src, roundInfoStr + " of " + this.tourtier + " tournament:", chan);
     if (anyFinishedBattles) {
         sys.sendMessage(src, "", chan);
         botMessage(src, "Battles finished", chan);
@@ -1211,7 +1231,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         sys.sendMessage(src, "", chan);
     }
 
-    if (objLength(ongoingBattles) > 0) {
+    if (!ongoingBattles.isEmpty()) {
         sys.sendMessage(src, "", chan);
         botMessage(src, "Ongoing battles:", chan);
         sys.sendMessage(src, "", chan);
@@ -1223,7 +1243,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         sys.sendMessage(src, "", chan);
     }
 
-    if (objLength(idleBattles) > 0) {
+    if (!idleBattles.isEmpty()) {
         sys.sendMessage(src, "", chan);
         botMessage(src, "Yet to start battles:", chan);
         sys.sendMessage(src, "", chan);
@@ -1275,16 +1295,7 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
         this.remaining--;
     }
 
-    if (this.TourDisplay == this.Displays.Normal) {
-        this.border();
-        this.white();
-        botAll(player(target) + " was removed from the tournament by " + player(src) + "!", this.id);
-        this.white();
-        this.border();
-    }
-    else {
-        this.TourBox(player(target) + " was removed from the tournament by " + player(src) + "!");
-    }
+    this.TourBox(player(target) + " was removed from the tournament by " + player(src) + "!");
 
 
     if (this.tourmode == 2 && this.players[target].couplesid != -1) {
@@ -1334,26 +1345,14 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
     this.players[parts[1]].name = switchN;
     delete this.players[parts[0].toLowerCase()];
 
-    var spots = this.tourSpots();
+    var spots = this.tourSpots(),
+        message = [player(parts[0]) + " was switched with " + player(parts[1]) + " by " + player(src) + "!"];
 
-    if (this.TourDisplay == this.Displays.Normal) {
-        this.border();
-        this.white();
-        botAll(player(parts[0]) + " was switched with " + player(parts[1]) + " by " + player(src) + "!", this.id);
-        if (this.tourmode == 1) {
-            botAll(spot + " more " + s("spot", spots) + " left!", this.id);
-        }
-        this.white();
-        this.border();
+    if (this.tourmode == 1) {
+        message.push("<b>" + spots + "</b> more " + s("spot", spots) + " left!");
     }
-    else {
-        var spotsStr = "";
-        if (this.tourmode == 1) {
-            spotsStr = "<br><b>" + spots + "</b> more " + s("spot", spots) + " left!";
-        }
 
-        this.TourBox(player(parts[0]) + " was switched with " + player(parts[1]) + " by " + player(src) + "!" + spotsStr);
-    }
+    this.TourBox(message);
 }
 
 Tours.prototype.command_push = function (src, commandData, fullCommand) {
@@ -1388,29 +1387,16 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
 
     var name = commandData.name(),
         spots = this.tourSpots(),
-        me = player(src);
+        me = player(src),
+        message = [target + " was added to the tournament by " + me + "!"];
 
     this.buildHash(name);
 
-    if (this.TourDisplay == this.Displays.Normal) {
-        this.border();
-        this.white();
-        botAll(target + " was added to the tournament by " + me + "!", this.id);
-        if (this.tourmode == 1) {
-            botAll(spots + " more " + s("spot", spots) + " left!", this.id);
-        }
-        this.white();
-        this.border();
+    if (this.tourmode == 1) {
+        message.push("<b>" + spots + "</b> more " + s("spot", spots) + " left!");
     }
-    else {
-        var spotsStr = "";
 
-        if (this.tourmode == 1) {
-            spotsStr = "<br/><b>" + spots + "</b> more " + s("spot", spots) + " left!";
-        }
-
-        this.TourBox(target + " was added to the tournament by " + me + "!" + spotsStr);
-    }
+    this.TourBox(message);
 
     if (this.tourmode == 1 && spots == 0) {
         this.tourmode = 2;
@@ -1447,17 +1433,7 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
     delete this.roundStatus.startedBattles[bIndex];
 
     var target = player(startername);
-
-    if (this.TourDisplay == this.Displays.Normal) {
-        this.border();
-        this.white();
-        botAll(target + " can forfeit their battle and rematch now.", this.id);
-        this.white();
-        this.border();
-    }
-    else {
-        this.TourBox(target + " can forfeit their battle and rematch now.");
-    }
+    this.TourBox(target + " can forfeit their battle and rematch now.");
     return;
 }
 
@@ -1572,18 +1548,10 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
     this.remaining = count;
 
     var spots = sys.tourSpots(),
-        me = player(src);
-    if (this.TourDisplay == this.Displays.Normal) {
-        this.border();
-        this.white();
-        botAll(me + " changed the numbers of entrants to " + count + "!", this.id);
-        botAll(spots + " more " + s("spot", spots) + " left!", this.id);
-        this.white();
-        this.border();
-    }
-    else {
-        this.TourBox(me + " changed the numbers of entrants to " + count + "!<br/><b>" + spots + "</b> more " + s("spot", spots) + " left!");
-    }
+        me = player(src),
+        message = [me + " changed the numbers of entrants to " + count + "!", "<b>" + spots + "</b> more " + s("spot", spots) + " left!"];
+
+    this.TourBox(message);
 
     if (this.tourSpots() == 0) {
         this.tourmode = 2;
@@ -1603,16 +1571,7 @@ Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
         this.clearVariables();
 
         var me = player(src);
-        if (this.TourDisplay == this.Displays.Normal) {
-            this.border();
-            this.white();
-            botAll("The tournament has been ended by " + me + "!", this.id);
-            this.white();
-            this.border();
-        }
-        else {
-            this.TourBox("The tournament has been ended by " + me + "!");
-        }
+        this.TourBox("The tournament has been ended by " + me + "!");
         return;
     }
 
@@ -1666,13 +1625,6 @@ Tours.prototype.playerName = function (hash, hashno) {
     return "";
 }
 
-Tours.prototype.first = function (hash) {
-    var x;
-    for (x in hash) {
-        return hash[x];
-    }
-}
-
 Tours.prototype.teamWin = function () {
     var b = this.Blue,
         r = this.Red,
@@ -1706,18 +1658,14 @@ Tours.prototype.roundPairing = function () {
     this.roundnumber++;
     this.cleanRoundVariables();
 
-    if (objLength(this.players) == 1) {
-        this.border();
-        this.white();
-        var winner = this.first(this.players).name;
-        botAll("The winner of the " + this.tourtier + " tournament is " + winner + "!", this.id);
-        botAll("Congratulations, " + winner + ", on your success! ", this.id);
+    if (this.players.length() === 1) {
+        var winner = this.players.first().name,
+            message = ["The winner of the " + this.tourtier + " tournament is " + winner + "!", "Congratulations, " + winner + ", on your success!"];
         if (!isEmpty(this.prize)) {
-            botAll(winner + " will receive the tournament prize: " + this.prize + "!", this.id);
+            message.push("", winner + " will receive the tournament prize: " + this.prize + "!");
         }
-        this.white();
-        this.border();
-        this.white();
+
+        this.TourBox(message);
 
         if (this.id == 0) {
             var name = winner.toLowerCase();
@@ -1743,21 +1691,18 @@ Tours.prototype.roundPairing = function () {
         return;
     }
 
-    if (this.tagteam_tour()) {
+    if (this.tagteam_tour()) { // TODO: Improve in 3.0
         var winners = this.teamWin();
         if (winners.winners.length != 0 && winners.loser != "" && winners.losingteam != -1) {
             // We have winners!
-            var win = winners.winners.join(" and ");
-            this.border();
-            this.white();
-            botAll("The winners of the " + this.tourtier + " tournament are " + win + "!", this.id);
-            botAll("Congratulations, " + win + ", on your success! ", this.id);
+            var win = winners.winners.join(" and "),
+                message = ["The winners of the " + this.tourtier + " tournament are " + win + "!", "Congratulations, " + win + ", on your success!"];
+
             if (!isEmpty(this.prize)) {
-                botAll(win + " will receive the tournament prize: " + this.prize + "!", this.id);
+                message.push("", win + " will receive the tournament prize: " + this.prize + "!");
             }
-            this.white();
-            this.border();
-            this.white();
+
+            this.TourBox(message);
 
             if (this.id == 0) {
                 var z, ww = winners.winners,
@@ -1773,7 +1718,7 @@ Tours.prototype.roundPairing = function () {
                     if (money[name] == undefined) {
                         money[name] = 0;
                     }
-                    var randNum = sys.rand(500, 1001);
+                    var randNum = sys.rand(320, 751);
                     money[name] += randNum;
                     cache.write("money", JSON.stringify(DataHash.money));
 
@@ -1789,48 +1734,39 @@ Tours.prototype.roundPairing = function () {
     }
 
     var plr = this.players,
-        x;
+        x, message = [];
     for (x in plr) {
         if (plr[x] == "") {
             delete plr[x];
         }
     }
 
-    this.finals = objLength(this.players) == 2;
+    this.finals = this.players.length() === 2;
     if (!this.finals) {
-        this.border();
-        this.white();
-        botAll("Round " + this.roundnumber + " of the " + this.tourtier + " tournament", this.id);
+        message.push("Round " + this.roundnumber + " of the " + this.tourtier + " tournament:", "");
     }
     else {
-        this.border();
-        this.white();
-        botAll("Finals of the " + this.tourtier + " tournament", this.id);
+        message.push("Finals of the " + this.tourtier + " tournament:", "");
     }
 
-    this.white();
     var i = 0,
         tempplayers = {},
         x, p = this.players,
-        x1, name1, n1tl, x2, name2, n2tl;
+        x1, name1, n1tl, x2, name2, n2tl, a, team1, team2;
 
     for (x in p)
     tempplayers[x] = p[x];
 
-    var a;
-
     if (this.tagteam_tour()) {
-        var team = "<b><font color=blue>[Team Blue]</font></b>",
-            team2 = "<b><font color=red>[Team Red]</font></b>";
+        team = "<b><font color=blue>[Team Blue]</font></b>", team2 = "<b><font color=red>[Team Red]</font></b>";
     }
 
     else {
-        var team = "",
-            team2 = "";
+        team = "", team2 = "";
     }
 
     for (a in tempplayers) {
-        if (objLength(tempplayers) == 1) {
+        if (tempplayers.length() === 1) {
             break;
         }
 
@@ -1870,47 +1806,49 @@ Tours.prototype.roundPairing = function () {
         i++;
 
         if (!this.finals) {
-            botAll(i + ". " + team + name1 + " VS " + team2 + name2, this.id);
+            message.push(i + ". " + team + name1 + " VS " + team2 + name2);
         }
         else {
-            botAll(team + name1 + " VS " + team2 + name2, this.id);
+            message.push(team + name1 + " VS " + team2 + name2);
         }
     }
 
-    this.white();
+    message.push("");
+
     if (objLength(tempplayers) > 0) {
-        botAll(this.first(tempplayers).name + " is randomly selected to go to next round!", this.id);
-        this.white();
+        message.push(tempplayers.first().name + " is randomly selected to go to next round!", "");
     }
 
-    this.border();
-    this.white();
+    this.TourBox(message);
+
     if (this.AutoStartBattles) {
-        var t, p, op, meteams, oppteams;
-        for (t in this.couples) {
-            p = this.couples[t][0].toLowerCase(), op = this.couples[t][1].toLowerCase();
-            if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
-                meteams = firstTeamForTier(sys.id(p), this.tourtier);
-                oppteams = firstTeamForTier(sys.id(op), this.tourtier);
-                if (meteams != -1 && oppteams != -1) {
-                    if (!this.ongoingTourneyBattle(p) && !this.ongoingTourneyBattle(op)) {
-                        sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(this.tourtier), 0, false);
-                        this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [p.name(), op.name()];
+        sys.quickCall(function run_autostartbattles() {
+            var t, p, op, meteams, oppteams, couples = this.couples;
+            for (t in couples) {
+                p = couples[t][0].toLowerCase(), op = couples[t][1].toLowerCase();
+                if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
+                    meteams = firstTeamForTier(sys.id(p), this.tourtier);
+                    oppteams = firstTeamForTier(sys.id(op), this.tourtier);
+                    if (meteams != -1 && oppteams != -1) {
+                        if (!this.ongoingTourneyBattle(p) && !this.ongoingTourneyBattle(op)) {
+                            sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(this.tourtier), 0, false);
+                            this.roundStatus.ongoingBattles[this.roundStatus.ongoingBattles.length()] = [p.name(), op.name()];
+                        }
                     }
                 }
             }
-        }
+        }, 2500);
     }
 }
 
 Tours.prototype.isInTourney = function (name) {
     var name2 = name.toLowerCase();
-    return name2 in this.players;
+    return this.players.has(name2);
 }
 
 Tours.prototype.isInTourneyId = function (id) {
     var name = sys.name(id).toLowerCase();
-    return name in this.players;
+    return this.players.has(name);
 }
 
 Tours.prototype.tourOpponent = function (nam) {
@@ -1927,8 +1865,7 @@ Tours.prototype.tourOpponent = function (nam) {
         namenum = 0;
     }
 
-    var opp = this.couples[id][namenum];
-    return opp;
+    return this.couples[id][namenum];
 }
 
 Tours.prototype.areOpponentsForTourBattle = function (src, dest) {
@@ -1959,7 +1896,7 @@ Tours.prototype.afterBattleStarted = function (src, dest, clauses, rated, srctea
                         botAll("Round " + this.roundnumber + " tournament match between " + n1 + " and " + n2 + " has started!", this.id);
                     }
                     else {
-                        botAll("Final Round tournament match between " + n1 + " and " + n2 + " has started!", this.id);
+                        botAll("Final round tournament match between " + n1 + " and " + n2 + " has started!", this.id);
                     }
                 } else {
                     botMessage(src, "Your or your opponents team does not match the tournament tier (the match is not official).");
@@ -1975,7 +1912,7 @@ Tours.prototype.afterBattleStarted = function (src, dest, clauses, rated, srctea
                     botAll("Round " + this.roundnumber + " tournament match between " + n1 + " and " + n2 + " has started!", this.id);
                 }
                 else {
-                    botAll("Final Round tournament match between " + n1 + " and " + n2 + " has started!", this.id);
+                    botAll("Final round tournament match between " + n1 + " and " + n2 + " has started!", this.id);
                 }
             }
         }
@@ -2023,7 +1960,8 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
     }
 
     var srcTL = src.toLowerCase(),
-        destTL = dest.toLowerCase();
+        destTL = dest.toLowerCase(),
+        message = [];
 
     if (this.battlemode == 1 || this.battlemode == 4 || rush) {
         var stuff = this.roundStatus,
@@ -2041,22 +1979,14 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
         this.players[srcTL].roundwins = 0;
         this.remaining--;
 
-        this.border();
-        this.white();
-        botAll(src + " advances to the next round of the tournament.", this.id);
-        botAll(dest + " is out of the tournament.", this.id);
-        this.white();
+        message.push(src + " advances to the next round of the tournament.", dest + " is out of the tournament.");
 
-        var couplesLen = objLength(this.couples);
+        var couplesLen = this.couples.length();
         if (couplesLen > 0) {
-            botAll(couplesLen + " " + s("battle", couplesLen) + " remaining.", this.id);
-            this.white();
-            this.border();
-            return;
+            message.push("", couplesLen + " " + s("battle", couplesLen) + " remaining.");
+        } else {
+            this.roundPairing();
         }
-        this.border();
-        this.white();
-        this.roundPairing();
     }
     else if (this.battlemode == 2 || this.battlemode == 3 || this.battlemode == 5 || this.battlemode == 6) {
         this.players[srcTL].roundwins++;
@@ -2090,37 +2020,29 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
             }
 
             var stuff = this.roundStatus,
-                stuffSBIndex = this.isBattling(src);
+                stuffSBIndex = this.isBattling(src),
+                winner = this.players[winnerTL];
 
-            stuff.winLose[objLength(stuff.winLose)] = [src, dest];
+            stuff.winLose[stuff.winLose.length()] = [src, dest];
             if (stuffSBIndex !== false) {
                 delete stuff.ongoingBattles[stuffSBIndex];
             }
 
             delete this.players[loserTL];
-            delete this.couples[this.players[winnerTL].couplesid];
-            this.players[winnerTL].couplesid = -1;
-            this.players[winnerTL].couplenum = -1;
-            this.players[winnerTL].roundwins = 0;
+            delete this.couples[winner.couplesid];
+            winner.couplesid = -1;
+            winner.couplenum = -1;
+            winner.roundwins = 0;
             this.remaining--;
 
-            this.border();
-            this.white();
-            botAll(winner + " advances to the next round of the tournament.", this.id);
-            botAll(loser + " is out of the Tournament.", this.id);
-            this.white();
+            message.push(winner + " advances to the next round of the tournament.", loser + " is out of the tournament.");
 
-            var couplesLen = objLength(this.couples);
+            var couplesLen = this.couples.length();
             if (couplesLen > 0) {
-                botAll(couplesLen + " " + s("battle", couplesLen) + " remaining.", this.id);
-                this.white();
-                this.border();
-                return;
+                message.push("", couplesLen + " " + s("battle", couplesLen) + " remaining.");
+            } else {
+                this.roundPairing();
             }
-
-            this.border();
-            this.white();
-            this.roundPairing();
         }
         else {
             var sid = sys.id(src),
@@ -2131,6 +2053,8 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
             sys.forceBattle(sid, did, sys.getClauses(this.tourtier), 0, false);
         }
     }
+
+    this.TourBox(message);
 }
 
 Tours.prototype.tourSpots = function () {
@@ -14610,7 +14534,7 @@ if(message == "Maximum Players Changed.") {
         var version = "2012-08-13.1";
 
         createFile(Config.Mafia.stats_file, "[]");
-		createFile("mafialogs.txt", "[]");
+        createFile("mafialogs.txt", "[]");
 
         function Mafia(mafiachan) {
             // Remember to update this if you are updating mafia
