@@ -2452,20 +2452,6 @@ Object.defineProperty(Object.prototype, "contains", {
 
 Object.defineProperty(Object.prototype, "insert", {
     "value": function (name, val) {
-        if (!this.has(name)) {
-            this[name] = val;
-            return;
-        }
-
-        if (typeof val == "object" && !Array.isArray(val) && val !== null) {
-            var x;
-            for (x in val) {
-                this[name][x] = val[x];
-            }
-
-            return;
-        }
-
         this[name] = val;
     },
 
@@ -2608,7 +2594,6 @@ JSESSION.refill();
 
         run("loadTemplateUtility");
         run("loadIfyUtility");
-        run("loadDataImportUtility");
         run("loadCommandStatsUtility");
 
         poGlobal = JSESSION.global();
@@ -3091,12 +3076,6 @@ Trivia.start();
             print("<< " + result);
             return;
         }
-
-        if (message.toLowerCase() == "~~server~~: !importdata") {
-            ImportData();
-            sys.stopEvent();
-            return;
-        }
 /*
         if (message.substr(0, 2) != "[#") {
             if (/Script Error line \d+:/.test(message)) {
@@ -3136,11 +3115,6 @@ if(message == "Maximum Players Changed.") {
             }
 
             ScriptUpdateMessage();
-
-
-            if (startingUp) {
-                print("Type !importdata to import data from other scripts. This feature doesn't work with every script yet.");
-            }
 
             RECOVERY_BACKUP = {};
             for (var x in script) {
@@ -3622,7 +3596,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register(removespaces(OwnerName).toLowerCase() + "commands", "Displays the " + OwnerName + " commands.");
                     }
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -3639,7 +3612,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register("unify", "Changes everyones name back.");
                     }
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -3653,7 +3625,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register("activestyle", ["{p Style}"], "Makes a style active.");
                     }
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -3668,7 +3639,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register("activeicons", ["{p Icons}"], "Makes a rank icon pack active.");
                     }
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 /*
@@ -3696,7 +3666,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register("remove", ["{p Question}"], "Deletes a question.");
                     }
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },*/
 
@@ -3718,7 +3687,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register("sudo", ["{r Player}", "{p Channel Name}", "{p Message}"], "Make Player say Message in Channel Name. Can be commands etc. too.");
                     }
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -3729,7 +3697,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register('sendmail', ["{or Person}", "{p Title}", "{p Text}"], "Sends mail to someone! Text and Title may contain BB Code.", chan);
                     ct.register('deletesent', 'Removes all your sent mails.');
                     ct.register('sentmails', 'Displays your sent mails.');
-                    ct.register(style.footer);
+
                     ct.render(src, chan);
                 },
 
@@ -3760,7 +3728,6 @@ if(message == "Maximum Players Changed.") {
 
                     ct.register("bbcodes", "Displays a list of BB Codes that you can use.");
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -3783,7 +3750,6 @@ if(message == "Maximum Players Changed.") {
                         t.register(arg("blueviolet", "Specify a time unit that starts with the following: s (second), m (minute), h (hour), d (day), w (week), mo (month), y (year), de (decade). The default is minutes if none specified"));
                         t.register(arg("green", "Specify a player in the channels tournament") + "<br/>");
                         t.register("Any argument with an <u>underline</u> is optional.");
-                        t.register(style.footer);
 
                         t.render(src, chan);
                         return;
@@ -3793,7 +3759,7 @@ if(message == "Maximum Players Changed.") {
                     var t = new Templater("Help");
                     t.register("<b>The following help topics are available:</b><br/>");
                     t.register("- arguments: Help for command arguments.");
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -3831,7 +3797,6 @@ if(message == "Maximum Players Changed.") {
                         t.register(formatEvalBB("[eval]sys.name(src)[/eval]", "sys.name(src)"));
                     }
 
-                    t.register(style.footer);
                     t.render(src, chan);
                 },
 
@@ -3880,7 +3845,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<br><b><font color=blueviolet>Total Number of Channels:</b></font> " + channels.length);
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -3901,7 +3866,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<br><b><font color=blueviolet>Total Number of Players:</b></font> " + sys.numPlayers());
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -3951,7 +3916,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<br><b><font color=blueviolet>Total Number of Tournaments:</b></font> " + count);
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -4000,7 +3965,6 @@ if(message == "Maximum Players Changed.") {
                         t.register(playerInfo(cha));
                     }
 
-                    t.register(style.footer);
                     t.render(src, chan);
                 },
 
@@ -4213,7 +4177,6 @@ if(message == "Maximum Players Changed.") {
                     t.register("Styles and Rank Icons created by <b>Lutra</b>, <b>Intel_iX</b>, <b>person6445</b>, <b>Rigas</b>.");
                     t.register("<small>Thanks to the PO Dev Team for making Pokemon Online!</small>");
 
-                    t.register(style.footer);
                     t.render(src, chan);
                 },
 
@@ -4279,7 +4242,6 @@ if(message == "Maximum Players Changed.") {
                         t.register("The Clan tag is " + ClanTag.bold() + ".");
                     }
 
-                    t.register(style.footer);
                     t.render(src, chan);
                 },
 
@@ -4304,7 +4266,6 @@ if(message == "Maximum Players Changed.") {
                     t.register("<br/><b>If the server authority think it is necessary to punish someone, then they are allowed to do so. Report them to higher powers if you think you have been abused.</b>");
                     t.register("The server authority <u>do not</u> have to apply these rules.");
 
-                    t.register(style.footer);
                     t.render(src, chan);
                 },
 
@@ -4326,7 +4287,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of " + sLetter(Tour1) + ":</font></b> " + count);
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -4421,7 +4382,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<b><font color=blueviolet>Total Number of Authorities:</font></b> " + sendAuthLength(src));
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -4443,7 +4404,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of Auto Idles:</font></b> " + count);
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -4465,7 +4426,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of Voices:</font></b> " + count);
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -4487,7 +4448,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of Eval Operators:</font></b> " + count);
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -5307,7 +5268,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("imp", ["{p Thing}"], "Impersonates something.");
                     ct.register("impoff", "Deletes your impersonation.");
                 }
-                ct.register(style.footer);
+
                 ct.render(src, chan);
             }
 
@@ -5421,7 +5382,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register(removespaces(ChanOwner).toLowerCase(), ["{or Person}"], "Makes someone " + ChanOwner + " in this channel.");
                     }
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -5443,7 +5403,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<br/><b><font color=blueviolet>Total Number of " + sLetter(ChanTour1) + ":</font></b> " + count);
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -5492,7 +5452,6 @@ if(message == "Maximum Players Changed.") {
 
                     t.register("The channel name is " + poChan.name.bold().fontcolor("red") + ".");
 
-                    t.register(style.footer);
                     t.render(src, chan);
                 },
 
@@ -5562,7 +5521,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.register("<b><font color=blueviolet>Total Number of Channel Authorities:</b></font> " + authTotal);
-                    t.register(style.footer);
+
                     t.render(src, chan);
                 },
 
@@ -6344,7 +6303,6 @@ if(message == "Maximum Players Changed.") {
                         ct.span("Tournament " + Tour1 + " Commands");
                     }*/
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -6436,8 +6394,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register("evalunlock", "Unlocks eval.");
                     }
 
-
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -6467,7 +6423,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register("rangeunban", ["{p RangeIP}"], "Removes a rangeban.");
                     }
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -6484,7 +6439,6 @@ if(message == "Maximum Players Changed.") {
                     ct.register("superimp", ["{p Thing}"], "Changes your name to ~<b>Thing</b>~.");
                     ct.register("superimpoff", "Restores your name.");
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
 
@@ -6506,7 +6460,7 @@ if(message == "Maximum Players Changed.") {
                         ct.span("Silence " + OwnerName + " Commands");
                         ct.register("megasilence", ["<u>{o Time}</u>"], "Silences the chat for " + sLetter(UserName) + ", " + sLetter(ModName) + " and " + sLetter(AdminName) + ". Time goes in minutes.");
                     }
-                    ct.register(style.footer);
+
                     ct.render(src, chan);
                 },
 
@@ -7295,7 +7249,6 @@ if(message == "Maximum Players Changed.") {
                 ct.register("aliases", ["{p IP}"], "Displays Aliases of an IP.");
                 ct.register("hostname", ["{or Person}"], "Displays the hostname of someone.");
                 ct.register("passauth", ["{or Person}"], "Passes your auth to another alias. The alias must be registered and under your ip.");
-                ct.register(style.footer);
                 ct.render(src, chan);
             }
 
@@ -7309,7 +7262,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("removegl", ["{o Number}"], "Removes a gym Leader from the league. Number can be 1-16.");
                     ct.register("removeelite", ["{o Number}"], "Removes an elite four from the league. Number can be 1-4.");
                     ct.register("removechampion", "Removes the champion from the league.");
-                    ct.register(style.footer);
+
                     ct.render(src, chan);
                 },
 
@@ -7335,7 +7288,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register("evalop", ["{or Person}"], "Makes someone an Eval Operator. Eval Ops can use eval unregarding their auth, and can eval it is locked.");
                     }
 
-                    ct.register(style.footer);
                     ct.render(src, chan);
                 },
                 /* */
@@ -7824,7 +7776,6 @@ if(message == "Maximum Players Changed.") {
                 ct.register("autoidle", ["{or Name}", "<u>{p Entrymsg}</u>"], "Automatically idles someone with an optional entry message displayed when Name logs on. Also works when you only want to change the entry message.");
                 ct.register("autoidleoff", ["{p Name}"], "Removes Name's Auto-Idle.");
 
-                ct.register(style.footer);
                 ct.render(src, chan);
             }
 
@@ -7968,7 +7919,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("exportplayers", "Exports the all players in the database to members.txt.");
                     ct.register("deleteplayer", ["{or Person}"], "Erases someone from the players database.");
                     ct.register("db", "Displays all players in the players database.");
-                    ct.register(style.footer);
+
                     ct.render(src, chan);
                 },
 
@@ -7980,7 +7931,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("messagelimit", ["{o Number}"], "Sets a character limit for players under " + AdminName + " authority.");
                     ct.register("autokick", "Toggles automatic kicks.");
                     ct.register("automute", "Toggles automatic mutes.");
-                    ct.register(style.footer);
+
                     ct.render(src, chan);
                 },
 
@@ -7990,7 +7941,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("public", "Makes the server public.");
                     ct.register("private", "Makes the server private.");
                     ct.register("allowchannels", "Toggles allowance of creation of non-script channels.");
-                    ct.register(style.footer);
+
                     ct.render(src, chan);
                 },
 
@@ -8000,7 +7951,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("getannouncement", "Displays the raw announcement.");
                     ct.register("changeannouncement", ["{p Text}"], "Changes the announcement.");
                     ct.register("testannouncement", ["{p Text}"], "Changes the announcement for you only (useful when testing).");
-                    ct.register(style.footer);
+
                     ct.render(src, chan);
                 },
 
@@ -8013,7 +7964,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("banfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Bans an ability on a pokemon.");
                     ct.register("unbanfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Unbans an ability on a Pokemon.");
                     ct.register("listbans", "Displays all banned abilities.");
-                    ct.register(style.footer);
+
                     ct.render(src, chan);
                 },
 
@@ -9003,7 +8954,7 @@ if(message == "Maximum Players Changed.") {
                 ct.register("randomspam", ["{o Number}"], "Spams the chat with random messages.");
                 ct.register("resetcommandstats", "Resets command stats.");
                 ct.register("recreate", ["{p <u>Type</u>}"], "Resets JSESSION data and refills. Types can be: Channels, Global, Tours, Users, All. Default is All.");
-                ct.register(style.footer);
+
                 ct.render(src, chan);
             }
 
@@ -10283,7 +10234,6 @@ if(message == "Maximum Players Changed.") {
             }
         }
 
-        t.register(style.footer);
         t.render(src, chan, "<br/>");
     },
 
@@ -12084,286 +12034,6 @@ if(message == "Maximum Players Changed.") {
         }
     },
 
-    loadDataImportUtility: function () {
-        ImportData = function () {
-            print("Starting import.");
-/* Lutra is developing new scripts.
-            var _GLOBAL = this;
-            var regValCache = {};
-
-            var readVal = function (val) {
-                if (regValCache.has(val)) return regValCache[val];
-
-                var vald = sys.getVal(val);
-                regValCache[val] = vald;
-                return vald;
-            }
-
-            var valSet = function (val) {
-                return readVal(val) != "";
-            }
-
-            var isVar = function (v) {
-                return typeof _GLOBAL[v] != 'undefined';
-            }
-
-            var toCache = function (globalVar, LutraValName) {
-                var cName = LutraValName;
-
-                if (LutraValName.contains("ChannelTour")) cName = "ChanTour" + Number(LutraValName) + "Name";
-                else if (LutraValName.contains("Tour")) cName = "TourLevel" + Number(LutraValName) + "Name";
-                else if (LutraValName.contains("Channel")) cName = "ChanLevel" + Number(LutraValName) + "Name";
-
-                var p = "Authority_Options_";
-                if (valSet(p + LutraValName)) {
-                    print("Modified " + globalVar + " to " + readVal(p + LutraValName));
-
-                    _GLOBAL[globalVar] = readVal(p + LutraValName);
-                    cache.write(cName, readVal(p + LutraValName));
-                }
-            }
-
-            var set = valSet,
-                get = readVal,
-                v = isVar,
-                c = toCache;
-
-            var date = new Date(get("Script_Options_RegisteredDate"));
-            var date2 = new Date(cache.get("Script_Registered"));
-            if (set("Script_Options_RegisteredDate") && date.getTime() > date2.getTime()) {
-                cache.write("Script_Registered", get("Script_Options_RegisteredDate"));
-                print("Changed script registered date.");
-            }
-
-            if (v("silence") && typeof silence == "number") {
-			var old_silence = silence;
-			silence = {"by": silencer, "level": old_silence};
-                botAll("Modified silence level to " + old_silence + ".", 0);
-            }
-
-            if (set("RangeBanEx_List")) {
-                var rbEx = {};
-
-                try {
-                    rbEx = JSON.parse(get("RangeBanEx_List"));
-                }
-                catch (e) {
-                    rbEx = {};
-                }
-
-                var dhr = DataHash.rangebans,
-                    x;
-                for (x in rbEx) {
-                    if (!DataHash.rangebans.has(rbEx[x])) {
-                        DataHash.rangebans[rbEx[x]] = {
-                            by: "Data Import",
-                            why: "Unknown",
-                            ip: rbEx[x],
-                            time: 0
-                        };
-                        print("Imported rangeban for subip " + rbEx[x]);
-                    }
-                }
-            }
-
-            if (set("MuteEx_List")) {
-                var mEx = {};
-
-                try {
-                    mEx = JSON.parse(get("MuteEx_List"));
-                }
-                catch (e) {
-                    mEx = {};
-                }
-
-                var dhm = DataHash.mutes,
-                    x;
-                for (x in dhm) {
-                    if (!DataHash.mutes.has(mEx[x])) {
-                        DataHash.mutes[mEx[x]] = {
-                            by: "Data Import",
-                            why: "Unknown",
-                            ip: mEx[x],
-                            time: 0
-                        };
-                        print("Imported mute for ip " + mEx[x]);
-                    }
-                }
-            }
-
-
-            if (set("AntiMember_List")) {
-                var ipData = get("AntiMember_List"),
-                    x;
-                for (x in ipData) {
-                    DataHash.names[x] = ipData[x];
-                }
-                print("IPs imported.");
-            }
-
-            if (v("members")) {
-                var mem = members,
-                    x;
-                for (x in mem) {
-                    DataHash.names[x] = mem[x];
-                }
-                print("Player names imported.");
-            }
-
-            c(UserName, "AuthLevel0Name");
-            c(ModName, "AuthLevel1Name");
-            c(AdminName, "AuthLevel2Name");
-            c(OwnerName, "AuthLevel3Name");
-
-            c(ChanUser, "ChannelAuthLevel0Name");
-            c(ChanMod, "ChannelAuthLevel1Name");
-            c(ChanAdmin, "ChannelAuthLevel2Name");
-            c(ChanOwner, "ChannelAuthLevel3Name");
-
-            c(Tour0, "TourAuthLevel0Name");
-            c(Tour1, "TourAuthLevel1Name");
-
-            c(ChanTour0, "ChannelTourAuthLevel0Name");
-            c(ChanTour1, "ChannelTourAuthLevel1Name");
-
-            if (set("Server_Topic")) {
-                var SERVER_TOPIC_LUTRA = get("Server_Topic");
-                motd = true;
-                cache.write("MOTDMessage", SERVER_TOPIC_LUTRA);
-                print("Changed MOTD to " + SERVER_TOPIC_LUTRA);
-            }
-
-            if (set("Future_Limit")) {
-                var FUTURE_LIMIT = Number(get("Future_Limit"));
-                cache.write("FutureLimit", FUTURE_LIMIT);
-                FutureLimit = FUTURE_LIMIT;
-                print("Changed future limit to " + FUTURE_LIMIT);
-            }
-
-            if (set("Player_Record")) {
-                var Player_Record = get("Player_Record");
-                if (Player_Record > maxPlayersOnline) {
-                    maxPlayersOnline = Player_Record;
-                    cache.write("MaxPlayersOnline", Player_Record);
-                    print("Max number of players online is now " + Player_Record);
-                }
-            }
-
-            if (v("shutdown")) {
-                shutdown = false;
-                botAll("Shutdown timer ended.", 0);
-            }
-
-            if (v("commands")) {
-                delete commands;
-            }
-
-            if (v("helpers")) {
-                delete helpers;
-            }
-
-            if (v("commandassists")) {
-                delete commandassists;
-            }
-
-            if (v("commanddescriptions")) {
-                delete commanddescriptions;
-            }
-			*/
-
-            function MemoryHash(filename) {
-                this.hash = {};
-                this.fname = filename;
-                this.invalid = false;
-
-                var contents = sys.getFileContent(this.fname);
-                if (contents !== undefined) {
-                    var lines = contents.split("\n");
-                    for (var i = 0; i < lines.length; ++i) {
-                        var line = lines[i];
-                        var key_value = line.split("*");
-                        var key = key_value[0];
-                        var value = key_value[1];
-                        if (key.length > 0) {
-                            if (value === undefined) value = '';
-                            this.hash[key] = value;
-                        }
-                    }
-                }
-                else {
-                    this.invalid = true;
-                }
-            }
-
-            MemoryHash.prototype.toString = function () {
-                return this.invalid;
-            }
-
-            var POMutes = new MemoryHash('mutes.txt');
-
-            if (!POMutes.toString()) {
-                print("Aborted PO Data import.");
-            }
-            else {
-
-                var POMBans = new MemoryHash("mbans.txt");
-                var PORangeBans = new MemoryHash("rangebans.txt");
-                var POMU = get("megausers").split("*");
-
-                var poMuteHash = POMutes.hash,
-                    y, x, poRangeHash = PORangeBans.hash;
-
-                for (y in poMuteHash) {
-                    x = poMuteHash[y].split(":");
-                    if (!DataHash.mutes.has(y) || DataHash.mutes[y].time < x[1] * 1) {
-                        DataHash.mutes[y] = {
-                            by: x[1],
-                            why: x[4],
-                            ip: y,
-                            time: x[1] * 1
-                        };
-                        print("Added mute for IP " + y);
-                    }
-                }
-
-                for (y in poRangeHash) {
-                    x = poRangeHash[y];
-                    if (!DataHash.rangebans.has(y)) {
-                        DataHash.rangebans[y] = {
-                            by: "Data Import",
-                            why: x,
-                            ip: y,
-                            time: 0
-                        };
-                        print("Added rangeban for subip " + y);
-                    }
-                }
-
-                for (y in POMU) {
-                    x = POMU[y].toLowerCase();
-                    if (!DataHash.megausers.has(x) && sys.dbIp(x) != undefined) {
-                        DataHash.megausers[x] = {
-                            "name": x.name()
-                        };
-                        print("Added " + Tour1 + " for " + x.name() + ".");
-                    }
-                }
-
-                if (set("MaxPlayersOnline")) {
-                    var MPO = get("MaxPlayersOnline");
-                    if (MPO > maxPlayersOnline) {
-                        maxPlayersOnline = MPO;
-                        cache.write("MaxPlayersOnline", MPO);
-                        print("Max number of players online is now " + MPO);
-                    }
-                }
-            }
-
-            delete MemoryHash;
-            print("Finished importing!");
-        }
-    },
-
     loadPrune: function () {
         Prune = new(function () {
             this.tempAuth = function () {
@@ -12682,6 +12352,7 @@ if(message == "Maximum Players Changed.") {
         }
 
         Command_Templater.prototype.render = function (id, chan) {
+            this.template.push(style.footer);
             return sys.sendHtmlMessage(id, this.template.join('<br/>'), chan);
         }
 
@@ -12717,6 +12388,7 @@ if(message == "Maximum Players Changed.") {
         }
 
         Templater.prototype.render = function (id, chan) {
+            this.register(style.footer);
             return sys.sendHtmlMessage(id, this.template.join('<br/>'), chan);
         }
 
@@ -12745,7 +12417,7 @@ if(message == "Maximum Players Changed.") {
             this.template.push("</table><br/>", style.footer);
             sys.sendHtmlMessage(id, this.template.join(''), chan);
 
-            if (ChatColorRandomizers.has(chan)) { // Tables reset
+            if (ChatColorRandomizers.has(chan)) { // Tables reset fix
                 var index = ChatColorRandomizers[chan],
                     code = '<div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
 
@@ -13550,7 +13222,6 @@ if(message == "Maximum Players Changed.") {
                     t.register("<br/> Smeargle learns all moves except Chatter and Transform.");
                 }
 
-                t.register(style.footer);
                 if (!source) {
                     t.render(src, chan);
                     return;
