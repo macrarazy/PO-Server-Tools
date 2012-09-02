@@ -5,15 +5,14 @@ if (hasCommandStart(message) && message.length > 1 && !ignoreCommandStart(messag
     sys.stopEvent();
 
     var command = {},
-        commandName, fullCommand, data = "";
-    mcmd = [""], pos = message.indexOf(' '),
+        commandName, fullCommand, data = "",
+		pos = message.indexOf(' '),
 
     if (pos != -1) {
         fullCommand = message.substring(1, pos);
         commandName = fullCommand.toLowerCase();
 
         data = message.substr(pos + 1);
-        mcmd = commandData.split(':');
     }
     else {
         fullCommand = message.substring(1);
@@ -82,60 +81,7 @@ if (hasCommandStart(message) && message.length > 1 && !ignoreCommandStart(messag
         return;
     }
 
-    // Construct command - TODO: Add these ontop of beforeChatMessage (the variables)?
-    command = {
-        "src": src,
-        "self": self,
-        "selfLower": selfLower,
-        "selfPlayer": player(src),
-        "user": JSESSION.users(src),
-        "auth": totalAuth,
-
-        "data": data,
-        "dataLower": data.toLowerCase(),
-
-        "chan": chan,
-        "channel": JSESSION.channels(chan),
-
-        "mcmd": mcmd,
-
-        "tar": sys.id(mcmd[0]),
-        "tarName": sys.name(tar),
-        "tarLower": tarName.toLowerCase(),
-        "tarPlayer": player(tar),
-        "target": JSESSION.users(tar),
-        "ip": sys.dbIp(mcmd[0]),
-
-        "command": commandName,
-        "fullCommand": fullCommand,
-
-        "escape": html_escape,
-
-        "sendMessage": function (message) {
-            botMessage(src, message, chan);
-        },
-        "sendAll": function (message) {
-            botAll(message, chan);
-        },
-        "sendOthers": function (message) {
-            botAllExcept(src, message, chan, botAllExcept.Normal);
-        },
-
-        "sendWhite": function () {
-            sys.sendMessage(src, "", chan);
-        },
-        "sendWhiteAll": function () {
-            sys.sendAll("", chan);
-        },
-
-        "sendMain": function (message) {
-            botAll(message, 0);
-        },
-
-        nativeSend: sys.sendAll,
-        nativeHtml: sys.sendHtmlAll
-
-    };
+    command = getFullInfo(src, data, chan, {"command": commandName, "fullCommand": fullCommand});
 	
     if (command != "spam") {
         CommandStats.write(fullCommand.toLowerCase(), sys.name(src));
