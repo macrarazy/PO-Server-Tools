@@ -69,7 +69,7 @@
 \*===========================================================*/
 
 EvaluationTimeStart = new Date().getTime(); /* Do not modify this! This is only to count load speed! */
-ScriptVerData = ["2.2.60", ""];
+Version = "2.6.0";
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
@@ -93,24 +93,9 @@ Config = {
         "This gives Administrator Auth to a Moderator.": [1, 2],
         "Don't forget the commas and collons.": [1, 2]
     }
-}
+};
 
-// Beyond this, you should not edit anything if you don't know what you're doing!
-VERSION = function (v, data) {
-    this.version = v;
-    if (data == null || typeof data != "string") {
-        data = "";
-    }
-
-    this.additionalData = data;
-}
-
-VERSION.prototype.toString = function () {
-    return this.version + " " + this.additionalData;
-}
-
-ScriptVersion = new VERSION(ScriptVerData[0], ScriptVerData[1]);
-
+// Beyond this, you should not edit anything if you don't know what you're doing! //
 /** RECOVERY **/
 RECOVERY_BACKUP = {};
 
@@ -118,13 +103,10 @@ if (typeof script != "undefined") {
     for (var x in script) {
         RECOVERY_BACKUP[x] = script[x];
     }
-    if (typeof x !== "undefined") {
-        delete x;
-    }
 }
 
 /** DEFAULT VALUES **/
-if (typeof Bot == 'undefined') {
+if (typeof Bot == "undefined") {
     Bot = {
         bot: "~Server~",
         botcolor: "red"
@@ -133,7 +115,7 @@ if (typeof Bot == 'undefined') {
 
 /*** BOTS ***/
 botEscapeMessage = function (src, message, channel) {
-    if (typeof Bot == 'undefined') {
+    if (typeof Bot == "undefined") {
         return;
     }
 
@@ -146,10 +128,10 @@ botEscapeMessage = function (src, message, channel) {
     else {
         sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + html_escape(message));
     }
-}
+};
 
 botMessage = function (src, message, channel) {
-    if (typeof Bot == 'undefined') {
+    if (typeof Bot == "undefined") {
         return;
     }
 
@@ -162,10 +144,10 @@ botMessage = function (src, message, channel) {
     else {
         sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message);
     }
-}
+};
 
 botEscapeAll = function (message, channel) {
-    if (typeof Bot == 'undefined') {
+    if (typeof Bot == "undefined") {
         return;
     }
 
@@ -178,7 +160,7 @@ botEscapeAll = function (message, channel) {
     else {
         sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + html_escape(message));
     }
-}
+};
 
 botAll = function (message, channel) {
     if (typeof Bot == 'undefined') {
@@ -194,20 +176,20 @@ botAll = function (message, channel) {
     else {
         sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message);
     }
-}
+};
 
 teamAlert = function (src, team, message) {
     botMessage(src, "Team #" + (team + 1) + ": " + message);
-}
+};
 
 /* Invalid Command Messages */
 invalidCommandMessage = function (src, command, chan) {
     botEscapeMessage(src, "The command " + command + " doesn't exist.", chan);
-}
+};
 
 noPermissionMessage = function (src, command, chan) {
     botEscapeMessage(src, "You may not use the " + command + " command.", chan);
-}
+};
 
 FormatError = function (mess, e) {
     if (typeof mess != "string") {
@@ -216,7 +198,7 @@ FormatError = function (mess, e) {
 
     var lastChar = mess[mess.length - 1],
         lineData = "";
-    if (mess != "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
+    if (mess !== "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
         mess += ".";
     }
 
@@ -230,15 +212,16 @@ FormatError = function (mess, e) {
 
     var name = e.name,
         msg = e.message,
-        str = name + lineData + ": " + msg,
-        lastChar = msg[msg.length - 1];
+        str = name + lineData + ": " + msg;
 
-    if (lastChar != "." && lastChar != "?" && lastChar != ":" && lastChar != "!") {
+    lastChar = msg[msg.length - 1];
+
+    if (lastChar !== "." && lastChar !== "?" && lastChar !== ":" && lastChar !== "!") {
         str += ".";
     }
 
     return mess + " " + str;
-}
+};
 
 ChannelLink = function (channel) {
     if (sys.channelId(channel) == undefined) {
@@ -246,18 +229,19 @@ ChannelLink = function (channel) {
     }
 
     return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
-}
+};
 
 ChannelNames = function () {
     var channelIds = sys.channelIds(),
         channelNames = [],
         x;
+
     for (x in channelIds) {
         channelNames.push(sys.channel(channelIds[x]));
     }
 
     return channelNames;
-}
+};
 
 addChannelLinks = function (str) {
     var channelNames = ChannelNames(),
@@ -269,20 +253,19 @@ addChannelLinks = function (str) {
     }
 
     return str;
-}
+};
 
-var capsMessage = function (mess) {
+capsMessage = function (mess) {
     return /[QWERTYUIOPASDFGHJKLZXCVBNM]/.test(mess);
-}
+};
 
-var normalLetter = function (l) {
+normalLetter = function (l) {
     return /[qwertyuiopasdfghjklzxcvbnm]/.test(l);
-}
+};
 
 fileLen = function (file) {
-    var f = sys.getFileContent(file).length;
-    return f;
-}
+    return sys.getFileContent(file).length;
+};
 
 sTB = function (bytes) {
     var sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -294,7 +277,7 @@ sTB = function (bytes) {
         return (bytes / Math.pow(1024, i)) + ' ' + sizes[i];
     }
     return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
-}
+};
 
 clearlogs = function () {
     return; // no longer working on v2
@@ -971,34 +954,6 @@ Tours.prototype.hasTourAuth = function (id) {
         return poChannel.tourAuth[poUser.lowername] != undefined || poUser.megauser || poChannel.isChanMod(id);
 }
 
-Tours.prototype.idleBattler = function (name) {
-    var hash = this.roundStatus.idleBattles,
-        x, chash;
-
-    for (x in hash) {
-        chash = hash[x];
-        if (chash[0] === name || chash[1] === name) {
-            return x;
-        }
-    }
-
-    return false;
-}
-
-Tours.prototype.isBattling = function (name) {
-    var hash = this.roundStatus.ongoingBattles,
-        x, chash;
-
-    for (x in hash) {
-        chash = hash[x];
-        if (chash[0] === name || chash[1] === name) {
-            return x;
-        }
-    }
-
-    return false;
-}
-
 Tours.prototype.identify = function (test) {
     if (test == null) {
         test = this.battlemode;
@@ -1029,6 +984,14 @@ Tours.prototype.identify = function (test) {
     }
 }
 
+Tours.prototype.sendAll = function (message) {
+    botAll(message, this.id);
+}
+
+Tours.prototype.sendPM = function (src, message) {
+    botMessage(src, message, this.id);
+}
+
 Tours.prototype.TourBox = function (message, Display) {
     var x, curr;
 
@@ -1050,7 +1013,7 @@ Tours.prototype.TourBox = function (message, Display) {
             if (curr.isEmpty()) {
                 sys.sendAll("", this.id);
             } else {
-                botAll(message[x], this.id);
+                this.sendAll(message[x]);
             }
         }
 
@@ -1062,6 +1025,34 @@ Tours.prototype.TourBox = function (message, Display) {
     }
 }
 
+Tours.prototype.idleBattler = function (name) {
+    var hash = this.roundStatus.idleBattles,
+        x, chash;
+
+    for (x in hash) {
+        chash = hash[x];
+        if (chash[0] === name || chash[1] === name) {
+            return x;
+        }
+    }
+
+    return false;
+}
+
+Tours.prototype.isBattling = function (name) {
+    var hash = this.roundStatus.ongoingBattles,
+        x, chash;
+
+    for (x in hash) {
+        chash = hash[x];
+        if (chash[0] === name || chash[1] === name) {
+            return x;
+        }
+    }
+
+    return false;
+}
+
 Tours.prototype.command_display = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
         noPermissionMessage(src, fullCommand, this.id);
@@ -1070,11 +1061,11 @@ Tours.prototype.command_display = function (src, commandData, fullCommand) {
 
     var num = parseInt(commandData);
     if (num !== 1 && num !== 2) {
-        botMessage(src, "Valid tournament display modes are 1 (Normal) and 2 (Clean).", this.id);
+        this.sendPM(src, "Valid tournament display modes are 1 (Normal) and 2 (Clean).");
         return;
     }
     if (this.TourDisplay === num) {
-        botMessage(src, "The tournament display mode is already " + num + ".", this.id);
+        this.sendPM(src, "The tournament display mode is already " + num + ".");
         return;
     }
 
@@ -1109,14 +1100,15 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
 
 Tours.prototype.command_tourprize = function (src, commandData, fullCommand) {
     if (this.tourmode == 0) {
-        botMessage(src, "There is currently no tournament.", this.id);
+        this.sendPM(src, "There is currently no tournament.");
         return;
     }
     if (isEmpty(this.prize)) {
-        botMessage(src, "There is no prize.", this.id);
+        this.sendPM(src, "There is no prize.");
         return;
     }
-    botMessage(src, "The tournament prize is: " + this.prize, this.id);
+
+    this.sendPM(src, "The tournament prize is: " + this.prize);
 }
 
 Tours.prototype.command_join = function (src, commandData, fullCommand) {
@@ -1147,7 +1139,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         if (this.tournumber < 9) { // Max spots is 8 for the bigger message.
             this.TourBox(message);
         } else {
-            botAll(message, this.id);
+            this.sendAll(message);
         }
 
 
@@ -3912,7 +3904,7 @@ if(message == "Maximum Players Changed.") {
 
                     var t = new Templater('Script Information');
 
-                    t.register("Script Version: " + ScriptVersion.toString().bold());
+                    t.register("Script Version: " + Version.bold());
                     t.register("Server Version: " + sys.serverVersion().bold() + "<br/>");
 
                     t.register("<font size=5><b>Commands</b></font><br/>");
@@ -10746,7 +10738,7 @@ if(message == "Maximum Players Changed.") {
                 return;
             }
 
-            var code = '<center><table border="1" width="50%" style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><td align="center"><img src="pokemon:493&back=true" align="left"><img src="pokemon:385&back=false" align="right"><font size="4"><b><br/> ' + servername + ' - Scripts <br/></b></font> Scripts have been updated! <br/> ' + load + ' <br/> ~ ' + ScriptVersion + ' ~ <br/></td></tr></table></center>';
+            var code = '<center><table border="1" width="50%" style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><td align="center"><img src="pokemon:493&back=true" align="left"><img src="pokemon:385&back=false" align="right"><font size="4"><b><br/> ' + servername + ' - Scripts <br/></b></font> Scripts have been updated! <br/> ' + load + ' <br/> ~ ' + Version + ' ~ <br/></td></tr></table></center>';
             sys.sendHtmlAll(code, 0);
         }
 
