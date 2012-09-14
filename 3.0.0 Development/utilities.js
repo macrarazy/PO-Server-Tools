@@ -15,7 +15,8 @@
     Init: function () { /* Define utilities */
         getFullInfo = function (src, data, channel, additional) {
             var ret = {},
-                props, self, totalAuth, x, mcmd, hash = DataHash;
+                props = {},
+                self, totalAuth, x, mcmd, hash = DataHash;
 
             for (x in hash) {
                 ret.insert("$" + x, hash[x]);
@@ -23,7 +24,7 @@
 
             if (typeof src === "number" && sys.loggedIn(src)) {
                 self = sys.name(src), totalAuth = hpAuth(src);
-                props = {
+                props.extend({
                     "src": src,
                     "self": self,
                     "selfLower": selfLower,
@@ -31,16 +32,12 @@
                     "user": JSESSION.users(src),
                     "auth": totalAuth,
                     "isHost": isHost()
-                };
-
-                for (x in props) {
-                    ret.insert(x, props[x]);
-                }
+                });
             }
 
             if (typeof data === "string") {
                 mcmd = data.split(":");
-                props = {
+                props.extend({
                     "data": data,
                     "dataLower": data.toLowerCase(),
                     "mcmd": mcmd,
@@ -50,15 +47,11 @@
                     "tarPlayer": player(tar),
                     "target": JSESSION.users(tar),
                     "ip": sys.dbIp(mcmd[0]),
-                }
-
-                for (x in props) {
-                    ret.insert(x, props[x]);
-                }
+                });
             }
 
             if (typeof chan === "number" && sys.channel(chan) !== undefined) {
-                props = {
+                props.extend({
                     "chan": chan,
                     "channel": JSESSION.channels(chan),
 
@@ -77,21 +70,11 @@
                     },
                     "sendWhiteAll": function () {
                         sys.sendAll("", chan);
-                    },
-                };
-
-                for (x in props) {
-                    ret.insert(x, props[x]);
-                }
+                    }
+                });
             }
 
-            if (typeof additional === "object" && !Array.isArray(additional) && additional !== null) {
-                for (x in additional) {
-                    ret.insert(x, additional[x]);
-                }
-            }
-
-            props = {
+            ret.extend(props, {
                 "escape": html_escape,
 
 
@@ -101,11 +84,7 @@
 
                 nativeSend: sys.sendAll,
                 nativeHtml: sys.sendHtmlAll
-            };
-
-            for (x in props) {
-                ret.insert(x, props[x]);
-            }
+            }, additional);
 
             return ret;
         }
