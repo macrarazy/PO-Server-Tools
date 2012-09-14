@@ -68,6 +68,13 @@
 || Format: [AuthLvlOfReceiver, AuthLvlReceived]              ||
 \*===========================================================*/
 
+/*
+Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
+Beta: https://github.com/TheUnknownOne/PO-Server-Tools/beta/
+Alpha: https://github.com/TheUnknownOne/PO-Server-Tools/alpha/
+Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
+*/
+
 EvaluationTimeStart = new Date().getTime(); /* Do not modify this! This is only to count load speed! */
 Version = "2.6.0";
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
@@ -2223,278 +2230,156 @@ hasFlags = function (mask, flags) {
     return mask & compare_mask;
 }
 
-Object.defineProperty(String.prototype, "reverse", {
-    "value": function () {
-        var strThis = thism;
-        strThisArr = strThis.split("").reverse().join("");
+defineCoreProperty = function (core, prop, func) {
+    Object.defineProperty(core, prop, {
+        "value": func,
 
-        this = strThisArr;
-        return this;
-    },
+        writable: true,
+        enumerable: false,
+        configurable: true
+    });
+}
 
-    writable: true,
-    enumerable: false,
-    configurable: true
+defineCoreProperty(String.prototype, "reverse", function () {
+    var strThis = thism;
+    strThisArr = strThis.split("").reverse().join("");
+
+    this = strThisArr;
+    return this;
 });
 
-Object.defineProperty(String.prototype, "isEmpty", {
-    "value": function () {
-        var mess = this;
-        return mess == "" || mess.trim() == "";
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
+defineCoreProperty(String.prototype, "isEmpty", function () {
+    var mess = this;
+    return mess == "" || mess.trim() == "";
 });
 
-Object.defineProperty(String.prototype, "contains", {
-    "value": function (string) {
-        var str = this;
-        return str.indexOf(string) > -1;
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
+defineCoreProperty(String.prototype, "contains", function (string) {
+    var str = this;
+    return str.indexOf(string) > -1;
 });
 
-Object.defineProperty(String.prototype, "has", {
-    "value": function (string) {
-        return this.contains(string);
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
+defineCoreProperty(String.prototype, "has", function (string) {
+    return this.contains(string);
 });
 
-Object.defineProperty(String.prototype, "name", {
-    "value": function () {
-        var str = this;
-        if (typeof DataHash.names == "undefined") {
-            return str;
-        }
-
-        var tl = str.toLowerCase();
-        if (typeof DataHash.names[tl] != "undefined") {
-            str = DataHash.names[tl];
-        }
-
+defineCoreProperty(String.prototype, "name", function () {
+    var str = this;
+    if (typeof DataHash.names == "undefined") {
         return str;
-    },
+    }
 
-    writable: true,
-    enumerable: false,
-    configurable: true
+    var tl = str.toLowerCase();
+    if (typeof DataHash.names[tl] != "undefined") {
+        str = DataHash.names[tl];
+    }
+
+    return str;
 });
 
-Object.defineProperty(String.prototype, "format", {
-    "value": function () {
-        var str = this,
-            exp, i, args = arguments.length,
-            icontainer = 0;
-        for (i = 0; i < args; i++) {
-            icontainer++;
-            exp = new RegExp("%" + icontainer, "");
-            str = str.replace(exp, arguments[i]);
+defineCoreProperty(String.prototype, "format", function () {
+    var str = this,
+        exp, i, args = arguments.length,
+        icontainer = 0;
+    for (i = 0; i < args; i++) {
+        icontainer++;
+        exp = new RegExp("%" + icontainer, "");
+        str = str.replace(exp, arguments[i]);
+    }
+    return str;
+});
+
+defineCoreProperty(String.prototype, "fontsize", function (size) {
+    var str = this;
+
+    return "<font size='" + size + "'>" + str + "</font>";
+});
+
+defineCoreProperty(String.prototype, "scramble", function () {
+    var thisString = this.split("");
+    for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
+    return thisString.join("");
+});
+
+defineCoreProperty(String.prototype, "linkify", function () {
+    var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
+        pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
+        emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
+        poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+
+    return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>').replace(poPattern, function ($) {
+        var type = $.substring($.indexOf(":", $.indexOf("/"))),
+            thing = $.substring($.indexOf("/"));
+
+        type = type[0].toUpperCase() + type.substring(1);
+
+        return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
+    });
+});
+
+defineCoreProperty(Boolean.prototype, "isEmpty", function () {
+    return this === false;
+});
+
+defineCoreProperty(Number.prototype, "isEmpty", function () {
+    return !isFinite(this) || this === 0;
+});
+
+defineCoreProperty(Object.prototype, "isEmpty", function () {
+    return this.length() === 0;
+});
+
+defineCoreProperty(Object.prototype, "keys", function () {
+    return Object.keys(this);
+});
+
+defineCoreProperty(Object.prototype, "has", function (prop) {
+    return typeof this[prop] !== "undefined";
+});
+
+defineCoreProperty(Object.prototype, "contains", function (prop) {
+    return this.has(prop);
+});
+
+defineCoreProperty(Object.prototype, "insert", function (name, val) {
+    this[name] = val;
+});
+
+defineCoreProperty(Object.prototype, "remove", function (name) {
+    if (!this.has(name)) {
+        return;
+    }
+
+    delete this[name];
+});
+
+defineCoreProperty(Object.prototype, "first", function () {
+    var x;
+    for (x in this) {
+        return this[x]; /* Grab the first property */
+    }
+});
+
+defineCoreProperty(Object.prototype, "length", function () {
+    return Object.keys(this).length;
+});
+
+defineCoreProperty(Array.prototype, "has", function (prop) {
+    var x;
+    for (x in this) {
+        if (this[x] == prop) {
+            return true;
         }
-        return str;
-    },
+    }
 
-    writable: true,
-    enumerable: false,
-    configurable: true
+    return false;
 });
 
-Object.defineProperty(String.prototype, "fontsize", {
-    "value": function (size) {
-        var str = this;
-
-        return "<font size='" + size + "'>" + str + "</font>";
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
+defineCoreProperty(Array.prototype, "isEmpty", function () {
+    return this.length === 0;
 });
 
-Object.defineProperty(String.prototype, "scramble", {
-    "value": function () {
-        var thisString = this.split("");
-        for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
-        return thisString.join("");
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(String.prototype, "linkify", {
-    "value": function () {
-        var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
-            pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
-            emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
-            poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-
-        return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>').replace(poPattern, function ($) {
-            var type = $.substring($.indexOf(":", $.indexOf("/"))),
-                thing = $.substring($.indexOf("/"));
-
-            type = type[0].toUpperCase() + type.substring(1);
-
-            return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
-        });
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Boolean.prototype, "isEmpty", {
-    "value": function () {
-        return this === false;
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Number.prototype, "isEmpty", {
-    "value": function () {
-        return isNaN(this) || this === 0;
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Object.prototype, "isEmpty", {
-    "value": function () {
-        return this.length() === 0;
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Object.prototype, "keys", {
-    "value": function () {
-        return Object.keys(this);
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Object.prototype, "has", {
-    "value": function (prop) {
-        return typeof this[prop] !== "undefined";
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Object.prototype, "contains", {
-    "value": function (prop) {
-        return this.has(prop);
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Object.prototype, "insert", {
-    "value": function (name, val) {
-        this[name] = val;
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Object.prototype, "remove", {
-    "value": function (name) {
-        if (!this.has(name)) {
-            return;
-        }
-
-        delete this[name];
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Object.prototype, "first", {
-    "value": function () {
-        var x;
-        for (x in this) {
-            return this[x]; // Grab the first property
-        }
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Object.prototype, "length", {
-    "value": function () {
-        return Object.keys(this).length;
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Array.prototype, "has", {
-    "value": function (prop) {
-        var x;
-        for (x in this) {
-            if (this[x] == prop) {
-                return true;
-            }
-        }
-
-        return false;
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Array.prototype, "isEmpty", {
-    "value": function () {
-        return this.length === 0;
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
-});
-
-Object.defineProperty(Array.prototype, "contains", {
-    "value": function (prop) {
-        return this.has(prop);
-    },
-
-    writable: true,
-    enumerable: false,
-    configurable: true
+defineCoreProperty(Array.prototype, "contains", function (prop) {
+    return this.has(prop);
 });
 
 JSESSION.identifyScriptAs("TheUnknownOne's Server Script");
@@ -3526,22 +3411,21 @@ if(message == "Maximum Players Changed.") {
 
             var userCommands, tourCommands, channelCommands, modCommands, adminCommands, ownerCommands, founderCommands;
 
-            /* -- User Commands: Start -- */
-            userCommands = ({ /* -- User Templates: Commands -- */
+            userCommands = ({
                 commands: function () {
                     var ct = new Command_Templater('Commands');
                     ct.register("help", "Displays a list of helpful topics.");
                     ct.register(removespaces(UserName).toLowerCase() + "commands", "Displays the " + UserName + " commands.");
-                    ct.register("messagecommands", "Displays the messaging commands.");
-                    ct.register("stylecommands", "Displays the style commands.");
-                    ct.register("iconcommands", "Displays the rank icon commands.");
-                    ct.register("channelcommands", "Displays the channel commands.");
+                    ct.register("messagecommands", "Displays the Messaging commands.");
+                    ct.register("stylecommands", "Displays the Style commands.");
+                    ct.register("iconcommands", "Displays the Rank Icon commands.");
+                    ct.register("channelcommands", "Displays the Channel commands.");
                     if (poChan.toursEnabled) {
-                        ct.register("tourcommands", "Displays the tournament commands.");
+                        ct.register("tourcommands", "Displays the Tournament commands.");
                     }
-/*
-                    ct.register("triviacommands", "Displays the Trivia Commands.");
-					*/
+
+                    /*ct.register("triviacommands", "Displays the Trivia commands.");*/
+
                     if (permission(src, 1)) {
                         ct.register(removespaces(ModName).toLowerCase() + "commands", "Displays the " + ModName + " commands.");
                     }
@@ -3558,16 +3442,19 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 funcommands: function () {
-                    var ct = new Command_Templater('Fun User Commands');
-                    ct.register("roulette", "Win a randon Pokemon!");
-                    ct.register("catch", "Catch a random Pokemon!");
-                    ct.register("attack", ["{p Person}", "{p <u>Attack</u>}"], "Attack something or someone with a(n) (random) attack! Attack is optional and has to be an attacking move.");
-                    ct.register("future", ["{o Time}", "{p Message}"], "Sends a message into the future! Time must be over 4 seconds and under 5 hours. Message can also be a command(with command start).");
+                    var ct = new Command_Templater('Fun Commands', true);
+
+                    ct.span("Fun " + UserName + " Commands");
+
+                    ct.register("roulette", "To win a randon Pokémon.");
+                    ct.register("catch", "To catch a random Pokémon.");
+                    ct.register("attack", ["{Text::Any Player}", "{Text::Any <u>Attack</u>}"], "To attack {Text::Any Player} with a (random) attack! Attack is optional and has to be an attacking move.");
+                    ct.register("future", ["{Text::Number Time}", "{Text::Any Message}"], "To send {Text::Any Message} {Text::Number Time} seconds into the future. {Text::Number Time} must be over 4 seconds and under 5 hours. {Text::Any Message} can also be a command (with a proper command start).");
 
                     if (permission(src, 2)) {
                         ct.span("Fun " + AdminName + " Commands");
-                        ct.register("ify", ["{p Name}"], "Changes everyones name on the server. Changes names of those who change team and login as well.");
-                        ct.register("unify", "Changes everyones name back.");
+                        ct.register("ify", ["{Text::Any Name}"], "To change the name of everyone on the server to {Text::Any Name}. Changes names of those who change team and login as well.");
+                        ct.register("unify", "To change everyones name back.");
                     }
 
                     ct.render(src, chan);
@@ -3580,7 +3467,7 @@ if(message == "Maximum Players Changed.") {
 
                     if (permission(src, 2)) {
                         ct.span("Style " + AdminName + " Commands");
-                        ct.register("activestyle", ["{p Style}"], "Makes a style active.");
+                        ct.register("activestyle", ["{Text::Any Style}"], "Makes the style, {Text::Any Style} active.");
                     }
 
                     ct.render(src, chan);
@@ -3588,61 +3475,44 @@ if(message == "Maximum Players Changed.") {
 
                 iconcommands: function () {
                     var ct = new Command_Templater('Icon Commands', true);
+
                     ct.span("Icon " + UserName + " Commands");
                     ct.register("icons", "Displays all currently installed rank icon packs.");
-                    ct.register("changeicon", ["{p Icon}"], "Changes your icon. If Icon is remove, removes your icon.");
+                    ct.register("changeicon", ["{Text::Any Rank Icon}"], "Changes your rank icon to {Text::Any Rank Icon}. If {Text::Any Rank Icon} is remove, your custom rank icon will be removed.");
 
                     if (permission(src, 2)) {
                         ct.span("Icon " + AdminName + " Commands");
-                        ct.register("activeicons", ["{p Icons}"], "Makes a rank icon pack active.");
+                        ct.register("activeicons", ["{Text::Any Rank Icons}"], "Makes the rank icon set, {Text::Any Rank Icons} active.");
                     }
 
                     ct.render(src, chan);
                 },
-/*
-                triviacommands: function () {
+
+/*triviacommands: function () {
                     var ct = new Command_Templater('Trivia Commands', true);
+                    
                     ct.span("Trivia " + UserName + " Commands");
-
-                    if (Trivia.TrivData.mode) {
-                        ct.register("a", ["{p Answer}"], "Answer on a trivia session.", chan);
-                    }
-
-                    ct.register("leaderboard", ["{or Player}"], "Displays the entire Trivia Leaderboard or just Leaderboard Info on 1 player.");
-
-                    var s = noPermission(src, 1) ? ")" : ", answer(s))";
-                    ct.register("question", ["{p Question}"], "Displays a question's data(Question, hint" + s);
-                    ct.register("submit", ["{p Question}", "{p Hint}", "{p Answers}"], "Submit a question. Use '|' to serperate new answers.");
-                    ct.register("questions", "Displays all questions names.");
-
-                    if (permission(src, 1)) {
-                        ct.span("Trivia " + ModName + " Commands");
-
-                        ct.register("start", "Start a Trivia session.");
-                        ct.register("end", "Ends a Trivia session.");
-                        ct.register("skip", "Skips the current Trivia round.");
-                        ct.register("remove", ["{p Question}"], "Deletes a question.");
-                    }
 
                     ct.render(src, chan);
                 },*/
 
                 messagecommands: function () {
                     var ct = new Command_Templater('Messaging Commands', true);
+
                     ct.span("Messaging " + UserName + " Commands");
-                    ct.register("me", ["{p Message}"], "Sends a message to everyone with *** prefixed. BBCode is allowed and will be parsed.");
+                    ct.register("me", ["{Text::Any Message}"], "To send {Text::Any Message} as <i><b><font color='" + script.namecolor(src) + "'>*** " + sys.name(src) + " {Text::Any Message}</font></b></i>. BB code is allowed.");
 
                     if (permission(src, 1)) {
                         ct.span("Messaging " + ModName + " Commands");
-                        ct.register("htmlme", ["{p Message}"], "Sends a message to everyone with *** prefixed. HTML is allowed and will be parsed");
-                        ct.register("send", ["{p Message}"], "Sends a message to everyone.");
-                        ct.register("wall", ["{p Message}"], "Announces something in all channels.");
-                        ct.register("htmlwall", ["{p Message}"], "Announces something in all channels. HTML is allowed and will be parsed");
+                        ct.register("htmlme", ["{Text::Any Message}"], "Send {Text::Any Message} in the same way as <b>me</b>, except that HTML is allowed and BB code is not.");
+                        ct.register("send", ["{Text::Any Message}"], "To send {Text::Any Message} to everyone in this channel.");
+                        ct.register("wall", ["{Text::Any Message}"], "To announce {Text::Any Message} in every channel. BB code is allowed.");
+                        ct.register("htmlwall", ["{Text::Any Message}"], "To announce {Text::Any Message} in every channel. HTML is allowed.");
                     }
 
-                    if (isHost()) {
+                    if (host) {
                         ct.span("Messaging Founder Commands");
-                        ct.register("sudo", ["{r Player}", "{p Channel Name}", "{p Message}"], "Make Player say Message in Channel Name. Can be commands etc. too.");
+                        ct.register("sudo", ["{Player::Online Player}", "{Text::Any Channel Name}", "{Text::Any Message}"], "To make {Player::Online Player} say {Text::Any Message} in {Text::Any Channel Name}. Can be commands etc. too.");
                     }
 
                     ct.render(src, chan);
@@ -3650,11 +3520,12 @@ if(message == "Maximum Players Changed.") {
 
                 mailcommands: function () {
                     var ct = new Command_Templater('Mail Commands');
-                    ct.register('deletemail', 'Deletes all your mail.');
-                    ct.register('readmail', 'Displays your mail.');
-                    ct.register('sendmail', ["{or Person}", "{p Title}", "{p Text}"], "Sends mail to someone! Text and Title may contain BB Code.", chan);
-                    ct.register('deletesent', 'Removes all your sent mails.');
-                    ct.register('sentmails', 'Displays your sent mails.');
+
+                    ct.register('sendmail', ["{Player::Database Player}", "{Text::Any Title}", "{Text::Any Content}"], "To send a mail with {Text::Any Title} as title and {Text::Any Content} as content to {Player::Database Player}. {Text::Any Title} and {Text::Any Content} may contain BB code.", chan);
+                    ct.register('readmail', 'To see your mail.');
+                    ct.register('sentmails', 'To see your sent mails box.');
+                    ct.register('deletemail', 'To delete your mail.');
+                    ct.register('deletesent', 'To delete your sent mails box.');
 
                     ct.render(src, chan);
                 },
@@ -3665,26 +3536,35 @@ if(message == "Maximum Players Changed.") {
                     ct.register('team', 'Makes an importable of your team.');
 
                     if (!Config.NoCrash) {
-                        ct.register("ranking", ["<u>{r Name}</u>"], "Displays ranking of you or another person. Your ladder (and the person's if given) must be enabled.");
+                        ct.register("ranking", ["{Player::Online <u>Name</u>}"], "Displays ranking of you or {Player::Online Name}. Your ladder (and the player's if given) must be enabled.");
                     }
 
                     ct.register('players', 'Displays information about all online players.');
                     ct.register('channels', 'Displays information about online channels.');
                     ct.register("tours", "Displays information about active tours.");
-                    ct.register("authlist", "Displays a list of server authority.");
-                    ct.register("tourauthlist", "Displays a list of server tournament authority.");
-                    ct.register("autoidles", "Displays a list of people who Auto-Idle.");
-                    ct.register("voices", "Displays a list of Voices.");
-                    ct.register("rules", "Displays this Server's rulelist.");
-                    ct.register('league', 'Displays a list of league members (Gyms, E4, Champion).');
-                    ct.register('scriptinfo', 'Displays script information (including links).');
-                    ct.register('settings', 'Displays a list of script settings and their given value.');
-                    ct.register('battlepoints', ["<u>{or User}</u>"], "Displays someones battle points. If no user is specified or is invalid, displays your battle points.");
-                    ct.register('viewmotd', 'Displays the message of the day again.');
-                    ct.register("pokedex", ["{p Pokemon}</b>/<b>{b Pokenum}</b>"], "Displays information (pokedex) about the given pokemon.");
-                    ct.register('commandstats', ["<u>{o Number}</u>"], 'Displays server-wide command usage statistics. You can also view the most x used commands.');
 
-                    ct.register("bbcodes", "Displays a list of BB Codes that you can use.");
+                    ct.register("authlist", "Displays the list of server authority.");
+                    ct.register("tourauthlist", "Displays the list of server tournament authority.");
+
+                    ct.register("autoidles", "Displays the list of people who automatically idle.");
+                    ct.register("voices", "Displays the list of voices.");
+
+                    ct.register("rules", "Displays the list of rules.");
+
+                    ct.register("league", "Displays the list of league members (Gym Leaders, Elite Four, Champion).");
+                    ct.register("scriptinfo", "Displays script information (including links).");
+
+                    ct.register("settings", 'Displays a list of script settings and their values.');
+
+                    ct.register("battlepoints", ["{Player::Database <u>Player</u>}"], "Displays your or {Player::Database <u>Player</u>}'s battle points.");
+
+                    ct.register("viewmotd", 'Displays the Message of the Day');
+
+                    ct.register("pokedex", ["{Text::Any Pokemon}</b>/<b>{Text::Number Pokenum}</b>"], "Displays the pokedex information of {Text::Any Pokemon} or {Text::Number Pokenum}.");
+
+                    ct.register("commandstats", ["{Text::Number X}"], 'Displays server-wide command usage statistics. You can also view the most {Text::Number X} used commands.');
+
+                    ct.register("bbcodes", "Displays a list of BB codes that you can use.");
 
                     ct.render(src, chan);
                 },
@@ -3694,9 +3574,9 @@ if(message == "Maximum Players Changed.") {
                     if (cmdData == "arguments") {
                         var arg = function (c, m) {
                             return "<font color=" + c + "><b>" + c + "</b></font> colored arguments: " + m + ".";
-                        }
+                        },
+                            t = new Templater("Help - Arguments");
 
-                        var t = new Templater("Help - Arguments");
                         t.register("Arguments are used in <b>almost every</b> command list.");
                         t.register("Here are their descriptions:<br/>");
 
@@ -3715,8 +3595,9 @@ if(message == "Maximum Players Changed.") {
 
                     // Default
                     var t = new Templater("Help");
+
                     t.register("<b>The following help topics are available:</b><br/>");
-                    t.register("- arguments: Help for command arguments.");
+                    t.register("- <b>arguments</b>: Help for command arguments.");
 
                     t.render(src, chan);
                 },
@@ -3724,12 +3605,12 @@ if(message == "Maximum Players Changed.") {
                 bbcodes: function () {
                     var formatBB = function (m) {
                         return "• " + m + " <b>-</b> " + format(0, m)
-                    }
-                    var formatEvalBB = function (m, code) {
-                        return "• " + m + " <b>-</b> " + eval(code);
-                    }
+                    },
+                        formatEvalBB = function (m, code) {
+                            return "• " + m + " <b>-</b> " + eval(code);
+                        },
+                        t = new Templater('BB Codes');
 
-                    var t = new Templater('BB Codes');
                     t.register(formatBB("[b]Bold[/b]"))
                     t.register(formatBB("[i]Italics[/i]"))
                     t.register(formatBB("[s]Strike[/s]"))
@@ -3785,16 +3666,15 @@ if(message == "Maximum Players Changed.") {
                             rands = rand + "'";
                         }
 
-                        botEscapeMessage(src, "Since the Pokemon " + commandData + " doesn't exist, the Pokedex displayed " + rands + " data instead.", chan);
+                        botEscapeMessage(src, "Since the Pokémon " + commandData + " doesn't exist, the Pokédex displayed " + rands + " data instead.", chan);
                         pokedex(src, chan, rand);
                     }
                 },
 
                 channels: function () {
                     var channels = sys.channelIds(),
-                        x, pl;
+                        x, pl, t = new Templater('Channels');
 
-                    var t = new Templater('Channels');
                     t.register("<i>Information works in the following way:</i> <br><b><font color=blue>Name</font></b> [<font color=green><b>ID</font></b>/<b><font color=blue>NumPlayers of <b><u>Name</u></b></font></b></font></b>]<br>");
 
                     for (x in channels) {
@@ -3811,8 +3691,7 @@ if(message == "Maximum Players Changed.") {
                     var members = sys.playerIds().sort(function (a, b) {
                         return sys.auth(b) - sys.auth(a);
                     }),
-                        x, name;
-                    var t = new Templater('Players');
+                        x, name, t = new Templater('Players');
 
                     for (x in members) {
                         name = sys.name(members[x]);
@@ -3832,8 +3711,9 @@ if(message == "Maximum Players Changed.") {
                     var sess, ids = sys.channelIds().sort(function (a, b) {
                         return a - b;
                     }),
-                        x, count = 0;
-                    var mode, prize, round, type, t = new Templater('Tournaments');
+                        x, count = 0,
+                        mode, prize, round, type, t = new Templater('Tournaments');
+
                     t.register("<i>Information works in the following way:</i> <br><b>Channel</b> Status Type [<font color=green><b>Number of Entrants</b></font>/<font color=blue><b>Round</b></font>/<font color=red><b>Number of Players Remaining</b></font>/<font color=purple><b>Prize</b></font>]<br>");
 
                     for (x in ids) {
@@ -3873,7 +3753,7 @@ if(message == "Maximum Players Changed.") {
                         count++;
                     }
 
-                    t.register("<br><b><font color=blueviolet>Total Number of Tournaments:</b></font> " + count);
+                    t.register("<br/><b><font color=blueviolet>Total Number of Tournaments:</b></font> " + count);
 
                     t.render(src, chan);
                 },
@@ -3941,9 +3821,8 @@ if(message == "Maximum Players Changed.") {
                         tourlength = tour.length,
                         modlength = mod.length,
                         adminlength = admin.length,
-                        ownerlength = owner.length;
-
-                    var t = new Templater('Script Information');
+                        ownerlength = owner.length,
+                        t = new Templater('Script Information');
 
                     t.register("Script Version: " + Version.bold());
                     t.register("Server Version: " + sys.serverVersion().bold() + "<br/>");
@@ -4116,7 +3995,7 @@ if(message == "Maximum Players Changed.") {
                     t.register("<small>" + scriptStr + ".</small>");
                     t.register("<b><font color=blueviolet>Events Total:</font></b> " + scriptKeys.length + " <br/>");
 
-                    if (!ScriptLength.has("Lines")) {
+                    if (!ScriptLength.has("Lines") || !ScriptLength.has("Full")) {
                         var servscript = sys.getFileContent("scripts.js");
                         ScriptLength.Lines = servscript.split("\n").length;
                         ScriptLength.Full = servscript.length;
@@ -4139,15 +4018,13 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 settings: function () {
-                    var t = new Templater('Script Settings');
-
-                    var g = function (str) {
-                        return "<font color='green'><b>" + str + "</b></font>";
-                    },
+                    var t = new Templater('Script Settings'),
+                        g = function (str) {
+                            return "<font color='green'><b>" + str + "</b></font>";
+                        },
                         r = function (str) {
                             return "<font color='red'><b>" + str + "</b></font>";
-                        }
-
+                        },
                         check = function (compare, name, on, off) {
                             if (compare) {
                                 t.register(name + " " + g(on) + ".");
@@ -4192,7 +4069,7 @@ if(message == "Maximum Players Changed.") {
                     t.register("Channel Tournament Auth Level 1 Name is " + ChanTour1.bold().fontcolor("mediumblue") + ".<br/>");
 
                     t.register("Maximum Message Length is " + String(MaxMessageLength).bold() + ".");
-                    t.register("Futures allowed every " + FutureLimit + " seconds.<br/>");
+                    t.register("Futures allowed every " + String(FutureLimit).bold() + " seconds.<br/>");
 
                     t.register("The Bot name is " + Bot.bot.bold().fontcolor(Bot.botcolor) + "</i>.");
 
@@ -4219,7 +4096,7 @@ if(message == "Maximum Players Changed.") {
                     t.register("<b>11</b>) Do not mini-moderate. Mini-Moderating means you act like a moderator, while your not. Contact an Authority instead.");
                     t.register("<b>12</b>) Do not ban evade. Doing so will result in an instant ban, or rangeban.");
                     t.register("<b>13</b>) Do not blackmail. This will result in an instant mute/ban/rangeban.");
-                    t.register("<b>14</b>) Do not complain or brag.");
+                    t.register("<b>14</b>) Do not complain about hax, it's part of the game.");
 
                     t.register("<br/><b>If the server authority think it is necessary to punish someone, then they are allowed to do so. Report them to higher powers if you think you have been abused.</b>");
                     t.register("The server authority <u>do not</u> have to apply these rules.");
@@ -4230,14 +4107,8 @@ if(message == "Maximum Players Changed.") {
                 tourauthlist: function () {
                     var authlist = DataHash.megausers,
                         count = authlist.length(),
-                        x;
+                        x, t = new Templater(sLetter(Tour1));
 
-                    if (count === 0) {
-                        botMessage(src, "No one is a(n) " + Tour1 + ".", chan);
-                        return;
-                    }
-
-                    var t = new Templater(sLetter(Tour1));
                     t.register('');
 
                     for (x in authlist) {
@@ -4250,18 +4121,13 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 authlist: function () {
-                    var authList = sys.dbAuths();
-                    if (authList.length == 0) {
-                        botMessage(src, "Sorry, no authority at the moment!", chan);
-                        return;
-                    }
-
-                    var x, c_auth, c_authname, authlists = {
-                        'invis': [],
-                        'owner': [],
-                        'admin': [],
-                        'mod': []
-                    };
+                    var authList = sys.dbAuths(),
+                        x, c_auth, c_authname, authlists = {
+                            'invis': [],
+                            'owner': [],
+                            'admin': [],
+                            'mod': []
+                        };
 
                     for (x in authList) {
                         c_authname = authList[x];
@@ -4286,8 +4152,8 @@ if(message == "Maximum Players Changed.") {
                     authlists.admin.sort();
                     authlists.mod.sort();
 
-                    var t = new Templater('Server Authority');
-                    var a = authlists,
+                    var t = new Templater('Server Authority'),
+                        a = authlists,
                         c;
 
                     if (sys.auth(src) > 2) {
@@ -4370,14 +4236,8 @@ if(message == "Maximum Players Changed.") {
                 voices: function () {
                     var authlist = DataHash.voices,
                         count = authlist.length(),
-                        x;
+                        x, t = new Templater("Voices");
 
-                    if (count === 0) {
-                        botMessage(src, "No one is a Voice.", chan);
-                        return;
-                    }
-
-                    var t = new Templater("Voices");
                     t.register('');
 
                     for (x in authlist) {
@@ -4392,14 +4252,8 @@ if(message == "Maximum Players Changed.") {
                 evalops: function () {
                     var authlist = DataHash.evalops,
                         count = authlist.length(),
-                        x;
+                        x, t = new Templater("Eval Operators");
 
-                    if (count === 0) {
-                        botMessage(src, "No one has an Eval Operator.", chan);
-                        return;
-                    }
-
-                    var t = new Templater("Eval Operators");
                     t.register('');
 
                     for (x in authlist) {
@@ -4413,10 +4267,6 @@ if(message == "Maximum Players Changed.") {
 
                 /* -- User Templates: Tables -- */
                 ranking: function () {
-                    if (Config.NoCrash) {
-                        botMessage(src, "This command has been disabled.", chan);
-                        return;
-                    }
                     if (!sys.ladderEnabled(src)) {
                         botMessage(src, "You don't have your ladder enabled! Enable it at Options->Enable Ladder.", chan);
                         return;
@@ -4436,7 +4286,7 @@ if(message == "Maximum Players Changed.") {
 
                     var tt = new Table_Templater("Ranking of " + name, "orange", "3");
 
-                    if (sys.loggedIn(pid)) {
+                    if (sys.loggedIn(pid) && !Config.NoCrash) {
                         tt.register(["Team #", "Team Tier", "Ranked", "Rating", "Battles"], true);
                         for (i = 0; i < sys.teamCount(pid); i++) {
                             list = sys.tier(src, i);
@@ -5202,30 +5052,30 @@ if(message == "Maximum Players Changed.") {
             userCommands[removespaces(UserName).toLowerCase() + "commands"] = function () {
                 var ct = new Command_Templater(UserName + ' Commands');
 
-                ct.register("funcommands", "Displays Fun Commands.");
-                ct.register("mailcommands", "Displays Mail Commands.");
-                ct.register("infocommands", "Displays Information Commands.");
+                ct.register("funcommands", "Displays the Fun commands.");
+                ct.register("mailcommands", "Displays the Mail commands.");
+                ct.register("infocommands", "Displays the Information commands.");
 
-                ct.register("ping", ["{r Person}", "<u>{p Message}</u>"], "Pings someone and displays an optional message.");
-                ct.register("callauth", ["{b AuthLevel/AuthName}"], "Pings all authority of a certain level or name.");
-                ct.register("idle", "Reverses your away status.");
+                ct.register("ping", ["{Player::Online Player}", "{Text::Any <u>Message</u>}"], "To ping {Player::Online Player} with an optional {Text::Any Message}.");
+                ct.register("callauth", ["{Text::Choice Auth Level/Auth Name}"], "Pings all authority of {Text::Number Auth Level} or {Text::Any Auth Name}.");
+                ct.register("idle", "To reverse your away status.");
 
                 if (Clantag.full != "None" && Clantag.full != "") {
-                    ct.register("join" + Clantag.fullTextLower, "Lets you join the " + Clantag.fullText.bold() + " clan.");
-                    ct.register("unjoin" + Clantag.fullTextLower, "Lets you unjoin the " + Clantag.fullText.bold() + " clan.");
+                    ct.register("join" + Clantag.fullTextLower, "To join the " + Clantag.fullText.bold() + " clan.");
+                    ct.register("unjoin" + Clantag.fullTextLower, "To unjoin the " + Clantag.fullText.bold() + " clan.");
                 }
 
                 if (Poll.mode) {
-                    ct.register("viewpoll", "Displays Poll Information.");
-                    ct.register("vote", ["{o Option}"], "Lets you vote in the poll.");
+                    ct.register("viewpoll", "Displays the poll's information.");
+                    ct.register("vote", ["{Text::Number Option}"], "To vote the option, {Text::Number Option}, in the poll.");
                 }
 
-                ct.register("unregister", "Clears your password.");
-                ct.register("macro", ["{b 1-5}", "{p Message}"], "Changes one of your five macros. If no macro is specified, displays your macro. %m(macronumber) is replaced by that macro in your message (this adds up to your caps and flood count, and can be used for commands).");
+                ct.register("unregister", "To unregister your alias.");
+                ct.register("macro", ["{Text::Number 1-5}", "{Text::Any Message}"], "Changes one of your five macros to {Text::Any Message}. If no macro is specified, displays your macros. %m(macronumber) is replaced by that macro in your message (this adds up to your caps and flood count, and can be used for commands).");
 
                 if (!implock) {
-                    ct.register("imp", ["{p Thing}"], "Impersonates something.");
-                    ct.register("impoff", "Deletes your impersonation.");
+                    ct.register("imp", ["{Text::Any Target}"], "To impersonate {Text::Any Target}");
+                    ct.register("impoff", "To remove your impersonation.");
                 }
 
                 ct.render(src, chan);
@@ -5272,6 +5122,7 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "Someone with your name without the clan tag is already online.", chan);
                         return;
                     }
+
                     botAll(player(src) + " unjoined the " + Clantag.full.bold() + " clan!", 0);
                     sys.changeName(src, without);
                 }
@@ -5280,65 +5131,71 @@ if(message == "Maximum Players Changed.") {
             /* -- Channel Commands: Start */
             channelCommands = ({ /* -- Channel Templates: Commands */
                 channelcommands: function () {
-                    var ct = new Command_Templater('Channel Commands', true);
+                    var ct = new Command_Templater("Channel Commands", true),
+                        topicContent = ["topic", "To display this channels topic."],
+                        isChanMod = poChan.isChanMod(src);
 
-                    ct.span(ChanUser + " Commands");
+                    if (isChanMod) {
+                        topicContent = ["topic", "{Text::Any Topic}", "To display this channels topic if {Text::Any Topic} is empty. Otherwise sets it to {Text::Any Topic}."];
+                    }
 
-                    ct.register("csettings", "Displays Channel Settings and information.");
-                    ct.register("cauth", "Displays Channel Authority.");
-                    ct.register("topic", "Displays Channel Topic.");
+                    ct.span("Channel " + ChanUser + " Commands");
 
-                    if (poChan.isChanMod(src)) {
-                        ct.span(ChanMod + " Commands");
+                    ct.register("csettings", "Displays channel settings and information.");
+                    ct.register("cauth", "Displays the authority of this channel.");
+                    ct.register.apply(ct, topicContent);
+
+                    if (isChanMod) {
+                        ct.span("Channel " + ChanMod + " Commands");
 
                         if (permission(src, 1)) {
                             ct.register("perm", "Makes the channel permanent or temporally.");
                         }
-                        ct.register("channelwall", ["{p Message}"], "Announces something in this channel.");
-                        ct.register("channelhtmlwall", ["{p Message}"], "Announces something with HTML in this channel.");
-                        ct.register("html", ["{p Message}"], "Sends a message to everyone with HTML.");
-                        ct.register("channelkick", ["{r Person}", "{p <u>Reason</u>}"], "Kicks someone from this channel.");
-                        ct.register("channelmute", ["{or Person}", "<u>{o Time}</u>", "{bv <u>Time Unit</b>}", "<u>{p Reason}</u>"], "Mutes someone in this channel.");
-                        ct.register("channelunmute", ["{or Person}", "<u>{p Reason}</u>"], "Unmutes someone in this channel.");
-                        ct.register("invite", ["{r Player}"], "Invites someone to this channel.");
-                        ct.register("topic", ["{p Message}"], "Changes the channel topic. If message is default, changes the Topic back to it's default.");
-                        ct.register("cbanlist", "Displays Channel Banlist.");
-                        ct.register("cmutelist", "Displays Channel Mutelist.");
-                        ct.register("csilence", "Silences everyone whos channel authority is lower than yours.");
-                        ct.register("cunsilence", "Unsilences the channel.");
-                        ct.register("chatcolor", ["{p Color}", "{p Second Color}"], "Adds a Chat Color to the channel. If color is random, then uses a random color.");
-                        ct.register("chatcoloroff", "Removes Chat Color in the channel.");
+                        ct.register("channelwall", ["{Text::Any Message}"], "To announce {Text::Any Message} in this channel.");
+                        ct.register("channelhtmlwall", ["{Text::Any Message}"], "To announce {Text::Any Message} with HTML in this channel.");
+                        ct.register("html", ["{Text::Any Message}"], "To send {Text::Any Message} with HTML in this channel.");
+                        ct.register("channelkick", ["{Player::Online Player}", "{Text::Any <u>Reason</u>}"], "To kick {Player::Online Player} with an optional {Text::Any Reason} in this channel.");
+                        ct.register("channelmute", ["{Player::Database Player}", "<u>{Text::Number Time}</u>", "{Text::Time <u>Time Unit</u>}", "{Text::Any <u>Reason</u>}"], "To mute {Player::Database Player} for an optional {Text::Number Time}, {Text::Time Time Unit}, and/or {Text::Any Reason} in this channel.");
+                        ct.register("channelunmute", ["{Player::Database Player}", "{Text::Any <u>Reason</u>}"], "To unmute {Player::Database Player} with an optional {Text::Any Reason} in this channel.");
+                        ct.register("invite", ["{Player::Online Player}"], "To invite {Player::Online Player} to this channel.");
+                        ct.register("topic", ["{Text::Any Topic}"], "To change the channel topic to {Text::Any Topic}. If {Text::Any Topic} is default, changes this channel's topic back to it's default.");
+                        ct.register("cbanlist", "Displays this channel's banlist.");
+                        ct.register("cmutelist", "Displays this channel's mutelist.");
+                        ct.register("csilence", "To silence everyone whos channel authority is lower than yours.");
+                        ct.register("cunsilence", "To unsilence the channel.");
+                        ct.register("chatcolor", ["{Text::Any Color}", "{Text::Any Second Color}"], "Adds the chat color effect to this channel using the colors {Text::Any Color} and {Text::Any Second Color} If {Text::Any Color} or {Text::Any Second Color} is random, then uses a random color.");
+                        ct.register("chatcoloroff", "Removes the chat color effect from this channel.");
                     }
 
                     if (poChan.isChanAdmin(src)) {
-                        ct.span(ChanAdmin + " Commands");
+                        ct.span("Channel " + ChanAdmin + " Commands");
 
                         if (permission(src, 2)) {
-                            ct.register("destroychannel", "Destroys this channel.");
+                            ct.register("destroychannel", "To destory this channel.");
                         }
 
-                        ct.register("installtour", "Installs tournaments in this channel.");
-                        ct.register("uninstalltour", "Uninstalls tournaments in this channel.");
+                        ct.register("installtour", "To install tournaments in this channel.");
+                        ct.register("uninstalltour", "To uninstall tournaments in this channel.");
 
-                        ct.register(removespaces(ChanUser).toLowerCase(), ["{or Person}"], "Makes someone " + ChanUser + " in this channel.");
-                        ct.register(removespaces(ChanMod).toLowerCase(), ["{or Person}"], "Makes someone " + ChanMod + " in this channel.");
-                        ct.register(removespaces(ChanTour0).toLowerCase(), ["{or Person}"], "Makes someone " + ChanTour0 + " in this channel.");
-                        ct.register(removespaces(ChanTour1).toLowerCase(), ["{or Person}"], "Makes someone " + ChanTour1 + " in this channel.");
+                        ct.register(removespaces(ChanUser).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanUser) + " in this channel.");
+                        ct.register(removespaces(ChanMod).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanMod) + " in this channel.");
+                        ct.register(removespaces(ChanTour0).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanTour0) + " in this channel.");
+                        ct.register(removespaces(ChanTour1).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanTour1) + " in this channel.");
 
-                        ct.register("channel", ["{b Ban/Unban}", "{or Person}", "<u>{o Time}</u>", "{bv <u>Time Unit</b>}", "<u>{p Reason}</u>"], "Bans or unbans someone from this channel.", true);
+                        ct.register("channelban", ["{Player::Database Player}", "<u>{o Time}</u>", "{bv <u>Time Unit</b>}", "<u>{p Reason}</u>"], "Bans or unbans someone from this channel.");
                     }
 
                     if (poChan.isChanOwner(src)) {
-                        ct.span(ChanOwner + " Commands");
+                        ct.span("Channel " + ChanOwner + " Commands");
 
                         if (noPermission(src, 2)) {
-                            ct.register("destroychannel", "Destroys the channel.");
+                            ct.register("destroychannel", "To destory this channel.");
                         }
 
-                        ct.register("channelprivate", "Makes the channel auth-only and kicks everyone who isn't channel auth.");
-                        ct.register("channelpublic", "Lets everyone back in.");
-                        ct.register(removespaces(ChanAdmin).toLowerCase(), ["{or Person}"], "Makes someone " + ChanAdmin + " in this channel.");
-                        ct.register(removespaces(ChanOwner).toLowerCase(), ["{or Person}"], "Makes someone " + ChanOwner + " in this channel.");
+                        ct.register("channelpublic", "To allow everyone (with the exception of players on the channel banlist) into the channel.");
+                        ct.register("channelprivate", "To make the channel auth-only. Also kicks everyone out of the channel who isn't (channel) auth.");
+                        ct.register(removespaces(ChanAdmin).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanAdmin) + " in this channel.");
+                        ct.register(removespaces(ChanOwner).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanOwner) + " in this channel.");
                     }
 
                     ct.render(src, chan);
@@ -5347,14 +5204,9 @@ if(message == "Maximum Players Changed.") {
                 /* -- Channel Templates: Normal */
                 ctourauthlist: function () {
                     var authlist = poChan.tourAuth,
-                        count = objLength(authlist);
+                        count = authlist.length(),
+                        t = new Templater(sLetter(ChanTour1));
 
-                    if (count === 0) {
-                        botMessage(src, "No " + sLetter(ChanTour1) + " at the moment!", chan);
-                        return;
-                    }
-
-                    var t = new Templater(sLetter(ChanTour1));
                     t.register("");
 
                     for (x in authlist) {
@@ -5367,11 +5219,10 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 csettings: function () {
-                    var t = new Templater('Channel Settings');
-
-                    var g = function (str) {
-                        return "<font color='green'><b>" + str + "</b></font>";
-                    },
+                    var t = new Templater('Channel Settings'),
+                        g = function (str) {
+                            return "<font color='green'><b>" + str + "</b></font>";
+                        },
                         r = function (str) {
                             return "<font color='red'><b>" + str + "</b></font>";
                         },
@@ -5384,12 +5235,10 @@ if(message == "Maximum Players Changed.") {
                         };
 
                     check(poChan.perm, "The channel is", "permanent", "temporally");
-                    check(poChan.private, "The channel is", "private", "public"); // private = when the channel is private
-                    check(!poChan.defaultTopic, "The channel is using a", "custom topic", "default topic"); //  give custom topic green, not red.
+                    check(poChan.private, "The channel is", "private", "public"); /* private = when the channel is private */
+                    check(!poChan.defaultTopic, "The channel is using a", "custom topic", "default topic"); /* give custom topic green, not red. */
                     check(poChan.toursEnabled, "The channel has", "tours enabled", "tours disabled");
                     check(chatcolor, "The channel has", "chat color enabled", "chat color disabled");
-
-
 
                     if (poChan.toursEnabled) {
                         check(poChan.tour.AutoStartBattles, "Auto Start Battles for this channel is", "on", "off");
@@ -5421,13 +5270,7 @@ if(message == "Maximum Players Changed.") {
                             'admins': [],
                             'owners': []
                         },
-                        authTotal = objLength(authList);
-
-                    if (authTotal == 0) {
-                        botMessage(src, "No one is auth in this channel.", chan);
-                        return;
-                    }
-
+                        authTotal = authList.length();
 
                     for (x in authList) {
                         cauth = authList[x];
@@ -5441,9 +5284,9 @@ if(message == "Maximum Players Changed.") {
                         }
                     }
 
-                    var t = new Templater("Channel Authority");
+                    var t = new Templater("Channel Authority"),
+                        c = auths.owners;
 
-                    var c = auths.owners;
                     if (c.length != 0) {
                         t.register("<font color=red size=4><strong>" + sLetter(ChanOwner) + " (" + c.length + ")</strong></font>");
                         t.register("");
@@ -5492,14 +5335,9 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     Prune.channelBans(chan);
-                    var bans = poChan.banlist;
 
-                    if (objLength(bans) === 0) {
-                        botMessage(src, "No one is banned in this channel.", chan);
-                        return;
-                    }
-
-                    var last, lastname, l, add, t, n = sys.time() * 1,
+                    var bans = poChan.banlist,
+                        last, lastname, l, add, t, n = sys.time() * 1,
                         perm = permission(src, 1),
                         y;
 
@@ -5538,18 +5376,10 @@ if(message == "Maximum Players Changed.") {
 
                     Prune.channelMutes(chan);
 
-                    var mutes = poChan.mutelist;
-
-                    if (objLength(mutes) == 0) {
-                        botMessage(src, "No one is muted in this channel.", chan);
-                        return;
-                    }
-
-                    var last, lastname, l, add, tstr, now = sys.time() * 1,
+                    var mutes = poChan.mutelist,
+                        last, lastname, l, add, tstr, now = sys.time() * 1,
                         perm = permission(src, 1),
-                        y;
-
-                    var tt = new Table_Templater('Channel Mutelist', 'blue', '3');
+                        y, tt = new Table_Templater('Channel Mutelist', 'blue', '3');
 
                     if (perm) {
                         add = ["IP", "Muted Name", "Muted By", "Reason", "Length", "Last Used Name"];
@@ -5577,7 +5407,7 @@ if(message == "Maximum Players Changed.") {
 
                     tt.render(src, chan);
                 },
-                /* -- Channel Commands: Wall -- */
+
                 channelhtmlwall: function () {
                     if (!poChan.isChanMod(src) && noPermission(src, 1)) {
                         noPermissionMessage(src, fullCommand, chan);
@@ -5604,14 +5434,13 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     var color = script.namecolor(src),
-                        srcname = sys.name(src)
-
-                        sys.sendHtmlAll(BORDER + "<br>", chan);
-
-                    var l = '',
+                        srcname = sys.name(src),
+                        l = '',
                         send = sys.sendAll,
                         f = commandData,
                         displaystr = srcname + ': ' + f;
+
+                    sys.sendHtmlAll(BORDER + "<br>", chan);
 
                     if (UseIcons) {
                         l = rankico;
@@ -5624,7 +5453,6 @@ if(message == "Maximum Players Changed.") {
                     sys.sendHtmlAll("<br>" + BORDER, chan);
                 },
 
-                /* -- Channel Commands: HTML -- */
                 html: function () {
                     if (!poChan.isChanMod(src) && noPermission(src, 1)) {
                         noPermissionMessage(src, fullCommand, chan);
@@ -5635,10 +5463,10 @@ if(message == "Maximum Players Changed.") {
                         sys.sendHtmlAll(sendStr, chan);
                         return;
                     }
-                    sys.sendHtmlAll(commandData, chan); // higher power for auth.
+
+                    sys.sendHtmlAll(commandData, chan); /* Direct HTML for auth */
                 },
 
-                /* -- Channel Commands: Silence */
                 csilence: function () {
                     if (!poChan.isChanMod(src) && noPermission(src, 1)) {
                         noPermissionMessage(src, fullCommand, chan);
@@ -5667,10 +5495,12 @@ if(message == "Maximum Players Changed.") {
                         2: "super ",
                         3: "mega "
                     }[poChan.silence];
+
                     botAll(player(src) + " " + type + "silenced the channel!", chan);
 
                     cData.changeStatus(chan, poChan.perm, poChan.private, poChan.silence);
                 },
+
                 cunsilence: function () {
                     if (!poChan.isChanMod(src) && noPermission(src, 1)) {
                         noPermissionMessage(src, fullCommand, chan);
@@ -5905,7 +5735,6 @@ if(message == "Maximum Players Changed.") {
                     cData.changeBans(chan, poChan.mutelist, poChan.banlist);
                 },
 
-                /* -- Channel Commands: Tournaments */
                 installtour: function () {
                     if (!poChan.isChanAdmin(src)) {
                         noPermissionMessage(src, fullCommand, chan);
@@ -5916,7 +5745,7 @@ if(message == "Maximum Players Changed.") {
                         poChan.toursEnabled = true;
                     }
 
-                    if (poChan.toursEnabled) {
+                    if (poChan.toursEnabled && poChan.has("tour")) {
                         botMessage(src, "Tours are already installed!", chan);
                         return;
                     }
@@ -5946,7 +5775,7 @@ if(message == "Maximum Players Changed.") {
                         poChan.toursEnabled = false;
                     }
 
-                    if (!poChan.toursEnabled) {
+                    if (!poChan.toursEnabled || !poChan.has("tour")) {
                         botMessage(src, "Tours are not installed!", chan);
                         return;
                     }
@@ -5965,7 +5794,6 @@ if(message == "Maximum Players Changed.") {
                     cData.changeToursEnabled(chan, false);
                 },
 
-                /* -- Channel Commands: Invite */
                 invite: function () {
                     if (!poChan.isChanMod(src)) {
                         noPermissionMessage(src, fullCommand, chan);
@@ -5985,7 +5813,6 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, player(tar) + " was invited.");
                 },
 
-                /* -- Channel Commands: Ban */
                 channelban: function () {
                     if (!poChan.isChanAdmin(src) && noPermission(src, 2)) {
                         noPermissionMessage(src, fullCommand, chan);
@@ -6097,7 +5924,7 @@ if(message == "Maximum Players Changed.") {
             /* -- Channel Commands: Authing */
             channelCommands[removespaces(ChanTour0).toLowerCase()] = function () {
                 if (!poChan.isChanAdmin(src) && noPermission(src, 2)) {
-                    botMessage(src, "You don't have the permission to do that", chan);
+                    noPermissionMessage(src, fullCommand, chan);
                     return;
                 }
                 if (mcmd[0] == "") {
@@ -6122,7 +5949,7 @@ if(message == "Maximum Players Changed.") {
 
             channelCommands[removespaces(ChanTour1).toLowerCase()] = function () {
                 if (!poChan.isChanAdmin(src) && noPermission(src, 2)) {
-                    botMessage(src, "You don't have the permission to do that", chan);
+                    noPermissionMessage(src, fullCommand, chan);
                     return;
                 }
                 if (mcmd[0] == "") {
@@ -6148,11 +5975,11 @@ if(message == "Maximum Players Changed.") {
 
             channelCommands[removespaces(ChanUser).toLowerCase()] = function () {
                 if (!poChan.isChanAdmin(src) && noPermission(src, 2)) {
-                    botMessage(src, "You don't have the permission to do that", chan);
+                    noPermissionMessage(src, fullCommand, chan);
                     return;
                 }
                 if (dbIp == undefined) {
-                    botMessage(src, 'That player doesn\'t exist!', chan);
+                    botMessage(src, "That player doesn't exist!", chan);
                     return;
                 }
                 if (poChan.chanAuth[commandData.toLowerCase()] == 0 || poChan.chanAuth[commandData.toLowerCase()] == undefined) {
@@ -6169,7 +5996,7 @@ if(message == "Maximum Players Changed.") {
 
             channelCommands[removespaces(ChanMod).toLowerCase()] = function () {
                 if (!poChan.isChanAdmin(src) && noPermission(src, 2)) {
-                    botMessage(src, "You don't have the permission to do that", chan);
+                    noPermissionMessage(src, fullCommand, chan);
                     return;
                 }
                 if (dbIp == undefined) {
@@ -6236,25 +6063,26 @@ if(message == "Maximum Players Changed.") {
                     if (!poChan.toursEnabled) {
                         return;
                     }
+
                     var ct = new Command_Templater("Tournament Commands", true);
                     ct.span("Tournament " + ChanTour0 + " Commands");
 
-                    ct.register("join", "Makes you join the tournament.");
-                    ct.register("unjoin", "Makes you leave the tournament.");
+                    ct.register("join", "To join this channel's tournament.");
+                    ct.register("unjoin", "To unjoin this channel's tournament.");
                     ct.register("viewround", "Displays information about the current round.");
-                    ct.register("tourprize", "Displays the tournament prize.");
+                    ct.register("tourprize", "Displays this channel's tournament prize.");
 
                     if (poChan.tour.hasTourAuth(src)) {
                         ct.span("Tournament " + ChanTour1 + " Commands");
-                        ct.register("tour", ["{p Tier}", "{o Players}", "{o <u>Type</u>}", "{p <u>Prize</u>}"], "Starts a tournament. Type will be Single Elimination (1) if not specified. Types are: Single Elimination (1), Double Elimination (2), Triple Elimination (3), Tag Team Single Elimination (4), Tag Team Double Elimination (5), Tag Team Triple Elimination (6). For Tag Team Tournaments, the entrants must be an even number.");
-                        ct.register("dq", ["{g Person}"], "DQs someone from the tournament.");
-                        ct.register("cancelbattle", ["{g Person}"], "Makes someones battle unofficial.");
-                        ct.register("changespots", ["{o Number}"], "Changes the number of entry spots. In Tag Team Tournaments, the entrants must be an even number.");
-                        ct.register("push", ["{or Person}"], "Adds someone to the tournament. In Tag Team Tournaments, you cannot add players after the signup.");
-                        ct.register("endtour", "Ends the tournament.");
-                        ct.register("switch", ["{g Player}", "{r NewPlayer}"], "Switches 2 players in the tournament.");
-                        ct.register("autostartbattles", "Toggles auto start battles in the channel.");
-                        ct.register("display", ["{b 1/2}"], "Changes the tournament display mode in this channel. 1 is Normal, 2 is Clean.");
+                        ct.register("tour", ["{Text::Any Tier}", "{Text::Number Players}", "{Text::Number <u>Type</u>}", "{Text::Any <u>Prize</u>}"], "Starts a new tournament. Type will be Single Elimination (1) if not specified. Types are: Single Elimination (1), Double Elimination (2), Triple Elimination (3), Tag Team Single Elimination (4), Tag Team Double Elimination (5), Tag Team Triple Elimination (6). For Tag Team Tournaments, the entrants must be an even number.");
+                        ct.register("dq", ["{Player::Tournament Player}"], "Disqualifies {Player::Tournament Player} from this channel's tournament.");
+                        ct.register("cancelbattle", ["{Player::Tournament Player}"], "Makes someones battle unofficial.");
+                        ct.register("changespots", ["{Text::Number Spots}"], "Changes the number of entry spots to {Text::Number Spots}. In Tag Team Tournaments, the entrants must be an even number.");
+                        ct.register("push", ["{Player::Database Player}"], "Adds {Player::Database Player} to the tournament. In Tag Team Tournaments, you cannot add players after the signup.");
+                        ct.register("endtour", "Ends this channel's running tournament.");
+                        ct.register("switch", ["{Player::Tournament Player}", "{Player::Online New Player}"], "Switches {Player::Tournament Player} with {Player::Online New Player} in this channel's tournament.");
+                        ct.register("autostartbattles", "Toggles auto start battles in this channel.");
+                        ct.register("display", ["{Text::Choice 1/2}"], "To change this channel's tournament display mode. 1 is Normal, 2 is Clean.");
                     }
 
 /*
@@ -6331,8 +6159,8 @@ if(message == "Maximum Players Changed.") {
                 cmdcommands: function () {
                     var ct = new Command_Templater("Command Commands", true);
                     ct.span("Command " + ModName + " Commands");
-                    ct.register("enable", ["{p Command}"], "Enables a command. Valid commands are: me, attack, roulette, catch.");
-                    ct.register("disable", ["{p Command}"], "Disables a command. Valid commands are: me, attack, roulette, catch.");
+                    ct.register("enable", ["{Text::Any Command}"], "Enables {Text::Any Command}. Valid commands are: me, attack, roulette, catch.");
+                    ct.register("disable", ["{Text::Any Command}"], "Disables {Text::Any Command}. Valid commands are: me, attack, roulette, catch.");
 
                     if (permission(src, 2)) {
                         ct.span("Command " + AdminName + " Commands");
@@ -6342,15 +6170,15 @@ if(message == "Maximum Players Changed.") {
 
                     if (permission(src, 3)) {
                         ct.span("Command " + OwnerName + " Commands");
-                        ct.register("pointercommand", ["{p Name}", "{p Command}"], "Creates a pointer command.");
-                        ct.register("delpointercommand", ["{p Name}"], "Deletes a pointer command.");
-                        ct.register("futurelimit", ["{o Limit}"], "Changes the futures allowed per x seconds.");
+                        ct.register("pointercommand", ["{Text::Any Name}", "{Text::Any Command}"], "Creates the pointer command, {Text::Any Name}, that points to {Text::Any Command}.");
+                        ct.register("delpointercommand", ["{Text::Any Name}"], "Deletes the pointer command, {Text::Any Name}.");
+                        ct.register("futurelimit", ["{Text::Number Limit}"], "Changes the futures allowed to every {Text::Number Limit} seconds.");
                     }
 
                     if (host) {
                         ct.span("Command Founder Commands");
-                        ct.register("evallock", "Locks eval for everyone but you and evalops.");
-                        ct.register("evalunlock", "Unlocks eval.");
+                        ct.register("evallock", "To lock eval for everyone but you and eval operators.");
+                        ct.register("evalunlock", "To unlock eval.");
                     }
 
                     ct.render(src, chan);
@@ -6360,26 +6188,26 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater("Moderation Commands", true);
                     ct.span("Moderation " + ModName + " Commands");
 
-                    ct.register("kick", ["{r Person}", "{p <u>Reason</u>}"], "Kicks someone.");
-                    ct.register("mute", ["{or Person}", "{o <u>Time</u>}", "{bv <u>Time Unit</u>}", "{p <u>Reason</u>}"], "Mutes someone.");
-                    ct.register("unmute", ["{or Person}", "{p <u>Reason</u>}"], "Unmutes someone.");
-                    ct.register("tempban", ["{or Person}", "{o Time}", "{bv <u>Time Unit</u>}", "{p <u>Reason</u>}"], "Bans someone for a given time.");
-                    ct.register("untempban", ["{or Person}", "{p <u>Reason</u>}"], "Unbans someone who has been tempbanned.");
-                    ct.register("rangebanlist", "Displays Range Ban List.");
-                    ct.register("banlist", "Displays Banlist.");
-                    ct.register("tempbanlist", "Displays Temp Ban List.");
-                    ct.register("mutelist", "Displays Mute List.");
+                    ct.register("kick", ["{Player::Online Player}", "{Text::Any <u>Reason</u>}"], "To kick {Player::Online Player} with the optional reason, {Text::Any Reason}.");
+                    ct.register("mute", ["{Player::Database Player}", "{Text::Number <u>Time</u>}", "{Text::Time <u>Time Unit</u>}", "{Text::Any <u>Reason</u>}"], "To mute {Player::Database Player} for {Text::Number Time} with {Text::Time Time Unit} as time unit, with the reason being {Text::Any Reason}.");
+                    ct.register("unmute", ["{Player::Database Player}", "{Text::Any <u>Reason</u>}"], "To unmute {Player::Database Player}, with the reason being {Text::Any Reason}.");
+                    ct.register("tempban", ["{Player::Database Player}", "{Text::Number <u>Time</u>}", "{Text::Time <u>Time Unit</u>}", "{Text::Any <u>Reason</u>}"], "To ban {Player::Database Player} for {Text::Number Time} with {Text::Time Time Unit} as time unit, with the reason being {Text::Any Reason}.");
+                    ct.register("untempban", ["{Player::Database Player}", "{Text::Any <u>Reason</u>}"], "To un-tempban {Player::Database Player}, with the reason being {Text::Any Reason}.");
+                    ct.register("rangebanlist", "Displays the list of range bans.");
+                    ct.register("banlist", "Displays the list of bans.");
+                    ct.register("tempbanlist", "Displays the list of temp bans.");
+                    ct.register("mutelist", "Displays the list of mutes.");
 
                     if (permission(src, 2)) {
                         ct.span("Moderation " + AdminName + " Commands");
-                        ct.register("ban", ["{or Person}", "{p <u>Reason</u>}"], "Bans someone.");
-                        ct.register("unban", ["{or Person}", "{p <u>Reason</u>}"], "Unbans someone.");
+                        ct.register("ban", ["{Player::Database Player}", "{Text::Any <u>Reason</u>}"], "To ban {Player::Database Player}, with the reason being {Text::Any Reason}.");
+                        ct.register("unban", ["{Player::Database Player}", "{Text::Any <u>Reason</u>}"], "To unban {Player::Database Player}, with the reason being {Text::Any Reason}.");
                     }
 
                     if (permission(src, 3)) {
                         ct.span("Moderation " + OwnerName + " Commands");
-                        ct.register("rangeban", ["{p RangeIP}", "{o <u>Time</u>}", "{bv <u>Time Unit</u>}", "{p <u>Reason</u>}"], "Bans a range IP.");
-                        ct.register("rangeunban", ["{p RangeIP}"], "Removes a rangeban.");
+                        ct.register("rangeban", ["{Text::Any Range IP}", "{Text::Number <u>Time</u>}", "{Text::Time <u>Time Unit</u>}", "{Text::Any <u>Reason</u>}"], "To range ban {Text::Any Range IP} for {Text::Number Time} with {Text::Time Time Unit} as time unit, with the reason being {Text::Any Reason}.");
+                        ct.register("rangeunban", ["{Text::Any Range IP}"], "To un-range ban {Text::Any Range IP}.");
                     }
 
                     ct.render(src, chan);
@@ -6389,14 +6217,14 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater("Impersonation Commands");
 
                     if (implock) {
-                        ct.register("imp", ["{p Thing}"], "Lets you Impersonate something.");
-                        ct.register("impoff", "Lets you stop Impersonating.");
+                        ct.register("imp", ["{Text::Any Target}"], "To impersonate {Text::Any Target}.");
+                        ct.register("impoff", "To stop impersonating.");
                     }
 
-                    ct.register("unimp", ["{r Person}"], "Removes someones Impersonation.");
+                    ct.register("unimp", ["{Player::Online Player}"], "Removes {Player::Online Player}'s impersonation.");
 
-                    ct.register("superimp", ["{p Thing}"], "Changes your name to ~<b>Thing</b>~.");
-                    ct.register("superimpoff", "Restores your name.");
+                    ct.register("superimp", ["{Text::Any Target}"], "Changes your name to ~{Text::Any Target}~.");
+                    ct.register("superimpoff", "Restores your name to it's original.");
 
                     ct.render(src, chan);
                 },
@@ -6405,19 +6233,19 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater("Silence Commands", true);
                     ct.span("Silence " + ModName + " Commands");
 
-                    ct.register("silence", ["<u>{o Time}</u>"], "Silences the chat for " + sLetter(UserName) + ". Time goes in minutes.");
+                    ct.register("silence", ["{Text::Number <u>Time</u>}"], "Silences the chat for all auth under " + sLetter(UserName) + " for {Text::Number Time}. If no {Text::Number Time} specified, silences the chat forever.");
                     ct.register("unsilence", "Unsilences the chat.");
-                    ct.register("voice", ["{or Player}"], "Gives someone Voice (the ability to talk through channel silences and normal silence).");
-                    ct.register("unvoice", ["{or Player}"], "Removes someones Voice.");
+                    ct.register("voice", ["{Player::Database Player}"], "Gives {Player::Database Player} voice (the ability to talk through channel silences and normal silence).");
+                    ct.register("unvoice", ["{Player::Database Player}"], "Removes {Player::Database Player}'s voice.");
 
                     if (sys.auth(src) < 2) {
                         ct.span("Silence " + AdminName + " Commands");
-                        ct.register("supersilence", ["<u>{o Time}</u>"], "Silences the chat for " + sLetter(UserName) + " and " + sLetter(ModName) + ". Time goes in minutes.");
+                        ct.register("supersilence", ["{Text::Number <u>Time</u>}"], "Silences the chat for all auth under " + sLetter(ModName) + " for {Text::Number Time}. If no {Text::Number Time} specified, silences the chat forever.");
                     }
 
                     if (sys.auth(src) < 3) {
                         ct.span("Silence " + OwnerName + " Commands");
-                        ct.register("megasilence", ["<u>{o Time}</u>"], "Silences the chat for " + sLetter(UserName) + ", " + sLetter(ModName) + " and " + sLetter(AdminName) + ". Time goes in minutes.");
+                        ct.register("megasilence", ["{Text::Number <u>Time</u>}"], "Silences the chat for all auth under " + sLetter(AdminName) + " for {Text::Number Time}. If no {Text::Number Time} specified, silences the chat forever.");
                     }
 
                     ct.render(src, chan);
@@ -6427,13 +6255,8 @@ if(message == "Maximum Players Changed.") {
                 rangebanlist: function () {
                     Prune.rangeBans();
 
-                    var range = DataHash.rangebans;
-                    if (objLength(range) == 0) {
-                        botMessage(src, 'No one is range banned.', chan);
-                        return;
-                    }
-
-                    var t = sys.time() * 1,
+                    var range = DataHash.rangebans,
+                        t = sys.time() * 1,
                         r, i, s;
 
                     var tt = new Table_Templater("Range Ban List", "darkviolet", "3");
@@ -6456,19 +6279,15 @@ if(message == "Maximum Players Changed.") {
                 tempbanlist: function () {
                     Prune.bans();
 
-                    var temp = DataHash.tempbans;
-                    if (objLength(temp) == 0) {
-                        botMessage(src, "There are currently no temp bans.", chan);
-                        return;
-                    }
+                    var temp = DataHash.tempbans,
+                        last, lastname, i, r, s, t = sys.time() * 1,
+                        tt = new Table_Templater('Temp Ban List', 'limegreen', '3');
 
-                    var last, lastname, i, r, s, t = sys.time() * 1;
-
-                    var tt = new Table_Templater('Temp Ban List', 'limegreen', '3');
                     tt.register(["IP", "Last Used Name", "By", "Reason", "Duration"], true);
 
                     for (i in temp) {
-                        r = temp[i], s = "forever";
+                        r = temp[i];
+                        s = "forever";
 
                         if (r.time !== 0) {
                             s = "for " + getTimeString(r.time - t);
@@ -6476,6 +6295,7 @@ if(message == "Maximum Players Changed.") {
 
                         last = "N/A";
                         lastname = lastName(r.ip);
+
                         if (lastname !== undefined) {
                             last = lastname;
                         }
@@ -6489,20 +6309,15 @@ if(message == "Maximum Players Changed.") {
                 mutelist: function () {
                     Prune.mutes();
 
-                    var mutes = DataHash.mutes;
-                    if (objLength(mutes) == 0) {
-                        botMessage(src, 'No one is muted.', chan);
-                        return;
-                    }
+                    var mutes = DataHash.mutes,
+                        s, last, lastname, r, t = sys.time() * 1,
+                        i, r, s, tt = new Table_Templater("Mute List", "blue", "3");
 
-                    var tt = new Table_Templater("Mute List", "blue", "3");
                     tt.register(["IP", "Last Used Name", "By", "Reason", "Duration"], true);
 
-                    var s, last, lastname, r, t = sys.time() * 1,
-                        i, r, s;
-
                     for (i in mutes) {
-                        r = mutes[i], s = "forever";
+                        r = mutes[i];
+                        s = "forever";
 
                         if (r.time !== 0) {
                             s = "for " + getTimeString(r.time - t);
@@ -7197,54 +7012,59 @@ if(message == "Maximum Players Changed.") {
             /* -- Mod Commands: Mod Commands Template -- */
             modCommands[removespaces(ModName).toLowerCase() + "commands"] = function () {
                 var ct = new Command_Templater(ModName + " Commands");
-                ct.register("poll", ["{p Pollsubject}", "{p Option/Option}"], "Starts a Poll.");
-                ct.register("closepoll", "Closes the Poll.");
-                ct.register('changemotd', ["{p Message}"], "Changes the Message of the Day. Use /changemotd default to set this to default.");
-                ct.register("info", ["{or Person}"], "Displays Information about Someone.");
-                ct.register("impcommands", "Displays Impersonation Commands.");
-                ct.register("silencecommands", "Displays Silence Commands.");
-                ct.register("cmdcommands", "Displays Command Commands.");
-                ct.register("moderatecommands", "Displays Moderation Commands.");
-                ct.register("aliases", ["{p IP}"], "Displays Aliases of an IP.");
-                ct.register("hostname", ["{or Person}"], "Displays the hostname of someone.");
-                ct.register("passauth", ["{or Person}"], "Passes your auth to another alias. The alias must be registered and under your ip.");
+
+                ct.register("impcommands", "Displays the Impersonation commands.");
+                ct.register("silencecommands", "Displays the Silence commands.");
+                ct.register("cmdcommands", "Displays the Command commands.");
+                ct.register("moderatecommands", "Displays the Moderation commands.");
+                ct.register("poll", ["{Text::Any Subject}", "{Text::Any Options}"], "To start a poll with the subject as {Text::Any Subject}, and options as {Text::Any Options}, which are separated with '/'.");
+                ct.register("closepoll", "To close the running poll.");
+                ct.register("info", ["{Player::Database Player}"], "Displays player information of {Player::Database Player}.");
+                ct.register("aliases", ["{Text::Any IP}"], "Displays the aliases of {Text::Any IP}.");
+                ct.register("hostname", ["{Player::Database Player}"], "Displays the hostname of {Player::Database Player}.");
+                ct.register('changemotd', ["{Text::Any MOTD}"], "Changes the Message of the Day to {Text::Any MOTD}. Use /changemotd default to set this to default.");
+                ct.register("passauth", ["{Player::Database Player}"], "To pass your auth to {Player::Database Player}. The alias must be registered and under your ip.");
+
                 ct.render(src, chan);
             }
 
-            /* -- Admin Commands: Start -- */
-            adminCommands = ({ /* -- Admin Commands: Command Templates */
+            adminCommands = ({
                 leaguecommands: function () {
                     var ct = new Command_Templater("League Commands");
-                    ct.register("changegl", ["{o Number}", "{or Person}"], "Changes a gym leader spot. Number can be 1-16.");
-                    ct.register("changeelite", ["{o Number}", "{or Person}"], "Changes an elite four spot. Number can be 1-4.");
-                    ct.register("changechampion", ["{o Person}"], "Changes the champion spot.");
-                    ct.register("removegl", ["{o Number}"], "Removes a gym Leader from the league. Number can be 1-16.");
-                    ct.register("removeelite", ["{o Number}"], "Removes an elite four from the league. Number can be 1-4.");
-                    ct.register("removechampion", "Removes the champion from the league.");
+
+                    ct.register("changegl", ["{Text::Number Number}", "{Player::Database Player}"], "To make {Player::Database Player} the league Gym Leader #{Text::Number Spot}, which can be 1-16.");
+                    ct.register("changeelite", ["{Text::Number Number}", "{Player::Database Player}"], "To make {Player::Database Player} the league Elite Four #{Text::Number Spot}, which can be 1-4.");
+                    ct.register("changechampion", ["{Player::Database Player}"], "To make {Player::Database Player} the league champion.");
+
+                    ct.register("removegl", ["{Text::Number Spot}"], "To remove Gym Leader {Text::Number Spot} from the league. {Text::Number Spot} can be 1-4.");
+                    ct.register("removeelite", ["{Text::Number Spot}"], "To remove Elite Four {Text::Number Spot} from the league. {Text::Number Spot} can be 1-4.");
+                    ct.register("removechampion", "To remove the league's champion.");
 
                     ct.render(src, chan);
                 },
 
                 authcommands: function () {
                     var ct = new Command_Templater("Authority Commands", true);
+
                     ct.span("Authority " + AdminName + " Commands");
-                    ct.register(removespaces(Tour0).toLowerCase(), ["{or Person}"], "Makes someone " + Tour0 + " Tournament Authority.");
-                    ct.register(removespaces(Tour1).toLowerCase(), ["{or Person}"], "Makes someone " + Tour1 + " Tournament Authority.");
-                    ct.register(removespaces(UserName).toLowerCase(), ["{or Person}"], "Makes someone " + UserName + " Server Authority.");
-                    ct.register(removespaces(ModName).toLowerCase(), ["{or Person}"], "Makes someone " + ModName + " Server Authority.");
-                    ct.register("tempauth", ["{or Person}", "{o AuthLevel}", "{o Time}", "{bv Time Unit}"], "Makes someone temporal authority. Any other authing command(exclusing tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4. Only " + sLetter(OwnerName) + " can do 2, 3, or 4.");
+
+                    ct.register(removespaces(UserName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(UserName) + ".");
+                    ct.register(removespaces(ModName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ModName) + ".");
+                    ct.register("tempauth", ["{Player::Database Player}", "{Text::Number Auth Level}", "{Text::Number Time}", "{Text::Time Time Unit}"], "To give {Player::Database Player} temporary authority. Any other authing command (except tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4. Only " + sLetter(OwnerName) + " can do 2, 3, or 4.");
+                    ct.register(removespaces(Tour0).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(Tour0) + ".");
+                    ct.register(removespaces(Tour1).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(Tour1) + ".");
 
                     if (permission(src, 3)) {
                         ct.span("Authority " + OwnerName + " Commands");
-                        ct.register(removespaces(AdminName).toLowerCase(), ["{or Person}"], "Makes someone " + AdminName + " Server Authority.");
-                        ct.register(removespaces(OwnerName).toLowerCase(), ["{or Person}"], "Makes someone " + OwnerName + " Server Authority.");
-                        ct.register(removespaces(InvisName).toLowerCase(), ["{or Person}"], "Makes someone " + InvisName + " Server Authority.");
-                        ct.register("changeauthname", ["{b Server/Channel/Tournament/CTour}", "{o Number}", "{p NewName}"], "to change the name of an authlevel. 0-4 for server, 0-3 for channel, 0-1 for tournament, 0-1 for ctour. NewName can have spaces, letters 0-9, and characters a-Z_.");
+                        ct.register(removespaces(AdminName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(AdminName) + ".");
+                        ct.register(removespaces(OwnerName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(OwnerName) + ".");
+                        ct.register(removespaces(InvisName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(InvisName) + ".");
+                        ct.register("changeauthname", ["{Text::Choice Server/Channel/Tournament/CTour}", "{Text::Number Auth Level}", "{Text::Any New Name}"], "To change the name of the {Text::Number Auth Level} authority level, which is part of {Text::Choice Auth Levels}, to {Text::Any New Name}. Server can be 0-4 | Channel can be 0-3 | Tournament and CTour can be 0-1. {Text::Any New Name} can have spaces, letters 0-9, and characters a-Z_.");
                     }
 
                     if (host) {
-                        ct.register("evaluser", ["{or Person}"], "Makes someone an Eval User.");
-                        ct.register("evalop", ["{or Person}"], "Makes someone an Eval Operator. Eval Ops can use eval unregarding their auth, and can eval it is locked.");
+                        ct.register("evaluser", ["{Player::Database Player}"], "To make {Player::Database Player} an Eval User.");
+                        ct.register("evalop", ["{Player::Database Player}"], "To make {Player::Database Player} an Eval Operator. Eval Ops can use eval unregarding their auth, and can use eval when it's locked.");
                     }
 
                     ct.render(src, chan);
@@ -7257,7 +7077,7 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     mcmd[1] = cut(mcmd, 1, ':');
-                    botMessage(src, "Target: " + sys.name(tar), chan);
+                    botMessage(src, "Target: " + player(tar), chan);
                     botMessage(src, "Spam: " + html_escape(mcmd[1]), chan);
 
                     var x;
@@ -7265,7 +7085,7 @@ if(message == "Maximum Players Changed.") {
                         sys.sendHtmlMessage(tar, mcmd[1]);
                     }
                 },
-                /* -- Admin Commands: Silence */
+
                 supersilence: function () {
                     if (silence.level) {
                         botMessage(src, "The chat is already silenced.", chan);
@@ -7283,7 +7103,7 @@ if(message == "Maximum Players Changed.") {
                         "level": 2
                     };
 
-                    botAll(sys.name(src) + " super-silenced the chat" + timeStr);
+                    botAll(player(src) + " super-silenced the chat" + timeStr);
 
                     if (timeStr === "!") {
                         return;
@@ -7305,7 +7125,6 @@ if(message == "Maximum Players Changed.") {
                     sys.delayedCall(timeOut, time);
                 },
 
-                /* -- Admin Commands: Impersonation */
                 implock: function () {
                     if (implock) {
                         botMessage(src, "Implock is already on.", chan);
@@ -7328,17 +7147,14 @@ if(message == "Maximum Players Changed.") {
                     cache.write("implock", false);
                 },
 
-                /* -- Admin Commands: Style -- */
                 activestyle: function () {
                     StyleManager.setActiveStyle(src, commandData, chan);
                 },
 
-                /* -- Admin Commands: Rank Icons */
                 activeicons: function () {
                     IconManager.setActiveIcons(src, commandData, chan);
                 },
 
-                /* -- Admin Commands: League -- */
                 changegl: function () {
                     mcmd[0] = Math.round(parseInt(mcmd[0]));
                     if (isNaN(mcmd[0]) || mcmd[0] > 16 || mcmd[0] < 1) {
@@ -7407,7 +7223,6 @@ if(message == "Maximum Players Changed.") {
                     cache.write("league", JSON.stringify(DataHash.league));
                 },
 
-                /* -- Admin Commands: Ban */
                 ban: function () {
                     if (dbIp === undefined || mcmd[0] == "") {
                         botMessage(src, "No player exists by this name!", chan);
@@ -7468,7 +7283,6 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, "He/she's not banned!", chan);
                 },
 
-                /* -- Admin Commands: Chat */
                 clearchat: function () {
                     var me = player(src),
                         y;
@@ -7480,7 +7294,6 @@ if(message == "Maximum Players Changed.") {
                     botAll(me + " cleared the chat!");
                 },
 
-                /* -- Admin Commands: Team */
                 showteam: function () {
                     if (tar === undefined) {
                         botMessage(src, "That person seems to be offline or does not exist.", chan);
@@ -7489,13 +7302,11 @@ if(message == "Maximum Players Changed.") {
                     script.importable(src, tar, chan);
                 },
 
-                /* -- Admin Commands: Kick -- */
                 masskick: function () {
                     botAll(player(src) + " started the masskick!");
                     massKick();
                 },
 
-                /* -- Admin Commands: Ify -- */
                 'ify': function () {
                     ify.command_ify(src, commandData, chan);
                 },
@@ -7504,7 +7315,6 @@ if(message == "Maximum Players Changed.") {
                     ify.command_unify(src, commandData, chan);
                 },
 
-                /* -- Admin Commands: Auto Idle -- */
                 autoidle: function () {
                     if (dbIp === undefined) {
                         botMessage(src, "Unknown target!", chan);
@@ -7551,29 +7361,28 @@ if(message == "Maximum Players Changed.") {
 
                 autoidleoff: function () {
                     if (dbIp == undefined) {
-                        botMessage(src, "Unknown User.", chan);
+                        botMessage(src, "This player doesn't exist.", chan);
                         return;
                     }
 
                     var name = mcmd[0];
                     mcmd[0] = mcmd[0].toLowerCase();
 
-                    if (typeof DataHash.idles[mcmd[0]] === "undefined") {
-                        botMessage(src, "This Person does not have Auto-Idle.", chan);
+                    if (!DataHash.idles.has(mcmd[0])) {
+                        botMessage(src, "This player doesn't have auto idle.", chan);
                         return;
                     }
 
-                    botAll(name + " was removed from Auto-Idle by " + sys.name(src) + ".", 0);
+                    botAll(player(src) + " removed " + sLetter(name) + " auto idle!", 0);
 
                     if (tar != undefined) {
                         sys.changeAway(tar, false);
                     }
 
-                    delete DataHash.idles[mcmd[0]];
+                    DataHash.idles.remove(mcmd[0]);
                     cache.write("idles", JSON.stringify(DataHash.idles));
                 },
 
-                /* -- Admin Commands: Customization -- */
                 bot: function () {
                     if (commandData == "") {
                         botMessage(src, "Specify a name for the bot!", chan);
@@ -7603,7 +7412,6 @@ if(message == "Maximum Players Changed.") {
                     cache.write("Bot", JSON.stringify(Bot));
                 },
 
-                /* -- Admin Commands: Message Manipulation -- */
                 talk: function () {
                     if (commandData === "") {
                         botMessage(src, "Specify a message.", chan);
@@ -7613,9 +7421,8 @@ if(message == "Maximum Players Changed.") {
                     botAll(commandData, chan);
                 },
 
-                /* -- Admin Commands: Clan */
                 clantag: function () {
-                    if (isEmpty(commandData)) {
+                    if (commandData.isEmpty()) {
                         botMessage(src, "Specify a tag.", chan);
                         return;
                     }
@@ -7623,7 +7430,9 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "This is already the clan tag.", chan);
                         return;
                     }
+
                     botAll(sys.name(src) + " changed the clan tag to " + commandData.bold() + "!", 0);
+
                     ClanTag = commandData;
                     cache.write("ClanTag", ClanTag);
 
@@ -7633,12 +7442,10 @@ if(message == "Maximum Players Changed.") {
                     Clantag.fullTextLower = Clantag.fullText.toLowerCase();
                 },
 
-                /* -- Admin Commands: Temp-Auth */
                 tempauth: function () {
                     script.tAuth(src, mcmd[0], Number(mcmd[1]), Number(mcmd[2]), chan, mcmd[3]);
                 },
 
-                /* -- Admin Commands: Battling */
                 forcebattle: function () {
                     if (!mcmd[1]) {
                         mcmd[1] = "";
@@ -7715,30 +7522,27 @@ if(message == "Maximum Players Changed.") {
                     sys.forceBattle(player1, player2, player1_team, player2_team, clauses, mode, rated);
                     script.afterBattleStarted(src, dest, clauses, rated, player1_team, player2_team);
                     botEscapeAll("A battle between " + pl1 + " and " + pl2 + " has been forced by " + sys.name(src) + "!", 0);
-                    return;
                 }
             });
 
-            /* -- Admin Commands: Admin Command Template */
             adminCommands[removespaces(AdminName).toLowerCase() + "commands"] = function () {
                 var ct = new Command_Templater(AdminName + " Commands");
 
-                ct.register("leaguecommands", "Displays League Commands.");
-                ct.register("authcommands", "Displays Authority Commands.");
+                ct.register("leaguecommands", "Displays the League commands.");
+                ct.register("authcommands", "Displays the Authority commands.");
                 ct.register("masskick", "Kicks all users from the server.");
                 ct.register("clearchat", "Clears the chat.");
-                ct.register("showteam", ["{r Person}"], "Displays someones team.");
-                ct.register("forcebattle", ["{r Player1}", "{r Player2}", "{p <u>Tier</u>}", "{p <u>Mode</u>}", "{p <u>Rated</u>}"], "Forces a battle between 2 players. Tier must be a valid tier for clauses (teams of this are also prioritized if any). Mode can be Doubles or Triples. Rated must be one of the following: true, rated, yes, on. If not, the battle won't be rated.");
-                ct.register("bot", ["{p NewName}"], "Changes the bot name.");
-                ct.register("botcolor", ["{p NewColor}"], "Changes the bot color.");
-                ct.register("clantag", ["{p Tag}"], "Changes the clan tag. If Tag is None, turns the clan feature off.");
-                ct.register("autoidle", ["{or Name}", "<u>{p Entrymsg}</u>"], "Automatically idles someone with an optional entry message displayed when Name logs on. Also works when you only want to change the entry message.");
-                ct.register("autoidleoff", ["{p Name}"], "Removes Name's Auto-Idle.");
+                ct.register("showteam", ["{Player::Online Player}"], "Displays {Player::Online Player}'s team.");
+                ct.register("forcebattle", ["{Player::Online Player1}", "{Player::Online Player2}", "{Text::Any <u>Tier</u>}", "{Text::Any <u>Mode</u>}", "{Text::Any <u>Rated</u>}"], "Forces a battle between {Player::Online Player1} and {Player::Online Player2}, using {Text::Any Tier}'s clauses, {Text::Any Mode} as battle mode, and {Text::Any Rated} deciding if the battle is rated. Tier must be a valid tier for clauses (teams of this are also prioritized if any). Mode can be Doubles or Triples. Rated must be one of the following: true, rated, yes, on. If not, the battle won't be rated.");
+                ct.register("bot", ["{Text::Any Name}"], "Changes the bot's name to {Text::Any Name}.");
+                ct.register("botcolor", ["{Text::Any Color}"], "Changes the bot's color to {Text::Any Color}.");
+                ct.register("clantag", ["{Text::Any Clan Tag}"], "Changes the clan tag to {Text::Any Clan Tag}. If Tag is None, turns the clan feature off.");
+                ct.register("autoidle", ["{Player::Database Player}", "{Text::Any <u>Entry Message</u>}"], "To enable automatic idling of {Player::Database Player} with an optional entry message displayed when he/she logs on. Also works when you only want to change the entry message.");
+                ct.register("autoidleoff", ["{Player::Database Player}"], "Removes {Player::Database Player}'s auto idle.");
 
                 ct.render(src, chan);
             }
 
-            /* -- Admin Authing Commands */
             adminCommands[removespaces(UserName).toLowerCase()] = function () {
                 if (dbIp === undefined) {
                     botMessage(src, "That player doesn't exist");
@@ -7868,15 +7672,14 @@ if(message == "Maximum Players Changed.") {
                 botEscapeAll(mcmd[0].name() + " has been made " + Tour1 + " by " + sys.name(src) + ".", 0);
             }
 
-            /* -- Owner Commands: Start -- */
-            ownerCommands = ({ /* -- Owner Commands: Command Templates -- */
+            ownerCommands = ({
                 dbcommands: function () {
                     var ct = new Command_Templater("Database Commands");
 
-                    ct.register("clearpass", ["{or Person}"], "Clears someones password.");
-                    ct.register("exporttiers", "Exports all tiers to tier_(tiername).txt.");
-                    ct.register("exportplayers", "Exports the all players in the database to members.txt.");
-                    ct.register("deleteplayer", ["{or Person}"], "Erases someone from the players database.");
+                    ct.register("clearpass", ["{Player::Database Player}"], "To clear {Player::Database Player}'s password.");
+                    ct.register("exporttiers", "To export all tiers to tier_(tiername).txt.");
+                    ct.register("exportplayers", "To export the all players in the database to members.txt.");
+                    ct.register("deleteplayer", ["{Player::Database Player}"], "To delete {Player::Database Player} from the players database.");
                     ct.register("db", "Displays all players in the players database.");
 
                     ct.render(src, chan);
@@ -7885,11 +7688,11 @@ if(message == "Maximum Players Changed.") {
                 chatcommands: function () {
                     var ct = new Command_Templater("Chat Commands");
 
-                    ct.register("rankicon", "Toggles Rank Icons and BB Code.");
-                    ct.register("autoedit", "Automaticly corrects messages if on.");
-                    ct.register("messagelimit", ["{o Number}"], "Sets a character limit for players under " + AdminName + " authority.");
-                    ct.register("autokick", "Toggles automatic kicks.");
-                    ct.register("automute", "Toggles automatic mutes.");
+                    ct.register("rankicon", "To toggle Rank Icons and BB Code.");
+                    ct.register("autoedit", "To toggle automatic grammar correction.");
+                    ct.register("messagelimit", ["{Text::Number Limit}"], "To set a character limit for players under " + AdminName + " to {Text::Number Limit}.");
+                    ct.register("autokick", "To toggle automatic kicks.");
+                    ct.register("automute", "To toggle automatic mutes.");
 
                     ct.render(src, chan);
                 },
@@ -7897,9 +7700,9 @@ if(message == "Maximum Players Changed.") {
                 servercommands: function () {
                     var ct = new Command_Templater("Server Commands");
 
-                    ct.register("public", "Makes the server public.");
-                    ct.register("private", "Makes the server private.");
-                    ct.register("allowchannels", "Toggles allowance of creation of non-script channels.");
+                    ct.register("public", "To make the server public.");
+                    ct.register("private", "To make the server private.");
+                    ct.register("allowchannels", "To toggle the allowance of creation of non-script channels.");
 
                     ct.render(src, chan);
                 },
@@ -7908,8 +7711,8 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater("Announcement Commands");
 
                     ct.register("getannouncement", "Displays the raw announcement.");
-                    ct.register("changeannouncement", ["{p Text}"], "Changes the announcement.");
-                    ct.register("testannouncement", ["{p Text}"], "Changes the announcement for you only (useful when testing).");
+                    ct.register("changeannouncement", ["{Text::Any Text}"], "To change the announcement to {Text::Any Text}.");
+                    ct.register("testannouncement", ["{Text::Any Text}"], "To change the announcement to {Text::Any Text}, for yourself only (useful when testing).");
 
                     ct.render(src, chan);
                 },
@@ -7917,29 +7720,23 @@ if(message == "Maximum Players Changed.") {
                 tiercommands: function () {
                     var ct = new Command_Templater("Tier Commands");
 
-                    ct.register("updatetiers", ["{p <u>URL</u>}"], "Updates the server tiers. Tiers must be XML.");
-                    ct.register("resetladder", ["{p Tier}"], "Resets a tier's ladder.");
-                    ct.register("resetladders", "Resets all ladders.");
-                    ct.register("banfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Bans an ability on a pokemon.");
-                    ct.register("unbanfrom", ["{p Tier}", "{p Pokemon}", "{p Ability}"], "Unbans an ability on a Pokemon.");
+                    ct.register("updatetiers", ["{Text::Any <u>URL</u>}"], "To update the server's tiers from {Text::Any URL} (default is <a href='http://pokemon-online.eu/tiers.xml'>pokemon-online.eu/tiers.xml</a>). Tiers must be XML.");
+                    ct.register("resetladder", ["{Text::Any Tier}"], "To reset {Text::Any Tier}'s ladders.");
+                    ct.register("resetladders", "To reset all ladders.");
+                    ct.register("banfrom", ["{Text::Any Tier}", "{Text::Any Pokemon}", "{Text::Any Ability}"], "To ban the ability, {Text::Any Ability}, on {Text::Any Pokemon}, in {Text::Any Tier}.");
+                    ct.register("unbanfrom", ["{Text::Any Tier}", "{Text::Any Pokemon}", "{Text::Any Ability}"], "To unban the ability, {Text::Any Ability}, on {Text::Any Pokemon}, in {Text::Any Tier}.");
                     ct.register("listbans", "Displays all banned abilities.");
 
                     ct.render(src, chan);
                 },
 
-                /* -- Owner Commands: Table Templates -- */
                 listbans: function () {
-                    var banned = DataHash.bannedAbilities;
+                    var banned = DataHash.bannedAbilities,
+                        tt = new Table_Templater("Ability Bans", "brown", "3"),
+                        x, poke, z, abilities;
 
-                    if (objLength(banned) === 0) {
-                        botMessage(src, 'There are no banned abilities.', chan);
-                        return;
-                    }
-
-                    var tt = new Table_Templater("Ability Bans", "brown", "3");
                     tt.register(["Tier", "Pokemon", "Abilities"], true);
 
-                    var x, poke, z, abilities;
                     for (x in banned) {
                         poke = banned[x];
                         for (z in poke) {
@@ -7952,7 +7749,6 @@ if(message == "Maximum Players Changed.") {
                     tt.render(src, chan);
                 },
 
-                /* -- Owner Commands: Spam -- */
                 randomspam: function () {
                     var spam_user = [],
                         spam_color = [],
@@ -8043,8 +7839,8 @@ if(message == "Maximum Players Changed.") {
                             random_user = spam_script;
                         }
                         if (random_spam.contains("was banned by") && !random_user.contains("was banned by")) {
-                            sys.sendHtmlAll("<font color=DarkOrange><timestamp/><b>" + random_spam + "</b></font>", 0);
-                            sys.sendHtmlAll("<font color=DarkOrange><timestamp/><b>Reason:</b></font> " + randomReason(), 0);
+                            sys.sendHtmlAll("<font color=darkorange><timestamp/><b>" + random_spam + "</b></font>", 0);
+                            sys.sendHtmlAll("<font color=darkorange><timestamp/><b>Reason:</b></font> " + randomReason(), 0);
                             continue;
                         }
 
@@ -8053,7 +7849,6 @@ if(message == "Maximum Players Changed.") {
 
                 },
 
-                /* -- Owner Commands: JSESSION */
                 recreate: function () {
                     var m = mcmd[0].toLowerCase(),
                         type = "";
@@ -8090,17 +7885,15 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     JSESSION.refill();
-                    botAll("JSESSION " + type + " have been reset by " + sys.name(src) + "!", 0);
+                    botAll("JSESSION " + type + " have been reset by " + player(src) + "!", 0);
                 },
 
-                /* -- Owner Commands: Rank Icons */
                 rankicon: function () {
                     UseIcons = !UseIcons;
-                    botAll("Rank Icons have been turned " + isOn(UseIcons) + " by " + sys.name(src) + "!", 0);
+                    botAll("Rank Icons have been turned " + toOn(UseIcons) + " by " + player(src) + "!", 0);
                     cache.write("UseIcons", UseIcons);
                 },
 
-                /* -- Owner Commands: Future -- */
                 futurelimit: function () {
                     var pi = parseInt(mcmd[0]);
                     if (isNaN(pi)) {
@@ -8122,14 +7915,12 @@ if(message == "Maximum Players Changed.") {
                     FutureLimit = pi;
                 },
 
-                /* -- Owner Commands: Editing -- */
                 autoedit: function () {
                     MessageEditor = !MessageEditor;
                     botEscapeAll("Auto Editing has been turned " + toOn(MessageEditor) + " by " + sys.name(src) + "!", 0);
                     cache.write("MessageEditor", MessageEditor);
                 },
 
-                /* -- Owner Commands: Limiting */
                 messagelimit: function () {
                     commandData = parseInt(commandData);
                     if (isNaN(commandData)) {
@@ -8145,7 +7936,6 @@ if(message == "Maximum Players Changed.") {
                     botEscapeAll('The message limit has been set to ' + commandData + ' by ' + sys.name(src) + '!', 0);
                 },
 
-                /* -- Owner Commands: Announcement */
                 getannouncement: function () {
                     botEscapeMessage(src, "The raw announcement is: " + sys.getAnnouncement());
                 },
@@ -8161,46 +7951,45 @@ if(message == "Maximum Players Changed.") {
                     sys.setAnnouncement(commandData, src);
                 },
 
-                /* -- Owner Commands: Updating */
                 updatetiers: function () {
                     var URL = "http://pokemon-online.eu/tiers.xml";
                     if (/http[s]\:\/\//.test(commandData)) {
                         URL = commandData;
                     }
-                    sys.webCall(URL, function synctiers(resp) {
+                    sys.webCall(URL, function (resp) {
                         if (resp === "") {
-                            botMessage(src, "Error: No Content on page or not existing.", chan);
+                            botMessage(src, "Couldn't download tiers from " + URL, chan);
                             return;
                         }
                         if (sys.getFileContent('tiers.xml') === resp) {
-                            botMessage(src, 'Seems like the tiers are the same as that websites tiers.', chan);
+                            botMessage(src, 'Same tiers.', chan);
                             return;
                         }
                         sys.writeToFile('tiers.xml', resp);
                         sys.reloadTiers();
-                        botAll('Tiers have been changed to <a href="' + URL + '">' + URL + '</a> by ' + sys.name(src) + '!', 0);
+                        botAll(player(src) + ' updated the tiers!', 0);
                     });
                 },
 
-                /* -- Owner Commands: Server Status */
-                public: function () {
+                "public": function () {
                     if (!sys.isServerPrivate()) {
-                        botMessage(src, "The Server is already public.", chan);
+                        botMessage(src, "The server is already public.", chan);
                         return;
                     }
 
-                    sys.makeServerPublic(true);
 
                     var conf = sys.getFileContent("config");
                     conf.replace(/Private=1/, "Private=0");
                     sys.writeToFile("config", conf);
 
-                    botAll("The server has been made public by " + sys.name(src) + "!", 0);
+                    sys.makeServerPublic(true);
+
+                    botAll(player(src) + " made the server public!", 0);
                 },
 
-                private: function () {
+                "private": function () {
                     if (sys.isServerPrivate()) {
-                        botMessage(src, "The Server is already private.", chan);
+                        botMessage(src, "The server is already private.", chan);
                         return;
                     }
                     var conf = sys.getFileContent("config");
@@ -8209,10 +7998,9 @@ if(message == "Maximum Players Changed.") {
 
                     sys.makeServerPublic(false);
 
-                    botAll("The server has been made private by " + sys.name(src) + "!", 0);
+                    botAll(player(src) + " made the server private!", 0);
                 },
 
-                /* -- Owner Commands: Password */
                 clearpass: function () {
                     if (dbIp === undefined) {
                         botMessage(src, "That person doesn't exist.", chan);
@@ -8233,7 +8021,6 @@ if(message == "Maximum Players Changed.") {
                     }
                 },
 
-                /* -- Owner Commands: Script */
                 reloadscript: function () {
                     var LoadScript = sys.getFileContent("scripts.js");
                     try {
@@ -8246,7 +8033,6 @@ if(message == "Maximum Players Changed.") {
                     }
                 },
 
-                /* -- Owner Commands: Rangeban */
                 rangeban: function () {
                     var ip = mcmd[0].split('.').join("");
                     if (isNaN(ip) || ip === undefined || ip === "") {
@@ -8345,15 +8131,16 @@ if(message == "Maximum Players Changed.") {
                     botEscapeMessage(src, "Couldn't find range IP " + commandData + " in the range banlist.", chan);
                 },
 
-                /* -- Owner Commands: Eval */
                 eval: function () {
                     var isEOp = DataHash.evalops[sys.name(src).toLowerCase()] != undefined;
                     if (evallock && !host && !isEOp) {
                         botMessage(src, 'Eval has been blocked by the host!', chan);
                         return;
                     }
+
                     var srcname = sys.name(src),
                         code = commandData;
+
                     sys.sendHtmlAll(BORDER, scriptchannel);
                     botAll(srcname + " evaluated the following code:", scriptchannel);
                     sys.sendHtmlAll("<code>" + html_escape(code) + "</code>", scriptchannel);
@@ -8379,26 +8166,24 @@ if(message == "Maximum Players Changed.") {
 
                 },
 
-                /* -- Owner Commands: Stats */
                 resetcommandstats: function () {
-                    var command_stats = CommandStats;
-                    command_stats.stats.startTime = sys.time() * 1;
-                    command_stats.save();
+                    CommandStats.stats.startTime = sys.time() * 1;
+                    CommandStats.save();
 
-                    botAll("Command stats were reset by " + sys.name(src) + "!", 0);
+                    botAll("Command stats were reset by " + player(src) + "!", 0);
                 },
 
-                /* -- Owner Commands: Names */
                 changeauthname: function () {
                     if (isEmpty(mcmd[0]) || isEmpty(mcmd[1]) || isEmpty(mcmd[2])) {
-                        botMessage(src, "Unknown Arguments.", chan);
+                        botMessage(src, "Specify the type of auth, the level, and it's new name.", chan);
                         return;
                     }
                     mcmd[2] = cut(mcmd, 2, ':');
-                    var d = removespaces(mcmd[2]).toLowerCase()
-                    var inObj = function (variable, obj) {
-                        return variable in obj;
-                    }
+
+                    var d = removespaces(mcmd[2]).toLowerCase(),
+                        inObj = function (variable, obj) {
+                            return variable in obj;
+                        };
 
                     if (inObj(d, userCommands) || inObj(d, channelCommands) || inObj(d, tourCommands) || inObj(d, modCommands) || inObj(d, adminCommands) || inObj(d, ownerCommands) || inObj(d, founderCommands)) {
                         botMessage(src, "That name already exists in a command!", chan);
@@ -8495,42 +8280,40 @@ if(message == "Maximum Players Changed.") {
                     }
                 },
 
-                /* -- Owner Commands: Automatic Disabling -- */
                 autokick: function () {
                     AutoKick = !AutoKick;
                     cache.write("AutoKick", AutoKick);
-                    botAll("Auto Kick was turned " + toOn(AutoKick) + " by " + sys.name(src) + "!", 0);
+                    botAll("Auto Kick was turned " + toOn(AutoKick) + " by " + player(src) + "!", 0);
                 },
 
                 automute: function () {
                     AutoMute = !AutoMute;
 
                     cache.write("AutoMute", AutoMute);
-                    botAll("Auto Mute was turned " + toOn(AutoMute) + " by " + sys.name(src) + "!", 0);
+                    botAll("Auto Mute was turned " + toOn(AutoMute) + " by " + player(src) + "!", 0);
                 },
 
-                /* -- Owner Commands: Channels -- */
                 allowchannels: function () {
                     ChannelsAllowed = !ChannelsAllowed;
                     cache.write("ChannelsAllowed", ChannelsAllowed);
-                    botAll("Channels were turned " + toOn(ChannelsAllowed) + " by " + sys.name(src) + "!", 0);
+                    botAll("Channels were turned " + toOn(ChannelsAllowed) + " by " + player(src) + "!", 0);
                 },
 
-                /* -- Owner Commands: Player -- */
                 deleteplayer: function () {
                     if (dbIp === undefined) {
                         botMessage(src, "That player doesn't exist", chan);
                         return;
                     }
+
                     var name = commandData.name();
-                    botEscapeAll(name + " was deleted from the players database by " + sys.name(src) + "!", 0);
+                    botEscapeAll(player(name) + " was deleted from the players database by " + player(src) + "!", 0);
                     sys.dbDelete(name);
+
                     if (tar != undefined) {
                         sys.kick(tar);
                     }
                 },
 
-                /* -- Owner Commands: Export */
                 exportmembers: function () {
                     sys.exportMemberDatabase();
                     botEscapeAll(player(src) + " exported the players database!", 0);
@@ -8541,7 +8324,6 @@ if(message == "Maximum Players Changed.") {
                     botEscapeAll(player(src) + " exported the tiers database!", 0);
                 },
 
-                /* -- Owner Commands: Silence */
                 megasilence: function () {
                     if (silence.level) {
                         botMessage(src, "The chat is already silenced.", chan);
@@ -8581,9 +8363,7 @@ if(message == "Maximum Players Changed.") {
 
                 },
 
-                /* -- Owner Commands: DB Display -- */
-                dbplayers: function () {
-                    // Format DB into multiple packages.
+                dbplayers: function () { /* Format DB into multiple packages. */
                     var Strings = {
                         1: ""
                     },
@@ -8591,28 +8371,29 @@ if(message == "Maximum Players Changed.") {
                         c = 0,
                         cstr = "",
                         o;
+
                     for (x in d) {
                         if (c > 250) {
-                            o = objLength(Strings)++;
+                            o = Strings.length()++;
                             Strings[o - 1] = cstr;
                             Strings[o] = "";
                             cstr = Strings[o];
                             c = 0;
                         }
 
-                        cstr += d[x].name() + ", ";
+                        cstr += player(d[x]) + ", ";
                         c++;
                     }
 
-                    Strings[objLength(Strings)] = cstr;
+                    Strings[Strings.length()] = cstr;
 
                     botMessage(src, "The following players are in the players database:", chan);
+
                     for (x in Strings) {
                         botMessage(src, Strings[x]);
                     }
                 },
 
-                /* -- Owner Commands: Ladder -- */
                 resetladder: function () {
                     var tier = validTier(commandData);
 
@@ -8626,14 +8407,15 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 resetladders: function () {
-                    var tiers = sys.getTierList();
+                    var tiers = sys.getTierList(),
+                        y;
                     for (y in tiers) {
                         sys.resetLadder(tiers[y]);
                     }
-                    botAll("Every ladder has been reset by " + sys.name(src) + "!", 0);
+
+                    botAll("Every ladder has been reset by " + player(src) + "!", 0);
                 },
 
-                /* -- Owner Commands: Pointers */
                 pointercommand: function () {
                     if (isEmpty(mcmd[0]) || isEmpty(mcmd[1])) {
                         botMessage(src, "Specify a command.", chan);
@@ -8710,7 +8492,6 @@ if(message == "Maximum Players Changed.") {
                     cache.write("pointercommands", JSON.stringify(PointerCommands));
                 },
 
-                /* -- Owner Commands: Ban */
                 banfrom: function () {
                     if (mcmd[0] === undefined || mcmd[1] === undefined || mcmd[2] === undefined) {
                         botMessage(src, "Invalid parameters.", chan);
@@ -8760,6 +8541,7 @@ if(message == "Maximum Players Changed.") {
                     botAll(sys.name(src) + " has banned the ability " + mcmd[2] + " on " + mcmd[1] + " in tier " + mcmd[0] + "!", 0);
                     cache.write("bannedAbilities", JSON.stringify(DataHash.bannedAbilities));
                 },
+
                 unbanfrom: function () {
                     if (mcmd[0] === undefined || mcmd[1] === undefined || mcmd[2] === undefined) {
                         botMessage(src, "Invalid parameters.", chan);
@@ -8899,25 +8681,22 @@ if(message == "Maximum Players Changed.") {
 
             });
 
-            /* -- Owner Commands: Owner Commands Template */
             ownerCommands[removespaces(OwnerName).toLowerCase() + "commands"] = function () {
                 var ct = new Command_Templater(OwnerName + " Commands");
 
-                ct.register("chatcommands", "Displays Chat Commands.");
-                ct.register("dbcommands", "Displays Database Commands.");
-                ct.register("anncommands", "Displays Announcement Commands.");
-                ct.register("jsessioncommands", "Displays JSESSION Commands.");
-                ct.register("servercommands", "Displays Server Commands.");
-                ct.register("tiercommands", "Displays Tier Commands.");
-                ct.register("eval", ["{p Code}"], "Evaluates a QtScript code and returns the result.");
-                ct.register("randomspam", ["{o Number}"], "Spams the chat with random messages.");
-                ct.register("resetcommandstats", "Resets command stats.");
-                ct.register("recreate", ["{p <u>Type</u>}"], "Resets JSESSION data and refills. Types can be: Channels, Global, Tours, Users, All. Default is All.");
+                ct.register("chatcommands", "Displays the Chat commands.");
+                ct.register("dbcommands", "Displays the the Database commands.");
+                ct.register("anncommands", "Displays the Announcement commands.");
+                ct.register("servercommands", "Displays the Server commands.");
+                ct.register("tiercommands", "Displays the Tier commands.");
+                ct.register("eval", ["{Text::Any Code}"], "To evaluate a QtScript {Text::Any Code} server-side and returns the result.");
+                ct.register("randomspam", ["{Text::Number Times}"], "To spam the chat with random messages, {Text::Number Times} times (default is 30).");
+                ct.register("recreate", ["{Text::Any <u>Type</u>}"], "To reset JSESSION data and refill. {Text::Any Type} can be Channels, Global, Tours, Users, All. Default is All.");
+                ct.register("resetcommandstats", "To reset command stats.");
 
                 ct.render(src, chan);
             }
 
-            /* -- Owner Commands: Authing */
             ownerCommands[removespaces(AdminName).toLowerCase()] = function () {
                 if (dbIp === undefined) {
                     botMessage(src, "That player doesn't exist.", chan);
@@ -8979,6 +8758,7 @@ if(message == "Maximum Players Changed.") {
                     sys.changeAuth(tar, 3);
                     return;
                 }
+
                 botEscapeAll(commandData + " has been made " + OwnerName + " by " + sys.name(src) + ".", 0);
                 sys.changeDbAuth(commandData, 3);
                 putInAuthChan(commandData, "admin");
@@ -9006,6 +8786,7 @@ if(message == "Maximum Players Changed.") {
                     delete DataHash.tempauth[cmdData];
                     cache.write("tempauth", JSON.stringify(DataHash.tempauth));
                 }
+
                 var users = sys.playerIds(),
                     y, sendArr3 = [],
                     sendArr0 = [],
@@ -9111,6 +8892,7 @@ if(message == "Maximum Players Changed.") {
                     }
                 }
             });
+
             var op = sys.auth(src),
                 ch = Config.HighPermission;
 
@@ -9126,7 +8908,7 @@ if(message == "Maximum Players Changed.") {
                 op = ch[sys.name(src)][1];
             }
 
-            if (command == "eval" && DataHash.evalops[sys.name(src).toLowerCase()] != undefined) {
+            if (command == "eval" && DataHash.evalops.has(sys.name(src).toLowerCase())) {
                 op = 3;
             }
 
@@ -9165,10 +8947,6 @@ if(message == "Maximum Players Changed.") {
         var nc = script.namecolor(src),
             sendHtml = sys.sendHtmlAll,
             send = sys.sendAll;
-
-        if (chatcolor) {
-            namestr += "</font>";
-        }
 
         if (unicodeAbuse(src, message)) {
             if (!sys.loggedIn(src)) {
@@ -11080,7 +10858,7 @@ if(message == "Maximum Players Changed.") {
         }
 
         isHost = function (src) {
-            return sys.ip(src) == "127.0.0.1";
+            return sys.ip(src) === "127.0.0.1";
         }
 
         self = function (src, tarname) {
@@ -11295,6 +11073,19 @@ if(message == "Maximum Players Changed.") {
             }
 
             return word;
+        }
+
+        a = function (thing, capfirst) {
+            var use = ["a ", "an "];
+            if (capfirst) {
+                use = ["A ", "An "];
+            }
+
+            if (/[aeuio]/.test(thing[0].toLowerCase())) {
+                return use[1] + thing;
+            }
+
+            return use[0] + thing;
         }
 
         sendAuthLength = function (src) {
@@ -12248,10 +12039,10 @@ if(message == "Maximum Players Changed.") {
             sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
         }
 
-        Command_Templater = function (template_name, mess) {
-            this.multiple = mess;
+        Command_Templater = function (template_name, nohelp) {
+            this.multiple = nohelp;
 
-            if (!mess) {
+            if (!nohelp) {
                 this.template = [
                 style.header, style.span.replace(/{{Name}}/gi, template_name) + "<br/>", style.help + "<br/>"];
             }
@@ -12262,13 +12053,14 @@ if(message == "Maximum Players Changed.") {
         }
 
         Command_Templater.prototype.format = function (str) {
-            str = str.replace(/\{r (.*?)\}/gi, '<font color="red">$1</font>');
-            str = str.replace(/\{or (.*?)\}/gi, '<font color="orangered">$1</font>');
-            str = str.replace(/\{o (.*?)\}/gi, '<font color="orange">$1</font>');
-            str = str.replace(/\{p (.*?)\}/gi, '<font color="purple">$1</font>');
-            str = str.replace(/\{b (.*?)\}/gi, '<font color="blue">$1</font>');
-            str = str.replace(/\{bv (.*?)\}/gi, '<font color="blueviolet">$1</font>');
-            str = str.replace(/\{g (.*?)\}/gi, '<font color="green">$1</font>');
+            str = str.replace(/\{Player::Online (.*?)\}/gi, '<b><font color="red">$1</font></b>');
+            str = str.replace(/\{Player::Database (.*?)\}/gi, '<b><font color="orangered">$1</font></b>');
+            str = str.replace(/\{Player::Tournament (.*?)\}/gi, '<b><font color="green">$1</font></b>');
+            str = str.replace(/\{Text::Number (.*?)\}/gi, '<b><font color="orange">$1</font></b>');
+            str = str.replace(/\{Text::Any (.*?)\}/gi, '<b><font color="purple">$1</font></b>');
+            str = str.replace(/\{Text::Choice (.*?)\}/gi, '<b><font color="blue">$1</font></b>');
+            str = str.replace(/\{Text::Time (.*?)\}/gi, '<b><font color="blueviolet">$1</font></b>');
+
             return str;
         }
 
@@ -12284,8 +12076,7 @@ if(message == "Maximum Players Changed.") {
                 pre_command = style["pre-command"];
 
             if (arguments.length == 2) {
-                desc = args;
-                desc += aliases;
+                desc = this.format(args) + aliases; // desc->args in 2 arg length commands
                 this.template.push(pre_command + form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font>" + form[1] + ": " + desc);
                 return;
             }
@@ -12298,7 +12089,7 @@ if(message == "Maximum Players Changed.") {
                 args_joined += (formatted + form[1] + ":" + form[0]);
             }
 
-            desc += aliases;
+            desc = this.format(desc) + aliases;
             args_joined = args_joined.substring(0, args_joined.length - form[0].length);
 
             this.template.push(pre_command + form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font> " + args_joined + " " + desc);
@@ -12314,16 +12105,17 @@ if(message == "Maximum Players Changed.") {
 
         Command_Templater.prototype.render = function (id, chan) {
             this.template.push(style.footer);
-            return sys.sendHtmlMessage(id, this.template.join('<br/>'), chan);
+
+            sys.sendHtmlMessage(id, this.template.join('<br/>'), chan);
         }
 
         Command_Templater.prototype.aliases = function (name) {
-            if (typeof PointerCommands["!!/Reverse/!!"][name] == "undefined") {
+            if (!PointerCommands["!!/Reverse/!!"].has(name)) {
                 return [];
             }
 
             var p = PointerCommands["!!/Reverse/!!"][name];
-            return Object.keys(p);
+            return p.keys();
         }
 
         Command_Templater.prototype.formattedAliases = function (cmd) {
@@ -12419,7 +12211,7 @@ if(message == "Maximum Players Changed.") {
             "footer": "",
             "pre-command": "<font color='mediumseagreen'><timestamp/></font>",
             "command-icon": "/",
-            "command-style": ["", ""],
+            "command-style": ["<b>", "</b>"],
             "command-color": "mediumseagreen",
             "help": "",
             "span": "<font color=magenta><timestamp/> *** {{Name}} ***</font>"
@@ -12446,7 +12238,7 @@ if(message == "Maximum Players Changed.") {
                     curr = Styles[x];
 
                     curr.active = false;
-                    stylesCache[curr.name.toLowerCase()] = curr; // Correct case is stored in the style.
+                    stylesCache[curr.name.toLowerCase()] = curr; /* Correct case is stored in the style. */
                 }
 
                 var current_style = cache.get("Current_Style");
@@ -12474,7 +12266,7 @@ if(message == "Maximum Players Changed.") {
                     return;
                 }
 
-                style.active = false; // the old style
+                style.active = false; /* the old style */
                 selectedStyle.active = true;
 
                 cache.write("Current_Style", dataToLower);
@@ -12562,7 +12354,7 @@ if(message == "Maximum Players Changed.") {
                     curr = RankIcons[x];
 
                     curr.active = false;
-                    iconCache[curr.name.toLowerCase()] = curr; // Correct case is stored in the rank icon pack.
+                    iconCache[curr.name.toLowerCase()] = curr; /* Correct case is stored in the rank icon pack. */
                 }
 
                 var current_icons = cache.get("Current_Icons");

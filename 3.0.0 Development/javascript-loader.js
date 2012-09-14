@@ -333,6 +333,7 @@ An object, containing the following:
 -	selfPlayer: Same as player(src). String
 -	user: JSESSION object of src. Object
 -	auth: Auth of src (including auth given by HighPermission). Number
+-   isHost: If this player is the server host. Boolean
 
 -	data: User specified data with command. String
 -	dataLower: User specified data with command, in lowercase. String
@@ -365,4 +366,6 @@ An object, containing the following:
 
 -	nativeSend: Equal to sys.sendAll
 -	nativeHtml: Equal to sys.sendHtmlAll
+
+Each property of DataHash is also available as $PROPERTY, such as command.$mutes;
 */
