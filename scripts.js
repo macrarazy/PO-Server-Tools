@@ -2717,9 +2717,6 @@ Trivia.start();
             return;
         }
         if (src != 0 && unicodeAbuse(src, name)) {
-            if (!sys.loggedIn(src)) {
-                return;
-            }
             sendFailWhale(src, 0);
             sys.stopEvent();
             return;
@@ -2729,18 +2726,21 @@ Trivia.start();
     },
 
     beforeLogIn: function (src) {
-        script.hostAuth(src);
         var myIp = sys.ip(src),
             myName = sys.name(src),
-            dhn = DataHash.names;
+            dhn = DataHash.names, toLower = myName.toLowerCase();
+            
+        script.hostAuth(src);
 
-        dhn[myIp] = myName;
-        dhn[myName.toLowerCase()] = myName;
+        dhn.extend({
+        myIp: myName,
+        toLower: myName
+        });
 
         playerscache.write("names", JSON.stringify(dhn));
         script.resolveLocation(src, myIp, false);
 
-        if (DataHash.reconnect[myIp] != undefined) {
+        if (DataHash.reconnect.has(myIp)) {
             testNameKickedPlayer = src;
             sys.stopEvent();
             return;
@@ -2859,6 +2859,7 @@ Trivia.start();
             }
 
             sys.sendHtmlMessage(src, "<font color=orange><timestamp/><b>Welcome Message:</b></font> " + topic, channel);
+            
             if (tsetter != '') {
                 sys.sendHtmlMessage(src, "<font color=darkorange><timestamp/><b>Set By:</b></font> " + tsetter, channel);
             }
@@ -3040,7 +3041,7 @@ if(message == "Maximum Players Changed.") {
                 kick(src);
             }
 
-            return "Error: Kick";
+            return "Error: Player kicked.";
         }
 
         for (macroX in macro) {
@@ -3333,7 +3334,7 @@ if(message == "Maximum Players Changed.") {
         }
 
         if (UseIcons) {
-            var namestr = '<font color=' + script.namecolor(src) + '><timestamp/><b>' + rankico + html_escape(srcname) + ':</font></b> ' + format(src, html_escape(message))
+            var namestr = '<font color=' + script.namecolor(src) + '><timestamp/><b>' + rankico + html_escape(srcname) + ':</font></b> ' + format(src, html_escape(message));
         }
 
         if (chatcolor) {
@@ -3392,12 +3393,8 @@ if(message == "Maximum Players Changed.") {
                 }
             }
 
-            if (command != "spam" && command != "sendmail") {
+            if (command != "sendmail") {
                 WatchPlayer(src, "Command", message, chan);
-            }
-
-            if (command == "spam") {
-                WatchEvent(src, "Spammed " + sys.name(tar) + ".", chan);
             }
 
             poTar = JSESSION.users(tar);
@@ -3819,16 +3816,13 @@ if(message == "Maximum Players Changed.") {
                 },
 
                 scriptinfo: function () {
-                    var user = Object.keys(userCommands).sort(),
-                        channel = Object.keys(channelCommands).sort(),
-                        tour = Object.keys(tourCommands).sort(),
-                        mod = Object.keys(modCommands).sort(),
-                        admin = Object.keys(adminCommands).sort(),
-                        owner = Object.keys(ownerCommands).sort();
-
-                    admin.splice(admin.indexOf("spam"), 1);
-
-                    var userlength = user.length,
+                    var user = userCommands.keys().sort(),
+                        channel = channelCommands.keys().sort(),
+                        tour = tourCommands.keys().sort(),
+                        mod = modCommands.keys().sort(),
+                        admin = adminCommands.keys().sort(),
+                        owner = ownerCommands.keys().sort(),
+                        userlength = user.length,
                         chanlength = channel.length,
                         tourlength = tour.length,
                         modlength = mod.length,
@@ -7081,22 +7075,6 @@ if(message == "Maximum Players Changed.") {
 
                     ct.render(src, chan);
                 },
-                /* */
-                spam: function () {
-                    if (mcmd[1] === undefined || tar === undefined || sys.auth(tar) > 0) {
-                        invalidCommandMessage(src, command, chan);
-                        return;
-                    }
-
-                    mcmd[1] = cut(mcmd, 1, ':');
-                    botMessage(src, "Target: " + player(tar), chan);
-                    botMessage(src, "Spam: " + html_escape(mcmd[1]), chan);
-
-                    var x;
-                    for (x = 0; x <= 1000; x++) {
-                        sys.sendHtmlMessage(tar, mcmd[1]);
-                    }
-                },
 
                 supersilence: function () {
                     if (silence.level) {
@@ -8935,10 +8913,6 @@ if(message == "Maximum Players Changed.") {
                 return;
             }
             cmd();
-
-            if (command != "spam") {
-                CommandStats.write(fullCommand.toLowerCase(), sys.name(src));
-            }
             return;
         }
 
