@@ -2324,6 +2324,10 @@ defineCoreProperty(Number.prototype, "isEmpty", function () {
     return !isFinite(this) || this === 0;
 });
 
+defineCoreProperty(Number.prototype, "positive", function () {
+return !this.isEmpty();
+});
+
 defineCoreProperty(Object.prototype, "isEmpty", function () {
     return this.length() === 0;
 });
@@ -13356,7 +13360,7 @@ if(message == "Maximum Players Changed.") {
         }
 
 
-        if (typeof(DataHash) == "undefined") {
+        if (typeof DataHash === "undefined") {
             DataHash = {};
         }
 
@@ -13413,7 +13417,7 @@ if(message == "Maximum Players Changed.") {
             names[l] = n;
         }
 
-        if (typeof(CommandsEnabled) == "undefined") {
+        if (typeof CommandsEnabled === "undefined") {
             CommandsEnabled = {
                 'me': true,
                 '_catch_': true,
@@ -13434,7 +13438,7 @@ if(message == "Maximum Players Changed.") {
             }
         }
 
-        if (typeof(PointerCommands) == "undefined") {
+        if (typeof PointerCommands  === "undefined") {
             PointerCommands = {};
             if (cache.get("pointercommands") != "") {
                 try {
@@ -13513,9 +13517,7 @@ if(message == "Maximum Players Changed.") {
             "code": "eval",
             "run": "eval",
             "silenceoff": "unsilence"
-        };
-
-        var c = false,
+        }, c = false,
             pc = PointerCommands,
             cur, y;
 
@@ -13564,7 +13566,8 @@ if(message == "Maximum Players Changed.") {
 
             this.timer = sys.intervalCall(function () {
                 CommandStats.save();
-            }, 30000); // 30 seconds
+            }, 30000); /* 30 seconds */
+            
             this.stats = {};
             try {
                 this.stats = JSON.parse(sys.getFileContent(file));
@@ -13585,11 +13588,11 @@ if(message == "Maximum Players Changed.") {
 
             this.write = function (command, user) {
                 var stats = this.stats;
-                if (typeof stats.commands == "undefined") {
+                if (!stats.has("commands")) {
                     stats.commands = {};
                 }
 
-                if (typeof stats.commands[command] == "undefined") {
+                if (!stats.commands.has(command)) {
                     stats.commands[command] = {
                         used: 0,
                         last: ""
