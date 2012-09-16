@@ -92,7 +92,7 @@
         "TheUnknownOne",
         "TheUnknownTwo"
     ],
-    "border": "*** mafia trivia mafia trivia mafia trivia mafia trivia mafia trivia ***",
+    "border": "*** mafia trivia mafia trivia mafia trivia mafia trivia mafia trivia mafia trivia mafia trivia ***",
     "killmsg": "~Player~ (~Role~) has been banned!",
     "killusermsg": "~Server: You have been banned. Estimated unban date: Never.",
     "summary": "Mafia vs Trivia! Mafia admins can night kill, and Trivia admins can day kill. There are also Mafia Super Admins and Trivia Super Admins - who get an additional night/day kill. All roles don't know their teammates, and can kill anyone - even themselfs.",
