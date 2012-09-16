@@ -37,8 +37,8 @@
                 "hax": {
                     "kill": {
                         "revealTeam": 0.05,
-                        "revealRole": 0.03,
-                        "revealPlayer": 0.01
+                        "revealPlayer": 0.02,
+                        "revealRole": 0.01,
                     }
                 }
             }
@@ -205,9 +205,8 @@
             "actions": {
                 "hax": {
                     "kill": {
-                        "revealTeam": 0.25,
-                        "revealRole": 0.2,
-                        "revealPlayer": 0.15
+                        "revealTeam": 0.20,
+                        "revealRole": 0.15,
                     },
                     "inspect": {
                         "revealTeam": 0.1,
