@@ -1,91 +1,193 @@
 {
     "name": "Unicorn",
     "author": ["TheUnknownOne"],
-    "summary": "A kids theme. You will have to figure everything out yourself as kids don't like reading.",
+    "summary": "A kids theme (The only mafia theme which is for ages 7 and up). You will have to figure everything out yourself as kids don't like reading. [Suggestions go to TheUnknownOne, mmkay?]",
     "sides": [{
-        "side": "mafia",
-        "translation": "Black Unicorns"
-    },
-    {
-        "side": "mafia1",
-        "translation": "Purple Unicorns"
-    },
-    {
-        "side": "mafia2",
-        "translation": "Orange Unicorns"
-    },
-    {
         "side": "village",
         "translation": "White Unicorns"
     },
     {
-        "side": "werewolf",
+        "side": "Mafia-1",
+        "translation": "Black Unicorns"
+    },
+    {
+        "side": "Mafia-2",
+        "translation": "Grey Unicorns"
+    },
+    {
+        "side": "Hunter",
         "translation": "Unicorn Hunter"
     },
     {
-        "side": "godfather",
+        "side": "Flying",
         "translation": "Flying Unicorn"
     }],
     "roles": [{
-        "role": "villager",
+        "role": "Villager",
         "translation": "White Unicorn",
         "side": "village",
-        "help": "Yaaaaaaaaaaay! Your white :3... You have secret powers, aswell!",
+        "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
         "actions": {
             "hax": {
                 "kill": {
-                    "revealTeam": 0.03,
-                    "revealPlayer": 0.003
+                    "revealTeam": 0.05,
+                    "revealRole": 0.03,
+                    "revealPlayer": 0.01
                 }
             }
         }
     },
     {
-        "role": "inspector",
+        "role": "Inspector-2",
         "translation": "White Unicorn Inspector",
         "side": "village",
-        "help": "Type /Inspect [name] to find his/her identity! You can kill in standby! You will get revealed however...",
+        "help": "Type /Inspect [name] to creep a person out (and find who they are). You can reveal yourself with /Reveal (Why would you so such a thing?)",
         "actions": {
             "night": {
                 "inspect": {
                     "target": "AnyButSelf",
                     "common": "Self",
-                    "priority": 30
+                    "priority": 20
+                }
+            },
+            "standby": {
+                "reveal": {
+                    "msg": "You can now reveal yourself with /reveal :",
+                    "revealmsg": "~Self~ has revealed to be ~Role~. That kid has guts."
+                }
+            }
+        }
+    },
+    {
+        "role": "Inspector-3",
+        "translation": "White Unicorn Inspector",
+        "side": "village",
+        "help": "Type /Inspect [name] to creep a person out (and find who they are). You can also kill someone (Y U SO AGGRESSIVE?) durning standby.",
+        "actions": {
+            "night": {
+                "inspect": {
+                    "target": "AnyButSelf",
+                    "common": "Self",
+                    "priority": 20
                 }
             },
 
             "standby": {
                 "kill": {
                     "target": "AnyButSelf",
-                    "msg": "You can kill now using /kill [name] :",
-                    "killmsg": "The White Unicorn Inspector(~Self~) has used unicorn lazar beam on ~Target~! Haters gonna hate?"
+                    "msg": "You can now kill using /kill [name] (You will be revealed) :",
+                    "killmsg": "The (That must be a special person) White Unicorn Inspector (~Self~) has used unicorn lazar beam on ~Target~! Haters gonna love?"
                 }
             }
         }
     },
     {
-        "role": "bodyguard",
+        "role": "Bodyguard-1",
         "translation": "White Unicorn Bodyguard",
         "side": "village",
-        "help": "Type /Protect [name] to protect someone! Your vote counts as 2!",
+        "help": "Type /Protect [name] to keep that person alive (How nice of you!). Your vote counts as 0 because you are slow/fat/etc.",
+        "actions": {
+            "night": {
+                "protect": {
+                    "target": "AnyButSelf",
+                    "common": "Self",
+                    "priority": 3
+                }
+            },
+
+            "vote": 0,
+        }
+    },
+    {
+        "role": "Bodyguard-2",
+        "translation": "White Unicorn Bodyguard",
+        "side": "village",
+        "help": "Type /Protect [name] to keep that person alive (How nice of you!). You have a 5% chance to dodge someone who wants your blood (Meanies!), and your vote counts as 0 because you are slow/fat/etc.",
         "actions": {
             "night": {
                 "protect": {
                     "target": "AnyButSelf",
                     "common": "Role",
-                    "priority": 5,
-                    "broadcast": "role"
+                    "priority": 3,
                 }
             },
-            "startup": "role-reveal",
-            "vote": 2
+
+            "kill": {
+                "mode": {
+                    "evadeChance": 0.05
+                }
+            },
+
+            "vote": 0,
         }
     },
     {
-        "role": "mafia",
+        "role": "Hooker-1",
+        "translation": "Crying White Unicorn",
+        "side": "village",
+        "help": "Type /Distract [name] to distract someone with tears and stuff.",
+        "actions": {
+            "night": {
+                "distract": {
+                    "target": "AnyButSelf",
+                    "common": "Self",
+                    "priority": 1
+                }
+            }
+        }
+    },
+    {
+        "role": "Hooker-2",
+        "translation": "Crying White Unicorn",
+        "side": "village",
+        "help": "Type /Distract [name] to distract someone with tears and stuff. You can do this twice.",
+        "actions": {
+            "night": {
+                "distract": {
+                    "target": "AnyButSelf",
+                    "common": "Self",
+                    "priority": 1,
+                    "limit": 2
+                }
+            }
+        }
+    },
+    {
+        "role": "Leader-1",
+        "translation": "White Unicorn Leader",
+        "side": "village",
+        "help": "Your vote counts as -1 (dangit!) and you can find out who kills, who protects, who distracts, and who inspects (That's a lot of whos).",
+        "actions": {
+            "hax": {
+                "kill": {
+                    "revealTeam": 0.33,
+                    "revealPlayer": 0.1
+                },
+
+                "inspect": {
+                    "revealTeam": 0.33,
+                    "revealPlayer": 0.2
+                },
+
+                "distract": {
+                    "revealTeam": 0.33,
+                    "revealPlayer": 0.1
+                },
+
+                "protect": {
+                "revealTeam": 0.33,
+                    "revealPlayer": 0.2
+                }
+
+            },
+            "vote": -1
+        }
+    },
+    {
+        "role": "Mafia-1",
         "translation": "Black Unicorn",
-        "side": "mafia",
-        "help": "Type /Kill [name] to kill someone! You can use /distract [name] too, but you distract after the White Unicorn Bodyguard!",
+        "side": "Mafia-1",
+        "help": "Type /Kill [name] to kill someone! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is.",
         "actions": {
             "night": {
                 "kill": {
@@ -95,21 +197,20 @@
                     "broadcast": "team"
                 },
 
-                "distract": {
-                    "target": "AnyButTeam",
-                    "common": "Team",
-                    "priority": 6,
-                    "broadcast": "team"
+                "hax": {
+                "protect": {
+                    "revealPlayer": 0.01
                 }
+                },
             },
             "startup": "team-reveal"
         }
     },
     {
-        "role": "werewolf",
+        "role": "Hunter-1",
         "translation": "Unicorn Hunter",
-        "side": "werewolf",
-        "help": "Type /Kill [name] to kill someone! High presure error: Your vote counts as - 1!",
+        "side": "Hunter",
+        "help": "Type /Kill [name] to kill someone! You have a voteshield of -1 and you kill the Crying White Unicorn when he/it comes to you.",
         "actions": {
             "night": {
                 "kill": {
@@ -120,64 +221,34 @@
             },
             "distract": {
                 "mode": "ChangeTarget",
-                "hookermsg": "You tried to distract the Unicorn Hunter(IDIOT!), you were shot to death!",
+                "hookermsg": "You went to the Unicorn Hunter (Dumbass!), cried, and died!",
                 "msg": "The ~Distracter~ came to you last night! You shot her to death!"
             },
             "avoidHax": ["kill"],
-            "vote": -1
+            "voteshield": -1
         }
     },
     {
-        "role": "hooker",
-        "translation": "Sweet White Unicorn",
-        "side": "village",
-        "help": "Type /Distract [name] to distract someone :P Also: You can find out a killer =3",
+        "role": "Hunter-2",
+        "translation": "Unicorn Hunter",
+        "side": "Hunter",
+        "help": "Type /Kill [name] to kill someone (this can be done twice, don't ask me why)! You have a voteshield of -1 and you kill the Crying White Unicorn when he/it comes to you.",
         "actions": {
             "night": {
-                "distract": {
+                "kill": {
                     "target": "AnyButSelf",
                     "common": "Self",
-                    "priority": 1
+                    "priority": 10,
+                    "limit": 2,
                 }
             },
-
-            "hax": {
-                "kill": {
-                    "revealTeam": 0.24,
-                    "revealPlayer": 0.12
-                }
-            }
-        }
-    },
-    {
-        "role": "spy",
-        "translation": "White Unicorn Leader",
-        "side": "village",
-        "help": "Vote count: -1; You can find out a killer, protecter, distracter and an inspecter",
-        "actions": {
-            "hax": {
-                "kill": {
-                    "revealTeam": 0.33,
-                    "revealPlayer": 0.1
-                },
-
-                "inspect": {
-                    "revealTeam": 0.33,
-                    "revealPlayer": 0.1
-                },
-
-                "distract": {
-                    "revealTeam": 0.33,
-                    "revealPlayer": 0.1
-                },
-
-                "protect": {
-                    "revealTeam": 0.33,
-                    "revealPlayer": 0.1
-                }
-
+            "distract": {
+                "mode": "ChangeTarget",
+                "hookermsg": "You went to the Unicorn Hunter (Dumbass!), cried, and died!",
+                "msg": "The ~Distracter~ came to you last night! You shot her to death!"
             },
-            "vote": -1
+            "avoidHax": ["kill"],
+            "voteshield": -1
         }
     },
     {
