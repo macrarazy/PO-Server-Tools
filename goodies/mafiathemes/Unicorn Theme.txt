@@ -221,7 +221,7 @@
                         "revealPlayer": 0.1
                     }
                 },
-                "vote": -1
+                "vote": 3
             }
         },
         {
@@ -288,17 +288,16 @@
                 },
                 "distract": {
                     "mode": "ChangeTarget",
-                    "hookermsg": "You tried to annoy the Flying Unicorn! Such things are not allowed here.",
+                    "hookermsg": "You tried to annoy the Flying Unicorn! You have been rewarded with a Flying Kick.",
                     "msg": "The ~Distracter~ came to you last night! What an idiot."
                 },
-                "avoidHax": [
-                    "kill"
-                ],
                 "standby": {
                     "kill": {
                         "target": "AnyButSelf",
-                        "msg": "Time to fly. Type /Kill [Name] to do so! :",
-                        "killmsg": "The Flying Unicorn has used the Flying Kick (wtf is that) on ~Target~! ~Target~ fell out of the mafia channel (because it is flat)!"
+                        "msg": "Time to fly. Type /Kill [Name] to do so! (You have 20% to be revealed):",
+                        "killmsg": "The Flying Unicorn has used the Flying Kick (wtf is that) on ~Target~! ~Target~ fell out of the mafia channel (because it is flat)!",
+                        "revealChance": 0.2,
+                        "revealmsg": "Someone saw the ~Role~ (~Name~) fly by!"
                     }
                 }
             }
@@ -536,19 +535,18 @@
         "Mafia2-2",
         "Villager",
         "Villager",
-        "Hunter-2",
-        "Miller-Hunter",
-        "Villager",
-        "Villager",
         "Leader-2",
         "Mafia1-Leader",
         "Villager",
         "Mafia2-Leader",
         "Miller-Hunter",
+        "Villager",
         "Mafia1-Inspector",
         "Mafia2-Inspector",
+        "Hunter-2",
+        "Mafia1-2",
         "Villager",
-        "Villager"
+        "Mafia2-2"
     ],
     "roles3": [
         "Bodyguard-2",
