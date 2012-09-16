@@ -38,7 +38,7 @@
                     "kill": {
                         "revealTeam": 0.05,
                         "revealPlayer": 0.02,
-                        "revealRole": 0.01,
+                        "revealRole": 0.01
                     }
                 }
             }
@@ -105,7 +105,7 @@
             "role": "Bodyguard-1",
             "translation": "White Unicorn Bodyguard",
             "side": "village",
-            "help": "Type /Protect [name] to keep that person alive (How nice of you!). Your vote counts as 0 because you are slow/fat/etc.",
+            "help": "Type /Protect [name] to keep that person alive (How nice of you!).",
             "actions": {
                 "night": {
                     "protect": {
@@ -113,8 +113,7 @@
                         "common": "Self",
                         "priority": 3
                     }
-                },
-                "vote": 0
+                }
             }
         },
         {
@@ -205,8 +204,8 @@
             "actions": {
                 "hax": {
                     "kill": {
-                        "revealTeam": 0.20,
-                        "revealRole": 0.15,
+                        "revealTeam": 0.2,
+                        "revealRole": 0.15
                     },
                     "inspect": {
                         "revealTeam": 0.1,
@@ -318,7 +317,7 @@
                 },
                 "hax": {
                     "protect": {
-                        "revealPlayer": 0.01
+                        "revealPlayer": 0.005
                     }
                 },
                 "startup": "team-reveal"
@@ -340,7 +339,7 @@
                 },
                 "hax": {
                     "protect": {
-                        "revealPlayer": 0.01
+                        "revealPlayer": 0.005
                     }
                 },
                 "startup": "team-reveal"
@@ -360,7 +359,7 @@
                         "broadcast": "team"
                     }
                 },
-                "startup": "team-reveal"
+                "startup": "team-reveal-with-roles"
             }
         },
         {
@@ -377,7 +376,7 @@
                         "broadcast": "team"
                     }
                 },
-                "startup": "team-reveal"
+                "startup": "team-reveal-with-roles"
             }
         },
         {
@@ -448,8 +447,7 @@
                 "distract": {
                     "mode": "ignore"
                 },
-                "startup": "team-reveal",
-                "vote": 4
+                "startup": "team-reveal-with-roles"
             }
         },
         {
@@ -480,8 +478,7 @@
                 "distract": {
                     "mode": "ignore"
                 },
-                "startup": "team-reveal",
-                "vote": 4
+                "startup": "team-reveal-with-roles"
             }
         },
         {
@@ -581,14 +578,7 @@
         "Miller-Flying"
     ],
     "villageCantLoseRoles": [
-        "Bodyguard-1",
-        "Bodyguard-2",
-        "Inspector-1",
-        "Inspector-2",
-        "Inspector-3",
         "Leader-1",
-        "Leader-2",
-        "Hooker-1",
-        "Hooker-2"
+        "Leader-2"
     ]
 }
