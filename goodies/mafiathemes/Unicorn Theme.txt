@@ -10,11 +10,11 @@
             "translation": "White Unicorns"
         },
         {
-            "side": "Mafia-1",
+            "side": "Mafia1",
             "translation": "Black Unicorns"
         },
         {
-            "side": "Mafia-2",
+            "side": "Mafia2",
             "translation": "Grey Unicorns"
         },
         {
@@ -121,6 +121,7 @@
             "translation": "White Unicorn Bodyguard",
             "side": "village",
             "help": "Type /Protect [name] to keep that person alive (How nice of you!). You have a 5% chance to dodge someone who wants your blood (Meanies!), and your vote counts as 0 because you are slow/fat/etc.",
+            "info": "Can protect one unicorn durning the night. Has a 5% chance to evade a kill. Sided with White Unicorns.",
             "actions": {
                 "night": {
                     "protect": {
@@ -176,45 +177,51 @@
             "actions": {
                 "hax": {
                     "kill": {
-                        "revealTeam": 0.33,
+                        "revealTeam": 0.2,
                         "revealPlayer": 0.1
                     },
                     "inspect": {
-                        "revealTeam": 0.33,
-                        "revealPlayer": 0.2
+                        "revealTeam": 0.25,
+                        "revealPlayer": 0.1
                     },
                     "distract": {
-                        "revealTeam": 0.33,
+                        "revealTeam": 0.25,
                         "revealPlayer": 0.1
                     },
                     "protect": {
-                        "revealTeam": 0.33,
-                        "revealPlayer": 0.2
+                        "revealTeam": 0.25,
+                        "revealPlayer": 0.1
                     }
                 },
                 "vote": -1
             }
         },
         {
-            "role": "Mafia-1",
-            "translation": "Black Unicorn",
-            "side": "Mafia-1",
-            "help": "Type /Kill [name] to kill someone! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is.",
+            "role": "Leader-2",
+            "translation": "White Unicorn Leader",
+            "side": "village",
+            "help": "Your vote counts as 3 (hooray!) and you can find out who kills, who protects, who distracts, and who inspects (That's a lot of whos).",
             "actions": {
-                "night": {
+                "hax": {
                     "kill": {
-                        "target": "AnyButTeam",
-                        "common": "Team",
-                        "priority": 11,
-                        "broadcast": "team"
+                        "revealTeam": 0.25,
+                        "revealRole": 0.2,
+                        "revealPlayer": 0.15
                     },
-                    "hax": {
-                        "protect": {
-                            "revealPlayer": 0.01
-                        }
+                    "inspect": {
+                        "revealTeam": 0.1,
+                        "revealPlayer": 0.05
+                    },
+                    "distract": {
+                        "revealTeam": 0.25,
+                        "revealPlayer": 0.1
+                    },
+                    "protect": {
+                        "revealTeam": 0.1,
+                        "revealPlayer": 0.1
                     }
                 },
-                "startup": "team-reveal"
+                "vote": -1
             }
         },
         {
@@ -297,26 +304,53 @@
             }
         },
         {
-            "role": "mafia1",
-            "translation": "Purple Unicorn",
-            "side": "mafia1",
-            "help": "Type /Kill [name] to kill someone!",
+            "role": "Mafia1-1",
+            "translation": "Black Unicorn",
+            "side": "Mafia1",
+            "help": "Type /Kill [name] to kill someone! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is.",
             "actions": {
                 "night": {
                     "kill": {
                         "target": "AnyButTeam",
                         "common": "Team",
-                        "priority": 12,
+                        "priority": 11,
                         "broadcast": "team"
+                    }
+                },
+                "hax": {
+                    "protect": {
+                        "revealPlayer": 0.01
                     }
                 },
                 "startup": "team-reveal"
             }
         },
         {
-            "role": "mafia2",
-            "translation": "Orange Unicorn",
-            "side": "mafia2",
+            "role": "Mafia2-1",
+            "translation": "Grey Unicorn",
+            "side": "Mafia2",
+            "help": "Type /Kill [name] to kill someone! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is.",
+            "actions": {
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Team",
+                        "priority": 11,
+                        "broadcast": "team"
+                    }
+                },
+                "hax": {
+                    "protect": {
+                        "revealPlayer": 0.01
+                    }
+                },
+                "startup": "team-reveal"
+            }
+        },
+        {
+            "role": "Mafia1-2",
+            "translation": "Black Unicorn",
+            "side": "Mafia1",
             "help": "Type /Kill [name] to kill someone!",
             "actions": {
                 "night": {
@@ -331,58 +365,67 @@
             }
         },
         {
-            "role": "c1",
-            "translation": "Purple Unicorn Inspector",
-            "side": "mafia1",
-            "help": "The White Unicorn Inspector & Orange Unicorn Inspector sees you as a white unicorn =3. Use /inspect [name] to inspect somebody!",
+            "role": "Mafia2-2",
+            "translation": "Grey Unicorn",
+            "side": "Mafia2",
+            "help": "Type /Kill [name] to kill someone!",
+            "actions": {
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Team",
+                        "priority": 11,
+                        "broadcast": "team"
+                    }
+                },
+                "startup": "team-reveal"
+            }
+        },
+        {
+            "role": "Mafia1-Inspector",
+            "translation": "Black Unicorn Inspector",
+            "side": "Mafia1",
+            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn because you are cute (not really).",
             "actions": {
                 "night": {
                     "inspect": {
                         "target": "AnyButTeam",
                         "common": "Self",
-                        "priority": 30,
+                        "priority": 21,
                         "broadcast": "Team"
                     }
                 },
                 "inspect": {
-                    "revealAs": "villager"
+                    "revealAs": "Villager"
                 },
-                "lynch": {
-                    "revealAs": "villager"
-                },
-                "onlist": "villager",
                 "startup": "team-reveal"
             }
         },
         {
-            "role": "c2",
-            "translation": "Orange Unicorn Inspector",
-            "side": "mafia2",
-            "help": "The White Unicorn Inspector & Purple Unicorn Inspector sees you as a white unicorn =3. Use /inspect [name] to inspect somebody!",
+            "role": "Mafia2-Inspector",
+            "translation": "Grey Unicorn Inspector",
+            "side": "Mafia2",
+            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn because you are cute (not really).",
             "actions": {
                 "night": {
                     "inspect": {
                         "target": "AnyButTeam",
                         "common": "Self",
-                        "priority": 30,
+                        "priority": 21,
                         "broadcast": "Team"
                     }
                 },
                 "inspect": {
-                    "revealAs": "villager"
+                    "revealAs": "Villager"
                 },
-                "lynch": {
-                    "revealAs": "villager"
-                },
-                "onlist": "villager",
                 "startup": "team-reveal"
             }
         },
         {
-            "role": "mafiaboss1",
-            "translation": "Purple Unicorn Leader",
-            "side": "mafia1",
-            "help": "Type /Kill [name] to kill someone! You can't be distracted! Vote count: 4",
+            "role": "Mafia1-Leader",
+            "translation": "Black Unicorn Leader",
+            "side": "Mafia1",
+            "help": "Type /Kill [name] to kill someone! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail.",
             "actions": {
                 "night": {
                     "kill": {
@@ -390,6 +433,17 @@
                         "common": "Team",
                         "priority": 12,
                         "broadcast": "team"
+                    },
+                    "kill2": {
+                        "target": "AnyButTeam",
+                        "common": "Team",
+                        "priority": 12,
+                        "broadcast": "team",
+                        "broadcastmsg": "±Game: Your partner(s) have decided to kill ~Target~!",
+                        "initialrecharge": 3,
+                        "recharge": 3,
+                        "failChance": 0.2,
+                        "command": "kill"
                     }
                 },
                 "distract": {
@@ -400,17 +454,28 @@
             }
         },
         {
-            "role": "mafiaboss2",
-            "translation": "Orange Unicorn Leader",
-            "side": "mafia2",
-            "help": "Type /Kill [name] to kill someone! You can't be distracted! Vote count: 4",
+            "role": "Mafia2-Leader",
+            "translation": "Grey Unicorn Leader",
+            "side": "Mafia2",
+            "help": "Type /Kill [name] to kill someone! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail.",
             "actions": {
                 "night": {
                     "kill": {
                         "target": "AnyButTeam",
                         "common": "Team",
-                        "priority": 11,
+                        "priority": 12,
                         "broadcast": "team"
+                    },
+                    "kill2": {
+                        "target": "AnyButTeam",
+                        "common": "Team",
+                        "priority": 12,
+                        "broadcast": "team",
+                        "broadcastmsg": "±Game: Your partner(s) have decided to kill ~Target~!",
+                        "initialrecharge": 3,
+                        "recharge": 3,
+                        "failChance": 0.2,
+                        "command": "kill"
                     }
                 },
                 "distract": {
@@ -432,7 +497,22 @@
                 "lynch": {
                     "revealAs": "Hunter-1"
                 },
-                "onlist": "Hunter1"
+                "onlist": "Hunter-1"
+            }
+        },
+        {
+            "role": "Miller-Flying",
+            "translation": "White Unicorn",
+            "side": "village",
+            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
+            "actions": {
+                "inspect": {
+                    "revealAs": "Flying"
+                },
+                "lynch": {
+                    "revealAs": "Flying"
+                },
+                "onlist": "Flying"
             }
         }
     ],
@@ -446,7 +526,61 @@
         "Villager",
         "Hunter-1",
         "Miller-Hunter",
-        "Leader"
+        "Leader-1"
+    ],
+    "roles2": [
+        "Bodyguard-2",
+        "Inspector-2",
+        "Hooker-1",
+        "Mafia1-2",
+        "Mafia2-2",
+        "Villager",
+        "Villager",
+        "Hunter-2",
+        "Miller-Hunter",
+        "Villager",
+        "Villager",
+        "Leader-2",
+        "Mafia1-Leader",
+        "Villager",
+        "Mafia2-Leader",
+        "Miller-Hunter",
+        "Mafia1-Inspector",
+        "Mafia2-Inspector",
+        "Villager",
+        "Villager"
+    ],
+    "roles3": [
+        "Bodyguard-2",
+        "Inspector-3",
+        "Hooker-2",
+        "Mafia1-2",
+        "Mafia2-2",
+        "Villager",
+        "Villager",
+        "Hunter-2",
+        "Miller-Hunter",
+        "Villager",
+        "Villager",
+        "Leader-2",
+        "Mafia1-Leader",
+        "Villager",
+        "Mafia2-Leader",
+        "Miller-Hunter",
+        "Mafia1-Inspector",
+        "Mafia2-Inspector",
+        "Villager",
+        "Mafia1-2",
+        "Mafia2-2",
+        "Villager",
+        "Miller-Flying",
+        "Flying",
+        "Bodyguard-2",
+        "Hooker-1",
+        "Mafia2-2",
+        "Mafia1-2",
+        "Villager",
+        "Miller-Flying"
     ],
     "villageCantLoseRoles": [
         "Bodyguard-1",
@@ -454,7 +588,8 @@
         "Inspector-1",
         "Inspector-2",
         "Inspector-3",
-        "Leader",
+        "Leader-1",
+        "Leader-2",
         "Hooker-1",
         "Hooker-2"
     ]
