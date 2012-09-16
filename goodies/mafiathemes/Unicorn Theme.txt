@@ -578,7 +578,6 @@
         "Miller-Flying"
     ],
     "villageCantLoseRoles": [
-        "Leader-1",
         "Leader-2",
         "Inspector-3"
     ]
