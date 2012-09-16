@@ -1,4 +1,4 @@
-{
+ï»¿{
     "name": "Unicorn",
     "author": [
         "TheUnknownOne"
@@ -436,10 +436,10 @@
                     },
                     "kill2": {
                         "target": "AnyButTeam",
-                        "common": "Team",
+                        "common": "Self",
                         "priority": 12,
                         "broadcast": "team",
-                        "broadcastmsg": "±Game: Your partner(s) have decided to kill ~Target~!",
+                        "broadcastmsg": "Â±Game: Your partner(s) have decided to kill ~Target~!",
                         "initialrecharge": 3,
                         "recharge": 3,
                         "failChance": 0.2,
@@ -468,10 +468,10 @@
                     },
                     "kill2": {
                         "target": "AnyButTeam",
-                        "common": "Team",
+                        "common": "Self",
                         "priority": 12,
                         "broadcast": "team",
-                        "broadcastmsg": "±Game: Your partner(s) have decided to kill ~Target~!",
+                        "broadcastmsg": "Â±Game: Your partner(s) have decided to kill ~Target~!",
                         "initialrecharge": 3,
                         "recharge": 3,
                         "failChance": 0.2,
