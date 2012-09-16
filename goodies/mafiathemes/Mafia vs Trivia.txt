@@ -70,7 +70,7 @@
             "side": "Trivia",
             "role": "Trivia Super Admin",
             "translation": "Trivia Super Admin",
-            "help": "You are a Trivia Super Admin! Type /mban [name] durning the day to kill someone. You can ban twice. Keep in mind that you can ban trivia (super) admins and even yourself.",
+            "help": "You are a Trivia Super Admin! Type /tban [name] durning the day to kill someone. You can ban twice. Keep in mind that you can ban trivia (super) admins and even yourself.",
             "actions": {
                 "standby": {
                     "tban": {
