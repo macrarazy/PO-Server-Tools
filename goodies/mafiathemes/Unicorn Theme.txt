@@ -3,7 +3,7 @@
     "author": [
         "TheUnknownOne"
     ],
-    "border": "*** unicorn unicorn unicorn unicorn unicorn unicorn unicorn unicorn unicorn unicorn unicorn unicorn ***",
+    "border": "*** /./././././././././././././././././././././././././././././././ ***",
     "summary": "A kids theme (The only mafia theme which is for ages 7 and up). You will have to figure everything out yourself as kids don't like reading. [Suggestions go to TheUnknownOne, mmkay?]",
     "sides": [
         {
@@ -282,7 +282,7 @@
                         "target": "AnyButSelf",
                         "common": "Self",
                         "priority": 30,
-                        "limit": 12
+                        "limit": 2
                     }
                 },
                 "distract": {
