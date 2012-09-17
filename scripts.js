@@ -5620,9 +5620,10 @@ if(message == "Maximum Players Changed.") {
                     poChan.perm = !poChan.perm;
 
                     var status = "permanent";
-                    if (!isOn) {
+                    if (!poChan.perm) {
                         status = "temporally";
                     }
+                    
                     botAll(player(src) + " made this channel " + status + ".", chan);
                     cData.changeStatus(chan, poChan.perm, poChan.private, poChan.silence);
                 },
@@ -5649,13 +5650,14 @@ if(message == "Maximum Players Changed.") {
                         noPermissionMessage(src, fullCommand, chan);
                         return;
                     }
-                    if (channels.has(chan)) {
+                    if (DefaultChannels.has(chan)) {
                         botMessage(src, "This channel can't be destoryed!", chan);
                         return;
                     }
 
                     var players = sys.playersOfChannel(chan),
                         curr;
+                        
                     delete cData.channelData[sys.channel(chan)];
                     cData.save();
 

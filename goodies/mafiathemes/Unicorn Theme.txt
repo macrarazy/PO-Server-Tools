@@ -394,7 +394,7 @@
                     }
                 },
                 "inspect": {
-                    "revealAs": "Villager"
+                    "revealAs": "Bodyguard-2"
                 },
                 "startup": "team-reveal"
             }
@@ -414,7 +414,7 @@
                     }
                 },
                 "inspect": {
-                    "revealAs": "Villager"
+                    "revealAs": "Bodyguard-2"
                 },
                 "startup": "team-reveal"
             }
