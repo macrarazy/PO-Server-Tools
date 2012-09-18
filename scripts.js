@@ -1162,7 +1162,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         }
 
 
-        if (spot == 0) {
+        if (spots == 0) {
             this.tourmode = 2;
             this.roundnumber = 0;
             this.roundPairing();
