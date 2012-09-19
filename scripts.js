@@ -1550,7 +1550,7 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
         }
     }
 
-    if (count < objLength(this.players)) {
+    if (count < this.players.length()) {
         botMessage(src, "There are more than that people registered.", this.id);
         return;
     }
@@ -1558,13 +1558,13 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
     this.tournumber = count;
     this.remaining = count;
 
-    var spots = sys.tourSpots(),
+    var spots = this.tourSpots(),
         me = player(src),
         message = [me + " changed the numbers of entrants to " + count + "!", "<b>" + spots + "</b> more " + s("spot", spots) + " left!"];
 
     this.TourBox(message);
 
-    if (this.tourSpots() == 0) {
+    if (spots == 0) {
         this.tourmode = 2;
         this.roundnumber = 0;
         this.roundPairing();
@@ -11753,7 +11753,6 @@ if(message == "Maximum Players Changed.") {
             }
         })();
 
-        if (isUndefined) {
             var chanList = cData.channelData,
                 x, c_chan, creator_id;
 
@@ -11769,7 +11768,6 @@ if(message == "Maximum Players Changed.") {
                     script.beforeChannelCreated(sys.channelId(x), x, creator_id);
                 }
             }
-        }
 
         for (y in DefaultChannels) {
             current = DefaultChannels[y];
