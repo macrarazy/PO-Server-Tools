@@ -6104,22 +6104,23 @@ if(message == "Maximum Players Changed.") {
                     ct.render(src, chan);
                 },
 
-                /* -- Tour Commands: Switch -- */
-                'switch': function () {
+                
+                display: function () {
+                    poChan.tour.command_display(src, commandData, fullCommand);
+                },
+                
+                "switch": function () {
                     poChan.tour.command_switch(src, commandData, fullCommand);
                 },
 
-                /* -- Tour Commands: Auto Start Battles -- */
                 autostartbattles: function () {
                     poChan.tour.command_autostartbattles(src, commandData, fullCommand);
                 },
 
-                /* -- Tour Commands: Prize -- */
                 tourprize: function () {
                     poChan.tour.command_tourprize(src, commandData, fullCommand);
                 },
 
-                /* -- Tour Commands: Join -- */
                 join: function () {
                     poChan.tour.command_join(src, commandData, fullCommand);
                 },
@@ -6128,12 +6129,10 @@ if(message == "Maximum Players Changed.") {
                     poChan.tour.command_unjoin(src, commandData, fullCommand);
                 },
 
-                /* -- Tour Commands: Info */
                 viewround: function () {
                     poChan.tour.command_viewround(src, commandData, fullCommand);
                 },
 
-                /* -- Tour Commands: Sorting */
                 dq: function () {
                     poChan.tour.command_dq(src, commandData, fullCommand);
                 },
@@ -6146,12 +6145,10 @@ if(message == "Maximum Players Changed.") {
                     poChan.tour.command_cancelbattle(src, commandData, fullCommand);
                 },
 
-                /* -- Tour Commands: Spots */
                 changespots: function () {
                     poChan.tour.command_changespots(src, commandData, fullCommand);
                 },
 
-                /* -- Tour Commands: Tournament */
                 tour: function () {
                     if (TourDisplay == 2) {
                         DisableChatColorRandomizer(chan);
@@ -6165,8 +6162,7 @@ if(message == "Maximum Players Changed.") {
                 }
             });
 
-            /* -- Mod Commands: Start */
-            modCommands = ({ /* -- Mod Templates: Commands */
+            modCommands = ({
                 cmdcommands: function () {
                     var ct = new Command_Templater("Command Commands", true);
                     ct.span("Command " + ModName + " Commands");
