@@ -492,6 +492,9 @@
                 "lynch": {
                     "revealAs": "Hunter-1"
                 },
+                "startup": {
+                    "revealAs": "Villager"
+                },
                 "onlist": "Hunter-1"
             }
         },
@@ -506,6 +509,9 @@
                 },
                 "lynch": {
                     "revealAs": "Flying"
+                },
+                "startup": {
+                    "revealAs": "Villager"
                 },
                 "onlist": "Flying"
             }
