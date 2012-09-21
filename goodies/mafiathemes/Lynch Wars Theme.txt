@@ -90,15 +90,15 @@
         },
         {
             "role": "Squid",
-            "translation": "TERRORSQUID",
+            "translation": "THE TERRORSQUID!",
             "side": "Mafia",
-            "help": "You are a TERRORSQUID! Slice in half by using /kill [name] (Which should be right about.. now!)",
+            "help": "You are a THE TERRORSQUID! (Yes, that's right, a THE TERRORSQUID!)! Slice in half by using /kill [name] (Which should be right about.. now!)",
             "actions": {
                 "standby": {
                     "kill": {
                         "target": "AnyButSelf",
                         "msg": "You can now kill using /kill [name]:",
-                        "killmsg": "A TERRORSQUID appeared and picks his target.. Poor ~Target~!"
+                        "killmsg": "A THE TERRORSQUID! appeared and picks his target.. Poor ~Target~!"
                     }
                 }
             }
@@ -159,6 +159,5 @@
         "Villager",
         "Mafia",
         "Villager"
-    ],
-    "maxplayers": 33
+    ]
 }
