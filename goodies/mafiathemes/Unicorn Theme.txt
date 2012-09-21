@@ -3,8 +3,7 @@
     "author": [
         "TheUnknownOne"
     ],
-    "border": "*** /./././././././././././././././././././././././././././././././ ***",
-    "summary": "A kids theme (The only mafia theme which is for ages 7 and up). You will have to figure everything out yourself as kids don't like reading. [Suggestions go to TheUnknownOne, mmkay?]",
+    "summary": "A kids theme (The only mafia theme which is for ages 7 (actually 18, sort of) and up). You will have to figure everything out yourself as kids don't like reading. [Suggestions go to TheUnknownOne, mmkay?]",
     "sides": [
         {
             "side": "village",
@@ -227,7 +226,7 @@
             "role": "Hunter-1",
             "translation": "Unicorn Hunter",
             "side": "Hunter",
-            "help": "Type /Kill [name] to kill someone! You kill the Crying White Unicorn when he/it comes to you.",
+            "help": "Type /Kill [name] to kill someone! You kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
             "actions": {
                 "night": {
                     "kill": {
@@ -250,7 +249,7 @@
             "role": "Hunter-2",
             "translation": "Unicorn Hunter",
             "side": "Hunter",
-            "help": "Type /Kill [name] to kill someone (this can be done twice, don't ask me why)! You have a voteshield of -1 and you kill the Crying White Unicorn when he/it comes to you.",
+            "help": "Type /Kill [name] to kill someone (this can be done twice, don't ask me why)! You have a voteshield of -1 and you kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
             "actions": {
                 "night": {
                     "kill": {
@@ -275,7 +274,7 @@
             "role": "Flying",
             "translation": "Flying Unicorn",
             "side": "Flying",
-            "help": "You are a murdering machine for some stupid reason (don't ask me). You can kill twice per night, and twice per day. You kill last in the night, however.",
+            "help": "You are a murdering machine for some stupid reason (don't ask me). You can kill twice per night, and twice per day. You kill last in the night, however. You are a busy thing, so annoying Unicorns will simply DIE.",
             "actions": {
                 "night": {
                     "kill": {
