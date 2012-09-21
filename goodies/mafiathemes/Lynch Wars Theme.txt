@@ -1,0 +1,108 @@
+{
+    "name": "Lynch Wars",
+    "author": [
+        "TheUnknownOne"
+    ],
+    "summary": "Ever wanted to vote someone out, just for fun? Well, in Lynch Wars, you can! Lynch the opposing team to win! You don't know your teammates, though.. [Votesniping is on].",
+    "votesniping": true,
+    "ticks": {
+        "night": 1,
+        "standby": 10
+    },
+    "minplayers": 4,
+    "sides": [
+        {
+            "side": "Village",
+            "translation": "Village"
+        },
+        {
+            "side": "Mafia",
+            "translation": "Mafia"
+        }
+    ],
+    "roles": [
+        {
+            "role": "Villager",
+            "translation": "Villager",
+            "side": "Village",
+            "help": "You are just a simple villager, so you don't have much rights here. Lynch the mafia to win!"
+        },
+        {
+            "role": "Mayor",
+            "translation": "Mayor",
+            "side": "Village",
+            "help": "You are the mayor of the village! Your vote counts as 3 because people actually care about you! Lynch the mafia to win!",
+            "actions": {
+                "vote": 3
+            }
+        },
+        {
+            "role": "Idiot",
+            "translation": "Village Idiot",
+            "side": "Village",
+            "help": "You are the idiot of the village! Your vote counts as -1 because you are retarded. Help the village by voting on it's citizens to nullify someones importance!",
+            "actions": {
+                "vote": -1
+            }
+        },
+        {
+            "role": "Mafia",
+            "translation": "Mafia",
+            "side": "Mafia",
+            "help": "You are just a simple criminal, so you don't have much rights at all. Lynch the village to win!"
+        },
+        {
+            "role": "Don",
+            "translation": "Don",
+            "side": "Mafia",
+            "help": "You are the don of the mafia! Your vote counts as 3 because.. well.. you have guns 'n' stuff! Lynch the village to win!",
+            "actions": {
+                "vote": 3
+            }
+        },
+        {
+            "role": "Psycho",
+            "translation": "Psychopath",
+            "side": "Mafia",
+            "help": "You are the mafia's very own psychopath! Your vote counts as -1 because self explanatory. Help the mafia by voting on it's members to nullify someones importance!",
+            "actions": {
+                "vote": -1
+            }
+        }
+    ],
+    "roles1": [
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Psycho",
+        "Idiot",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Don",
+        "Mayor",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia"
+    ],
+    "maxplayers": 33
+}
