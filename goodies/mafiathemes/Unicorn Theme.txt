@@ -15,7 +15,7 @@
         },
         {
             "side": "Mafia2",
-            "translation": "Ghey Unicorns"
+            "translation": "Grey Unicorns"
         },
         {
             "side": "Hunter",
