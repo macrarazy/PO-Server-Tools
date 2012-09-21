@@ -2358,7 +2358,7 @@ defineCoreProperty(Object.prototype, "extend", function (other) {
             }
         }
     }
-    
+
     return this;
 });
 
@@ -5623,7 +5623,7 @@ if(message == "Maximum Players Changed.") {
                     if (!poChan.perm) {
                         status = "temporally";
                     }
-                    
+
                     botAll(player(src) + " made this channel " + status + ".", chan);
                     cData.changeStatus(chan, poChan.perm, poChan.private, poChan.silence);
                 },
@@ -5657,7 +5657,7 @@ if(message == "Maximum Players Changed.") {
 
                     var players = sys.playersOfChannel(chan),
                         curr;
-                        
+
                     delete cData.channelData[sys.channel(chan)];
                     cData.save();
 
@@ -6104,11 +6104,11 @@ if(message == "Maximum Players Changed.") {
                     ct.render(src, chan);
                 },
 
-                
+
                 display: function () {
                     poChan.tour.command_display(src, commandData, fullCommand);
                 },
-                
+
                 "switch": function () {
                     poChan.tour.command_switch(src, commandData, fullCommand);
                 },
@@ -8938,8 +8938,8 @@ if(message == "Maximum Players Changed.") {
                 return;
             }
 
-return;
-            }
+            return;
+        }
 
         if (typeof poUser.impersonation != 'undefined') {
             if (myAuth <= 0 && implock) {
@@ -8957,57 +8957,33 @@ return;
                 font = ' face="' + fnt + '"', font2 = '<font face="' + fnt + '">%1</font>';
             }
 
-            if (myAuth >= 1 && myAuth <= 3) {
-                var l = "+<i>",
-                    f;
-                if (UseIcons) {
-                    l = rankico;
-                }
-
-                if (UseIcons) {
-                    f = format(src, html_escape(message));
-                } else {
-                    f = html_escape(message);
-                }
-
-                if (chan === watch) {
-                    sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message));
-                }
-                else {
-                    sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message), chan);
-                }
+            var l = "",
+                f;
+            if (UseIcons) {
+                l = rankico;
+            } else if (myAuth >= 1 && myAuth <= 3) {
+                l = "+<i>";
             }
 
-            else {
-                var l = "",
-                    f;
-                if (UseIcons) {
-                    l = rankico;
-                }
-
-                if (UseIcons) {
-                    f = format(src, html_escape(message));
-                } else {
-                    f = html_escape(message);
-                }
-
-                if (chan === watch) {
-                    sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></font> " + font2.format(message));
-                }
-                else {
-                    sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></font> " + font2.format(message), chan);
-                }
+            if (UseIcons) {
+                f = format(src, html_escape(message));
+            } else {
+                f = html_escape(message);
             }
-
 
             if (chan === watch) {
-                send(src, srcname + ": " + message);
-                return;
+                sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message));
             }
             else {
-                send(src, srcname + ": " + message, chan);
-                return;
+                sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message), chan);
             }
+
+            if (chan === watch) {
+                send(srcname + ": " + message);
+            }
+
+            sys.stopEvent();
+            return;
         }
 
 
@@ -11746,21 +11722,21 @@ return;
             }
         })();
 
-            var chanList = cData.channelData,
-                x, c_chan, creator_id;
+        var chanList = cData.channelData,
+            x, c_chan, creator_id;
 
-            for (x in chanList) {
-                c_chan = chanList[x];
-                if (c_chan.perm && !sys.existChannel(x)) {
-                    creator_id = sys.id(c_chan.creator);
-                    if (creator_id == undefined) {
-                        creator_id = 0;
-                    }
-
-                    sys.createChannel(x);
-                    script.beforeChannelCreated(sys.channelId(x), x, creator_id);
+        for (x in chanList) {
+            c_chan = chanList[x];
+            if (c_chan.perm && !sys.existChannel(x)) {
+                creator_id = sys.id(c_chan.creator);
+                if (creator_id == undefined) {
+                    creator_id = 0;
                 }
+
+                sys.createChannel(x);
+                script.beforeChannelCreated(sys.channelId(x), x, creator_id);
             }
+        }
 
         for (y in DefaultChannels) {
             current = DefaultChannels[y];
