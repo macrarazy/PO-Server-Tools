@@ -16,7 +16,7 @@
         },
         {
             "side": "Mafia2",
-            "translation": "Grey Unicorns"
+            "translation": "Ghey Unicorns"
         },
         {
             "side": "Hunter",
@@ -383,7 +383,7 @@
             "role": "Mafia1-Inspector",
             "translation": "Black Unicorn Inspector",
             "side": "Mafia1",
-            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn because you are cute (not really).",
+            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn Bodyguard because you are fat (lol).",
             "actions": {
                 "night": {
                     "inspect": {
@@ -403,7 +403,7 @@
             "role": "Mafia2-Inspector",
             "translation": "Grey Unicorn Inspector",
             "side": "Mafia2",
-            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn because you are cute (not really).",
+            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn because you are fat (lol).",
             "actions": {
                 "night": {
                     "inspect": {

@@ -4564,7 +4564,7 @@ if(message == "Maximum Players Changed.") {
                     if (shiny != rand) {
                         botMessage(src, formatPoke(num, false, false, 0, 5) + " " + formatPoke(num, false, true, 0, 5), chan);
                         botAll(player(src) + " caught a level " + lvl + " " + pokemon + " with a " + nature + " nature!", chan);
-                        botMessage(pokemon + " has the following IVs:", chan);
+                        botMessage(src, pokemon + " has the following IVs:", chan);
                         botMessage(src, "HP: " + ivs[0] + " Atk: " + ivs[1] + " Def: " + ivs[2] + " SpA: " + ivs[3] + " SpD: " + ivs[4] + " Spd: " + ivs[5] + ".", chan);
                     }
                     else {
@@ -8974,10 +8974,10 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 if (chan === watch) {
-                    sendHtml(src, "<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message));
+                    sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message));
                 }
                 else {
-                    sendHtml(src, "<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message), chan);
+                    sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message), chan);
                 }
             }
 
@@ -8995,10 +8995,10 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 if (chan === watch) {
-                    sendHtml(src, "<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></font> " + font2.format(message));
+                    sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></font> " + font2.format(message));
                 }
                 else {
-                    sendHtml(src, "<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></font> " + font2.format(message), chan);
+                    sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></font> " + font2.format(message), chan);
                 }
             }
 
