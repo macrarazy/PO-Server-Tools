@@ -6965,7 +6965,6 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, temp.length + " aliases in total.", chan);
                 },
 
-                /* -- Mod Commands: Hostname Lookup -- */
                 hostname: function () {
                     if (dbIp == undefined) {
                         botMessage(src, "That player does not exist.", chan);
@@ -6976,7 +6975,6 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, "The hostname of " + commandData.name().bold() + " is: " + DataHash.locations[dbIp].hostname, chan);
                 },
 
-                /* -- Mod Commands: Super Impersonation -- */
                 superimp: function () {
                     if (commandData == "") {
                         botMessage(src, "Specify a name to imp.", chan);
@@ -7016,7 +7014,6 @@ if(message == "Maximum Players Changed.") {
                 }
             })
 
-            /* -- Mod Commands: Mod Commands Template -- */
             modCommands[removespaces(ModName).toLowerCase() + "commands"] = function () {
                 var ct = new Command_Templater(ModName + " Commands");
 
@@ -8941,8 +8938,8 @@ if(message == "Maximum Players Changed.") {
                 return;
             }
 
-            sendHtml = sys.sendHtmlMessage, send = sys.sendMessage;
-        }
+return;
+            }
 
         if (typeof poUser.impersonation != 'undefined') {
             if (myAuth <= 0 && implock) {
@@ -8954,7 +8951,7 @@ if(message == "Maximum Players Changed.") {
 
             var nc = script.namecolor(src),
                 font = '',
-                font2 = '';
+                font2 = '%1';
 
             if (chatcolor) {
                 font = ' face="' + fnt + '"', font2 = '<font face="' + fnt + '">%1</font>';
