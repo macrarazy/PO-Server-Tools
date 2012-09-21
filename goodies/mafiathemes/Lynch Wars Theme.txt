@@ -18,6 +18,10 @@
         {
             "side": "Mafia",
             "translation": "Mafia"
+        },
+        {
+            "side": "Conspirator",
+            "translation": "Conspirator"
         }
     ],
     "roles": [
@@ -46,6 +50,21 @@
             }
         },
         {
+            "role": "Samurai",
+            "translation": "Samurai",
+            "side": "Village",
+            "help": "You are a Samurai! Slice in half by using /kill [name] (Which should be right about.. now!)",
+            "actions": {
+                "standby": {
+                    "kill": {
+                        "target": "AnyButSelf",
+                        "msg": "You can now kill using /kill [name]:",
+                        "killmsg": "A Samurai appeared and picks his target.. Poor ~Target~!"
+                    }
+                }
+            }
+        },
+        {
             "role": "Mafia",
             "translation": "Mafia",
             "side": "Mafia",
@@ -68,6 +87,42 @@
             "actions": {
                 "vote": -1
             }
+        },
+        {
+            "role": "Squid",
+            "translation": "TERRORSQUID",
+            "side": "Mafia",
+            "help": "You are a TERRORSQUID! Slice in half by using /kill [name] (Which should be right about.. now!)",
+            "actions": {
+                "standby": {
+                    "kill": {
+                        "target": "AnyButSelf",
+                        "msg": "You can now kill using /kill [name]:",
+                        "killmsg": "A TERRORSQUID appeared and picks his target.. Poor ~Target~!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "Conspirator",
+            "translation": "Conspirator",
+            "side": "Conspirator",
+            "help": "You are the Conspitator! You know everyone, and you win everyone. Try to lie as much as possible to let one side win!",
+            "actions": {
+                "startup": {
+                    "revealRole": [
+                        "Villager",
+                        "Mafia",
+                        "Mayor",
+                        "Don",
+                        "Idiot",
+                        "Psycho",
+                        "Samurai",
+                        "Squid"
+                    ]
+                }
+            },
+            "winningSides": "*"
         }
     ],
     "roles1": [
@@ -82,12 +137,18 @@
         "Psycho",
         "Idiot",
         "Villager",
+        "Conspirator",
         "Mafia",
-        "Villager",
         "Mafia",
-        "Don",
         "Mayor",
+        "Don",
         "Villager",
+        "Mafia",
+        "Villager",
+        "Mafia",
+        "Villager",
+        "Squid",
+        "Samurai",
         "Mafia",
         "Villager",
         "Mafia",
@@ -97,12 +158,7 @@
         "Mafia",
         "Villager",
         "Mafia",
-        "Villager",
-        "Mafia",
-        "Villager",
-        "Mafia",
-        "Villager",
-        "Mafia"
+        "Villager"
     ],
     "maxplayers": 33
 }
