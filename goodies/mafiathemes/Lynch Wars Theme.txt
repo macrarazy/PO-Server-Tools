@@ -107,7 +107,7 @@
             "role": "Conspirator",
             "translation": "Conspirator",
             "side": "Conspirator",
-            "help": "You are the Conspitator! You know everyone, and you win everyone. Try to lie as much as possible to let one side win!",
+            "help": "You are the Conspirator! You know everyone, and you win everyone. Try to lie as much as possible to let one side win!",
             "actions": {
                 "startup": {
                     "revealRole": [

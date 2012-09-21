@@ -8972,17 +8972,16 @@ if(message == "Maximum Players Changed.") {
             }
 
             if (chan === watch) {
-                sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message));
+                sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(f));
             }
             else {
-                sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(message), chan);
+                sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(f), chan);
             }
 
             if (chan === watch) {
                 send(srcname + ": " + message);
             }
 
-            sys.stopEvent();
             return;
         }
 
