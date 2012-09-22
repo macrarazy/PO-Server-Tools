@@ -8362,7 +8362,7 @@ if(message == "Maximum Players Changed.") {
 
                     for (x in d) {
                         if (c > 250) {
-                            o = Strings.length()++;
+                            o = Strings.length() * 1 += 1;
                             Strings[o - 1] = cstr;
                             Strings[o] = "";
                             cstr = Strings[o];
