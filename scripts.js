@@ -8417,7 +8417,7 @@ if(message == "Maximum Players Changed.") {
                         rmPoint = removespaces(pointer),
                         rmCmd = removespaces(command);
 
-                    if (rmPoint == "!!/reverse/!!" || hasCommandStart(rmPoint)) {
+                    if (rmPoint.toLowerCase() == "!!/reverse/!!" || hasCommandStart(rmPoint)) {
                         botMessage(src, "This pointer is reserved.");
                         return;
                     }

@@ -274,7 +274,7 @@
             "role": "Flying",
             "translation": "Flying Unicorn",
             "side": "Flying",
-            "help": "You are a murdering machine for some stupid reason (don't ask me). You can kill twice per night, and twice per day. You kill last in the night, however. You are a busy thing, so annoying Unicorns will simply DIE.",
+            "help": "You are a murdering machine for some stupid reason (don't ask me). You can kill twice per night, and once a day. You kill last in the night, however. You are a busy thing, so annoying Unicorns will simply DIE.",
             "actions": {
                 "night": {
                     "kill": {
@@ -316,7 +316,7 @@
                 },
                 "hax": {
                     "protect": {
-                        "revealPlayer": 0.005
+                        "revealPlayer": 0.01
                     }
                 },
                 "startup": "team-reveal"
@@ -338,7 +338,7 @@
                 },
                 "hax": {
                     "protect": {
-                        "revealPlayer": 0.005
+                        "revealPlayer": 0.01
                     }
                 },
                 "startup": "team-reveal"
@@ -402,7 +402,7 @@
             "role": "Mafia2-Inspector",
             "translation": "Grey Unicorn Inspector",
             "side": "Mafia2",
-            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn because you are fat (lol).",
+            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn Bodyguard because you are fat (lol).",
             "actions": {
                 "night": {
                     "inspect": {
