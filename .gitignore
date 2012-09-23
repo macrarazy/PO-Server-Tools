@@ -13,4 +13,5 @@ test-scripts.bat
 move-scripts.bat
 core-prototypes.txt
 
-# Private development
+# WebStorm
+.idea/

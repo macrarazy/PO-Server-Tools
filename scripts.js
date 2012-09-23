@@ -4103,7 +4103,6 @@ if(message == "Maximum Players Changed.") {
                     t.register("<b>11</b>) Do not mini-moderate. Mini-Moderating means you act like a moderator, while your not. Contact an Authority instead.");
                     t.register("<b>12</b>) Do not ban evade. Doing so will result in an instant ban, or rangeban.");
                     t.register("<b>13</b>) Do not blackmail. This will result in an instant mute/ban/rangeban.");
-                    t.register("<b>14</b>) Do not complain about hax, it's part of the game.");
 
                     t.register("<br/><b>If the server authority think it is necessary to punish someone, then they are allowed to do so. Report them to higher powers if you think you have been abused.</b>");
                     t.register("The server authority <u>do not</u> have to apply these rules.");
