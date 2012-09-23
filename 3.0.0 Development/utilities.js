@@ -74,7 +74,7 @@
                 });
             }
 
-            ret.extend(props, {
+            ret.extend(props).extend({
                 "escape": html_escape,
 
 
@@ -84,7 +84,7 @@
 
                 nativeSend: sys.sendAll,
                 nativeHtml: sys.sendHtmlAll
-            }, additional);
+            }).extend(additional);
 
             return ret;
         }

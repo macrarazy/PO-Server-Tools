@@ -2349,13 +2349,11 @@ defineCoreProperty(Object.prototype, "insert", function (name, val) {
 });
 
 defineCoreProperty(Object.prototype, "extend", function (other) {
-    var x, curr, y;
-    for (x in arguments) {
-        curr = arguments[x];
-        if (typeof curr === "object" && !Array.isArray(curr) && curr !== null) {
-            for (y in curr) {
-                this[y] = curr[y];
-            }
+    var x;
+
+    if (typeof other === "object" && !Array.isArray(other) && other !== null) {
+        for (x in other) {
+            this[x] = other[x];
         }
     }
 
@@ -13581,7 +13579,8 @@ if(message == "Maximum Players Changed.") {
                     name, totalstats = 0,
                     commandStats = this.stats.commands,
                     lim = -1,
-                    current, at, time = sys.time() * 1, statsLen = commandStats.length();
+                    current, at, time = sys.time() * 1,
+                    statsLen = commandStats.length();
 
                 if (limit != undefined && limit != 0 && limit != -1) {
                     lim = limit;
@@ -14368,7 +14367,7 @@ if(message == "Maximum Players Changed.") {
             }
 
             var sendChanAll = function (msg) {
-            sys.sendAll(msg, mafiachan);
+                sys.sendAll(msg, mafiachan);
             }
 
             /* stolen from here: http://snippets.dzone.com/posts/show/849 */
