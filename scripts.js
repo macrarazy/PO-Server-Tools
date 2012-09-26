@@ -4048,7 +4048,7 @@ if(message == "Maximum Players Changed.") {
 
                     check(evallock, "Eval is", "locked", "not locked");
 
-                    check(implock, "Impersonation for " + sLetter(UserName) + " is", "blocked", "not blocked");
+                    check(implock, "Impersonation for " + Grammar.es(UserName) + " is", "blocked", "not blocked");
 
                     check(CommandsEnabled.me, "Me is", "on", "off");
                     check(CommandsEnabled._catch_, "Catch is", "on", "off");
@@ -4113,7 +4113,7 @@ if(message == "Maximum Players Changed.") {
                 tourauthlist: function () {
                     var authlist = DataHash.megausers,
                         count = authlist.length(),
-                        x, t = new Templater(sLetter(Tour1));
+                        x, t = new Templater(Grammar.es(Tour1));
 
                     t.register('');
 
@@ -4121,7 +4121,7 @@ if(message == "Maximum Players Changed.") {
                         t.register(playerInfo(x));
                     }
 
-                    t.register("<br/><b><font color=blueviolet>Total Number of " + sLetter(Tour1) + ":</font></b> " + count);
+                    t.register("<br/><b><font color=blueviolet>Total Number of " + Grammar.es(Tour1) + ":</font></b> " + count);
 
                     t.render(src, chan);
                 },
@@ -4166,7 +4166,7 @@ if(message == "Maximum Players Changed.") {
                         c = a.invis;
                         if (c.length != 0) {
 
-                            t.register("<font color=black size=4><b>" + sLetter(InvisName) + " (" + c.length + ")</b></font><br/>")
+                            t.register("<font color=black size=4><b>" + Grammar.es(InvisName) + " (" + c.length + ")</b></font><br/>")
 
                             for (x in c) {
                                 t.register(playerInfo(c[x]));
@@ -4179,7 +4179,7 @@ if(message == "Maximum Players Changed.") {
                     c = a.owner;
 
                     if (c.length != 0) {
-                        t.register("<font color=red size=4><b>" + sLetter(OwnerName) + " (" + c.length + ")</b></font><br/>");
+                        t.register("<font color=red size=4><b>" + Grammar.es(OwnerName) + " (" + c.length + ")</b></font><br/>");
 
                         for (x in c) {
                             t.register(playerInfo(c[x]));
@@ -4191,7 +4191,7 @@ if(message == "Maximum Players Changed.") {
                     c = a.admin;
 
                     if (c.length != 0) {
-                        t.register("<font color=orange size=4><b>" + sLetter(AdminName) + " (" + c.length + ")</b></font><br/>");
+                        t.register("<font color=orange size=4><b>" + Grammar.es(AdminName) + " (" + c.length + ")</b></font><br/>");
 
                         for (x in c) {
                             t.register(playerInfo(c[x]));
@@ -4203,7 +4203,7 @@ if(message == "Maximum Players Changed.") {
                     c = a.mod;
 
                     if (c.length != 0) {
-                        t.register("<font color=blue size=4><b>" + sLetter(ModName) + " (" + c.length + ")</b></font><br/>");
+                        t.register("<font color=blue size=4><b>" + Grammar.es(ModName) + " (" + c.length + ")</b></font><br/>");
 
                         for (x in c) {
                             t.register(playerInfo(c[x]));
@@ -4918,14 +4918,13 @@ if(message == "Maximum Players Changed.") {
                     var h = mcmd[0].toLowerCase(),
                         l = function (v) {
                             return v.toLowerCase()
-                        }
+                        }, a = h;
 
                         if (h != "1" && h != "2" && h != "3" && h != l(ModName) && h != l(AdminName) && h != l(OwnerName)) {
                             botMessage(src, "Please select an auth level or auth name for the /callauth", chan);
                             return;
                         }
 
-                        var a = h;
                     if (l(ModName) == a) {
                         a = 1;
                     }
@@ -4972,7 +4971,7 @@ if(message == "Maximum Players Changed.") {
                 /* -- User Commands: Impersonation */
                 imp: function () {
                     if (implock && sys.auth(src) < 1) {
-                        botMessage(src, 'Imping has been locked for ' + sLetter(UserName) + '.', chan);
+                        botMessage(src, 'Imping has been locked for ' + Grammar.es(UserName) + '.', chan);
                         return;
                     }
 
@@ -5018,7 +5017,7 @@ if(message == "Maximum Players Changed.") {
 
                 impoff: function () {
                     if (implock && sys.auth(src) < 1) {
-                        botMessage(src, "Imping has been locked for " + sLetter(UserName) + ".", chan);
+                        botMessage(src, "Imping has been locked for " + Grammar.es(UserName) + ".", chan);
                         return;
                     }
                     if (poUser.impersonation == undefined) {
@@ -5183,10 +5182,10 @@ if(message == "Maximum Players Changed.") {
                         ct.register("installtour", "To install tournaments in this channel.");
                         ct.register("uninstalltour", "To uninstall tournaments in this channel.");
 
-                        ct.register(removespaces(ChanUser).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanUser) + " in this channel.");
-                        ct.register(removespaces(ChanMod).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanMod) + " in this channel.");
-                        ct.register(removespaces(ChanTour0).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanTour0) + " in this channel.");
-                        ct.register(removespaces(ChanTour1).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanTour1) + " in this channel.");
+                        ct.register(removespaces(ChanUser).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ChanUser) + " in this channel.");
+                        ct.register(removespaces(ChanMod).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ChanMod) + " in this channel.");
+                        ct.register(removespaces(ChanTour0).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ChanTour0) + " in this channel.");
+                        ct.register(removespaces(ChanTour1).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ChanTour1) + " in this channel.");
 
                         ct.register("channelban", ["{Player::Database Player}", "<u>{o Time}</u>", "{bv <u>Time Unit</b>}", "<u>{p Reason}</u>"], "Bans or unbans someone from this channel.");
                     }
@@ -5200,8 +5199,8 @@ if(message == "Maximum Players Changed.") {
 
                         ct.register("channelpublic", "To allow everyone (with the exception of players on the channel banlist) into the channel.");
                         ct.register("channelprivate", "To make the channel auth-only. Also kicks everyone out of the channel who isn't (channel) auth.");
-                        ct.register(removespaces(ChanAdmin).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanAdmin) + " in this channel.");
-                        ct.register(removespaces(ChanOwner).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ChanOwner) + " in this channel.");
+                        ct.register(removespaces(ChanAdmin).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ChanAdmin) + " in this channel.");
+                        ct.register(removespaces(ChanOwner).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ChanOwner) + " in this channel.");
                     }
 
                     ct.render(src, chan);
@@ -5211,7 +5210,7 @@ if(message == "Maximum Players Changed.") {
                 ctourauthlist: function () {
                     var authlist = poChan.tourAuth,
                         count = authlist.length(),
-                        t = new Templater(sLetter(ChanTour1));
+                        t = new Templater(Grammar.es(ChanTour1));
 
                     t.register("");
 
@@ -5219,7 +5218,7 @@ if(message == "Maximum Players Changed.") {
                         t.register(playerInfo(x));
                     }
 
-                    t.register("<br/><b><font color=blueviolet>Total Number of " + sLetter(ChanTour1) + ":</font></b> " + count);
+                    t.register("<br/><b><font color=blueviolet>Total Number of " + Grammar.es(ChanTour1) + ":</font></b> " + count);
 
                     t.render(src, chan);
                 },
@@ -5294,7 +5293,7 @@ if(message == "Maximum Players Changed.") {
                         c = auths.owners;
 
                     if (c.length != 0) {
-                        t.register("<font color=red size=4><strong>" + sLetter(ChanOwner) + " (" + c.length + ")</strong></font>");
+                        t.register("<font color=red size=4><strong>" + Grammar.es(ChanOwner) + " (" + c.length + ")</strong></font>");
                         t.register("");
 
                         for (x in c) {
@@ -5306,7 +5305,7 @@ if(message == "Maximum Players Changed.") {
 
                     c = auths.admins;
                     if (c.length != 0) {
-                        t.register("<font color=orange size=4><strong>" + sLetter(ChanAdmin) + " (" + c.length + ")</strong></font>");
+                        t.register("<font color=orange size=4><strong>" + Grammar.es(ChanAdmin) + " (" + c.length + ")</strong></font>");
                         t.register("");
 
                         for (x in c) {
@@ -5318,7 +5317,7 @@ if(message == "Maximum Players Changed.") {
 
                     c = auths.mods;
                     if (c.length != 0) {
-                        t.register("<font color=blue size=4><strong>" + sLetter(ChanMod) + " (" + c.length + ")</strong></font>");
+                        t.register("<font color=blue size=4><strong>" + Grammar.es(ChanMod) + " (" + c.length + ")</strong></font>");
                         t.register("");
 
                         for (x in c) {
@@ -6168,8 +6167,8 @@ if(message == "Maximum Players Changed.") {
 
                     if (permission(src, 2)) {
                         ct.span("Command " + AdminName + " Commands");
-                        ct.register("implock", "Locks impersonation commands for " + sLetter(UserName) + ".");
-                        ct.register("impunlock", "Unlocks impersonation commands for " + sLetter(UserName) + ".");
+                        ct.register("implock", "Locks impersonation commands for " + Grammar.es(UserName) + ".");
+                        ct.register("impunlock", "Unlocks impersonation commands for " + Grammar.es(UserName) + ".");
                     }
 
                     if (permission(src, 3)) {
@@ -6237,19 +6236,19 @@ if(message == "Maximum Players Changed.") {
                     var ct = new Command_Templater("Silence Commands", true);
                     ct.span("Silence " + ModName + " Commands");
 
-                    ct.register("silence", ["{Text::Number <u>Time</u>}"], "Silences the chat for all auth under " + sLetter(UserName) + " for {Text::Number Time}. If no {Text::Number Time} specified, silences the chat forever.");
+                    ct.register("silence", ["{Text::Number <u>Time</u>}"], "Silences the chat for all auth under " + Grammar.es(UserName) + " for {Text::Number Time}. If no {Text::Number Time} specified, silences the chat forever.");
                     ct.register("unsilence", "Unsilences the chat.");
                     ct.register("voice", ["{Player::Database Player}"], "Gives {Player::Database Player} voice (the ability to talk through channel silences and normal silence).");
                     ct.register("unvoice", ["{Player::Database Player}"], "Removes {Player::Database Player}'s voice.");
 
                     if (sys.auth(src) < 2) {
                         ct.span("Silence " + AdminName + " Commands");
-                        ct.register("supersilence", ["{Text::Number <u>Time</u>}"], "Silences the chat for all auth under " + sLetter(ModName) + " for {Text::Number Time}. If no {Text::Number Time} specified, silences the chat forever.");
+                        ct.register("supersilence", ["{Text::Number <u>Time</u>}"], "Silences the chat for all auth under " + Grammar.es(ModName) + " for {Text::Number Time}. If no {Text::Number Time} specified, silences the chat forever.");
                     }
 
                     if (sys.auth(src) < 3) {
                         ct.span("Silence " + OwnerName + " Commands");
-                        ct.register("megasilence", ["{Text::Number <u>Time</u>}"], "Silences the chat for all auth under " + sLetter(AdminName) + " for {Text::Number Time}. If no {Text::Number Time} specified, silences the chat forever.");
+                        ct.register("megasilence", ["{Text::Number <u>Time</u>}"], "Silences the chat for all auth under " + Grammar.es(AdminName) + " for {Text::Number Time}. If no {Text::Number Time} specified, silences the chat forever.");
                     }
 
                     ct.render(src, chan);
@@ -7049,17 +7048,17 @@ if(message == "Maximum Players Changed.") {
 
                     ct.span("Authority " + AdminName + " Commands");
 
-                    ct.register(removespaces(UserName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(UserName) + ".");
-                    ct.register(removespaces(ModName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(ModName) + ".");
-                    ct.register("tempauth", ["{Player::Database Player}", "{Text::Number Auth Level}", "{Text::Number Time}", "{Text::Time Time Unit}"], "To give {Player::Database Player} temporary authority. Any other authing command (except tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4. Only " + sLetter(OwnerName) + " can do 2, 3, or 4.");
-                    ct.register(removespaces(Tour0).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(Tour0) + ".");
-                    ct.register(removespaces(Tour1).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(Tour1) + ".");
+                    ct.register(removespaces(UserName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(UserName) + ".");
+                    ct.register(removespaces(ModName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ModName) + ".");
+                    ct.register("tempauth", ["{Player::Database Player}", "{Text::Number Auth Level}", "{Text::Number Time}", "{Text::Time Time Unit}"], "To give {Player::Database Player} temporary authority. Any other authing command (except tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4. Only " + Grammar.es(OwnerName) + " can do 2, 3, or 4.");
+                    ct.register(removespaces(Tour0).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(Tour0) + ".");
+                    ct.register(removespaces(Tour1).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(Tour1) + ".");
 
                     if (permission(src, 3)) {
                         ct.span("Authority " + OwnerName + " Commands");
-                        ct.register(removespaces(AdminName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(AdminName) + ".");
-                        ct.register(removespaces(OwnerName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(OwnerName) + ".");
-                        ct.register(removespaces(InvisName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + a(InvisName) + ".");
+                        ct.register(removespaces(AdminName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(AdminName) + ".");
+                        ct.register(removespaces(OwnerName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(OwnerName) + ".");
+                        ct.register(removespaces(InvisName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(InvisName) + ".");
                         ct.register("changeauthname", ["{Text::Choice Server/Channel/Tournament/CTour}", "{Text::Number Auth Level}", "{Text::Any New Name}"], "To change the name of the {Text::Number Auth Level} authority level, which is part of {Text::Choice Auth Levels}, to {Text::Any New Name}. Server can be 0-4 | Channel can be 0-3 | Tournament and CTour can be 0-1. {Text::Any New Name} can have spaces, letters 0-9, and characters a-Z_.");
                     }
 
@@ -7358,7 +7357,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    botAll(player(src) + " removed " + sLetter(name) + " auto idle!", 0);
+                    botAll(player(src) + " removed " + Grammar.es(name) + " auto idle!", 0);
 
                     if (tar != undefined) {
                         sys.changeAway(tar, false);
@@ -7416,7 +7415,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
 
-                    botAll(sys.name(src) + " changed the clan tag to " + commandData.bold() + "!", 0);
+                    botAll(player(src) + " changed the clan tag to " + commandData.bold() + "!", 0);
 
                     ClanTag = commandData;
                     cache.write("ClanTag", ClanTag);
@@ -10261,7 +10260,7 @@ if(message == "Maximum Players Changed.") {
             for (i = 1; i < 6; ++i) {
                 poke = sys.pokemon(sys.teamPoke(src, team, i));
                 if (colours[thecolour].indexOf(poke) == -1 && poke != "Missingno") {
-                    return [sLetter(poke) + " colour is not " + thecolour];
+                    return [Grammar.es(poke) + " colour is not " + thecolour];
                 }
             }
         });
@@ -10997,7 +10996,8 @@ if(message == "Maximum Players Changed.") {
         BORDER = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
         TOUR_BORDER = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
 
-        an = function (thingy, u) {
+        Grammar = {
+        "an": function (thingy, u) {
             var thing = thingy.toString();
 
             if (/[aeiouAEIOU]/.test(thing[0])) {
@@ -11013,25 +11013,22 @@ if(message == "Maximum Players Changed.") {
             }
 
             return 'a ' + thingy;
-        }
-
-        sLetter = function (thingy) {
+        },
+        "es": function (thingy) {
             if (/[sS]/.test(thingy[thingy.length - 1])) {
                 return thingy + 'es';
             }
 
             return thingy + 's';
-        }
-
-        s = function (word, number) {
+        },
+        "s": function (word, number) {
             if (number != 1) {
                 word += "s";
             }
 
             return word;
-        }
-
-        a = function (thing, capfirst) {
+        },
+        "a": function (thing, capfirst) {
             var use = ["a ", "an "];
             if (capfirst) {
                 use = ["A ", "An "];
@@ -11043,6 +11040,7 @@ if(message == "Maximum Players Changed.") {
 
             return use[0] + thing;
         }
+        };
 
         sendAuthLength = function (src) {
             var auths = sys.dbAuths();
@@ -14362,7 +14360,7 @@ if(message == "Maximum Players Changed.") {
             }
 
             function msgAll(mess) {
-                botEscapeMessage(mess, mafiachan);
+                botEscapeAll(mess, mafiachan);
             }
 
             var sendChanAll = function (msg) {
