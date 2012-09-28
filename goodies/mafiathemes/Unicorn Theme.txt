@@ -28,6 +28,10 @@
         {
             "side": "Rainbow",
             "translation": "Rainbow Unicorn"
+        },
+        {
+            "side": "Mutated",
+            "translation": "Mutated Unicorns"
         }
     ],
     "roles": [
@@ -176,24 +180,24 @@
             "role": "Leader-1",
             "translation": "White Unicorn Leader",
             "side": "village",
-            "help": "Your vote counts as -1 (dangit!) and you can find out who kills, who protects, who distracts, and who inspects (That's a lot of whos).",
+            "help": "Your vote counts as -1 and you can find out who kills, who protects, who distracts, and who inspects (That's a lot of whos).",
             "actions": {
                 "hax": {
                     "kill": {
-                        "revealTeam": 0.2,
-                        "revealPlayer": 0.1
+                        "revealTeam": 0.1,
+                        "revealRole": 0.05
                     },
                     "inspect": {
-                        "revealTeam": 0.25,
-                        "revealPlayer": 0.1
+                        "revealTeam": 0.1,
+                        "revealPlayer": 0.05
                     },
                     "distract": {
-                        "revealTeam": 0.25,
-                        "revealPlayer": 0.1
+                        "revealTeam": 0.1,
+                        "revealPlayer": 0.05
                     },
                     "protect": {
-                        "revealTeam": 0.25,
-                        "revealPlayer": 0.1
+                        "revealTeam": 0.1,
+                        "revealPlayer": 0.05
                     }
                 },
                 "vote": -1
@@ -203,24 +207,28 @@
             "role": "Leader-2",
             "translation": "White Unicorn Leader",
             "side": "village",
-            "help": "Your vote counts as 3 (hooray!) and you can find out who kills, who protects, who distracts, and who inspects (That's a lot of whos).",
+            "help": "Your vote counts as 3 (use this to lead the White Unicorns!) and you can find out who kills, who protects, who distracts, who colorizes, and who inspects (That's a lot of whos).",
             "actions": {
                 "hax": {
                     "kill": {
-                        "revealTeam": 0.2,
-                        "revealRole": 0.15
+                        "revealTeam": 0.1,
+                        "revealRole": 0.05
                     },
                     "inspect": {
                         "revealTeam": 0.1,
                         "revealPlayer": 0.05
                     },
                     "distract": {
-                        "revealTeam": 0.25,
-                        "revealPlayer": 0.1
+                        "revealTeam": 0.1,
+                        "revealPlayer": 0.05
                     },
                     "protect": {
                         "revealTeam": 0.1,
-                        "revealPlayer": 0.1
+                        "revealPlayer": 0.05
+                    },
+                    "colorize": {
+                        "revealTeam": 0.1,
+                        "revealRole": 0.05
                     }
                 },
                 "vote": 3
@@ -230,19 +238,19 @@
             "role": "Hunter-1",
             "translation": "Unicorn Hunter",
             "side": "Human",
-            "help": "Type /Kill [name] to kill someone! You kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
+            "help": "You are a human, a hunter, and a unicorn hater! Type /Kill [name] to kill one of the unicorns! You kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
             "actions": {
                 "night": {
                     "kill": {
-                        "target": "AnyButSelf",
+                        "target": "AnyButTeam",
                         "common": "Self",
                         "priority": 10
                     }
                 },
                 "distract": {
                     "mode": "ChangeTarget",
-                    "hookermsg": "You went to the Unicorn Hunter (Dumbass!), cried, and died!",
-                    "msg": "The ~Distracter~ came to you last night! You shot her to death!"
+                    "hookermsg": "You went to the Unicorn Hunter (stupid!), cried, and died!",
+                    "msg": "The ~Distracter~ came to you last night! You shot her to death (meanie)!"
                 },
                 "avoidHax": [
                     "kill"
@@ -253,25 +261,50 @@
             "role": "Hunter-2",
             "translation": "Unicorn Hunter",
             "side": "Human",
-            "help": "Type /Kill [name] to kill someone (this can be done twice, don't ask me why)! You have a voteshield of -1 and you kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
+            "help": "You are a human, a hunter, and a unicorn hater! Type /kill [name] to kill someone! You have a voteshield of -1 and you kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
             "actions": {
                 "night": {
                     "kill": {
-                        "target": "AnyButSelf",
+                        "target": "AnyButTeam",
                         "common": "Self",
                         "priority": 10,
-                        "limit": 2
+                        "broadcast": "team"
                     }
                 },
                 "distract": {
                     "mode": "ChangeTarget",
-                    "hookermsg": "You went to the Unicorn Hunter (dumbass!), cried, and died!",
-                    "msg": "The ~Distracter~ came to you last night! You shot (meanie..) her to death!"
+                    "hookermsg": "You went to the Unicorn Hunter (stupid!), cried, and died!",
+                    "msg": "The ~Distracter~ came to you last night! You shot her to death (meanie)!"
                 },
                 "avoidHax": [
                     "kill"
                 ],
                 "voteshield": -1,
+                "startup": "team-reveal-with-roles"
+            }
+        },
+        {
+            "role": "Scientist",
+            "translation": "Mad Scientist",
+            "side": "Human",
+            "help": "You are a scientist, sent out by the government to kill all unicorns once and for all, along with the Unicorn Hunter. Type /mutate [name] to mutate a unicorn into an even filthier creature! Crying White Unicorns can kill you with their tears, so watch out!",
+            "actions": {
+                "night": {
+                    "mutate": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 4,
+                        "broadcast": "team",
+                        "canConvert": "*",
+                        "newRole": "Mutated",
+                        "command": "convert"
+                    }
+                },
+                "distract": {
+                    "mode": "die",
+                    "msg": "~Target~ (~Role~) tried to ~Action~ you, but you just can't handle tears.",
+                    "targetmsg": "You didn't know that you could kill Mad Scientists with tears!?!?"
+                },
                 "startup": "team-reveal-with-roles"
             }
         },
@@ -285,7 +318,7 @@
                     "kill": {
                         "target": "AnyButSelf",
                         "common": "Self",
-                        "priority": 30,
+                        "priority": 19,
                         "limit": 2
                     }
                 },
@@ -522,6 +555,24 @@
             }
         },
         {
+            "role": "Miller-Scientist",
+            "translation": "White Unicorn",
+            "side": "village",
+            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
+            "actions": {
+                "inspect": {
+                    "revealAs": "Scientist"
+                },
+                "lynch": {
+                    "revealAs": "Scientist"
+                },
+                "startup": {
+                    "revealAs": "Villager"
+                },
+                "onlist": "Scientist"
+            }
+        },
+        {
             "role": "Rainbow",
             "translation": "Rainbow Unicorn",
             "side": "Rainbow",
@@ -538,7 +589,7 @@
                     "colorize": {
                         "target": "AnyButSelf",
                         "common": "Self",
-                        "priority": 4,
+                        "priority": 5,
                         "newRole": {
                             "Rainbow_Grey": [
                                 "Grey-1",
@@ -632,10 +683,26 @@
             "translation": "White Rainbow Unicorn",
             "side": "village",
             "help": "You are now a White Rainbow Unicorn! You are so obsessed with yourself that you won't be helping your team anymore (you're still on their side though). Your will receive +3 votes when voted against for, and your vote counts as 0.",
-            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 0. Receives an extra 3 votes when voted against for at all. Sided with White Unicorns",
+            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 0. Receives an extra 3 votes when voted against for at all. Sided with White Unicorns.",
             "actions": {
                 "vote": 0,
                 "voteshield": 3
+            }
+        },
+        {
+            "role": "Mutated",
+            "translation": "Mutated Unicorn",
+            "side": "Mutated",
+            "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team!",
+            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Sided with Mutated Unicorns.",
+            "actions": {
+                "vote": 0,
+                "initialCondition": {
+                    "poison": {
+                        "count": 2,
+                        "poisonDeadMessage": "Your time is up. Mutation is deadly."
+                    }
+                }
             }
         }
     ],
@@ -688,13 +755,13 @@
         "Black-Leader",
         "Rainbow",
         "Grey-Leader",
-        "Miller-Hunter",
+        "Villager",
         "Black-Inspector",
         "Grey-Inspector",
-        "Villager",
-        "Black-2",
+        "Miller-Scientist",
         "Grey-2",
-        "Villager",
+        "Black-2",
+        "Scientist",
         "Miller-Flying",
         "Flying",
         "Bodyguard-2",
@@ -702,7 +769,7 @@
         "Grey-2",
         "Black-2",
         "Villager",
-        "Miller-Flying"
+        "Scientist"
     ],
     "villageCantLoseRoles": [
         "Leader-2",
