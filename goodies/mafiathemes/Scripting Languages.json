@@ -1,1 +1,319 @@
-{}
+﻿{
+    "name": "Scripting Languages",
+    "author": [
+        "TheUnknownOne"
+    ],
+    "summary": "An all out war between the various scripting languages. What will you be? A dialect of EMCAScript (good or bad!), or maybe more server-sided... [PRs: JavaScript = Inspector, QtScript = Pretty Lady, CoffeeScript = Bodyguard, ",
+    "border": "*** 010101010101010101010101010101010101010101010101010101010101010101010101010101 ***",
+    "killmsg": "±Garbage Collector: ~Role~ (~Player~) is corrupted; removing.",
+    "killusermsg": "±Garbage Collector: You are corrupted data. You will be removed permanently.",
+    "lynchmsg": "±Garbage Collector: ~Role~ (~Player~) was considered garbage by the other scripting language with ~Count~ votes against; removing.",
+    "drawmsg": "*** KERNEL PANIC ***",
+    "minplayers": 6,
+    "ticks": {
+        "night": 25,
+        "standby": 25
+    },
+    "sides": [
+        {
+            "side": "village",
+            "translation": "EMCAScript",
+            "winmsg": "±Script Manager: The EMCAScript scripting languages (~Players~) win the \"The Best Scripting Language\" award!"
+        },
+        {
+            "side": "JScript",
+            "translation": "JScript",
+            "winmsg": "±Script Manager: JScript (~Players~) defeated all of the other scripting languages! Scripting shall now be much more Microsoft-ish!"
+        },
+        {
+            "side": "Bash",
+            "translation": "Bash",
+            "winmsg": "±Bash: POSIX shells (~Players~) are superior to everything else. ls"
+        },
+        {
+            "side": "Server",
+            "translation": "Server Languages",
+            "winmsg": "±Server: Servers have now officially outmatched the client scripting languages! Everyone will now use servers to navigate the internet!"
+        }
+    ],
+    "roles": [
+        {
+            "role": "ActionScript",
+            "translation": "ActionScript",
+            "side": "village",
+            "help": "You are ActionScript, a dialect of EMCAScript, created by Adobe! You don't have any actions despite being named \"ActionScript\"! You can find out who can kill in the day because of your good observations, though!",
+            "info": "Created by Adobe. Has no actions. Gets hax on standby (kill; 1%). Sided with EMCAScript.",
+            "actions": {
+                "standbyHax": {
+                    "kill": {
+                        "revealTeam": 0.01
+                    }
+                }
+            }
+        },
+        {
+            "role": "JavaScript_1",
+            "translation": "JavaScript",
+            "side": "village",
+            "help": "You are JavaScript, a dialect of EMCAScript, created by Netscape! You can find out the identity of another scripting language with /inspect [name], because you are everywhere!",
+            "info": "Created by Netscape. Can find (inspect) one player in the night. Sided with EMCAScript.",
+            "actions": {
+                "night": {
+                    "inspect": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 30
+                    }
+                },
+                "lynch": {
+                    "convertTo": "JavaScript_1_Corrupted",
+                    "convertmsg": "±Garbage Collector: No love for ~Role~ (~Player~)? Putting it in the deletion queue. The queue shall be cleared soon!."
+                }
+            }
+        },
+        {
+            "role": "JavaScript_1_Corrupted",
+            "translation": "JavaScript (Corrupted)",
+            "side": "village",
+            "help": "You are JavaScript, a dialect of EMCAScript! You have been added to the deletion queue, and you will be removed soon. Your powers have been stripped to assure save deletion.",
+            "info": "Created by Netscape. Dies in one night. Sided with EMCAScript.",
+            "actions": {
+                "initialCondition": {
+                    "poison": {
+                        "count": 1,
+                        "poisonDeadMessage": "±Garbage Collector: Time's up! You have been deleted!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "JavaScript_2",
+            "translation": "JavaScript",
+            "side": "village",
+            "help": "You are JavaScript, a dialect of EMCAScript, created by Netscape! You can find out the identity of another scripting language with /inspect [name], because you are everywhere!",
+            "info": "Created by Netscape. Can find (inspect) one player in the night. Sided with EMCAScript.",
+            "actions": {
+                "night": {
+                    "inspect": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 30
+                    }
+                }
+            }
+        },
+        {
+            "role": "QtScript_1",
+            "translation": "QtScript",
+            "side": "village",
+            "help": "You are QtScript, a dialect of EMCAScript, created by Nokia! You can distract another scripting language with /distract [name], 4 times per game. Use them wisely! (Qt is pronounced as 'Cute', by the way!)",
+            "info": "Created by Nokia. Can qt (distract) one player in the night, 4 times. Sided with EMCAScript.",
+            "actions": {
+                "night": {
+                    "distract": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 1,
+                        "charges": 4,
+                        "chargesmsg": "±Garbage Collector: You can distract another scripting language ~Count~ more times."
+                    }
+                }
+            }
+        },
+        {
+            "role": "QtScript_2",
+            "translation": "QtScript",
+            "side": "village",
+            "help": "You are QtScript, a dialect of EMCAScript, created by Nokia! You can distract another scripting language with /distract [name], 7 times per game. You can also stalk another scripting language with /stalk [name], 3 times per game, which can be done twice per night (both will count as a usage!). Use them wisely! (Qt is pronounced as 'Cute', by the way!)",
+            "info": "Created by Nokia. Can distract one player in the night, 7 times. Can stalk two players in the night, 3 times. Sided with EMCAScript.",
+            "actions": {
+                "night": {
+                    "distract": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 1,
+                        "charges": 7,
+                        "chargesmsg": "±Garbage Collector: You can distract another scripting language ~Count~ more times."
+                    },
+                    "stalk": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 30,
+                        "limit": 2,
+                        "charges": 3,
+                        "chargesmsg": "±Garbage Collector: You can stalk another scripting language ~Count~ more times."
+                    }
+                }
+            }
+        },
+        {
+            "role": "CoffeeScript_1",
+            "translation": "CoffeeScript",
+            "side": "village",
+            "help": "You are CoffeeScript, created to make JavaScripting even easier! You can protect one scripting language in the night with /protect [name], 5 times per game. Your can count as 0 or 1, be careful about that! All JavaScripts get poisoned and will be corrupted in 3 days when you die, so be careful and don't trust anyone!",
+            "info": "Can protect one player in the night, 5 times. Vote counts as 0 or 1 (random). Sided with EMCAScript.",
+            "actions": {
+                "night": {
+                    "protect": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 2,
+                        "charges": 5,
+                        "chargesmsg": "±Garbage Collector: You can protect another scripting language ~Count~ more times."
+                    }
+                },
+                "onDeath": {
+                    "poisonRoles": {
+                        "JavaScript_1": 3
+                    },
+                    "poisonmsg": "±Garbage Collector: All ~Role~s will die in 3 days. Since when is CoffeeScript (~Player~) a dependency?"
+                },
+                "vote": [
+                    0,
+                    2
+                ]
+            }
+        },
+        {
+            "role": "QML",
+            "translation": "QML",
+            "side": "village",
+            "help": "You are QML, a dialect of EMCAScript, created by Nokia! You can expose one scripting language in the day with /expose [name]! There is a 20% chance to be revealed!",
+            "info": "Can expose one player in the standby (20% chance of being revealed). Sided with EMCAScript.",
+            "actions": {
+                "standby": {
+                    "expose": {
+                        "target": "AnyButSelf",
+                        "msg": "±Script Manager: You can now reveal a scripting language with /reveal [name]",
+                        "exposemsg": "QML animations point to ~Player~, who is revealed to be a ~Role~! Fascinating.",
+                        "revealChance": 0.2,
+                        "revealmsg": "~Self~ seems to be the cause of these amazing animations!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "JScript",
+            "translation": "JScript",
+            "side": "JScript",
+            "help": "You are JScript, a dialect of EMCAScript (a bad one, though), created by Microsoft! You can deactivate (kill) another scripting language in the night with /deactivate [name], because they can't handle your failures!",
+            "info": "Created by Microsoft. Can deactivate (kill, shared with role) one player in the night. Sided with JScript.",
+            "actions": {
+                "night": {
+                    "deactivate": {
+                        "target": "AnyButTeam",
+                        "common": "Role",
+                        "broadcast": "Team",
+                        "priority": 10,
+                        "command": "kill"
+                    }
+                }
+            }
+        },
+        {
+            "role": "JScript.NET",
+            "translation": "JScript.NET",
+            "side": "JScript",
+            "help": "You are JScript.NET, a based off of EMCAScript (the unaccepted 4th edition) and Java, created by Microsoft! You can deactivate (kill) another scripting language in the night with /deactivate [name], because they can't handle your failures! All of the other JScripts will be corrupted when you die. You can receive 1+, 2+, or 3+ (random) votes when voted for, because you are so unpopular!",
+            "info": "Created by Microsoft. Can deactivate (kill, not shared) one player in the night. Can receive 1-3 (random) extra votes when voted for at all. Corrupts all JScripts when killed. Sided with JScript.",
+            "actions": {
+                "night": {
+                    "deactivate": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "broadcast": "Team",
+                        "priority": 11,
+                        "command": "kill"
+                    }
+                },
+                "voteshield": [
+                    1,
+                    4
+                ],
+                "onDeath": {
+                    "convertRoles": {
+                        "JScript": "JScript_Corrupted"
+                    },
+                    "convertmsg": "~Player~ took all JScripts with him, effectively making them corrupted! They will all be removed in 3 days by the garbage collector."
+                }
+            }
+        },
+        {
+            "role": "JScript_Corrupted",
+            "translation": "JScript (Corrupted)",
+            "side": "JScript",
+            "help": "You are JScript, a dialect of EMCAScript (a bad one, though), created by Microsoft! You can crash (kill) another scripting language in the night with /crash [name], so that they will become corrupted! You will be removed by the garbage collector in 3 days because it doesn't like corrupt data.",
+            "info": "Created by Microsoft. Can crash (kill, shared with role) one player in the night. Sided with JScript.",
+            "actions": {
+                "night": {
+                    "crash": {
+                        "target": "AnyButTeam",
+                        "common": "Role",
+                        "broadcast": "Team",
+                        "priority": 10,
+                        "command": "kill"
+                    }
+                },
+                "initialCondition": {
+                    "poison": {
+                        "count": 3,
+                        "poisonDeadMessage": "±Garbage Collector: Corrupted data found; removing."
+                    }
+                }
+            }
+        },
+        {
+            "role": "Bash",
+            "translation": "Bash",
+            "side": "Bash",
+            "help": "You are Bash, a POSIX shell used to run commands (also a scripting language)! You can crash (kill) another scripting language in the night with /crash [name], so that they will become corrupted!",
+            "info": "Can crash (kill) one player in the night. Outspeeds JScript, but has a -1 or 0 vote (random). Sided with Bash.",
+            "actions": {
+                "night": {
+                    "crash": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 9,
+                        "command": "kill"
+                    }
+                },
+                "vote": [
+                    -1,
+                    1
+                ]
+            }
+        },
+        {
+            "role": "PHP_1",
+            "translation": "PHP: Hypertext Preprocessor",
+            "side": "Server",
+            "help": "You are PHP, a very popular server-side scripting language! You can block (kill) another scripting language in the night with /block [name], so that they will never be able to visit websites again! Your immensely fast speed makes you kill just before CoffeeScripts. You win with any side except Bash, because of your popularity.",
+            "info": "Can block (kill) one player in the night. Wins with every side except Bash. Sided with Server Languages.",
+            "actions": {
+                "night": {
+                    "block": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 3,
+                        "command": "kill"
+                    }
+                }
+            },
+
+            "winningSides": ["village", "JScript"]
+        }
+    ],
+    "roles1": [
+        "JavaScript_1",
+        "QtScript_1",
+        "CoffeeScript_1",
+        "JScript",
+        "Bash",
+        "ActionScript",
+        "ActionScript",
+        "JScript",
+        "QML",
+        "PHP_1"
+    ],
+    "villageCantLoseRoles": []
+}
