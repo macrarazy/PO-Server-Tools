@@ -235,6 +235,60 @@
             }
         },
         {
+            "role": "Miller-Hunter",
+            "translation": "White Unicorn",
+            "side": "village",
+            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
+            "actions": {
+                "inspect": {
+                    "revealAs": "Hunter-1"
+                },
+                "lynch": {
+                    "revealAs": "Hunter-1"
+                },
+                "startup": {
+                    "revealAs": "Villager"
+                },
+                "onlist": "Hunter-1"
+            }
+        },
+        {
+            "role": "Miller-Scientist",
+            "translation": "White Unicorn",
+            "side": "village",
+            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
+            "actions": {
+                "inspect": {
+                    "revealAs": "Scientist"
+                },
+                "lynch": {
+                    "revealAs": "Scientist"
+                },
+                "startup": {
+                    "revealAs": "Villager"
+                },
+                "onlist": "Scientist"
+            }
+        },
+        {
+            "role": "Miller-Flying",
+            "translation": "White Unicorn",
+            "side": "village",
+            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
+            "actions": {
+                "inspect": {
+                    "revealAs": "Flying"
+                },
+                "lynch": {
+                    "revealAs": "Flying"
+                },
+                "startup": {
+                    "revealAs": "Villager"
+                },
+                "onlist": "Flying"
+            }
+        },
+        {
             "role": "Rainbow_Village",
             "translation": "White Rainbow Unicorn",
             "side": "village",
@@ -445,60 +499,6 @@
             "actions": {
                 "vote": 0,
                 "voteshield": -1
-            }
-        },
-        {
-            "role": "Miller-Hunter",
-            "translation": "White Unicorn",
-            "side": "village",
-            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
-            "actions": {
-                "inspect": {
-                    "revealAs": "Hunter-1"
-                },
-                "lynch": {
-                    "revealAs": "Hunter-1"
-                },
-                "startup": {
-                    "revealAs": "Villager"
-                },
-                "onlist": "Hunter-1"
-            }
-        },
-        {
-            "role": "Miller-Flying",
-            "translation": "White Unicorn",
-            "side": "village",
-            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
-            "actions": {
-                "inspect": {
-                    "revealAs": "Flying"
-                },
-                "lynch": {
-                    "revealAs": "Flying"
-                },
-                "startup": {
-                    "revealAs": "Villager"
-                },
-                "onlist": "Flying"
-            }
-        },
-        {
-            "role": "Miller-Scientist",
-            "translation": "White Unicorn",
-            "side": "village",
-            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
-            "actions": {
-                "inspect": {
-                    "revealAs": "Scientist"
-                },
-                "lynch": {
-                    "revealAs": "Scientist"
-                },
-                "startup": {
-                    "revealAs": "Villager"
-                },
-                "onlist": "Scientist"
             }
         },
         {
