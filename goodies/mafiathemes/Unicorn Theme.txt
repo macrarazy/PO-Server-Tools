@@ -10,20 +10,24 @@
             "translation": "White Unicorns"
         },
         {
-            "side": "Mafia1",
+            "side": "Black",
             "translation": "Black Unicorns"
         },
         {
-            "side": "Mafia2",
+            "side": "Grey",
             "translation": "Grey Unicorns"
         },
         {
-            "side": "Hunter",
-            "translation": "Unicorn Hunter"
+            "side": "Human",
+            "translation": "Humans"
         },
         {
             "side": "Flying",
             "translation": "Flying Unicorn"
+        },
+        {
+            "side": "Rainbow",
+            "translation": "Rainbow Unicorn"
         }
     ],
     "roles": [
@@ -225,7 +229,7 @@
         {
             "role": "Hunter-1",
             "translation": "Unicorn Hunter",
-            "side": "Hunter",
+            "side": "Human",
             "help": "Type /Kill [name] to kill someone! You kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
             "actions": {
                 "night": {
@@ -248,7 +252,7 @@
         {
             "role": "Hunter-2",
             "translation": "Unicorn Hunter",
-            "side": "Hunter",
+            "side": "Human",
             "help": "Type /Kill [name] to kill someone (this can be done twice, don't ask me why)! You have a voteshield of -1 and you kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
             "actions": {
                 "night": {
@@ -267,7 +271,8 @@
                 "avoidHax": [
                     "kill"
                 ],
-                "voteshield": -1
+                "voteshield": -1,
+                "startup": "team-reveal-with-roles"
             }
         },
         {
@@ -301,9 +306,9 @@
             }
         },
         {
-            "role": "Mafia1-1",
+            "role": "Black-1",
             "translation": "Black Unicorn",
-            "side": "Mafia1",
+            "side": "Black",
             "help": "Type /Kill [name] to kill someone! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is.",
             "actions": {
                 "night": {
@@ -323,9 +328,9 @@
             }
         },
         {
-            "role": "Mafia2-1",
+            "role": "Grey-1",
             "translation": "Grey Unicorn",
-            "side": "Mafia2",
+            "side": "Grey",
             "help": "Type /Kill [name] to kill someone! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is.",
             "actions": {
                 "night": {
@@ -345,9 +350,9 @@
             }
         },
         {
-            "role": "Mafia1-2",
+            "role": "Black-2",
             "translation": "Black Unicorn",
-            "side": "Mafia1",
+            "side": "Black",
             "help": "Type /Kill [name] to kill someone!",
             "actions": {
                 "night": {
@@ -362,9 +367,9 @@
             }
         },
         {
-            "role": "Mafia2-2",
+            "role": "Grey-2",
             "translation": "Grey Unicorn",
-            "side": "Mafia2",
+            "side": "Grey",
             "help": "Type /Kill [name] to kill someone!",
             "actions": {
                 "night": {
@@ -379,9 +384,9 @@
             }
         },
         {
-            "role": "Mafia1-Inspector",
+            "role": "Black-Inspector",
             "translation": "Black Unicorn Inspector",
-            "side": "Mafia1",
+            "side": "Black",
             "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn Bodyguard because you are fat (lol).",
             "actions": {
                 "night": {
@@ -399,9 +404,9 @@
             }
         },
         {
-            "role": "Mafia2-Inspector",
+            "role": "Grey-Inspector",
             "translation": "Grey Unicorn Inspector",
-            "side": "Mafia2",
+            "side": "Grey",
             "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn Bodyguard because you are fat (lol).",
             "actions": {
                 "night": {
@@ -419,9 +424,9 @@
             }
         },
         {
-            "role": "Mafia1-Leader",
+            "role": "Black-Leader",
             "translation": "Black Unicorn Leader",
-            "side": "Mafia1",
+            "side": "Black",
             "help": "Type /Kill [name] to kill someone! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail.",
             "actions": {
                 "night": {
@@ -450,9 +455,9 @@
             }
         },
         {
-            "role": "Mafia2-Leader",
+            "role": "Grey-Leader",
             "translation": "Grey Unicorn Leader",
-            "side": "Mafia2",
+            "side": "Grey",
             "help": "Type /Kill [name] to kill someone! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail.",
             "actions": {
                 "night": {
@@ -515,14 +520,131 @@
                 },
                 "onlist": "Flying"
             }
+        },
+        {
+            "role": "Rainbow",
+            "translation": "Rainbow Unicorn",
+            "side": "Rainbow",
+            "help": "You are a rainbow unicorn! Being all so colorish you can /colorize [name] to make someone have lots of colors (You can't colorize White Unicorn Inspectors or Humans, though)! You win with everyone except the Humans, because they want to kill you.",
+            "info": "Can colorize (convert) 1 player in the night (Can't convert White Unicorn Inspectors or any Humans). Wins with any side except Humans.",
+            "winningSides": [
+                "village",
+                "Black",
+                "Grey",
+                "Flying"
+            ],
+            "actions": {
+                "night": {
+                    "colorize": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 4,
+                        "newRole": {
+                            "Rainbow_Grey": [
+                                "Grey-1",
+                                "Grey-Leader",
+                                "Grey-2",
+                                "Grey-Inspector"
+                            ],
+                            "Rainbow_Flying": [
+                                "Flying"
+                            ],
+                            "Rainbow_Village": [
+                                "Bodyguard-1",
+                                "Hooker-1",
+                                "Villager",
+                                "Miller-Hunter",
+                                "Leader-1",
+                                "Bodyguard-2",
+                                "Hooker-2",
+                                "Leader-2",
+                                "Miller-Flying"
+                            ]
+                        },
+                        "canConvert": [
+                            "Black-1",
+                            "Black-Leader",
+                            "Black-2",
+                            "Black-Inspector",
+                            "Grey-1",
+                            "Grey-Leader",
+                            "Grey-2",
+                            "Grey-Inspector",
+                            "Flying",
+                            "Bodyguard-1",
+                            "Hooker-1",
+                            "Villager",
+                            "Miller-Hunter",
+                            "Leader-1",
+                            "Bodyguard-2",
+                            "Hooker-2",
+                            "Leader-2",
+                            "Miller-Flying"
+                        ],
+                        "convertmsg": "~Self~, who was ~Old~, has been colorized by the Rainbow Unicorn, making them a ~New~!",
+                        "usermsg": "~Target~ (~Old~) is now a ~New~!",
+                        "command": "convert"
+                    }
+                }
+            }
+        },
+        {
+            "role": "Rainbow_Black",
+            "translation": "Black Rainbow Unicorn",
+            "side": "Black",
+            "help": "You are now a Black Rainbow Unicorn! You are so obsessed with yourself that you won't be helping your team anymore (you're still on their side though). Your black colors save you from being lynched: -1 vote. Your vote counts as 0.",
+            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 0. Receives -1 votes when voted against for at all. Sided with Black Unicorns.",
+            "actions": {
+                "vote": 0,
+                "voteshield": -1
+            }
+        },
+        {
+            "role": "Rainbow_Grey",
+            "translation": "Grey Rainbow Unicorn",
+            "side": "Grey",
+            "help": "You are now a Grey Rainbow Unicorn! You are so obsessed with yourself that you won't be helping your team anymore (you're still on their side though). Your grey colors save you from being lynched: -1 vote. Your vote counts as 0.",
+            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 0. Receives -1 votes when voted against for at all. Sided with Grey Unicorns.",
+            "actions": {
+                "vote": 0,
+                "voteshield": -1
+            }
+        },
+        {
+            "role": "Rainbow_Flying",
+            "translation": "Flying Rainbow Unicorn",
+            "side": "Flying",
+            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 3 nights. Your vote counts as 3.",
+            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 3. Can't be lynched. Dies in 3 nights. Sided with Flying Unicorn.",
+            "actions": {
+                "vote": 3,
+                "voteshield": -9999,
+                "initialCondition": {
+                    "poison": {
+                        "count": 3,
+                        "poisonDeadMessage": "Mythical creatures die too, yknow!"
+                    }
+                }
+            }
+        },
+        {
+            "role": "Rainbow_Village",
+            "translation": "White Rainbow Unicorn",
+            "side": "village",
+            "help": "You are now a White Rainbow Unicorn! You are so obsessed with yourself that you won't be helping your team anymore (you're still on their side though). Your will receive +3 votes when voted against for, and your vote counts as 0.",
+            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 0. Receives an extra 3 votes when voted against for at all. Sided with White Unicorns",
+            "actions": {
+                "vote": 0,
+                "voteshield": 3
+            }
         }
     ],
     "roles1": [
         "Bodyguard-1",
         "Inspector-1",
         "Hooker-1",
-        "Mafia1-1",
-        "Mafia2-1",
+        "Black-1",
+        "Grey-1",
         "Villager",
         "Villager",
         "Hunter-1",
@@ -533,29 +655,29 @@
         "Bodyguard-2",
         "Inspector-2",
         "Hooker-1",
-        "Mafia1-2",
-        "Mafia2-2",
+        "Black-2",
+        "Grey-2",
         "Villager",
         "Villager",
         "Leader-2",
-        "Mafia1-Leader",
-        "Villager",
-        "Mafia2-Leader",
+        "Black-Leader",
+        "Rainbow",
+        "Grey-Leader",
         "Miller-Hunter",
         "Villager",
-        "Mafia1-Inspector",
-        "Mafia2-Inspector",
+        "Black-Inspector",
+        "Grey-Inspector",
         "Hunter-2",
-        "Mafia1-2",
+        "Black-2",
         "Villager",
-        "Mafia2-2"
+        "Grey-2"
     ],
     "roles3": [
         "Bodyguard-2",
         "Inspector-3",
         "Hooker-2",
-        "Mafia1-2",
-        "Mafia2-2",
+        "Black-2",
+        "Grey-2",
         "Villager",
         "Villager",
         "Hunter-2",
@@ -563,22 +685,22 @@
         "Villager",
         "Villager",
         "Leader-2",
-        "Mafia1-Leader",
-        "Villager",
-        "Mafia2-Leader",
+        "Black-Leader",
+        "Rainbow",
+        "Grey-Leader",
         "Miller-Hunter",
-        "Mafia1-Inspector",
-        "Mafia2-Inspector",
+        "Black-Inspector",
+        "Grey-Inspector",
         "Villager",
-        "Mafia1-2",
-        "Mafia2-2",
+        "Black-2",
+        "Grey-2",
         "Villager",
         "Miller-Flying",
         "Flying",
         "Bodyguard-2",
         "Hooker-1",
-        "Mafia2-2",
-        "Mafia1-2",
+        "Grey-2",
+        "Black-2",
         "Villager",
         "Miller-Flying"
     ],
