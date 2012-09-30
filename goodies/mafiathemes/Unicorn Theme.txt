@@ -668,7 +668,7 @@
             "role": "Scientist",
             "translation": "Mad Scientist",
             "side": "Human",
-            "help": "You are a scientist, sent out by the government to kill all unicorns once and for all, along with the Unicorn Hunter. Type /mutate [name] to mutate a unicorn into an even filthier creature! Crying White Unicorns can kill you with their tears, so watch out!",
+            "help": "You are a scientist, sent out by the government to kill all unicorns once and for all, along with the Unicorn Hunter. Type /mutate [name] to mutate a unicorn into an even filthier creature (they win with the humans, somehow)! They die if you die. Crying White Unicorns can kill you with their tears, so watch out!",
             "actions": {
                 "night": {
                     "mutate": {
@@ -686,6 +686,10 @@
                     "msg": "~Target~ (~Role~) tried to ~Action~ you, but you just can't handle tears.",
                     "targetmsg": "You didn't know that you could kill Mad Scientists with tears!?!?"
                 },
+                "onDeath": {
+                    "killRoles": ["Mutated"],
+                    "killmsg": "~Player~ took all ~Role~s (~Target~) with him!"
+                },
                 "startup": "team-reveal-with-roles"
             }
         },
@@ -694,7 +698,8 @@
             "translation": "Mutated Unicorn",
             "side": "Mutated",
             "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team!",
-            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Sided with Mutated Unicorns.",
+            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Wins with Humans. Sided with Mutated Unicorns.",
+            "winningSides": ["Human"],
             "actions": {
                 "vote": 0,
                 "initialCondition": {
