@@ -1991,7 +1991,7 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
 
         var couplesLen = this.couples.length();
         if (couplesLen > 0) {
-            message.push("", couplesLen + " " + s("battle", couplesLen) + " remaining.");
+            message.push("", couplesLen + " " + Grammar.s("battle", couplesLen) + " remaining.");
         } else {
             this.roundPairing();
         }
@@ -2047,7 +2047,7 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
 
             var couplesLen = this.couples.length();
             if (couplesLen > 0) {
-                message.push("", couplesLen + " " + s("battle", couplesLen) + " remaining.");
+                message.push("", couplesLen + " " + Grammar.s("battle", couplesLen) + " remaining.");
             } else {
                 this.roundPairing();
             }
