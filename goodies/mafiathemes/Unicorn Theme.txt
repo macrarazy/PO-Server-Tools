@@ -783,5 +783,8 @@
     "killmsg": "±Game: ~Player~, who was a ~Role~, has been banished from the land of Unicorns!",
     "killusermsg": "±Game: 0 lives left.",
     "lynchmsg": "±Game: ~Player~ (~Role~), who is sided with the ~Side~, wasn't very liked here! Guiliotine!",
-    "drawmsg": "±Game: An eternal conflict shall never end."
+    "drawmsg": "±Game: An eternal conflict shall never end.",
+    "notes": {
+        "timelapse": "http://titanpad.com/ep/pad/view/ro.hWdQ$d6nnoX/rev.1121"
+    }
 }

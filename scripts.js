@@ -1153,7 +1153,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         this.buildHash(src);
 
         spots--;
-        message = me + " joined the tournament! <b>" + spots + "</b> more " + s("spot", spots) + " left!";
+        message = me + " joined the tournament! <b>" + spots + "</b> more " + Grammar.s("spot", spots) + " left!";
 
         if (this.tournumber < 9) { // Max spots is 8 for the bigger message.
             this.TourBox(message);
@@ -1761,13 +1761,10 @@ Tours.prototype.roundPairing = function () {
     }
 
     var i = 0,
-        tempplayers = {},
-        x, p = this.players,
+        x, p = this.players, 
+        tempplayers = new Object().extend(p),
         x1, name1, n1tl, x2, name2, n2tl, a, team1, team2;
-
-    for (x in p)
-    tempplayers[x] = p[x];
-
+    
     if (this.tagteam_tour()) {
         team = "<b><font color=blue>[Team Blue]</font></b>", team2 = "<b><font color=red>[Team Red]</font></b>";
     }
@@ -1826,29 +1823,29 @@ Tours.prototype.roundPairing = function () {
 
     message.push("");
 
-    if (objLength(tempplayers) > 0) {
+    if (tempplayers.length() > 0) {
         message.push(tempplayers.first().name + " is randomly selected to go to next round!", "");
     }
 
     this.TourBox(message);
 
     if (this.AutoStartBattles) {
-        sys.quickCall(function run_autostartbattles() {
-            var t, p, op, meteams, oppteams, couples = this.couples;
+        sys.quickCall(function run_autostartbattles(tour) {
+            var t, p, op, meteams, oppteams, couples = tour.couples;
             for (t in couples) {
                 p = couples[t][0].toLowerCase(), op = couples[t][1].toLowerCase();
                 if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
-                    meteams = firstTeamForTier(sys.id(p), this.tourtier);
-                    oppteams = firstTeamForTier(sys.id(op), this.tourtier);
+                    meteams = firstTeamForTier(sys.id(p), tour.tourtier);
+                    oppteams = firstTeamForTier(sys.id(op), tour.tourtier);
                     if (meteams != -1 && oppteams != -1) {
-                        if (!this.ongoingTourneyBattle(p) && !this.ongoingTourneyBattle(op)) {
-                            sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(this.tourtier), 0, false);
-                            this.roundStatus.ongoingBattles[this.roundStatus.ongoingBattles.length()] = [p.name(), op.name()];
+                        if (!tour.ongoingTourneyBattle(p) && !tour.ongoingTourneyBattle(op)) {
+                            sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(tour.tourtier), 0, false);
+                            tour.roundStatus.ongoingBattles[tour.roundStatus.ongoingBattles.length()] = [p.name(), op.name()];
                         }
                     }
                 }
             }
-        }, 2500);
+        }(this), 2500);
     }
 }
 
@@ -1953,7 +1950,7 @@ Tours.prototype.tie = function (src, dest) {
 }
 
 Tours.prototype.afterBattleEnded = function (src, dest, desc) {
-    if (this.tourmode != 2) {
+    if (this.tourmode != 2 || this.players.length() === 1) {
         return;
     }
 
@@ -5928,7 +5925,6 @@ if(message == "Maximum Players Changed.") {
                 }
             });
 
-            /* -- Channel Commands: Authing */
             channelCommands[removespaces(ChanTour0).toLowerCase()] = function () {
                 if (!poChan.isChanAdmin(src) && noPermission(src, 2)) {
                     noPermissionMessage(src, fullCommand, chan);
@@ -5989,16 +5985,20 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, "That player doesn't exist!", chan);
                     return;
                 }
-                if (poChan.chanAuth[commandData.toLowerCase()] == 0 || poChan.chanAuth[commandData.toLowerCase()] == undefined) {
-                    botEscapeMessage(src, "That person is already " + ChanUser + "!", chan);
+                var chanAuth = poChan.chanAuth, player = chanAuth[commandData.toLowerCase()];
+                if (player == undefined) {
+                    botMessage(src, "That person is already " + ChanUser + "!", chan);
                     return;
                 }
-                if ((poChan.chanAuth[commandData.toLowerCase()] * 1 >= 2 && !poChan.isChanOwner(src) && sys.auth(src) < 3) || dbAuth == 2 && sys.auth(src) < 3) {
+                if ((player >= 2 && !poChan.isChanOwner(src) && sys.auth(src) < 3) || dbAuth == 2 && sys.auth(src) < 3) {
                     botMessage(src, "You can't deauth higher auth!", chan);
                     return;
                 }
+                
                 botEscapeAll(commandData + " was made " + ChanUser + " by " + sys.name(src) + ".", chan);
                 poChan.changeAuth(commandData.toLowerCase(), 0);
+                
+                cData.changeChanAuth(chan, poChan.chanAuth);
             }
 
             channelCommands[removespaces(ChanMod).toLowerCase()] = function () {
@@ -6011,7 +6011,7 @@ if(message == "Maximum Players Changed.") {
                     return;
                 }
                 if (poChan.chanAuth[commandData.toLowerCase()] == 1) {
-                    botEscapeMessage(src, "That person is already " + ChanMod + "!", chan);
+                    botMessage(src, "That person is already " + ChanMod + "!", chan);
                     return;
                 }
                 if ((poChan.chanAuth[commandData.toLowerCase()] * 1 >= 2 && !poChan.isChanOwner(src) && sys.auth(src) < 3) || dbAuth == 2 && sys.auth(src) < 3) {
@@ -6021,6 +6021,9 @@ if(message == "Maximum Players Changed.") {
 
                 botEscapeAll(commandData + " was made " + ChanMod + " by " + sys.name(src) + ".", chan);
                 poChan.changeAuth(commandData.toLowerCase(), 1);
+                
+                                cData.changeChanAuth(chan, poChan.chanAuth);
+
                 putInAuthChan(commandData, "cauth", chan);
             }
 
@@ -6043,6 +6046,9 @@ if(message == "Maximum Players Changed.") {
                 }
                 botEscapeAll(commandData + " was made " + ChanAdmin + " by " + sys.name(src) + ".", chan);
                 poChan.changeAuth(commandData.toLowerCase(), 2);
+                
+                                cData.changeChanAuth(chan, poChan.chanAuth);
+
                 putInAuthChan(commandData, "cauth", chan);
             }
 
@@ -6061,11 +6067,13 @@ if(message == "Maximum Players Changed.") {
                 }
                 botEscapeAll(commandData + " was made " + ChanOwner + " by " + sys.name(src) + ".", chan);
                 poChan.changeAuth(commandData.toLowerCase(), 3);
+                
+                                cData.changeChanAuth(chan, poChan.chanAuth);
+
                 putInAuthChan(commandData, "cauth", chan);
             }
 
-            /* -- Tour Commands: Start */
-            tourCommands = ({ /* -- Tour Templates: Commands */
+            tourCommands = ({
                 tourcommands: function () {
                     if (!poChan.toursEnabled) {
                         return;
@@ -9808,9 +9816,8 @@ if(message == "Maximum Players Changed.") {
                 3: "SAtk",
                 4: "SDef",
                 5: "Spd"
-            };
-
-        var hiddenPowerNum = 237,
+            },
+            hiddenPowerNum = 237,
             t = new Template(),
             teamno, gen, fullgen, n, numteams = sys.teamCount(tar);
 
@@ -11525,16 +11532,16 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 var cData = this.channelData[cChan.name],
-                    defaultChan = DefaultChannels.has(cChan.id),
+                    isPerm = DefaultChannels.has(cChan.id) || cData.perm,
                     properties = {
                         "creator": "~Unknown~",
                         "topic": "Welcome to " + cChan.name + "!",
                         "topicsetter": "",
-                        "perm": defaultChan,
+                        "perm": isPerm,
                         "private": false,
                         "defaultTopic": true,
                         "silence": 0,
-                        "toursEnabled": defaultChan
+                        "toursEnabled": cData.toursEnabled,
                     },
                     json_properties = ["chanAuth", "banlist", "mutelist", "tourAuth"],
                     tour_properties = {
