@@ -1839,25 +1839,22 @@ Tours.prototype.roundPairing = function () {
 
     if (this.AutoStartBattles) {
         var tourInst = this;
-        sys.quickCall(
-
-        function () {
-            function (tour) {
-                var t, p, op, meteams, oppteams, couples = tour.couples;
-                for (t in couples) {
-                    p = couples[t][0].toLowerCase(), op = couples[t][1].toLowerCase();
-                    if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
-                        meteams = firstTeamForTier(sys.id(p), tour.tourtier);
-                        oppteams = firstTeamForTier(sys.id(op), tour.tourtier);
-                        if (meteams != -1 && oppteams != -1) {
-                            if (!tour.ongoingTourneyBattle(p) && !tour.ongoingTourneyBattle(op)) {
-                                sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(tour.tourtier), 0, false);
-                                tour.roundStatus.ongoingBattles[tour.roundStatus.ongoingBattles.length()] = [p.name(), op.name()];
-                            }
+        sys.quickCall(function () {
+            var tour = tourInst,
+                t, p, op, meteams, oppteams, couples = tour.couples;
+            for (t in couples) {
+                p = couples[t][0].toLowerCase(), op = couples[t][1].toLowerCase();
+                if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
+                    meteams = firstTeamForTier(sys.id(p), tour.tourtier);
+                    oppteams = firstTeamForTier(sys.id(op), tour.tourtier);
+                    if (meteams != -1 && oppteams != -1) {
+                        if (!tour.ongoingTourneyBattle(p) && !tour.ongoingTourneyBattle(op)) {
+                            sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(tour.tourtier), 0, false);
+                            tour.roundStatus.ongoingBattles[tour.roundStatus.ongoingBattles.length()] = [p.name(), op.name()];
                         }
                     }
                 }
-            }(tourInst);
+            }
         }, 2500);
     }
 }
