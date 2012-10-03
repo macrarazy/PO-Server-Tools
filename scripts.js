@@ -1830,7 +1830,10 @@ Tours.prototype.roundPairing = function () {
     this.TourBox(message);
 
     if (this.AutoStartBattles) {
-        sys.quickCall(function run_autostartbattles(tour) {
+    var tourInst = this;
+        sys.quickCall(
+        function () {
+        function(tour) {
             var t, p, op, meteams, oppteams, couples = tour.couples;
             for (t in couples) {
                 p = couples[t][0].toLowerCase(), op = couples[t][1].toLowerCase();
@@ -1845,7 +1848,8 @@ Tours.prototype.roundPairing = function () {
                     }
                 }
             }
-        }(this), 2500);
+        }(tourInst);
+        }, 2500);
     }
 }
 
