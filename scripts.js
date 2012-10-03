@@ -68,14 +68,14 @@
 || Format: [AuthLvlOfReceiver, AuthLvlReceived]              ||
 \*===========================================================*/
 
-/*
+/**
 Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
 Beta: https://github.com/TheUnknownOne/PO-Server-Tools/beta/
 Alpha: https://github.com/TheUnknownOne/PO-Server-Tools/alpha/
 Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
-*/
+**/
 
-EvaluationTimeStart = new Date().getTime(); /* Do not modify this! This is only to count load speed! */
+EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to count load speed! **/
 Version = "2.6.0";
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
@@ -93,16 +93,17 @@ Config = {
     WelcomeMessages: false,
     FixChallenges: false,
     NoCrash: false,
+    AdminsCanAuth: true,
 
     ClearLogsAt: 36700160,
-    // NO LONGER WORKING ON v2
+    /** NO LONGER WORKING ON v2 **/
     HighPermission: {
         "This gives Administrator Auth to a Moderator.": [1, 2],
         "Don't forget the commas and collons.": [1, 2]
     }
 };
 
-// Beyond this, you should not edit anything if you don't know what you're doing! //
+/** Beyond this, you should not edit anything if you don't know what you're doing! **/
 /** RECOVERY **/
 RECOVERY_BACKUP = {};
 
@@ -117,10 +118,10 @@ if (typeof Bot == "undefined") {
     Bot = {
         bot: "~Server~",
         botcolor: "red"
-    }; // default
+    };
 }
 
-/*** BOTS ***/
+/** BOTS **/
 botEscapeMessage = function (src, message, channel) {
     if (typeof Bot == "undefined") {
         return;
@@ -189,7 +190,7 @@ teamAlert = function (src, team, message) {
     botMessage(src, "Team #" + (team + 1) + ": " + message);
 };
 
-/* Invalid Command Messages */
+/** Invalid Command Messages **/
 invalidCommandMessage = function (src, command, chan) {
     botEscapeMessage(src, "The command " + command + " doesn't exist.", chan);
 };
@@ -209,7 +210,7 @@ FormatError = function (mess, e) {
         mess += ".";
     }
 
-    if (typeof e.format !== 'undefined') { /* throw */
+    if (typeof e.toLowerCase !== 'undefined') { /** when throw is used **/
         return mess + " Custom Error: " + e;
     }
 
@@ -275,11 +276,11 @@ fileLen = function (file) {
 };
 
 sTB = function (bytes) {
-    var sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    var sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'], i;
     if (bytes == 0) {
         return '0 bytes';
     }
-    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
     if (i == 0) {
         return (bytes / Math.pow(1024, i)) + ' ' + sizes[i];
     }
@@ -287,16 +288,16 @@ sTB = function (bytes) {
 };
 
 clearlogs = function () {
-    return; // no longer working on v2
-    var l = Config.ClearLogsAt;
+    return; /** No longer works on PO v2 **/
+    var l = Config.ClearLogsAt, len;
     if (l == 0) {
         return;
     }
 
     try {
-        var len = fileLen("logs.txt");
+        len = fileLen("logs.txt");
     }
-    catch (e) { /* Linux */
+    catch (e) { /** Weird OS X and GNU/Linux behavior **/
         Config.ClearLogsAt = 0;
         return;
     }
@@ -309,7 +310,7 @@ clearlogs = function () {
 
 function POUser(id) {
     var my_name = sys.name(id),
-        mn_lc = my_name.toLowerCase();
+        mn_lc = my_name.toLowerCase(), date = sys.time () * 1;
     if (my_name == undefined) {
         return;
     }
@@ -319,7 +320,6 @@ function POUser(id) {
     this.ip = sys.ip(id);
     this.name = my_name;
     this.lowername = mn_lc;
-    var date = sys.time() * 1;
     this.lastMsg = 0;
     this.loginTime = date;
     this.lastChallenge = 0;
@@ -373,8 +373,8 @@ POUser.prototype.capsMute = function (message, channel) {
         return false;
     }
 
-    var newCapsAmount = 0;
-    for (var z in message) {
+    var newCapsAmount = 0, z;
+    for (z in message) {
         if (capsMessage(message[z])) {
             newCapsAmount += 1;
         }
