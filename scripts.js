@@ -51,6 +51,10 @@
 || the server crashing.                                      ||
 || true = yes. false = no                                    ||
 ===============================================================
+|| AdminsCanAuth:                                            ||
+|| If admins can give auth to others (user, mod, temp mod).  ||
+|| true = yes. false = no                                    ||
+===============================================================
 || ClearLogsAt:                                              ||
 || If file size of logs.txt is higher than given size        ||
 || clears all data. Gets checked every hour. 0 = off         ||
@@ -69,11 +73,11 @@
 \*===========================================================*/
 
 /**
-Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
-Beta: https://github.com/TheUnknownOne/PO-Server-Tools/beta/
-Alpha: https://github.com/TheUnknownOne/PO-Server-Tools/alpha/
-Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
-**/
+ Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
+ Beta: https://github.com/TheUnknownOne/PO-Server-Tools/beta/
+ Alpha: https://github.com/TheUnknownOne/PO-Server-Tools/alpha/
+ Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
+ **/
 
 EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to count load speed! **/
 Version = "2.6.0";
@@ -276,7 +280,8 @@ fileLen = function (file) {
 };
 
 sTB = function (bytes) {
-    var sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'], i;
+    var sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+        i;
     if (bytes == 0) {
         return '0 bytes';
     }
@@ -289,7 +294,8 @@ sTB = function (bytes) {
 
 clearlogs = function () {
     return; /** No longer works on PO v2 **/
-    var l = Config.ClearLogsAt, len;
+    var l = Config.ClearLogsAt,
+        len;
     if (l == 0) {
         return;
     }
@@ -310,7 +316,8 @@ clearlogs = function () {
 
 function POUser(id) {
     var my_name = sys.name(id),
-        mn_lc = my_name.toLowerCase(), date = sys.time () * 1;
+        mn_lc = my_name.toLowerCase(),
+        date = sys.time() * 1;
     if (my_name == undefined) {
         return;
     }
@@ -373,7 +380,8 @@ POUser.prototype.capsMute = function (message, channel) {
         return false;
     }
 
-    var newCapsAmount = 0, z;
+    var newCapsAmount = 0,
+        z;
     for (z in message) {
         if (capsMessage(message[z])) {
             newCapsAmount += 1;
@@ -1761,10 +1769,10 @@ Tours.prototype.roundPairing = function () {
     }
 
     var i = 0,
-        x, p = this.players, 
+        x, p = this.players,
         tempplayers = new Object().extend(p),
         x1, name1, n1tl, x2, name2, n2tl, a, team1, team2;
-    
+
     if (this.tagteam_tour()) {
         team = "<b><font color=blue>[Team Blue]</font></b>", team2 = "<b><font color=red>[Team Red]</font></b>";
     }
@@ -1830,25 +1838,26 @@ Tours.prototype.roundPairing = function () {
     this.TourBox(message);
 
     if (this.AutoStartBattles) {
-    var tourInst = this;
+        var tourInst = this;
         sys.quickCall(
+
         function () {
-        function(tour) {
-            var t, p, op, meteams, oppteams, couples = tour.couples;
-            for (t in couples) {
-                p = couples[t][0].toLowerCase(), op = couples[t][1].toLowerCase();
-                if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
-                    meteams = firstTeamForTier(sys.id(p), tour.tourtier);
-                    oppteams = firstTeamForTier(sys.id(op), tour.tourtier);
-                    if (meteams != -1 && oppteams != -1) {
-                        if (!tour.ongoingTourneyBattle(p) && !tour.ongoingTourneyBattle(op)) {
-                            sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(tour.tourtier), 0, false);
-                            tour.roundStatus.ongoingBattles[tour.roundStatus.ongoingBattles.length()] = [p.name(), op.name()];
+            function (tour) {
+                var t, p, op, meteams, oppteams, couples = tour.couples;
+                for (t in couples) {
+                    p = couples[t][0].toLowerCase(), op = couples[t][1].toLowerCase();
+                    if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
+                        meteams = firstTeamForTier(sys.id(p), tour.tourtier);
+                        oppteams = firstTeamForTier(sys.id(op), tour.tourtier);
+                        if (meteams != -1 && oppteams != -1) {
+                            if (!tour.ongoingTourneyBattle(p) && !tour.ongoingTourneyBattle(op)) {
+                                sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(tour.tourtier), 0, false);
+                                tour.roundStatus.ongoingBattles[tour.roundStatus.ongoingBattles.length()] = [p.name(), op.name()];
+                            }
                         }
                     }
                 }
-            }
-        }(tourInst);
+            }(tourInst);
         }, 2500);
     }
 }
@@ -4919,12 +4928,13 @@ if(message == "Maximum Players Changed.") {
                     var h = mcmd[0].toLowerCase(),
                         l = function (v) {
                             return v.toLowerCase()
-                        }, a = h;
+                        },
+                        a = h;
 
-                        if (h != "1" && h != "2" && h != "3" && h != l(ModName) && h != l(AdminName) && h != l(OwnerName)) {
-                            botMessage(src, "Please select an auth level or auth name for the /callauth", chan);
-                            return;
-                        }
+                    if (h != "1" && h != "2" && h != "3" && h != l(ModName) && h != l(AdminName) && h != l(OwnerName)) {
+                        botMessage(src, "Please select an auth level or auth name for the /callauth", chan);
+                        return;
+                    }
 
                     if (l(ModName) == a) {
                         a = 1;
@@ -5989,7 +5999,8 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, "That player doesn't exist!", chan);
                     return;
                 }
-                var chanAuth = poChan.chanAuth, player = chanAuth[commandData.toLowerCase()];
+                var chanAuth = poChan.chanAuth,
+                    player = chanAuth[commandData.toLowerCase()];
                 if (player == undefined) {
                     botMessage(src, "That person is already " + ChanUser + "!", chan);
                     return;
@@ -5998,10 +6009,10 @@ if(message == "Maximum Players Changed.") {
                     botMessage(src, "You can't deauth higher auth!", chan);
                     return;
                 }
-                
+
                 botEscapeAll(commandData + " was made " + ChanUser + " by " + sys.name(src) + ".", chan);
                 poChan.changeAuth(commandData.toLowerCase(), 0);
-                
+
                 cData.changeChanAuth(chan, poChan.chanAuth);
             }
 
@@ -6025,8 +6036,8 @@ if(message == "Maximum Players Changed.") {
 
                 botEscapeAll(commandData + " was made " + ChanMod + " by " + sys.name(src) + ".", chan);
                 poChan.changeAuth(commandData.toLowerCase(), 1);
-                
-                                cData.changeChanAuth(chan, poChan.chanAuth);
+
+                cData.changeChanAuth(chan, poChan.chanAuth);
 
                 putInAuthChan(commandData, "cauth", chan);
             }
@@ -6050,8 +6061,8 @@ if(message == "Maximum Players Changed.") {
                 }
                 botEscapeAll(commandData + " was made " + ChanAdmin + " by " + sys.name(src) + ".", chan);
                 poChan.changeAuth(commandData.toLowerCase(), 2);
-                
-                                cData.changeChanAuth(chan, poChan.chanAuth);
+
+                cData.changeChanAuth(chan, poChan.chanAuth);
 
                 putInAuthChan(commandData, "cauth", chan);
             }
@@ -6071,8 +6082,8 @@ if(message == "Maximum Players Changed.") {
                 }
                 botEscapeAll(commandData + " was made " + ChanOwner + " by " + sys.name(src) + ".", chan);
                 poChan.changeAuth(commandData.toLowerCase(), 3);
-                
-                                cData.changeChanAuth(chan, poChan.chanAuth);
+
+                cData.changeChanAuth(chan, poChan.chanAuth);
 
                 putInAuthChan(commandData, "cauth", chan);
             }
@@ -7060,14 +7071,22 @@ if(message == "Maximum Players Changed.") {
 
                     ct.span("Authority " + AdminName + " Commands");
 
-                    ct.register(removespaces(UserName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(UserName) + ".");
-                    ct.register(removespaces(ModName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ModName) + ".");
-                    ct.register("tempauth", ["{Player::Database Player}", "{Text::Number Auth Level}", "{Text::Number Time}", "{Text::Time Time Unit}"], "To give {Player::Database Player} temporary authority. Any other authing command (except tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4. Only " + Grammar.es(OwnerName) + " can do 2, 3, or 4.");
+                    if (Config.AdminsCanAuth) {
+                        ct.register(removespaces(UserName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(UserName) + ".");
+                        ct.register(removespaces(ModName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ModName) + ".");
+                        ct.register("tempauth", ["{Player::Database Player}", "{Text::Number Auth Level}", "{Text::Number Time}", "{Text::Time Time Unit}"], "To give {Player::Database Player} temporary authority. Any other authing command (except tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4. Only " + Grammar.es(OwnerName) + " can do 2, 3, or 4.");
+                    }
                     ct.register(removespaces(Tour0).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(Tour0) + ".");
                     ct.register(removespaces(Tour1).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(Tour1) + ".");
 
                     if (permission(src, 3)) {
                         ct.span("Authority " + OwnerName + " Commands");
+
+                        if (!Config.AdminsCanAuth) {
+                            ct.register(removespaces(UserName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(UserName) + ".");
+                            ct.register(removespaces(ModName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ModName) + ".");
+                            ct.register("tempauth", ["{Player::Database Player}", "{Text::Number Auth Level}", "{Text::Number Time}", "{Text::Time Time Unit}"], "To give {Player::Database Player} temporary authority. Any other authing command (except tourauth) will delete this temp auth. Valid levels are: 1, 2, 3, 4.");
+                        }
                         ct.register(removespaces(AdminName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(AdminName) + ".");
                         ct.register(removespaces(OwnerName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(OwnerName) + ".");
                         ct.register(removespaces(InvisName).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(InvisName) + ".");
@@ -7539,133 +7558,135 @@ if(message == "Maximum Players Changed.") {
                 ct.render(src, chan);
             }
 
-            adminCommands[removespaces(UserName).toLowerCase()] = function () {
-                if (dbIp === undefined) {
-                    botMessage(src, "That player doesn't exist");
-                    return;
-                }
-                if (dbAuth === 0) {
-                    botMessage(src, "That player already is " + UserName + "!", chan);
-                    return;
-                }
-                if (sys.auth(src) <= sys.maxAuth(dbIp) && sys.auth(src) < 3) {
-                    botMessage(src, "You can't deauth this person!", chan);
-                    return;
-                }
-
-                if (DataHash.tempauth[cmdData] != undefined) {
-                    delete DataHash.tempauth[cmdData];
-                    cache.write("tempauth", JSON.stringify(DataHash.tempauth));
-                }
-
-                if (tar != undefined) {
-                    botEscapeAll(sys.name(tar) + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
-                    sys.changeAuth(tar, 0);
-                    return;
-                }
-
-                botEscapeAll(commandData + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
-                sys.changeDbAuth(commandData, 0);
-
-                kickFromChannel(commandData, scriptchannel);
-                kickFromChannel(commandData, watch);
-                kickFromChannel(commandData, staffchannel);
-            }
-
-            adminCommands[removespaces(ModName).toLowerCase()] = function () {
-                if (dbIp === undefined) {
-                    botMessage(src, "That player doesn't exist", chan);
-                    return;
-                }
-                if (dbAuth === 1) {
-                    botMessage(src, "That player already is " + ModName + "!", chan);
-                    return;
-                }
-                if (!sys.dbRegistered(commandData)) {
-                    botMessage(src, "This player is not registered.", chan);
-                    if (tar != undefined) {
-                        botMessage(tar, "Please register for auth.");
+            if (Config.AdminsCanAuth) {
+                adminCommands[removespaces(UserName).toLowerCase()] = function () {
+                    if (dbIp === undefined) {
+                        botMessage(src, "That player doesn't exist");
+                        return;
                     }
-                    return;
-                }
-                if (sys.auth(src) <= sys.maxAuth(dbIp) && sys.auth(src) < 3) {
-                    botMessage(src, "You can't deauth this person!", chan);
-                    return;
+                    if (dbAuth === 0) {
+                        botMessage(src, "That player already is " + UserName + "!", chan);
+                        return;
+                    }
+                    if (sys.auth(src) <= sys.maxAuth(dbIp) && sys.auth(src) < 3) {
+                        botMessage(src, "You can't deauth this person!", chan);
+                        return;
+                    }
+
+                    if (DataHash.tempauth[cmdData] != undefined) {
+                        delete DataHash.tempauth[cmdData];
+                        cache.write("tempauth", JSON.stringify(DataHash.tempauth));
+                    }
+
+                    if (tar != undefined) {
+                        botEscapeAll(sys.name(tar) + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
+                        sys.changeAuth(tar, 0);
+                        return;
+                    }
+
+                    botEscapeAll(commandData + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
+                    sys.changeDbAuth(commandData, 0);
+
+                    kickFromChannel(commandData, scriptchannel);
+                    kickFromChannel(commandData, watch);
+                    kickFromChannel(commandData, staffchannel);
                 }
 
-                if (DataHash.tempauth[cmdData] != undefined) {
-                    delete DataHash.tempauth[cmdData];
-                    cache.write("tempauth", JSON.stringify(DataHash.tempauth));
+                adminCommands[removespaces(ModName).toLowerCase()] = function () {
+                    if (dbIp === undefined) {
+                        botMessage(src, "That player doesn't exist", chan);
+                        return;
+                    }
+                    if (dbAuth === 1) {
+                        botMessage(src, "That player already is " + ModName + "!", chan);
+                        return;
+                    }
+                    if (!sys.dbRegistered(commandData)) {
+                        botMessage(src, "This player is not registered.", chan);
+                        if (tar != undefined) {
+                            botMessage(tar, "Please register for auth.");
+                        }
+                        return;
+                    }
+                    if (sys.auth(src) <= sys.maxAuth(dbIp) && sys.auth(src) < 3) {
+                        botMessage(src, "You can't deauth this person!", chan);
+                        return;
+                    }
+
+                    if (DataHash.tempauth[cmdData] != undefined) {
+                        delete DataHash.tempauth[cmdData];
+                        cache.write("tempauth", JSON.stringify(DataHash.tempauth));
+                    }
+
+                    if (tar != undefined) {
+                        botEscapeAll(sys.name(tar) + " has been made " + ModName + " by " + sys.name(src) + ".", 0);
+                        sys.changeAuth(tar, 1);
+                        return;
+                    }
+                    botEscapeAll(commandData + " has been made " + ModName + " by " + sys.name(src) + ".", 0);
+                    sys.changeDbAuth(commandData, 1);
+                    putInAuthChan(commandData, "mod");
                 }
 
-                if (tar != undefined) {
-                    botEscapeAll(sys.name(tar) + " has been made " + ModName + " by " + sys.name(src) + ".", 0);
-                    sys.changeAuth(tar, 1);
-                    return;
-                }
-                botEscapeAll(commandData + " has been made " + ModName + " by " + sys.name(src) + ".", 0);
-                sys.changeDbAuth(commandData, 1);
-                putInAuthChan(commandData, "mod");
-            }
+                adminCommands[removespaces(Tour0).toLowerCase()] = function () {
+                    if (mcmd[0] === '') {
+                        botMessage(src, "Specify a name!", chan);
+                        return;
+                    }
+                    var tari = JSESSION.users(tar);
+                    if (dbIp === undefined) {
+                        botMessage(src, "That player doesn't exist", chan);
+                        return;
+                    }
+                    var h = mcmd[0].toLowerCase();
+                    if (DataHash.megausers[h] === undefined) {
+                        botMessage(src, "That person is already " + Tour0 + "!", chan);
+                        return;
+                    }
 
-            adminCommands[removespaces(Tour0).toLowerCase()] = function () {
-                if (mcmd[0] === '') {
-                    botMessage(src, "Specify a name!", chan);
-                    return;
-                }
-                var tari = JSESSION.users(tar);
-                if (dbIp === undefined) {
-                    botMessage(src, "That player doesn't exist", chan);
-                    return;
-                }
-                var h = mcmd[0].toLowerCase();
-                if (DataHash.megausers[h] === undefined) {
-                    botMessage(src, "That person is already " + Tour0 + "!", chan);
-                    return;
-                }
+                    delete DataHash.megausers[h];
+                    cache.write("megausers", JSON.stringify(DataHash.megausers));
 
-                delete DataHash.megausers[h];
-                cache.write("megausers", JSON.stringify(DataHash.megausers));
-
-                if (tar != undefined) {
-                    botEscapeAll(sys.name(tar) + " has been made " + Tour0 + " by " + sys.name(src) + ".", 0);
-                    tari.megauser = false;
-                    sys.kick(tar, staffchannel);
-                    return;
-                }
-                botEscapeAll(mcmd[0].name() + " has been made " + Tour0 + " by " + sys.name(src) + ".", 0);
-            }
-
-            adminCommands[removespaces(Tour1).toLowerCase()] = function () {
-                if (mcmd[0] === '') {
-                    botMessage(src, "Specify a name!", chan);
-                    return;
-                }
-                var tari = JSESSION.users(tar);
-                if (dbIp === undefined) {
-                    botMessage(src, "That player doesn't exist", chan);
-                    return;
-                }
-                var h = mcmd[0].toLowerCase();
-                if (DataHash.megausers[h] != undefined) {
-                    botMessage(src, "That person is already " + Tour1 + "!", chan);
-                    return;
+                    if (tar != undefined) {
+                        botEscapeAll(sys.name(tar) + " has been made " + Tour0 + " by " + sys.name(src) + ".", 0);
+                        tari.megauser = false;
+                        sys.kick(tar, staffchannel);
+                        return;
+                    }
+                    botEscapeAll(mcmd[0].name() + " has been made " + Tour0 + " by " + sys.name(src) + ".", 0);
                 }
 
-                DataHash.megausers[h] = {
-                    "name": h.name()
+                adminCommands[removespaces(Tour1).toLowerCase()] = function () {
+                    if (mcmd[0] === '') {
+                        botMessage(src, "Specify a name!", chan);
+                        return;
+                    }
+                    var tari = JSESSION.users(tar);
+                    if (dbIp === undefined) {
+                        botMessage(src, "That player doesn't exist", chan);
+                        return;
+                    }
+                    var h = mcmd[0].toLowerCase();
+                    if (DataHash.megausers[h] != undefined) {
+                        botMessage(src, "That person is already " + Tour1 + "!", chan);
+                        return;
+                    }
+
+                    DataHash.megausers[h] = {
+                        "name": h.name()
+                    }
+
+                    cache.write("megausers", JSON.stringify(DataHash.megausers));
+
+                    if (tar != undefined) {
+                        botEscapeAll(sys.name(tar) + " has been made " + Tour1 + " by " + sys.name(src) + ".", 0);
+                        tari.megauser = true;
+                        putInAuthChan(mcmd[0], "mu");
+                        return;
+                    }
+
+                    botEscapeAll(mcmd[0].name() + " has been made " + Tour1 + " by " + sys.name(src) + ".", 0);
                 }
-
-                cache.write("megausers", JSON.stringify(DataHash.megausers));
-
-                if (tar != undefined) {
-                    botEscapeAll(sys.name(tar) + " has been made " + Tour1 + " by " + sys.name(src) + ".", 0);
-                    tari.megauser = true;
-                    putInAuthChan(mcmd[0], "mu");
-                    return;
-                }
-
-                botEscapeAll(mcmd[0].name() + " has been made " + Tour1 + " by " + sys.name(src) + ".", 0);
             }
 
             ownerCommands = ({
@@ -8691,6 +8712,77 @@ if(message == "Maximum Players Changed.") {
                 ct.register("resetcommandstats", "To reset command stats.");
 
                 ct.render(src, chan);
+            }
+
+            if (!Config.AdminsCanAuth) {
+                ownerCommands[removespaces(UserName).toLowerCase()] = function () {
+                    if (dbIp === undefined) {
+                        botMessage(src, "That player doesn't exist");
+                        return;
+                    }
+                    if (dbAuth === 0) {
+                        botMessage(src, "That player already is " + UserName + "!", chan);
+                        return;
+                    }
+                    if (sys.auth(src) <= sys.maxAuth(dbIp) && sys.auth(src) < 3) {
+                        botMessage(src, "You can't deauth this person!", chan);
+                        return;
+                    }
+
+                    if (DataHash.tempauth[cmdData] != undefined) {
+                        delete DataHash.tempauth[cmdData];
+                        cache.write("tempauth", JSON.stringify(DataHash.tempauth));
+                    }
+
+                    if (tar != undefined) {
+                        botEscapeAll(sys.name(tar) + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
+                        sys.changeAuth(tar, 0);
+                        return;
+                    }
+
+                    botEscapeAll(commandData + " has been made " + UserName + " by " + sys.name(src) + ".", 0);
+                    sys.changeDbAuth(commandData, 0);
+
+                    kickFromChannel(commandData, scriptchannel);
+                    kickFromChannel(commandData, watch);
+                    kickFromChannel(commandData, staffchannel);
+                }
+
+                ownerCommands[removespaces(ModName).toLowerCase()] = function () {
+                    if (dbIp === undefined) {
+                        botMessage(src, "That player doesn't exist", chan);
+                        return;
+                    }
+                    if (dbAuth === 1) {
+                        botMessage(src, "That player already is " + ModName + "!", chan);
+                        return;
+                    }
+                    if (!sys.dbRegistered(commandData)) {
+                        botMessage(src, "This player is not registered.", chan);
+                        if (tar != undefined) {
+                            botMessage(tar, "Please register for auth.");
+                        }
+                        return;
+                    }
+                    if (sys.auth(src) <= sys.maxAuth(dbIp) && sys.auth(src) < 3) {
+                        botMessage(src, "You can't deauth this person!", chan);
+                        return;
+                    }
+
+                    if (DataHash.tempauth[cmdData] != undefined) {
+                        delete DataHash.tempauth[cmdData];
+                        cache.write("tempauth", JSON.stringify(DataHash.tempauth));
+                    }
+
+                    if (tar != undefined) {
+                        botEscapeAll(sys.name(tar) + " has been made " + ModName + " by " + sys.name(src) + ".", 0);
+                        sys.changeAuth(tar, 1);
+                        return;
+                    }
+                    botEscapeAll(commandData + " has been made " + ModName + " by " + sys.name(src) + ".", 0);
+                    sys.changeDbAuth(commandData, 1);
+                    putInAuthChan(commandData, "mod");
+                }
             }
 
             ownerCommands[removespaces(AdminName).toLowerCase()] = function () {
@@ -11008,49 +11100,49 @@ if(message == "Maximum Players Changed.") {
         TOUR_BORDER = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
 
         Grammar = {
-        "an": function (thingy, u) {
-            var thing = thingy.toString();
+            "an": function (thingy, u) {
+                var thing = thingy.toString();
 
-            if (/[aeiouAEIOU]/.test(thing[0])) {
-                if (u) {
-                    return 'An ' + thingy;
+                if (/[aeiouAEIOU]/.test(thing[0])) {
+                    if (u) {
+                        return 'An ' + thingy;
+                    }
+
+                    return 'an ' + thingy;
                 }
 
-                return 'an ' + thingy;
-            }
+                if (u) {
+                    return 'A ' + thingy;
+                }
 
-            if (u) {
-                return 'A ' + thingy;
-            }
+                return 'a ' + thingy;
+            },
+            "es": function (thingy) {
+                if (/[sS]/.test(thingy[thingy.length - 1])) {
+                    return thingy + 'es';
+                }
 
-            return 'a ' + thingy;
-        },
-        "es": function (thingy) {
-            if (/[sS]/.test(thingy[thingy.length - 1])) {
-                return thingy + 'es';
-            }
+                return thingy + 's';
+            },
+            "s": function (word, number) {
+                if (number != 1) {
+                    word += "s";
+                }
 
-            return thingy + 's';
-        },
-        "s": function (word, number) {
-            if (number != 1) {
-                word += "s";
-            }
+                return word;
+            },
+            "a": function (thing, capfirst) {
+                var use = ["a ", "an "];
+                if (capfirst) {
+                    use = ["A ", "An "];
+                }
 
-            return word;
-        },
-        "a": function (thing, capfirst) {
-            var use = ["a ", "an "];
-            if (capfirst) {
-                use = ["A ", "An "];
-            }
+                if (/[aeuio]/.test(thing[0].toLowerCase())) {
+                    return use[1] + thing;
+                }
 
-            if (/[aeuio]/.test(thing[0].toLowerCase())) {
-                return use[1] + thing;
+                return use[0] + thing;
             }
-
-            return use[0] + thing;
-        }
         };
 
         sendAuthLength = function (src) {
