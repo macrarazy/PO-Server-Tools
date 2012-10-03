@@ -44,12 +44,8 @@ if (hasCommandStart(message) && message.length > 1 && !ignoreCommandStart(messag
         }
     }
 
-    if (commandName != "spam" && commandName != "sendmail") {
+    if (commandName != "sendmail") {
         WatchPlayer(src, "Command", message, chan);
-    }
-
-    if (commandName == "spam") {
-        WatchEvent(src, "Spammed " + sys.name(tar) + ".", chan);
     }
 
     var totalAuth = hpAuth(src),
@@ -81,9 +77,5 @@ if (hasCommandStart(message) && message.length > 1 && !ignoreCommandStart(messag
         return;
     }
 
-    command = getFullInfo(src, data, chan, {"command": commandName, "fullCommand": fullCommand});
-	
-    if (command != "spam") {
-        CommandStats.write(fullCommand.toLowerCase(), sys.name(src));
-    }
+    cmd(getFullInfo(src, data, chan, {"command": commandName, "fullCommand": fullCommand}));
 }
