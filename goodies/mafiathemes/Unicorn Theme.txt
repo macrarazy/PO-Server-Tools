@@ -3,7 +3,7 @@
     "author": [
         "TheUnknownOne"
     ],
-    "summary": "A kids theme (The only mafia theme which is for ages 7 (actually 18, sort of) and up). You will have to figure everything out yourself as kids don't like reading. [Suggestions go to TheUnknownOne, mmkay?]",
+    "summary": "A kids theme (The only mafia theme which is for ages 7 (actually 18, sort of) and up). You will have to figure everything out yourself as kids don't like reading.",
     "sides": [
         {
             "side": "village",
@@ -134,7 +134,8 @@
                     "protect": {
                         "target": "AnyButSelf",
                         "common": "Role",
-                        "priority": 3
+                        "priority": 3,
+                        "command": ["protect", "safeguard"]
                     }
                 },
                 "kill": {
@@ -164,7 +165,7 @@
             "role": "Hooker-2",
             "translation": "Crying White Unicorn",
             "side": "village",
-            "help": "You are a Crying White Unicorn! You can use /distract [name] to distract someone with tears and stuff, which you can do this twice.",
+            "help": "You are a Crying White Unicorn! You can use /distract [name] to distract someone with tears and stuff, which you can do twice.",
             "actions": {
                 "night": {
                     "distract": {
@@ -207,7 +208,7 @@
             "role": "Leader-2",
             "translation": "White Unicorn Leader",
             "side": "village",
-            "help": "Your vote counts as 3 (use this to lead the White Unicorns!) and you can find out who kills, who protects, who distracts, who colorizes, and who inspects (That's a lot of whos).",
+            "help": "Your vote counts as 3 (use this to lead the White Unicorns!) and you can find out who kills, who protects, who safeguards, who distracts, who colorizes, and who inspects (That's a lot of whos).",
             "actions": {
                 "hax": {
                     "kill": {
@@ -226,9 +227,13 @@
                         "revealTeam": 0.1,
                         "revealPlayer": 0.05
                     },
-                    "colorize": {
+                    "safeguard": {
                         "revealTeam": 0.1,
-                        "revealRole": 0.05
+                        "revealPlayer": 0.05
+                    },
+                    "colorize": {
+                        "revealTeam": 0.08,
+                        "revealRole": 0.03
                     }
                 },
                 "vote": 3
@@ -505,7 +510,7 @@
             "role": "Flying",
             "translation": "Flying Unicorn",
             "side": "Flying",
-            "help": "You are a murdering machine for some stupid reason (don't ask me). You can kill twice per night, and once a day. You kill last in the night, however. You are a busy thing, so annoying Unicorns will simply DIE.",
+            "help": "You are a murdering machine for some stupid reason (don't ask me). You can kill twice per night, and once a day (20% chance to be revealed). You kill last in the night, however. You are a busy thing, so annoying Unicorns will simply DIE.",
             "actions": {
                 "night": {
                     "kill": {
