@@ -126,22 +126,6 @@ if (typeof Bot == "undefined") {
 }
 
 /** BOTS **/
-botEscapeMessage = function (src, message, channel) {
-    if (typeof Bot == "undefined") {
-        return;
-    }
-
-    var color = Bot.botcolor,
-        name = Bot.bot;
-
-    if (typeof channel != "undefined") {
-        sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + html_escape(message), channel);
-    }
-    else {
-        sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + html_escape(message));
-    }
-};
-
 botMessage = function (src, message, channel) {
     if (typeof Bot == "undefined") {
         return;
@@ -158,20 +142,8 @@ botMessage = function (src, message, channel) {
     }
 };
 
-botEscapeAll = function (message, channel) {
-    if (typeof Bot == "undefined") {
-        return;
-    }
-
-    var color = Bot.botcolor,
-        name = Bot.bot;
-
-    if (typeof channel != "undefined") {
-        sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + html_escape(message), channel);
-    }
-    else {
-        sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + html_escape(message));
-    }
+botEscapeMessage = function (src, message, channel) {
+    botMessage(src, html_escape(message), channel);
 };
 
 botAll = function (message, channel) {
@@ -188,6 +160,10 @@ botAll = function (message, channel) {
     else {
         sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message);
     }
+};
+
+botEscapeAll = function (message, channel) {
+    botAll(html_escape(message), channel);
 };
 
 teamAlert = function (src, team, message) {
@@ -2214,7 +2190,7 @@ defineCoreProperty = function (core, prop, func) {
 }
 
 defineCoreProperty(String.prototype, "reverse", function () {
-    var strThis = thism;
+    var strThis = this;
     strThisArr = strThis.split("").reverse().join("");
 
     this = strThisArr;
@@ -10754,7 +10730,7 @@ if(message == "Maximum Players Changed.") {
                 name = " by " + silence.by + "!";
             }
             if (!silence.level) {
-                name = "STFU!";
+                name = ". STFU!";
             }
             botMessage(src, '|^^^^^^^^^^^\||____', chan);
             botMessage(src, '| The STFU Truck  |||""\'|""\__,_', chan);

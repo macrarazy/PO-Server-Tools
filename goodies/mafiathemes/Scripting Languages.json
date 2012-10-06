@@ -3,8 +3,7 @@
     "author": [
         "TheUnknownOne"
     ],
-    "summary": "An all out war between the various scripting languages. What will you be? A dialect of EMCAScript (good or bad!), or maybe more server-sided... [PRs: JavaScript = Inspector, QtScript = Pretty Lady, CoffeeScript = Bodyguard, ",
-    "border": "*** 010101010101010101010101010101010101010101010101010101010101010101010101010101 ***",
+    "summary": "An all out war between the various scripting languages. What will you be? A dialect of EMCAScript (good or bad!), or maybe more server-sided... [PRs: JavaScript = Inspector, QtScript = Pretty Lady, CoffeeScript = Bodyguard, ]",
     "killmsg": "±Garbage Collector: ~Role~ (~Player~) is corrupted; removing.",
     "killusermsg": "±Garbage Collector: You are corrupted data. You will be removed permanently.",
     "lynchmsg": "±Garbage Collector: ~Role~ (~Player~) was considered garbage by the other scripting language with ~Count~ votes against; removing.",
@@ -32,7 +31,7 @@
         },
         {
             "side": "Server",
-            "translation": "Server Languages",
+            "translation": "Server Scripts",
             "winmsg": "±Server: Servers have now officially outmatched the client scripting languages! Everyone will now use servers to navigate the internet!"
         }
     ],
@@ -41,7 +40,7 @@
             "role": "ActionScript",
             "translation": "ActionScript",
             "side": "village",
-            "help": "You are ActionScript, a dialect of EMCAScript, created by Adobe! You don't have any actions despite being named \"ActionScript\"! You can find out who can kill in the day because of your good observations, though!",
+            "help": "You are ActionScript, a dialect of EMCAScript (somewhat), created by Adobe! You don't have any actions despite being named \"ActionScript\"! You can find out who can kill in the day because of your good observations, though!",
             "info": "Created by Adobe. Has no actions. Gets hax on standby (kill; 1%). Sided with EMCAScript.",
             "actions": {
                 "standbyHax": {
@@ -67,7 +66,7 @@
                 },
                 "lynch": {
                     "convertTo": "JavaScript_1_Corrupted",
-                    "convertmsg": "±Garbage Collector: No love for ~Role~ (~Player~)? Putting it in the deletion queue. The queue shall be cleared soon!."
+                    "convertmsg": "±Garbage Collector: No love for ~Role~ (~Player~)? Putting it in the deletion queue, which shall be cleared soon!."
                 }
             }
         },
@@ -164,7 +163,8 @@
                 },
                 "onDeath": {
                     "poisonRoles": {
-                        "JavaScript_1": 3
+                        "JavaScript_1": 3,
+                        "poisonDeadMessage": "No one used you anymore, because CoffeeScript died! :("
                     },
                     "poisonmsg": "±Garbage Collector: All ~Role~s will die in 3 days. Since when is CoffeeScript (~Player~) a dependency?"
                 },
@@ -184,7 +184,7 @@
                 "standby": {
                     "expose": {
                         "target": "AnyButSelf",
-                        "msg": "±Script Manager: You can now reveal a scripting language with /reveal [name]",
+                        "msg": "±Script Manager: You can now reveal a scripting language with /reveal [name]!",
                         "exposemsg": "QML animations point to ~Player~, who is revealed to be a ~Role~! Fascinating.",
                         "revealChance": 0.2,
                         "revealmsg": "~Self~ seems to be the cause of these amazing animations!"
@@ -287,8 +287,8 @@
             "role": "PHP_1",
             "translation": "PHP: Hypertext Preprocessor",
             "side": "Server",
-            "help": "You are PHP, a very popular server-side scripting language! You can block (kill) another scripting language in the night with /block [name], so that they will never be able to visit websites again! Your immensely fast speed makes you kill just before CoffeeScripts. You win with any side except Bash, because of your popularity.",
-            "info": "Can block (kill) one player in the night. Wins with every side except Bash. Sided with Server Languages.",
+            "help": "You are PHP, a very popular server-side scripting language! You can block (kill) another scripting language in the night with /block [name], so that they will never be able to visit websites again! Your immensely fast speed makes you kill just before CoffeeScripts. You win with any side, because of your popularity.",
+            "info": "Can block (kill) one player in the night. Wins with every side except Bash. Sided with Server Scripts.",
             "actions": {
                 "night": {
                     "block": {
@@ -301,6 +301,71 @@
             },
 
             "winningSides": ["village", "JScript"]
+        },
+        {
+            "role": "PHP_2",
+            "translation": "PHP: Hypertext Preprocessor",
+            "side": "Server",
+            "help": "You are PHP, a very popular server-side scripting language! You can block (kill) another scripting language in the night with /block [name] (shared with ASP)! Your immensely fast speed makes you kill just before CoffeeScripts. You win with any side, because of your popularity.",
+            "info": "Can block (kill) one player in the night. Wins with every side except xxx. Sided with Server Scripts.",
+            "actions": {
+                "night": {
+                    "block": {
+                        "target": "AnyButTeam",
+                        "common": "Team",
+                        "priority": 3,
+                        "command": "kill"
+                    }
+                }
+            },
+
+            "startup": "team-reveal-with-roles",
+            "winningSides": ["village", "JScript"]
+        },
+        {
+            "role": "ASP",
+            "translation": "ASP",
+            "side": "Server",
+            "help": "You are ASP, a server-side scripting language, created by Microsoft! You can block (kill) another scripting in the night with /block [name] (shared with PHP)! You kill after JScript.NET, because you are old and slow 'n stuff.",
+            "info": "Created by Microsoft. Can block (kill) one player in the night. Sided with Server Scripts.",
+            "actions": {
+                "night": {
+                    "block": {
+                        "target": "AnyButTeam",
+                        "common": "Team",
+                        "priority": 12,
+                        "command": "kill"
+                    }
+                }
+            },
+
+            "startup": "team-reveal-with-roles"
+        },
+        {
+            "role": "ASP.NET",
+            "translation": "ASP.NET",
+            "side": "Server",
+            "help": "You are ASP.NET, a server-side scripting language, created by Microsoft! You can block (kill) another scripting in the night with /block [name]! You kill before JScripts! Your death causes ASPs to be added to the deletion queue, where they will die in 2 nights.",
+            "info": "Created by Microsoft. Can block (kill) one player in the night. Sided with Server Scripts.",
+            "actions": {
+                "night": {
+                    "block": {
+                        "target": "AnyButTeam",
+                        "common": "Team",
+                        "priority": 12,
+                        "command": "kill"
+                    }
+                }
+            },
+
+            "onDeath": {
+                "poisonRoles": {
+                    "ASP": 2
+                },
+                "poisonmsg": "All ~Role~s were poisoned because ~Player~ died!"
+            },
+
+            "startup": "team-reveal-with-roles"
         }
     ],
     "roles1": [
@@ -314,6 +379,24 @@
         "JScript",
         "QML",
         "PHP_1"
+    ],
+    "roles2": [
+        "JavaScript_1",
+        "QtScript_2",
+        "CoffeeScript_2",
+        "JScript",
+        "JScript.NET",
+        "ActionScript",
+        "ActionScript",
+        "JScript",
+        "QML",
+        "PHP_2",
+        "ASP",
+        "ActionScript",
+        "JScript",
+        "ActionScript",
+        "ActionScript",
+        "ASP.NET"
     ],
     "villageCantLoseRoles": []
 }

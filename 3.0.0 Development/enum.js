@@ -8,7 +8,7 @@ makeEnum = function (names) {
 
     return ret;
 }
-
+ 
 addFlag = function (mask, flag) {
     return mask | flag;
 }
