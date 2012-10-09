@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="PO Server Tools : Pokemon Online Server Tools" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>PO Server Tools</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/TheUnknownOne/PO-Server-Tools">View on GitHub</a>
+
+          <h1 id="project_title">PO Server Tools</h1>
+          <h2 id="project_tagline">Pokemon Online Server Tools</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/TheUnknownOne/PO-Server-Tools/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/TheUnknownOne/PO-Server-Tools/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>TheUnknownOne's Server Tools</h1>
+
+<hr><h2>scripts.js</h2>
+
+<h3>Version: 2.2.60</h3>
+
+<p><strong>Report bugs/post suggestions/ideas in Issues</strong></p>
+
+<blockquote>
+<p>Features:<br>
+Single, Double and Triple (Tag Team) elimination channel tours,<br>
+Battle Points (will be wiped and used in the future), Temp Auths,
+Many commands, Ability bans, Pokedex,<br>
+Timed (Channel) Mutes and (Channel) Bans, Timed Rangebans,<br>
+Many settings to modify, BBCode, Rankicons,<br>
+Pointer Commands, Mail, Mafia, Trivia, Maintains PO tier bans,<br>
+Voices, Eval Operators, (Channel) Tour Auth, Very good security,<br>
+Error Recovery, Styles, League features.<br>
+~ And much more!  </p>
+
+<hr>
+</blockquote>
+
+<p><strong>Coding Style</strong></p>
+
+<ul>
+<li>Formatter: <a href="https://chrome.google.com/webstore/detail/pnldlbhphmlbhgjbbjojpidlemceicco">https://chrome.google.com/webstore/detail/pnldlbhphmlbhgjbbjojpidlemceicco</a> (Google Chrome): Use default settings</li>
+<li>4 spaces for indent (use formatter)</li>
+<li>Prefer "var foo, bar;" over "var foo; var bar;"</li>
+<li>Prefer "'10' * 1;" over "parseInt('10');"</li>
+<li>NO registry values (use cache or playercache (names, etc.) depending on what you're doing), SESSION (use JSESSION), or sys.system (only when necessary, please include in commit description).</li>
+<li>"var x; for (x in foo) {}" preferred over "for (var x in foo) {}"</li>
+<li>"var x; for (x in foo) {}" preferred over "var x = 0, len = foo.length; for (; len &lt; x; x++) {}" (for Arrays)</li>
+<li>Always add curly braces and semicolons.</li>
+<li>Do "git config --global core.autocrlf true" in Bash (You can revert it back if you want if you remember/write down the result of "git config --global core.autocrlf")</li>
+<li>Only do prototypes when needed / best option (such as with Tours, for now)</li>
+<li>Use as much available functions as possible - including custom Corexxx.protoype function ("".contains() instead of "".indexOf() &gt; -1)</li>
+<li>Do .contains for Strings, .has for other types.</li>
+<li>Prefer .isEmpty() over isEmpty() and "".length === 0| [].length === 0 | {}.length() === 0; </li>
+<li>No ternary operators allowed, ever.</li>
+<li>No switches allowed, ever.</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">PO Server Tools maintained by <a href="https://github.com/TheUnknownOne">TheUnknownOne</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
