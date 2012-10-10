@@ -1,17 +1,4 @@
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
-# Folder config file
-Desktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
 # My test/help/doc/etc. files
 test-scripts.bat
 move-scripts.bat
 core-prototypes.txt
-
-# WebStorm
-.idea/
