@@ -1,106 +1,200 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>PO-Server-Tools</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>PO-Server-Tools</title>
+    <meta name="description" content="TheUnknownOne's PO-Server-Tools">
+    <meta name="viewport" content="width=device-width">
 
-        <link rel="stylesheet" href="css/bootstrap.min.css">
-        <style>
-            body {
-                padding-top: 60px;
-                padding-bottom: 40px;
-            }
-        </style>
-        <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
-        <link rel="stylesheet" href="css/main.css">
-    </head>
-    <body>
-        <!--[if lt IE 7]>
-            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
-        <![endif]-->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+    </style>
+    <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
+</head>
+<body>
+<!--[if lt IE 7]>
+<p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser
+    today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better
+    experience this site.</p>
+<![endif]-->
 
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container">
-                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </a>
-                    <a class="brand" href="#">Project name</a>
-                    <div class="nav-collapse collapse">
-                        <ul class="nav">
-                            <li class="active"><a href="#">Home</a></li>
-                            <li><a href="#about">About</a></li>
-                            <li><a href="#contact">Contact</a></li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="#">Action</a></li>
-                                    <li><a href="#">Another action</a></li>
-                                    <li><a href="#">Something else here</a></li>
-                                    <li class="divider"></li>
-                                    <li class="nav-header">Nav header</li>
-                                    <li><a href="#">Separated link</a></li>
-                                    <li><a href="#">One more separated link</a></li>
-                                </ul>
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="#">PO-Server-Tools</a>
+
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Scripts <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-header"><a href="#root">Root</a></li>
+                            <li><a href="#3.0dev">3.0.0 Development</a></li>
+                            <li><a href="#scripts.js">scripts.js - Main file</a></li>
+                            <li class="divider"></li>
+
+                            <li class="nav-header"><a href="#batch">Batch</a></li>
+                            <li><a href="#restart-server.bat">restart-server.bat</a></li>
+                            <li><a href="#run-server-headless.bat">run-server-headless.bat</a></li>
+
+                            <li class="divider"></li>
+                            <li class="nav-header" id="mafiathemes.nav"><a href="#goodies.mafiathemes">Goodies: Featured
+                                Mafia Themes</a></li>
+                            <li>
+                                <a href="https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/goodies/mafiathemes/Gamble.json">Gamble.json</a>
                             </li>
+                            <li>
+                                <a href="https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/goodies/mafiathemes/Lynch%20Wars%20Theme.txt">Lynch
+                                    Wars Theme.txt</a></li>
+                            <li>
+                                <a href="https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/goodies/mafiathemes/Scripting%20Languages.json">Scripting
+                                    Languages.json (Uncompleted)</a></li>
+                            <li>
+                                <a href="https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/goodies/mafiathemes/Unicorn%20Theme.txt">Unicorn
+                                    Theme.txt</a></li>
                         </ul>
-                        <form class="navbar-form pull-right">
-                            <input class="span2" type="text" placeholder="Email">
-                            <input class="span2" type="password" placeholder="Password">
-                            <button type="submit" class="btn">Sign in</button>
-                        </form>
-                    </div><!--/.nav-collapse -->
-                </div>
+                    </li>
+                    <li><a href="#other">Other</a></li>
+                </ul>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="container">
+<div class="container">
+    <!-- Main hero unit for a primary marketing message or call to action -->
+    <div class="hero-unit">
+        <h2>TheUnknownOne's PO-Server-Tools</h2>
 
-            <!-- Main hero unit for a primary marketing message or call to action -->
-            <div class="hero-unit">
-                <h1>Hello, world!</h1>
-                <p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
-                <p><a class="btn btn-primary btn-large">Learn more &raquo;</a></p>
-            </div>
+        <p>Here is where you will find some of my quality PO server-side scripts, as well as some other goodies!</p>
 
-            <!-- Example row of columns -->
-            <div class="row">
-                <div class="span4">
-                    <h2>Heading</h2>
-                    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-                    <p><a class="btn" href="#">View details &raquo;</a></p>
-                </div>
-                <div class="span4">
-                    <h2>Heading</h2>
-                    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-                    <p><a class="btn" href="#">View details &raquo;</a></p>
-               </div>
-                <div class="span4">
-                    <h2>Heading</h2>
-                    <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-                    <p><a class="btn" href="#">View details &raquo;</a></p>
-                </div>
-            </div>
+        <p><a href="#scripts.js" class="btn btn-primary btn-large">Server Script &raquo;</a></p>
+    </div>
 
-            <hr>
 
-            <footer>
-                <p>&copy; Company 2012</p>
-            </footer>
+    <div class="row" id="root">
+        <h2>Root</h2>
 
-        </div> <!-- /container -->
+        <div class="span4" id="scripts.js">
+            <h2>scripts.js</h2>
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.8.2.min.js"><\/script>')</script>
+            <p>My Server Script for Pokémon Online! You can see a list of features <a
+                    href="https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/README.md#scriptsjs">here</a>
+                (will be moved soon).</p>
 
-        <script src="js/main.js"></script>
-    </body>
+            <p>Issues can be reported <a href="https://github.com/TheUnknownOne/PO-Server-Tools/issues">here</a></p>
+
+            <p>&raquo; <strong>Current Version: 2.2.60</strong></p>
+
+            <p><a class="btn btn-primary"
+                  href="https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js">File (Save
+                As) &raquo;</a>
+            </p>
+        </div>
+    </div>
+    <hr/>
+
+    <div class="row" id="3.0dev">
+        <h2>3.0.0 Development</h2>
+
+        <div class="span4">
+            <h2>About</h2>
+
+            <p>This directory is fully for 3.0.0 scripts.js development. There are some very useful (sometimes buggy)
+                scripts in here that you can use for your own scripts!</p>
+        </div>
+    </div>
+
+    <hr/>
+
+    <div class="row" id="batch">
+        <h2>Batch</h2>
+
+        <p>
+            <small><strong>Batch scripts only work on Windows!</strong></small>
+        </p>
+        <div class="span4" id="restart-server.bat">
+            <h2>restart-server.bat</h2>
+
+            <p>This batch file makes it easy to restart your server. Can also be used with the
+                <strong>sys.system</strong> server-side scripting function.</p>
+
+            <p>Must be placed in the same directory as your server</p>
+
+            <p><a class="btn btn-primary"
+                  href="https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/batch/restart-server.bat">Download &raquo;</a>
+            </p>
+        </div>
+        <div class="span4" id="run-server-headless.bat">
+            <h2>run-server-headless.bat</h2>
+
+            <p>This batch file makes the server run the server headless (no GUI).</p>
+
+            <p>Must be placed in the same directory as your server</p>
+
+            <p><a class="btn btn-primary"
+                  href="https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/batch/run-server-headless.bat">Download &raquo;</a>
+            </p>
+        </div>
+    </div>
+
+    <hr/>
+
+    <div class="row" id="goodies.mafiathemes">
+        <h2>Goodies: Mafia Themes</h2>
+
+        <p>All mafia themes are available <a
+                href="https://github.com/TheUnknownOne/PO-Server-Tools/tree/master/goodies/mafiathemes"> here</a>. </p>
+
+        <p>Featured themes are linked at "Goodies: Featured Mafia Themes" in "Scripts"</p>
+    </div>
+
+    <hr/>
+    <br/>
+
+    <div class="row" id="other">
+        <h2>Other Projects</h2>
+
+        <ul>
+            <li>My client-side tools can be found <a href="https://github.com/TheUnknownOne/PO-Client-Tools">here</a>.
+            </li>
+            <li>Battle Arena (a WIP game) can be found <a
+                    href="https://github.com/TheUnknownOne/PO-Battle-Arena">here</a> (requires SSL libraries on Windows
+                for pre 2.0.6 builds of PO).
+            </li>
+            <li>I'm working on the new Mafia Theme Creator <a
+                    href="https://github.com/TheUnknownOne/PO-Mafia/tree/gh-pages/themecreator">here</a>.
+            </li>
+        </ul>
+    </div>
+    <hr/>
+    <footer>
+        <p>&copy; TheUnknownOne 2011-2012</p>
+    </footer>
+
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.8.2.min.js"><\/script>')</script>
+
+<script type="text/javascript" src="js/vendor/bootstrap.min.js"></script>
+</body>
 </html>
