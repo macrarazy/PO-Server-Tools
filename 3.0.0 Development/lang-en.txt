@@ -1,0 +1,8 @@
+# Language file for "English" (default default language!)
+
+# Globals
+
+lang.name = English;
+lang.shortname = en;
+
+#
