@@ -499,7 +499,7 @@
             "role": "Rainbow_Grey",
             "translation": "Grey Rainbow Unicorn",
             "side": "Grey",
-            "help": "You are now a Grey Rainbow Unicorn! You are so obsessed with yourself that you won't be helping your team anymore (you're still on their side though). Your grey colors save you from being lynched: -1 vote. Your vote counts as 0.",
+            "help": "You are now a Grey Rainbow Unicorn! You are so obsessed with yourself that you won't be helping your team anymore (you're still on their side though). Your grey colors save you from being lynched: -1 vote, and your vote counts as 0.",
             "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 0. Receives -1 votes when voted against for at all. Sided with Grey Unicorns.",
             "actions": {
                 "vote": 0,
@@ -510,7 +510,7 @@
             "role": "Flying",
             "translation": "Flying Unicorn",
             "side": "Flying",
-            "help": "You are a murdering machine for some stupid reason (don't ask me). You can kill twice per night, and once a day (20% chance to be revealed). You kill last in the night, however. You are a busy thing, so annoying Unicorns will simply DIE.",
+            "help": "You are a murdering machine for some stupid reason (don't ask me). You can kill twice per night, and once a day (20% chance to be revealed). You kill last in the night, however. Annoying unicorns who want to be distract you from doing your stuffz will simply die, since this game is serious business.",
             "actions": {
                 "night": {
                     "kill": {
@@ -613,7 +613,7 @@
                             "Leader-2",
                             "Miller-Flying"
                         ],
-                        "convertmsg": "~Self~, who was ~Old~, has been colorized by the Rainbow Unicorn, making them a ~New~!",
+                        "convertmsg": "~Target~, who was ~Old~, has been colorized by the Rainbow Unicorn, making them a ~New~!",
                         "usermsg": "~Target~ (~Old~) is now a ~New~!",
                         "command": "convert"
                     }
@@ -787,6 +787,6 @@
     ],
     "killmsg": "±Game: ~Player~, who was a ~Role~, has been banished from the land of Unicorns!",
     "killusermsg": "±Game: 0 lives left.",
-    "lynchmsg": "±Game: ~Player~ (~Role~), who is sided with the ~Side~, wasn't very liked here! Guiliotine!",
+    "lynchmsg": "±Game: ~Player~ (~Role~), wasn't very liked here! Guiliotine!",
     "drawmsg": "±Game: An eternal conflict shall never end."
 }
