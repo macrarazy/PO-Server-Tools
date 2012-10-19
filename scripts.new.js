@@ -5,6 +5,76 @@
  */
 
 /**
+ * Script configuration
+ * @namespace
+ * @type {Object}
+ */
+
+Config = {};
+
+/**
+ * If Dream World abilities will be checked
+ * @type {Boolean}
+ */
+
+Config.DWAbilityCheck = true;
+
+/**
+ * If the default channels are automatically joined when a player goes on the server
+ * @type {Boolean}
+ */
+
+Config.AutoChannelJoin = true;
+
+/**
+ * If global welcome messages are displayed
+ * @type {Boolean}
+ */
+
+Config.WelcomeMessages = false;
+
+/**
+ * Fixes some crashes caused by PO v2 but changes/breaks some features
+ * @type {Boolean}
+ */
+
+Config.NoCrash = false;
+
+/**
+ * If admins can give and take auth from users and to moderators.
+ * @type {Boolean}
+ */
+
+Config.AdminsCanAuth = true;
+
+/**
+ * Clears logs when logs.txt has the given size or more. NOTE: Doesn't work with current version of PO
+ * @type {Number}
+ */
+
+Config.ClearLogsAtSize = 36700160;
+
+/**
+ * Changes that players authority to that level at auth calculations (so an auth with auth level 2 has permissions of auth level 3, but that would not be visible)
+ * @type {Object}
+ */
+
+Config.PlayerPermissions = {
+  "Example player with Config.PlayerPermissions": 3
+};
+
+/**
+ * Configuration for Mafia
+ * @type {Object}
+ */
+
+Config.Mafia = {
+    norepeat: 3,
+    stats_file: "MafiaStats.txt",
+    max_name_length: 16
+};
+
+/**
  * Version of the script
  * @type {String}
  */
@@ -30,10 +100,10 @@ BRANCH = "devel";
  * @type {Array}
  */
 
-Modules = ["extendCore", "enum", "utilities", "datahash", "core", "mobs"];
+Modules = ["modules/utilities.js"];
 
 /**
- * If modules will get overwritten and redownloaded every time the script reloads (useful for development)
+ * If modules will get overwritten and re-downloaded every time the script reloads (useful for development)
  * @type {Boolean}
  */
 
@@ -56,6 +126,7 @@ sys = sys || {};
 
 /**
  * Contains handlers
+ * @namespace
  * @type {Object}
  */
 
@@ -65,7 +136,6 @@ handlers = {};
  * Returns a simple permission handler
  * @param {String} level Auth level for this handler
  * @return {Function} The handler
- * @see addCommand
  */
 
 handlers.permissionHandler = function (level) {
@@ -85,8 +155,6 @@ handlers.permissionHandler = function (level) {
  * Returns a default handler
  * @param {String} category Auth level for this handler, as string
  * @return {Function|Number} A default handler, or -1 if the category doesn't have a default handler
- * @see handlers#permissionHandler
- * @see addCommand
  */
 
 handlers.defaultHandler = function (category) {
@@ -109,10 +177,10 @@ handlers.defaultHandler = function (category) {
  * Adds a command
  * @param {String|Object} name Name of the command, or an object containing all of the parameters for this function
  * @param {Function} handler The actual command
- * @param {Function} permissionHandler Permission handler for this command
- * @param {String} category Auth category for this command
- * @param {Array} help Help message for this command
- * @param {Boolean} allowedWhenMuted If this command can be used, even when muted
+ * @param {Function} [permissionHandler] Permission handler for this command
+ * @param {String} [category="0"] Auth category for this command
+ * @param {Array} [help=["", ""]] Help message for this command
+ * @param {Boolean} [allowedWhenMuted=true] If this command can be used, even when muted
  */
 
 addCommand = function (name, handler, permissionHandler, category, help, allowedWhenMuted) {
@@ -177,7 +245,6 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
  * @param {Number} [GetMethod] GetMethod to be passed to include.get
  * @param {Boolean} [NoCache=false] If the lazy module cache should be bypassed
  * @return {*} Result of include.get
- * @see get
  */
 
 include = function (FileName, GetMethod, NoCache) {
@@ -225,15 +292,14 @@ if (!include.modules) {
     /**
      * Contains all loaded modules
      * @type {Object}
-     * @see include
      */
+
     include.modules = {};
 }
 
 /**
  * GetMethods for include.get
  * @type {Object}
- * @see include#get
  */
 
 include.GetMethod = {
@@ -249,8 +315,6 @@ include.GetMethod = {
  * @param {String} FileName Name of the file
  * @param {Number} Method A GetMethod. Default is include.GetMethod.Full
  * @return {*} Full module, source, hooks, name, or commands.
- * @see modules
- * @see GetMethod
  */
 
 include.get = function (FileName, Method) {
@@ -262,7 +326,7 @@ include.get = function (FileName, Method) {
     }
 
     query = include.modules[FileName],
-    methods = include.GetMethod;
+        methods = include.GetMethod;
 
     if (Method === methods.Full) {
         return query;
@@ -354,3 +418,7 @@ for (var module in Modules) {
     download(Modules[module], Modules[module], OverwriteModules);
     include(Modules[module], null, OverwriteModules);
 }
+
+({
+
+})
