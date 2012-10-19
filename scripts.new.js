@@ -1,0 +1,357 @@
+/**
+ * @fileOverview Primary file for PO scripts.js
+ * @author TheUnknownOne
+ * @version 3.0.0 Devel
+ */
+
+/**
+ * Version of the script
+ * @type {String}
+ */
+
+SCRIPT_VERSION = "3.0.0 Devel";
+
+/**
+ * URL from where the modules will be downloaded from
+ * @type {String}
+ */
+
+URL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/";
+
+/**
+ * Branch to download modules from
+ * @type {String}
+ */
+
+BRANCH = "devel";
+
+/**
+ * Modules to load
+ * @type {Array}
+ */
+
+Modules = ["extendCore", "enum", "utilities", "datahash", "core", "mobs"];
+
+/**
+ * If modules will get overwritten and redownloaded every time the script reloads (useful for development)
+ * @type {Boolean}
+ */
+
+OverwriteModules = true;
+
+/**
+ * Object which contains commands. Keep it empty!
+ * @type {Object}
+ * @namespace Object for commands
+ */
+
+Commands = {};
+
+/**
+ * Makes sure sys exists
+ * @type {Object}
+ * @namespace PO sys
+ */
+
+sys = sys || {};
+
+/**
+ * Contains handlers. Keep this empty too
+ * @type {Object}
+ * @namespace Object for handlers
+ */
+
+handlers = {};
+
+/**
+ * Returns a simple permission handler
+ * @param {String} level Auth level for this handler
+ * @return {Function} The handler
+ * @see addCommand
+ */
+
+handlers.permissionHandler = function (level) {
+    return function (src) {
+        if (typeof sys == "undefined") {
+            return true;
+        }
+        if (typeof hpAuth == "undefined") {
+            return sys.auth(src) >= level;
+        }
+
+        return hpAuth(src) >= level;
+    }
+};
+
+/**
+ * Returns a default handler
+ * @param {String} category Auth level for this handler, as string
+ * @return {Function|Number} A default handler, or -1 if the category doesn't have a default handler
+ * @see handlers#permissionHandler
+ * @see addCommand
+ */
+
+handlers.defaultHandler = function (category) {
+    if (category === "0") {
+        return function () {
+            return true;
+        }
+    } else if (category === "1") {
+        return handlers.permissionHandler(1);
+    } else if (category === "2") {
+        return handlers.permissionHandler(2);
+    } else if (category === "3") {
+        return handlers.permissionHandler(3);
+    }
+
+    return -1;
+};
+
+/**
+ * Adds a command
+ * @param {String|Object} name Name of the command, or an object containing all of the parameters for this function
+ * @param {Function} handler The actual command
+ * @param {Function} permissionHandler Permission handler for this command
+ * @param {String} category Auth category for this command
+ * @param {Array} help Help message for this command
+ * @param {Boolean} allowedWhenMuted If this command can be used, even when muted
+ */
+
+addCommand = function (name, handler, permissionHandler, category, help, allowedWhenMuted) {
+    var cmd, hash;
+
+    if (arguments.length == 1) {
+        cmd = arguments[0];
+        if (typeof cmd !== "object") {
+            return;
+        }
+
+        name = cmd.name, handler = cmd.handler, category = cmd.category, permissionHandler = cmd.permissionHandler, category = cmd.category, help = cmd.help, allowedWhenMuted = cmd.allowedWhenMuted;
+    }
+
+    if (name == undefined) {
+        print("module.command.error: Could not add an unknown command. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
+        return;
+    }
+
+    if (handler == undefined) {
+        print("module.command.error: Could not add command " + name + " because the handler is missing. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
+        return;
+    }
+
+    if (category == undefined) {
+        category = "0"; // Default
+    }
+
+    if (permissionHandler == undefined) {
+        permissionHandler = auth.defaultHandler(category);
+
+        if (permissionHandler == -1) {
+            print("module.command.error: Could not add command " + name + " because the permission handler was special and not passed. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
+            return;
+        }
+    }
+
+    if (help == undefined) {
+        help = ["", ""];
+    }
+
+    if (allowedWhenMuted == undefined) {
+        allowedWhenMuted = true;
+    }
+
+    hash = {
+        "name": name,
+        "handler": handler,
+        "permissionHandler": permissionHandler,
+        "category": category,
+        "help": help,
+        "allowedWhenMuted": allowedWhenMuted
+    };
+
+    Commands[name] = this.commands[name] = hash;
+};
+
+/**
+ * Includes a file
+ * @namespace
+ * @param {String} FileName Name of the file to load
+ * @param {Number} [GetMethod] GetMethod to be passed to include.get
+ * @param {Boolean} [NoCache=false] If the lazy module cache should be bypassed
+ * @return {*} Result of include.get
+ * @see include#get
+ */
+
+include = function (FileName, GetMethod, NoCache) {
+    var source = {}, code, module = {};
+
+    if (include.modules[FileName] && !NoCache) {
+        return include.get(FileName, GetMethod);
+    }
+
+    /* Default Values */
+    module.file = FileName;
+    module.name = FileName.substring(0, FileName.indexOf("."));
+    module.hooks = {};
+    module.commands = {};
+
+    code = sys.getFileContent(FileName);
+
+    try {
+        source = sys.eval(code);
+    } catch (Exception) {
+        sys.sendAll("Could not include module in file " + FileName + ": " + Exception + " on line " + Exception.lineNumber);
+        return;
+    }
+
+    if (source.Name) {
+        module.name = source.Name();
+    }
+
+    if (source.Hooks) {
+        module.hooks = source.Hooks();
+    }
+
+    if (source.Commands) {
+        module.commands = source.Commands();
+    }
+
+    module.source = source;
+
+    include.modules[FileName] = module;
+
+    return include.get(FileName, GetMethod);
+};
+
+if (!include.modules) {
+    /**
+     * Contains all loaded modules
+     * @type {Object}
+     * @see include
+     */
+    include.modules = {};
+}
+
+/**
+ * GetMethods for include.get
+ * @type {Object}
+ * @see include#get
+ */
+
+include.GetMethod = {
+    "Full": 0,
+    "Source": 1,
+    "Hooks": 2,
+    "Commands": 3,
+    "Name": 4
+};
+
+/**
+ * Extended getter for include.modules. Includes the file when it isn't loaded.
+ * @param {String} FileName Name of the file
+ * @param {Number} Method A GetMethod. Default is include.GetMethod.Full
+ * @return {*} Full module, source, hooks, name, or commands.
+ * @see include#modules
+ * @see include#GetMethod
+ */
+
+include.get = function (FileName, Method) {
+    var query, methods;
+
+    if (typeof include.modules[FileName] === "undefined") {
+        include(FileName, Method);
+        return;
+    }
+
+    query = include.modules[FileName],
+    methods = include.GetMethod;
+
+    if (Method === methods.Full) {
+        return query;
+    } else if (Method === methods.Source) {
+        return query.source;
+    } else if (Method === methods.Hooks) {
+        return query.hooks;
+    } else if (Method === methods.Commands) {
+        return query.commands;
+    } else if (Method === methods.Name) {
+        return query.name;
+    }
+
+    return query;
+};
+
+/**
+ * Downloads and writes a file to the disk
+ * @param {String} FileName Name for the file when it will be written on the disk
+ * @param {String} FilePath Online file path/name of the file
+ * @param {Boolean} [ForceDownload=false] If the file will still get downloaded even when it already exists on disk
+ * @return {String} Content of URL + Branch + / + FilePath
+ */
+
+download = function (FileName, FilePath, ForceDownload) {
+    var result;
+
+    if (sys.getFileContent(FileName) && !ForceDownload) {
+        return "";
+    }
+
+    result = sys.synchronousWebCall(URL + BRANCH + "/" + FilePath);
+    sys.writeToFile(FileName, result);
+
+    return result;
+};
+
+/**
+ * Gets a list of hooks for an event
+ * @param {String} event Name of the event
+ * @return {Array}
+ */
+
+getHooks = function (event) {
+    var ret = [],
+        x, current_mod, Modules = include.modules;
+
+    for (x in Modules) {
+        current_mod = Modules[x];
+        if (typeof current_mod.hooks[event] !== "undefined") {
+            ret.push(current_mod);
+        }
+    }
+
+    return ret;
+};
+
+/**
+ * To call all hooks which have the name hook_name
+ * @param {String} hook_name Name of the hook
+ * @param {*} hook_args Arguments for the hook (everything after the 1st argument)
+ * @return {Boolean}
+ */
+
+call = function (hook_name, hook_args) {
+    var args = [].slice.call(arguments),
+        event = args.splice(0, 1)[0],
+        hooks = getHooks(event),
+        x, current, stop = false,
+        i;
+
+    for (x in hooks) {
+        current = hooks[x];
+        try {
+            if (current.hooks[event].apply(current, args)) {
+                stop = true;
+            }
+        } catch (Exception) {
+            sys.sendAll('Error in module "' + current.name + '" when calling hook "' + event + '" with ' + args.length + ' arguments on line ' + Exception.lineNumber + ': ' + Exception, arena);
+        }
+    }
+
+    return stop;
+};
+
+/* Downloads and loads all modules */
+for (var module in Modules) {
+    download(Modules[module], Modules[module], OverwriteModules);
+    include(Modules[module], null, OverwriteModules);
+}
