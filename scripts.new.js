@@ -50,15 +50,13 @@ Commands = {};
 /**
  * Makes sure sys exists
  * @type {Object}
- * @namespace PO sys
  */
 
 sys = sys || {};
 
 /**
- * Contains handlers. Keep this empty too
+ * Contains handlers
  * @type {Object}
- * @namespace Object for handlers
  */
 
 handlers = {};
@@ -179,7 +177,7 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
  * @param {Number} [GetMethod] GetMethod to be passed to include.get
  * @param {Boolean} [NoCache=false] If the lazy module cache should be bypassed
  * @return {*} Result of include.get
- * @see include#get
+ * @see get
  */
 
 include = function (FileName, GetMethod, NoCache) {
@@ -251,8 +249,8 @@ include.GetMethod = {
  * @param {String} FileName Name of the file
  * @param {Number} Method A GetMethod. Default is include.GetMethod.Full
  * @return {*} Full module, source, hooks, name, or commands.
- * @see include#modules
- * @see include#GetMethod
+ * @see modules
+ * @see GetMethod
  */
 
 include.get = function (FileName, Method) {
@@ -305,7 +303,7 @@ download = function (FileName, FilePath, ForceDownload) {
 /**
  * Gets a list of hooks for an event
  * @param {String} event Name of the event
- * @return {Array}
+ * @return {Array} Array of hooks with this name
  */
 
 getHooks = function (event) {
@@ -326,7 +324,8 @@ getHooks = function (event) {
  * To call all hooks which have the name hook_name
  * @param {String} hook_name Name of the hook
  * @param {*} hook_args Arguments for the hook (everything after the 1st argument)
- * @return {Boolean}
+ * @return {Boolean} If any of the called hooks want to stop the event
+ * @example if (call("Example")) { sys.stopEvent(); }
  */
 
 call = function (hook_name, hook_args) {
