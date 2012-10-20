@@ -543,8 +543,8 @@
             "role": "Rainbow_Flying",
             "translation": "Flying Rainbow Unicorn",
             "side": "Flying",
-            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 3 nights. Your vote counts as 5.",
-            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 3. Can't be lynched. Dies in 3 nights. Sided with Flying Unicorn.",
+            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 4 nights. Your vote counts as 5.",
+            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 5. Can't be lynched. Dies in 4 nights. Sided with Flying Unicorn.",
             "actions": {
                 "vote": 5,
                 "voteshield": -9999,
