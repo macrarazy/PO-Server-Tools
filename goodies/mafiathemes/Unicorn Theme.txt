@@ -540,14 +540,14 @@
             "role": "Rainbow_Flying",
             "translation": "Flying Rainbow Unicorn",
             "side": "Flying",
-            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 3 nights. Your vote counts as 3.",
+            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 3 nights. Your vote counts as 5.",
             "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 3. Can't be lynched. Dies in 3 nights. Sided with Flying Unicorn.",
             "actions": {
                 "vote": 3,
                 "voteshield": -9999,
                 "initialCondition": {
                     "poison": {
-                        "count": 3,
+                        "count": 4,
                         "poisonDeadMessage": "Mythical creatures die too, yknow!"
                     }
                 }
@@ -673,7 +673,7 @@
             "role": "Scientist",
             "translation": "Mad Scientist",
             "side": "Human",
-            "help": "You are a scientist, sent out by the government to kill all unicorns once and for all, along with the Unicorn Hunter. Type /mutate [name] to mutate a unicorn into an even filthier creature (they win with the humans, somehow)! They die if you die. Crying White Unicorns can kill you with their tears, so watch out!",
+            "help": "You are a scientist, sent out by the government to kill all unicorns once and for all, along with the Unicorn Hunter. Type /mutate [name] to mutate a unicorn into an even filthier creature (they win with the humans, somehow)! They die if you die, so don't (shouldn't be hard anyway since you have 30% chance to evade a kill). Crying White Unicorns can kill you with their tears, so watch out!",
             "actions": {
                 "night": {
                     "mutate": {
@@ -684,6 +684,11 @@
                         "canConvert": "*",
                         "newRole": "Mutated",
                         "command": "convert"
+                    }
+                },
+                "kill": {
+                    "mode": {
+                        "evadeChance": 0.3
                     }
                 },
                 "distract": {
@@ -709,7 +714,7 @@
                 "vote": 0,
                 "initialCondition": {
                     "poison": {
-                        "count": 2,
+                        "count": 3,
                         "poisonDeadMessage": "Your time is up. Mutation is deadly."
                     }
                 }
@@ -737,10 +742,10 @@
         "Villager",
         "Villager",
         "Leader-2",
-        "Black-Leader",
-        "Rainbow",
         "Grey-Leader",
         "Miller-Hunter",
+        "Black-Leader"
+        "Rainbow",
         "Villager",
         "Black-Inspector",
         "Grey-Inspector",
@@ -756,7 +761,6 @@
         "Black-2",
         "Grey-2",
         "Villager",
-        "Villager",
         "Hunter-2",
         "Miller-Hunter",
         "Villager",
@@ -767,6 +771,7 @@
         "Grey-Leader",
         "Villager",
         "Black-Inspector",
+        "Villager",
         "Grey-Inspector",
         "Miller-Scientist",
         "Grey-2",
