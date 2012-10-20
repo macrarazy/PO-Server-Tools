@@ -5,6 +5,10 @@
  */
 
 /*
+Dependencies:
+    - modules/jsext.js
+ */
+/*
  Custom types used in JSDoc
  - POPlayer: Id or name of a player
  - POChannel: Id or name of a channel
@@ -394,7 +398,7 @@ util.grammar = {
             }
         } else {
             if (cap) {
-            ret = "A";
+                ret = "A";
             } else {
                 ret = "a";
             }
@@ -430,6 +434,77 @@ util.grammar = {
 };
 
 /**
+ * File utilities
+ * @namespace
+ * @type {Object}
+ */
+util.file = {
+    /**
+     * Creates a file if it already doesn't exist (suppresses any errors)
+     * @param {String} file Path to the file
+     * @param {String} replacement Data to write to the file if it doesn't exist
+     */
+    create: function (file, replacement) {
+        sys.appendToFile(file, "");
+        if (sys.getFileContent(file) === "") {
+            sys.writeToFile(file, replacement);
+        }
+    },
+    /**
+     * Prepends data to a file
+     * @param {String} file Path to the file
+     * @param {String} data Data to prepend to the file
+     */
+    prepend: function (file, data) {
+        sys.writeToFile(file, data + sys.getFileContent(file));
+    }
+};
+
+/**
+ * Error utilities
+ * @namespace
+ * @type {Object}
+ */
+util.error = {
+    /**
+     * Formats an error
+     * @param {String} mess Message to prepend to the error
+     * @param {Error} e Error object
+     * @return {String} Error message
+     */
+    format: function (mess, e) {
+        var lastChar, lineData = "", name = e.name, msg = e.message, str;
+
+        if (typeof mess !== "string") {
+            mess = "";
+        }
+
+        lastChar = mess[mess.length - 1];
+
+        if (mess !== "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
+            mess += ".";
+        }
+
+        if (typeof e.toLowerCase !== 'undefined') { /** when throw is used **/
+            return mess + " Custom Error: " + e;
+        }
+
+        if (e.lineNumber !== 1) {
+            lineData = " on line " + e.lineNumber;
+        }
+
+        str = name + lineData + ": " + msg,
+            lastChar = msg[msg.length - 1];
+
+        if (lastChar !== "." && lastChar !== "?" && lastChar !== ":" && lastChar !== "!") {
+            str += ".";
+        }
+
+        return mess + " " + str;
+    }
+};
+
+/**
  * Object for timers
  * @type {Object}
  */
@@ -443,7 +518,7 @@ util.sandbox = {};
 
 ({
     /**
-     * Returns the function of this module
+     * Returns the name of this module
      * @private
      * @return {String} Utilities
      */

@@ -1,5 +1,5 @@
 /**
- * @fileOverview Primary file for PO scripts.js
+ * @fileOverview Primary file of TheUnknownOne's Server Script
  * @author TheUnknownOne
  * @version 3.0.0 Devel
  */
@@ -60,7 +60,7 @@ Config.ClearLogsAtSize = 36700160;
  */
 
 Config.PlayerPermissions = {
-  "Example player with Config.PlayerPermissions": 3
+    "Example player with Config.PlayerPermissions": 3
 };
 
 /**
@@ -117,7 +117,7 @@ BRANCH = "devel";
  * @type {Array}
  */
 
-Modules = ["modules/enum.js", "modules/utilities.js"];
+Modules = ["modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/datahash.js"];
 
 /**
  * If modules will get overwritten and re-downloaded every time the script reloads (useful for development)
@@ -135,11 +135,20 @@ OverwriteModules = true;
 Commands = {};
 
 /**
- * Makes sure sys exists
+ * PO sys object
  * @type {Object}
  */
 
 sys = sys || {};
+
+/**
+ * Prints to the server console
+ * @type {Function}
+ */
+
+print = print || function (msg) {
+    sys.sendAll(msg, 0);
+};
 
 /**
  * Contains handlers

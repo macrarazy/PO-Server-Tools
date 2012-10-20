@@ -7,7 +7,7 @@ Announcement = new(function () {
     this.afterLogIn = function (src) {
 	    sys.setAnnouncement("", src); // So they don't see the codes.
         sys.setAnnouncement(this.formatted(), src);
-    }
+    };
     this.onChanged = function (ann) {
         this.announcement = ann;
 		this.setAnnouncement(this.formatted()); // Applied for everyone.
@@ -24,9 +24,6 @@ Announcement = new(function () {
         a = a.replace(/{s: (.*?)}/g, "<s>$1</s>"); // {s: Hello World!}
 		
         a = a.replace(/{color: (.*?)|text: (.*?)}/g, "<font color=$1>$2</font>"); // {color: green|text: Hello World!}
-		
-		a = a.replace(/{table: (.*?)}/g, "<table><tr><td>$1</tr></td></table>"); // {table: Hello World!}
-		a = a.replace(/{table: (.*?)|table-width: (.*?)}/g, "<table width='$2'><tr><td>$1</tr></td></table>"); // {table: Hello World!|table-width: 100%}
 
 		a = a.replace(/{image: (.*?)}/g, "<img src='$1'>"); // {image: Themes/Classic/mainchat.png}
 		a = a.replace(/{image: (.*?) image-align: (.*?)}/g, "<img src='$1' align='$2'>"); // {image: Themes/Classic/mainchat.png|image-align: right}

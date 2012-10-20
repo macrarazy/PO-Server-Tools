@@ -1,4 +1,14 @@
 /**
+ * @fileOverview Enums for JavaScript
+ * @author TheUnknownOne
+ * @version 3.0.0 Devel
+ */
+
+/*
+Dependencies:
+    - modules/jsext.js
+ */
+/**
  * Creates an enum
  * @param {Enum|String|Array} [flags] Enum to copy flags from, a single flag, or an array of flags
  * @constructor
@@ -46,7 +56,7 @@ Enum.prototype.toString = function () {
  */
 
 Enum.prototype.addFlag = function (flag) {
-    if (this.flags.hasOwnProperty(flag)) {
+    if (this.flags.has(flag)) {
         return;
     }
 
@@ -172,3 +182,14 @@ Mask.prototype.hasFlags = function (flags) {
 
     return !!this.flags & compare_mask;
 };
+
+({
+    /**
+     * Returns the name of this module
+     * @private
+     * @return {String} Enums
+     */
+    Name: function () {
+        return "Enums";
+    }
+})

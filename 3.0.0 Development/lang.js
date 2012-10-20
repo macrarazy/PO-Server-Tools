@@ -10,7 +10,7 @@ Language = new(function() {
         }
         
         this.parse(file.split("\n"), fn);
-    }
+    };
     
     this.parse = function (data, file) {
         var x, line, lang = {}, key, val;
@@ -45,7 +45,7 @@ Language = new(function() {
         }
         
         this.languages[lang.name] = lang;
-    }
+    };
     
     this.get = function (name, ln) {
         var lang = this.languages[name], defaultSet = false;

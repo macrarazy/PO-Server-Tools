@@ -38,11 +38,11 @@ YAML - YAML Data Serialization for JavaScript
 
 AUTHORS:
 
-    Ingy döt Net <ingy@cpan.org>
+    Ingy dï¿½t Net <ingy@cpan.org>
 
 COPYRIGHT:
 
-Copyright Ingy döt Net 2007. All rights reserved.
+Copyright Ingy dï¿½t Net 2007. All rights reserved.
 
 YAML.js is free software. 
 
@@ -692,32 +692,3 @@ YAML = (function () {
         dump: dump
     }
 })();
-
-// JSON //
-json = function (file) {
-    this.file = file + ".json";
-
-    this.prototype = {
-        "read": function () {
-            return JSON.parse(sys.getFileContent(this.file));
-        },
-        "write": function (code) {
-            sys.writeToFile(this.file, JSON.stringify(code));
-        },
-        "get": function (property) {
-            return this.read()[property];
-        },
-        "ensureResult": function () {
-            var res;
-            try {
-                res = this.read();
-            } catch (JSONException) {
-                res = {};
-                this.write({});
-            }
-
-            return res;
-        }
-
-    }
-}
