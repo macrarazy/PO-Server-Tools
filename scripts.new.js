@@ -68,11 +68,28 @@ Config.PlayerPermissions = {
  * @type {Object}
  */
 
-Config.Mafia = {
-    norepeat: 3,
-    stats_file: "MafiaStats.txt",
-    max_name_length: 16
-};
+Config.Mafia = {};
+
+/**
+ * Amount of different themes that have to be started before one that has been played (norepeat) games ago
+ * @type {Number}
+ */
+
+Config.Mafia.norepeat = 3;
+
+/**
+ * Path to the file where mafia stats will be written to
+ * @type {String}
+ */
+
+Config.Mafia.stats_file = "Mafia_Stats.json";
+
+/**
+ * Maximum length for a player who wants to join mafia
+ * @type {Number}
+ */
+
+Config.Mafia.max_name_length = 16;
 
 /**
  * Version of the script
@@ -100,7 +117,7 @@ BRANCH = "devel";
  * @type {Array}
  */
 
-Modules = ["modules/utilities.js"];
+Modules = ["modules/enum.js", "modules/utilities.js"];
 
 /**
  * If modules will get overwritten and re-downloaded every time the script reloads (useful for development)

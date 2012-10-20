@@ -1,6 +1,18 @@
+/**
+ * @fileOverview Utilities file
+ * @author TheUnknownOne
+ * @version 3.0.0 Devel
+ */
+
+/*
+ Custom types used in JSDoc
+ - POPlayer: Id or name of a player
+ - POChannel: Id or name of a channel
+ */
+
 if (!Bot) {
     /**
-     * Default properties for Bot
+     * Bot configuration
      * @type {Object}
      */
     Bot = {
@@ -35,12 +47,18 @@ util.player = {
     },
     /**
      * Returns the players "true" auth (Config.PlayerPermissions and maxAuth on ip calculated)
-     * @param {Number} src Id of the player
+     * @param {POPlayer} src Player identifier
      * @return {Number} Auth level
      */
     auth: function (src) {
         var perms = Config.PlayerPermissions,
-            name = sys.name(src),
+            name,
+            auth,
+            maxAuth;
+
+        src = util.player.id(src);
+
+        name = sys.name(src),
             auth = sys.auth(src),
             maxAuth = sys.maxAuth(sys.ip(src));
 
@@ -59,7 +77,7 @@ util.player = {
     },
     /**
      * Checks if a player has permission to perform a specific action
-     * @param {Number} src Id of the player
+     * @param {POPlayer} src Player identifier
      * @param {Number} minAuth Minimum auth required to perform the action
      * @return {Boolean} If the player has permission to do the action
      */
@@ -68,7 +86,7 @@ util.player = {
     },
     /**
      * Formatted player name
-     * @param {Number|String} user Id or name of the player (can be anything, actually)
+     * @param {POPlayer} user Player identifier
      * @return {String} Formatted name
      */
     player: function (user) {
@@ -76,7 +94,7 @@ util.player = {
     },
     /**
      * Properly capitalizes a name or makes a name out of an Id
-     * @param {Number|String} user Name to capitalize or player Id
+     * @param {POPlayer} user Player identifier
      * @return {String} Name of the player, or an empty string
      */
     name: function (user) {
@@ -90,7 +108,7 @@ util.player = {
     },
     /**
      * Gets the id of a player. Throws the id back if the given number (id) is online, or -1 neither worked
-     * @param {Number|String} user Name of the player or their id
+     * @param {POPlayer} user Player identifier
      * @return {Number} Id of the player or -1 if not online or no number given
      */
     id: function (user) {
@@ -104,7 +122,7 @@ util.player = {
     },
     /**
      * Returns the color of a player
-     * @param {Number|String} user Id or name of a player
+     * @param {POPlayer} user Player Identifier
      * @return {String} The player's color
      */
     color: function (user) {
@@ -127,7 +145,12 @@ util.player = {
  */
 
 util.channel = {
-    channelId: function (name) {
+    /**
+     * Returns a channel's id
+     * @param {POChannel} name Channel identifier
+     * @return {Number} The channel's id, or -1
+     */
+    id: function (name) {
         var id;
         if (typeof name === "string") {
             id = sys.channelId(name);
@@ -152,7 +175,7 @@ util.channel = {
 util.mod = {
     /**
      * Bans a player, and kicks them
-     * @param {Number|String} name Name or id of the player to ban
+     * @param {POPlayer} name Player identifier to ban
      */
     ban: function (name) {
         var id;
@@ -171,10 +194,10 @@ util.mod = {
     },
     /**
      * Disconnects a player in 20 milliseconds
-     * @param {Number|String} src Id or name of the player to disconnect
+     * @param {POPlayer} src Player identifier to disconnect
      */
     disconnect: function (src) {
-      sys.callQuickly("sys.disconnect(" + util.player.id(src) + ")", 20);
+        sys.callQuickly("sys.disconnect(" + util.player.id(src) + ")", 20);
     },
     /**
      * Disconnects a player and their online alts in 20 milliseconds
@@ -193,14 +216,14 @@ util.mod = {
     },
     /**
      * Kicks a player in 20 milliseconds
-     * @param {Number|String} src Id or name of the player to kick
+     * @param {POPlayer} src Player identifier to kick
      */
     kick: function (src) {
         sys.callQuickly("sys.kick(" + util.player.id(src) + ");", 20);
     },
     /**
      * Kicks a player and their online alts in 20 milliseconds
-     * @param {Number|String} src Id or name of the player to kick
+     * @param {POPlayer} src Player identifier to kick
      */
     kickAll: function (src) {
         var x, id, ip = sys.ip(util.player.id(src)),
@@ -236,44 +259,83 @@ util.mod = {
  * @type {Object}
  */
 util.bot = {
+    /**
+     * Sends a message from the bot to src, in an optional channel
+     * @param {POPlayer} src Player identifier
+     * @param {String} message Message to send to src
+     * @param {POChannel} [channel=all] Channel identifier
+     */
     send: function (src, message, channel) {
         var color = Bot.color,
-            name = Bot.name,
-            chan = util.channel.channelId(channel);
+            name = Bot.name;
 
-        if (chan !== -1) {
-            sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, chan);
+        src = util.player.id(src);
+        channel = util.channel.id(channel);
+
+        if (channel !== -1) {
+            sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
         }
         else {
             sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message);
         }
     },
+    /**
+     * HTML-escaped message using JSEXT send to src
+     * @param {POPlayer} src Player identifier
+     * @param {String} message Message to send to src
+     * @param {POChannel} [channel=all] Channel identifier
+     */
     sendText: function (src, message, channel) {
         util.bot.send(src, message.escapeHtml(), channel);
     },
+    /**
+     * Sends a message to everyone on the server
+     * @param {String} message Message to send
+     * @param {POChannel} [channel=all] Channel identifier
+     */
     sendAll: function (message, channel) {
         var color = Bot.color,
             name = Bot.name;
 
-        if (typeof channel != "undefined") {
+        channel = util.channel.id(channel);
+
+        if (channel !== -1) {
             sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
         }
         else {
             sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message);
         }
     },
+    /**
+     * HTML-escaped message using JSEXT send to everyone
+     * @param {String} message Message to send
+     * @param {POChannel} [channel=all] Channel identifier
+     */
     sendAllText: function (message, channel) {
         util.sendAllText(message.escapeHtml(), channel);
     },
+    /**
+     * Sends an empty line (whitespace) to everyone
+     * @param {POChannel} [chan=all] Channel identifier
+     */
     line: function (chan) {
-        if (typeof chan !== "undefined") {
+        chan = util.channel.id(chan);
+
+        if (chan !== -1) {
             sys.sendAll("", chan);
         } else {
             sys.sendAll("");
         }
     },
+    /**
+     * Sends an empty line (whitespace) to src
+     * @param {POPlayer} src Player identifier
+     * @param {POChannel} [chan=all] Channel identifier
+     */
     lineTo: function (src, chan) {
-        if (typeof chan !== "undefined") {
+        chan = util.channel.id(chan);
+
+        if (chan !== -1) {
             sys.sendMessage(src, "", chan);
         } else {
             sys.sendMessage(src, "");
@@ -310,53 +372,60 @@ util.json = {
 };
 
 /**
- * Grammar utilities
+ * Grammar utilities. Note: Only apply to lang-en.txt
  * @namespace
  * @type {Object}
  */
 util.grammar = {
-    an: function (thingy, u) {
-        var thing = String(thingy);
+    /**
+     * To correct a/an
+     * @param {String} word Word to correct
+     * @param {Boolean} [cap=false] If an/a should be An or A
+     * @return {String} Corrected word
+     */
+    an: function (word, cap) {
+        var ret;
 
-        if (/[aeiouAEIOU]/.test(thing[0])) {
-            if (u) {
-                return 'An ' + thingy;
+        if (/[aeiouAEIOU]/.test(word[0])) {
+            if (cap) {
+                ret = "An";
+            } else {
+                ret = "an";
             }
-
-            return 'an ' + thingy;
+        } else {
+            if (cap) {
+            ret = "A";
+            } else {
+                ret = "a";
+            }
         }
 
-        if (u) {
-            return 'A ' + thingy;
-        }
-
-        return 'a ' + thingy;
+        return ret + " " + word;
     },
-    es: function (thingy) {
-        if (/[sS]/.test(thingy[thingy.length - 1])) {
-            return thingy + 'es';
+    /**
+     * To correct -s or -es
+     * @param {String} word Word to correct
+     * @return {String} Corrected word
+     */
+    es: function (word) {
+        if (/[sS]/.test(word[word.length - 1])) {
+            return word + "es";
         }
 
-        return thingy + 's';
+        return word + "s";
     },
+    /**
+     * Adds "s" to word if number isn't 1
+     * @param {String} word Word to correct
+     * @param {Number} number Number to check
+     * @return {String} Corrected word
+     */
     s: function (word, number) {
         if (number != 1) {
             word += "s";
         }
 
         return word;
-    },
-    a: function (thing, capfirst) {
-        var use = ["a ", "an "];
-        if (capfirst) {
-            use = ["A ", "An "];
-        }
-
-        if (/[aeuio]/.test(thing[0].toLowerCase())) {
-            return use[1] + thing;
-        }
-
-        return use[0] + thing;
     }
 };
 
@@ -375,7 +444,8 @@ util.sandbox = {};
 ({
     /**
      * Returns the function of this module
-     * @return {string}
+     * @private
+     * @return {String} Utilities
      */
     Name: function () {
         return "Utilities";
