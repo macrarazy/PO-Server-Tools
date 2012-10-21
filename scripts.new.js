@@ -1,3 +1,37 @@
+/*
+ ==== SCRIPT INFORMATION ====
+ - Maintained by TheUnknownOne -
+ - Licensed under GPL 3.0 (LICENSE.txt) -
+ - Special Thanks to Lamperi, Mystra, and Intel_iX -
+
+ Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
+ - Has no known bugs
+ Beta: https://github.com/TheUnknownOne/PO-Server-Tools/beta/
+ - Has no obvious errors
+ Alpha: https://github.com/TheUnknownOne/PO-Server-Tools/alpha/
+ - Has no fatal errors
+ Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
+ - Untested code/sandbox for all other versions
+
+ JSDoc is available at:
+ - Release: http://theunknownone.github.com/PO-Server-Tools/jsdoc/release/
+ - Pre-Release (End of Beta stage): http://theunknownone.github.com/PO-Server-Tools/jsdoc/prerelease/
+
+ Beta, Alpha, and Development don't have a public JSDoc (make it yourself if you need it)
+
+ ==== AVAILABLE MODULES ====
+
+ - All modules are available in modules/ -
+
+    - cache.js
+    - datahash.js
+    - enum.js
+    - jsession.js
+    - jsext.js
+    - utilities.js
+ */
+
+
 /**
  * @fileOverview Primary file of TheUnknownOne's Server Script
  * @author TheUnknownOne
@@ -9,35 +43,30 @@
  * @namespace
  * @type {Object}
  */
-
 Config = {};
 
 /**
  * If Dream World abilities will be checked
  * @type {Boolean}
  */
-
 Config.DWAbilityCheck = true;
 
 /**
  * If the default channels are automatically joined when a player goes on the server
  * @type {Boolean}
  */
-
 Config.AutoChannelJoin = true;
 
 /**
  * If global welcome messages are displayed
  * @type {Boolean}
  */
-
 Config.WelcomeMessages = false;
 
 /**
  * Fixes some crashes caused by PO v2 but changes/breaks some features
  * @type {Boolean}
  */
-
 Config.NoCrash = false;
 
 /**
@@ -51,14 +80,12 @@ Config.AdminsCanAuth = true;
  * Clears logs when logs.txt has the given size or more. NOTE: Doesn't work with current version of PO
  * @type {Number}
  */
-
 Config.ClearLogsAtSize = 36700160;
 
 /**
  * Changes that players authority to that level at auth calculations (so an auth with auth level 2 has permissions of auth level 3, but that would not be visible)
  * @type {Object}
  */
-
 Config.PlayerPermissions = {
     "Example player with Config.PlayerPermissions": 3
 };
@@ -67,85 +94,73 @@ Config.PlayerPermissions = {
  * Configuration for Mafia
  * @type {Object}
  */
-
 Config.Mafia = {};
 
 /**
  * Amount of different themes that have to be started before one that has been played (norepeat) games ago
  * @type {Number}
  */
-
 Config.Mafia.norepeat = 3;
 
 /**
  * Path to the file where mafia stats will be written to
  * @type {String}
  */
-
 Config.Mafia.stats_file = "Mafia_Stats.json";
 
 /**
  * Maximum length for a player who wants to join mafia
  * @type {Number}
  */
-
 Config.Mafia.max_name_length = 16;
 
 /**
  * Version of the script
  * @type {String}
  */
-
 SCRIPT_VERSION = "3.0.0 Devel";
 
 /**
  * URL from where the modules will be downloaded from
  * @type {String}
  */
-
 URL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/";
 
 /**
  * Branch to download modules from
  * @type {String}
  */
-
 BRANCH = "devel";
 
 /**
  * Modules to load
  * @type {Array}
  */
-
-Modules = ["modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/datahash.js"];
+// TODO: Add jsession.js once done
+Modules = ["modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/cache.js", "modules/datahash.js"];
 
 /**
  * If modules will get overwritten and re-downloaded every time the script reloads (useful for development)
  * @type {Boolean}
  */
-
 OverwriteModules = true;
 
 /**
  * Object which contains commands. Keep it empty!
  * @type {Object}
- * @namespace Object for commands
  */
-
 Commands = {};
 
 /**
  * PO sys object
  * @type {Object}
  */
-
 sys = sys || {};
 
 /**
  * Prints to the server console
  * @type {Function}
  */
-
 print = print || function (msg) {
     sys.sendAll(msg, 0);
 };
@@ -155,7 +170,6 @@ print = print || function (msg) {
  * @namespace
  * @type {Object}
  */
-
 handlers = {};
 
 /**
@@ -163,7 +177,6 @@ handlers = {};
  * @param {String} level Auth level for this handler
  * @return {Function} The handler
  */
-
 handlers.permissionHandler = function (level) {
     return function (src) {
         if (typeof sys == "undefined") {
@@ -182,7 +195,6 @@ handlers.permissionHandler = function (level) {
  * @param {String} category Auth level for this handler, as string
  * @return {Function|Number} A default handler, or -1 if the category doesn't have a default handler
  */
-
 handlers.defaultHandler = function (category) {
     if (category === "0") {
         return function () {
@@ -208,7 +220,6 @@ handlers.defaultHandler = function (category) {
  * @param {Array} [help=["", ""]] Help message for this command
  * @param {Boolean} [allowedWhenMuted=true] If this command can be used, even when muted
  */
-
 addCommand = function (name, handler, permissionHandler, category, help, allowedWhenMuted) {
     var cmd, hash;
 
@@ -272,7 +283,6 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
  * @param {Boolean} [NoCache=false] If the lazy module cache should be bypassed
  * @return {*} Result of include.get
  */
-
 include = function (FileName, GetMethod, NoCache) {
     var source = {}, code, module = {};
 
@@ -319,7 +329,6 @@ if (!include.modules) {
      * Contains all loaded modules
      * @type {Object}
      */
-
     include.modules = {};
 }
 
@@ -327,7 +336,6 @@ if (!include.modules) {
  * GetMethods for include.get
  * @type {Object}
  */
-
 include.GetMethod = {
     "Full": 0,
     "Source": 1,
@@ -342,7 +350,6 @@ include.GetMethod = {
  * @param {Number} Method A GetMethod. Default is include.GetMethod.Full
  * @return {*} Full module, source, hooks, name, or commands.
  */
-
 include.get = function (FileName, Method) {
     var query, methods;
 
@@ -376,7 +383,6 @@ include.get = function (FileName, Method) {
  * @param {Boolean} [ForceDownload=false] If the file will still get downloaded even when it already exists on disk
  * @return {String} Content of URL + Branch + / + FilePath
  */
-
 download = function (FileName, FilePath, ForceDownload) {
     var result;
 
@@ -395,7 +401,6 @@ download = function (FileName, FilePath, ForceDownload) {
  * @param {String} event Name of the event
  * @return {Array} Array of hooks with this name
  */
-
 getHooks = function (event) {
     var ret = [],
         x, current_mod, Modules = include.modules;
@@ -417,7 +422,6 @@ getHooks = function (event) {
  * @return {Boolean} If any of the called hooks want to stop the event
  * @example if (call("Example")) { sys.stopEvent(); }
  */
-
 call = function (hook_name, hook_args) {
     var args = [].slice.call(arguments),
         event = args.splice(0, 1)[0],

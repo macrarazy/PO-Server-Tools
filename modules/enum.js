@@ -1,19 +1,19 @@
+/*
+ Dependencies:
+ - modules/jsext.js
+ */
+
 /**
  * @fileOverview Enums for JavaScript
  * @author TheUnknownOne
  * @version 3.0.0 Devel
  */
 
-/*
-Dependencies:
-    - modules/jsext.js
- */
 /**
  * Creates an enum
  * @param {Enum|String|Array} [flags] Enum to copy flags from, a single flag, or an array of flags
  * @constructor
  */
-
 Enum = function (flags) {
     /**
      * To count flags

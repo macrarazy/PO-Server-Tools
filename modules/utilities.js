@@ -1,17 +1,18 @@
+/*
+ Dependencies:
+ - modules/jsext.js
+ - modules/datahash.js for better util.player.name lookup
+
+
+ Custom types used in JSDoc
+ - POPlayer: Id or name of a player
+ - POChannel: Id or name of a channel
+ */
+
 /**
  * @fileOverview Utilities file
  * @author TheUnknownOne
  * @version 3.0.0 Devel
- */
-
-/*
-Dependencies:
-    - modules/jsext.js
- */
-/*
- Custom types used in JSDoc
- - POPlayer: Id or name of a player
- - POChannel: Id or name of a channel
  */
 
 if (!Bot) {
@@ -99,30 +100,30 @@ util.player = {
     /**
      * Properly capitalizes a name or makes a name out of an Id
      * @param {POPlayer} user Player identifier
-     * @return {String} Name of the player, or an empty string
+     * @return {String|*} Name of the player, or (user) if the player doesn't exist
      */
     name: function (user) {
-        if (typeof user === "string") {
-            return sys.name(sys.id(user));
-        } else if (user != undefined) {
+        if (user !== undefined && typeof user === "string" || DataHash && DataHash.names && DataHash.names.has(user.toLowerCase())) {
+            return user.name();
+        } else if (typeof user === "number") {
             return sys.name(user);
         }
 
-        return "";
+        return user;
     },
     /**
      * Gets the id of a player. Throws the id back if the given number (id) is online, or -1 neither worked
      * @param {POPlayer} user Player identifier
-     * @return {Number} Id of the player or -1 if not online or no number given
+     * @return {Number|*} Id of the player, or (user) if the player isn't online
      */
     id: function (user) {
         if (typeof user === "string") {
-            return sys.id(user);
+            return sys.id(user) || user;
         } else if (sys.loggedIn(user)) {
             return user;
         }
 
-        return -1;
+        return user;
     },
     /**
      * Returns the color of a player
@@ -139,6 +140,14 @@ util.player = {
             return colorlist[src % colorlist.length];
         }
         return myColor;
+    },
+    /**
+     * Returns the IP of a player
+     * @param {POPlayer} player Player identifier
+     * @return {String|Undefined} The player's ip or undefined if they don't exist
+     */
+    ip: function (player) {
+        return sys.dbIp(util.player.name(player));
     }
 };
 
@@ -152,7 +161,7 @@ util.channel = {
     /**
      * Returns a channel's id
      * @param {POChannel} name Channel identifier
-     * @return {Number} The channel's id, or -1
+     * @return {Number} The channel's id, or -1 if the channel doesn't exist
      */
     id: function (name) {
         var id;
@@ -505,6 +514,42 @@ util.error = {
 };
 
 /**
+ * Message Utilities
+ * @namespace
+ * @type {Object}
+ */
+util.message = {
+    /**
+     * If a string has caps in it
+     * @param {String} char String to check
+     * @return {Boolean}
+     */
+    caps: function (char) {
+        return /[QWERTYUIOPASDFGHJKLZXCVBNM]/.test(char);
+    }
+};
+
+/**
+ * Cuts an array from (entry) and joins it
+ * @param {Array} array Array to cut
+ * @param {Number} entry Index of the value to cut from
+ * @param {String} [join=":"] String to use to join the array
+ * @return {String} Joined array starting from (entry)
+ */
+
+util.cut = function (array, entry, join) {
+    if (!join) {
+        join = ":";
+    }
+
+    if (!Array.isArray(array)) {
+        return array;
+    }
+
+    return [].concat(array).splice(entry).join(join);
+};
+
+/**
  * Object for timers
  * @type {Object}
  */
@@ -515,6 +560,9 @@ util.timers = {"sys": []};
  * @type {Object}
  */
 util.sandbox = {};
+
+/* Quick access to util.bot */
+bot = util.bot;
 
 ({
     /**
