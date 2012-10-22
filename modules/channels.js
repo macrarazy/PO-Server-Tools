@@ -22,48 +22,20 @@ Channels = [0, mafiachan, trivia, trivreview, watch, staffchannel, scriptchannel
 
 if (!cData) {
     cData = new (function () {
-        var file = "Channel Data.json";
-        createFile(file, "{}");
+        this.file = "ChannelData.json";
 
-        this.channelData = {};
+        /* Creates the file */
+        util.file.create(this.file, "{}");
 
-        if (sys.getFileContent(file) != "") {
-            try {
-                this.channelData = JSON.parse(sys.getFileContent(file));
-            }
-            catch (e) {
-                this.channelData = {};
-                this.save();
+        this.channelData = util.json.read(this.file);
 
-                if (!e.toString().contains("JSON")) {
-                    print(FormatError("Could not load " + file, e));
-                }
-            }
-        }
-
-        this.importValue = function (from, to, property_name, default_value) {
-            if (typeof from[property_name] == "undefined") {
-                to[property_name] = default_value;
-            } else {
-                to[property_name] = from[property_name];
-            }
-        }
-
-        this.importJSONValue = function (from, to, property_name) {
-            if (typeof from[property_name] == "undefined") {
+        this.importJSON = function (from, to, property_name) {
+            if (typeof from[property_name] === "undefined") {
                 to[property_name] = {};
             } else {
                 to[property_name] = JSON.parse(from[property_name]);
             }
-        }
-
-        this.exportValue = function (to, property, value) {
-            to[property] = value;
-        }
-
-        this.exportJSONValue = function (to, property, value) {
-            to[property] = JSON.stringify(value);
-        }
+        };
 
         this.loadDataForAll = function () {
             var cd = JSESSION.ChannelData,
@@ -72,210 +44,108 @@ if (!cData) {
             for (x in cd) {
                 this.loadDataFor(cd[x]);
             }
-        }
+        };
 
         this.loadDataFor = function (channel) {
-            if (JSESSION.channels(channel) == undefined || sys.channel(channel) == undefined) {
-                return "ERROR: No Channel";
-                /* No such channel. Probally called by /eval */
-            }
+            var chan = JSESSION.channels(channel),
+                data,
+                isPerm,
+                properties,
+                json_properties,
+                tour_properties,
+                x,
+                tour;
 
-            var cChan = JSESSION.ChannelData[channel];
-
-            if (typeof this.channelData[cChan.name] == "undefined") {
-                this.generateBasicData(cChan.name);
+            if (!chan) {
                 return;
             }
 
-            var cData = this.channelData[cChan.name],
-                isPerm = DefaultChannels.has(cChan.id) || cData.perm,
+            data = this.channelData[chan.name];
+
+            if (!data) {
+                return this.importFromChannel(chan.id);
+            }
+
+            isPerm = Channels.has(chan.id) || cData.perm,
                 properties = {
                     "creator": "~Unknown~",
-                    "topic": "Welcome to " + cChan.name + "!",
+                    "topic": "Welcome to " + chan.name + "!",
                     "topicsetter": "",
                     "perm": isPerm,
                     "private": false,
                     "defaultTopic": true,
                     "silence": 0,
-                    "toursEnabled": cData.toursEnabled,
+                    "toursEnabled": cData.toursEnabled
                 },
                 json_properties = ["chanAuth", "banlist", "mutelist", "tourAuth"],
                 tour_properties = {
                     "TourDisplay": 1,
                     "AutoStartBattles": false
-                },
-                x;
+                };
 
             for (x in properties) {
-                this.importValue(cData, cChan, x, properties[x]);
+                chan[x] = data[x] || properties[x];
             }
             for (x in json_properties) {
-                this.importJSONValue(cData, cChan, json_properties[x]);
+                this.importJSON(cData, chan, json_properties[x]);
             }
 
-            if (cChan.toursEnabled && cChan.tour == undefined) {
-                cChan.tour = new Tours(cChan.id);
-                var tour = cChan.tour;
+            if (Tours.channels.has(chan.id)) {
+                tour = Tours.channels[chan.id];
                 for (x in tour_properties) {
-                    this.importValue(cData, tour, x, tour_properties[x]);
+                    tour.setOption(x, tour_properties[x]);
                 }
             }
-        }
+        };
 
-        this.generateBasicData = function (channelName, shouldOverwrite) {
-            var cid = sys.channelId(channelName),
-                cData = this.channelData,
-                cChan = JSESSION.channels(cid);
+        this.importFromChannel = function (id, shouldOverwrite) {
+            var name = util.channel.name(id),
+                data = this.channelData,
+                chan = JSESSION.channels(cid),
+                hash = {},
+                props = [
+                    "creator", "topic", "topicsetter", "perm", "private", "defaultTopic", "silence", "banlist",
+                    "mutelist", "chanAuth", "tourAuth"
+                ],
+                x,
+                current;
 
-            if (cChan == undefined || sys.channel(cid) == undefined) {
+            if (!chan) {
                 return "ERROR: No Channel";
-                /* No such channel. Probally called by /eval */
             }
 
-            if (cData.has(channelName) && !shouldOverwrite) {
+            if (data.has(channelName) && !shouldOverwrite) {
                 return;
             }
 
-            var newHash = {};
+            for (x in props) {
+                current = props[x];
+                if (chan.has(current)) {
+                    hash[current] = chan[current];
+                }
+            }
 
-            newHash.chanAuth = "{}";
-            newHash.creator = cChan.creator;
-            newHash.topic = cChan.topic;
-            newHash.topicsetter = "";
-            newHash.perm = cChan.perm;
-            newHash.banlist = "{}";
-            newHash.mutelist = "{}";
-            newHash.private = false;
-            newHash.defaultTopic = true;
-            newHash.silence = 0;
-            newHash.TourDisplay = 1;
-            newHash.AutoStartBattles = false;
-            newHash.toursEnabled = DefaultChannels.has(cid);
-
-            cData[channelName] = newHash;
+            data[name] = hash;
 
             this.save();
-        }
+        };
 
-        this.changeChanAuth = function (chan, auth) {
-            var name = sys.channel(chan);
+        this.set = function (cid, name, value, noSave) {
+            var chan = this.channelData[util.channel.name(cid)];
 
-            if (!this.channelData.has(name)) {
-                this.generateBasicData(name);
+            if (!chan) {
+                return;
             }
 
-            this.exportJSONValue(this.channelData[name], "chanAuth", auth);
-            this.save();
-        }
+            chan[name] = value;
 
-        this.changeTourAuth = function (chan, auth) {
-            var name = sys.channel(chan);
-
-            if (!this.channelData.has(name)) {
-                this.generateBasicData(name);
-            }
-
-            this.exportJSONValue(this.channelData[name], "tourAuth", auth);
-            this.save();
-        }
-
-        this.changeTopic = function (chan, topic, topicsetter, defaultTopic) {
-            var name = sys.channel(chan);
-
-            if (!this.channelData.has(name)) {
-                this.generateBasicData(name);
-            }
-
-            var data = this.channelData[name],
-                properties = {
-                    "topic": topic,
-                    "topicsetter": topicsetter,
-                    "defaultTopic": defaultTopic
-                },
-                x;
-
-            for (x in properties) {
-                this.exportValue(data, x, properties[x]);
-            }
-
-            this.save();
-        }
-
-        this.changeStatus = function (chan, perm, private, silence) {
-            var name = sys.channel(chan);
-
-            if (!this.channelData.has(name)) {
-                this.generateBasicData(name);
-            }
-
-            var data = this.channelData[name],
-                properties = {
-                    "perm": perm,
-                    "private": private,
-                    "silence": silence
-                },
-                x;
-
-            for (x in properties) {
-                this.exportValue(data, x, properties[x]);
-            }
-
-            this.save();
-        }
-
-        this.changeBans = function (chan, mutes, bans) {
-            var name = sys.channel(chan);
-
-            if (!this.channelData.has(name)) {
-                this.generateBasicData(name);
-            }
-
-            var data = this.channelData[name],
-                properties = {
-                    "mutelist": mutes,
-                    "banlist": bans
-                },
-                x;
-
-            for (x in properties) {
-                this.exportJSONValue(data, x, properties[x]);
-            }
-
-            this.save();
-        }
-
-        this.changeToursEnabled = function (chan, enabled) {
-            var name = sys.channel(chan);
-
-            if (!this.channelData.has(name)) {
-                this.generateBasicData(name);
-            }
-
-            this.exportValue(this.channelData[name], "toursEnabled", enabled);
-            this.save();
-        }
-
-        this.changeTourOptions = function (chan, display, autostartbattles) {
-            var name = sys.channel(chan);
-
-            if (!this.channelData.has(name)) {
-                this.generateBasicData(name);
-            }
-
-            var data = this.channelData[name],
-                properties = {
-                    "TourDisplay": display,
-                    "AutoStartBattles": autostartbattles
-                },
-                x;
-
-            for (x in properties) {
-                this.exportValue(data, x, properties[x]);
+            if (!noSave) {
+                this.save();
             }
         };
 
         this.save = function () {
-            sys.writeToFile(file, JSON.stringify(this.channelData));
+            util.json.write(this.file, this.channelData);
         };
     })();
 }

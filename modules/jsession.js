@@ -429,15 +429,15 @@ POChannel = function (id) {
     this.creator = '';
     this.topic = 'Welcome to ' + this.name + '!';
     this.topicsetter = '';
-    this.toursEnabled = false;
 
     this.perm = false;
 
     // TODO: Add tours
-    if (Tours && Channels && Channels.has(id)) {
+    if (Channels && Channels.has(id)) {
         this.perm = true;
-        this.tour = Tours.add(this.id);
-        this.toursEnabled = true;
+        if (Tours) {
+            Tours.add(id);
+        }
     }
 
     this.private = false;
