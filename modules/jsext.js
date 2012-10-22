@@ -3,7 +3,6 @@
  - modules/datahash.js for String.prototype.name
  */
 
-
 /**
  * @fileOverview Extends default JavaScript prototypes
  * @author TheUnknownOne

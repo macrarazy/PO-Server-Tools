@@ -5,9 +5,9 @@
  */
 
 /*
-Dependencies:
-    - modules/jsext.js
-    - modules/utilities.js
+ Dependencies:
+ - modules/jsext.js
+ - modules/utilities.js
  */
 
 /**

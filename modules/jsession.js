@@ -1,12 +1,10 @@
 /*
-Dependencies:
-    - scripts.js
-    - modules/jsext.js
-    - modules/utilities.js
-    - modules/datahash.js
-    - modules/cdata.js
-    - modules/channels.js
-    - modules/tours.js
+ Dependencies:
+ - modules/jsext.js
+ - modules/utilities.js
+ - modules/datahash.js
+ + modules/channels.js
+ + modules/tours.js
  */
 
 /**
@@ -121,32 +119,54 @@ if (!JSESSION) {
             }
         };
 
+        /**
+         * Returns a user object
+         * @param {PID} id Player identifier
+         * @return {Undefined|Object} Undefined if no user function is registered or if the player doesn't exist, or their player object
+         */
         this.users = function (id) {
+            id = util.player.id(id);
+
             if (!this.UsesUser || !this.UserData.has(id)) {
-                return;
+                return undefined;
             }
 
             return this.UserData[id];
         };
 
+        /**
+         * Returns a channel object
+         * @param {CID} id Channel identifier
+         * @return {Undefined|Object} Undefined if no channel function is registered or if the channel doesn't exist, or its channel object
+         */
         this.channels = function (id) {
+            id = util.channel.id(id);
+
             if (!this.UsesChannel || !this.ChannelData.has(id)) {
-                return;
+                return undefined;
             }
 
             return this.ChannelData[id];
         };
 
+        /**
+         * Returns the global JSESSION object if a global function is registered
+         * @return {Undefined|Object} Undefined if no global function is registered, or the global JSESSION object
+         */
         this.global = function () {
             if (!this.UsesGlobal || !this.GlobalData) {
-                return;
+                return undefined;
             }
 
             return this.GlobalData;
         };
 
+        /**
+         * Sets the ScriptID, clearing all data if it isn't the same as the registered ScriptID, and refills
+         * @param {String} script String to identify the script as
+         */
         this.identifyScriptAs = function (script) {
-            if (this.ScriptID === undefined || this.ScriptID !== script) {
+            if (this.ScriptID !== script) {
                 this.clearAll();
             }
 
@@ -154,8 +174,12 @@ if (!JSESSION) {
             this.refill();
         };
 
+        /**
+         * Registers a user function
+         * @param {Function} func User function to register
+         */
         this.registerUser = function (func) {
-            if (typeof func !== "function") {
+            if (util.type(func) !== "function") {
                 return;
             }
 
@@ -163,8 +187,12 @@ if (!JSESSION) {
             this.UsesUser = true;
         };
 
+        /**
+         * Registers a channel function
+         * @param {Function} func Channel function to register
+         */
         this.registerChannel = function (func) {
-            if (typeof func !== "function") {
+            if (util.type(func) !== "function") {
                 return;
             }
 
@@ -172,8 +200,12 @@ if (!JSESSION) {
             this.UsesChannel = true;
         };
 
+        /**
+         * Registers a global function
+         * @param {Function} func Global function to register
+         */
         this.registerGlobal = function (func) {
-            if (typeof func !== "function") {
+            if (util.type(func) !== "function") {
                 return;
             }
 
@@ -182,25 +214,14 @@ if (!JSESSION) {
             this.GlobalData = new func();
         };
 
-        this.createChannel = function (id) {
-            if (!this.UsesChannel || !this.ChannelData.has(id) || !sys.channel(id)) {
-                return false;
-            }
-
-            this.ChannelData[id] = new this.ChannelFunc(id);
-            return true;
-        };
-
-        this.destroyChannel = function (id) {
-            if (!this.UsesChannel || id === 0 || !this.ChannelData.has(id)) {
-                return false;
-            }
-
-            delete this.ChannelData[id];
-            return true;
-        };
-
+        /**
+         * Creates a user object
+         * @param {PID} id Player identifier
+         * @return {Boolean}
+         */
         this.createUser = function (id) {
+            id = util.player.id(id);
+
             if (!this.UsesUser || this.UserData.has(id) || !sys.loggedIn(id)) {
                 return false;
             }
@@ -209,7 +230,14 @@ if (!JSESSION) {
             return true;
         };
 
-        this.destroyUser = function (id) {
+        /**
+         * Removes a user object
+         * @param {PID} id Player identifier
+         * @return {Boolean}
+         */
+        this.removeUser = function (id) {
+            id = util.player.id(id);
+
             if (!this.UsesUser || !this.UserData.has(id) || !sys.loggedIn(id)) {
                 return false;
             }
@@ -218,12 +246,54 @@ if (!JSESSION) {
             return true;
         };
 
-        this.hasUser = function (src) {
-            return this.UserData.has(src);
+        /**
+         * Creates a channel object
+         * @param {CID} id Channel identifier
+         * @return {Boolean}
+         */
+        this.createChannel = function (id) {
+            id = util.channel.id(id);
+
+            if (!this.UsesChannel || !this.ChannelData.has(id) || !sys.channel(id)) {
+                return false;
+            }
+
+            this.ChannelData[id] = new this.ChannelFunc(id);
+            return true;
         };
 
+        /**
+         * Removes a channel object
+         * @param {CID} id Channel identifier
+         * @return {Boolean}
+         */
+        this.removeChannel = function (id) {
+            id = util.channel.id(id);
+
+            if (!this.UsesChannel || id === 0 || !this.ChannelData.has(id)) {
+                return false;
+            }
+
+            delete this.ChannelData[id];
+            return true;
+        };
+
+        /**
+         * If there is user data for (src)
+         * @param {PID} src Player identifier
+         * @return {Boolean}
+         */
+        this.hasUser = function (src) {
+            return this.UserData.has(util.player.id(src));
+        };
+
+        /**
+         * If there is channel data for (channel)
+         * @param {CID} channel Channel identifier
+         * @return {Boolean}
+         */
         this.hasChannel = function (channel) {
-            return this.ChannelData.has(channel);
+            return this.ChannelData.has(util.channel.id(channel));
         };
 
         /**
@@ -257,53 +327,44 @@ if (!JSESSION) {
  * @constructor
  */
 POUser = function (id) {
-    var my_name = sys.name(id),
-        mn_lc,
-        date = sys.time() * 1, dh = DataHash, current;
+    var name,
+        nameToLower;
 
-    if (my_name === undefined) {
-        return;
-    }
+    id = util.player.id(id),
+        name = util.player.name(id),
+        nameToLower = name.toLowerCase();
 
-    mn_lc = my_name.toLowerCase();
+    this.ip = util.player.ip(id);
+    this.name = name;
 
     this.id = id;
-    this.impersonation = undefined;
-    this.ip = sys.ip(id);
-    this.name = my_name;
-    this.lowername = mn_lc;
-    this.lastMsg = 0;
-    this.loginTime = date;
     this.lastChallenge = 0;
     this.floodCount = 0;
     this.caps = 0;
     this.lastFuture = 0;
-    this.isAutoAFK = false;
     this.teamChanges = 0;
+
     this.macro = ["%m1", "%m2", "%m3", "%m4", "%m5"];
 
-    current = dh.mutes;
+    this.impersonation = undefined;
 
-    this.muted = current.has(this.ip);
+    this.isAutoAFK = false;
+    this.muted = DataHash.mutes.has(this.ip);
+    this.megauser = DataHash.megausers.has(nameToLower);
+    this.voice = DataHash.voices.has(nameToLower);
 
-    current = dh.megausers;
-
-    this.megauser = current.has(mn_lc);
-
-    current = dh.rankicons;
-
-    if (current.has(mn_lc)) {
-        this.icon = current[mn_lc]
+    if (DataHash.rankicons.has(nameToLower)) {
+        this.icon = DataHash.rankicons[mn_lc]
     }
 
-    current = dh.voices;
-    this.voice = i.has(mn_lc);
-
-    current = dh.macros;
-
-    if (current.has(mn_lc)) {
-        this.macro = current[mn_lc];
+    if (DataHash.macros.has(nameToLower)) {
+        this.macro = DataHash.macros[nameToLower];
     }
+
+    /*
+     Unused: this.lastMsg = 0;
+     Unused: this.loginTime = date;
+     */
 };
 
 POUser.prototype.addFlood = function () {
@@ -336,7 +397,8 @@ POUser.prototype.capsMute = function (message, channel) {
     if (this.caps >= 70) {
         // TODO: Update
         WatchPlayer(this.id, "CAPS Mute Message", message, channel);
-        bot.sendAll(util.player.player(this.id) + " was muted for 5 minutes for spamming caps!", channel);
+        bot.sendAll(util.player.player(this.id) + " was muted for 5 minutes by " + Bot.bot + ".", channel);
+        bot.sendAll("Reason: Spamming caps.", channel);
 
         DataHash.mutes[this.ip] = {
             by: Bot.bot,
@@ -364,8 +426,6 @@ POChannel = function (id) {
     this.name = sys.channel(id);
     this.id = id;
 
-    this.chanAuth = {};
-    this.tourAuth = {};
     this.creator = '';
     this.topic = 'Welcome to ' + this.name + '!';
     this.topicsetter = '';
@@ -374,10 +434,9 @@ POChannel = function (id) {
     this.perm = false;
 
     // TODO: Add tours
-    // TODO: Add DefaultChannels
-    if (typeof DefaultChannels != "undefined" && DefaultChannels.indexOf(id) != -1 || typeof DefaultChannels == "undefined") {
+    if (Tours && Channels && Channels.has(id)) {
         this.perm = true;
-        this.tour = new Tours(this.id);
+        this.tour = Tours.add(this.id);
         this.toursEnabled = true;
     }
 
@@ -387,7 +446,8 @@ POChannel = function (id) {
 
     this.banlist = {};
     this.mutelist = {};
-
+    this.chanAuth = {};
+    this.tourAuth = {};
 };
 
 POChannel.prototype.manageTourAuth = function (name, add) {
@@ -420,48 +480,48 @@ POChannel.prototype.manageTourAuth = function (name, add) {
 // TODO: Add this as command instead
 
 /*
-POChannel.prototype.changeTopic = function (src, topic, fullCommand) {
-    if (topic.isEmpty()) {
-        if (this.topic == '') {
-            botMessage(src, "There is no topic.", this.id);
-            return;
-        }
+ POChannel.prototype.changeTopic = function (src, topic, fullCommand) {
+ if (topic.isEmpty()) {
+ if (this.topic == '') {
+ botMessage(src, "There is no topic.", this.id);
+ return;
+ }
 
-        botEscapeMessage(src, "Topic: " + this.topic, this.id);
+ botEscapeMessage(src, "Topic: " + this.topic, this.id);
 
-        if (this.topicsetter != '') {
-            botEscapeMessage(src, "Set by: " + this.topicsetter, this.id)
-        }
+ if (this.topicsetter != '') {
+ botEscapeMessage(src, "Set by: " + this.topicsetter, this.id)
+ }
 
-        if (this.defaultTopic) {
-            botMessage(src, "This is a default topic.", this.id);
-        }
+ if (this.defaultTopic) {
+ botMessage(src, "This is a default topic.", this.id);
+ }
 
-        return;
-    }
+ return;
+ }
 
-    if (!this.isChanMod(src)) {
-        noPermissionMessage(src, fullCommand, this.id);
-        return;
-    }
+ if (!this.isChanMod(src)) {
+ noPermissionMessage(src, fullCommand, this.id);
+ return;
+ }
 
-    var me = sys.name(src),
-        mePlayer = player(me);
+ var me = sys.name(src),
+ mePlayer = player(me);
 
-    if (topic.toLowerCase() == "default") {
-        this.topic = "Welcome to " + this.name + "!";
-        this.defaultTopic = true;
-        this.topicsetter = '';
-    } else {
-        this.topic = topic;
-        this.topicsetter = me;
-        this.defaultTopic = false;
-    }
+ if (topic.toLowerCase() == "default") {
+ this.topic = "Welcome to " + this.name + "!";
+ this.defaultTopic = true;
+ this.topicsetter = '';
+ } else {
+ this.topic = topic;
+ this.topicsetter = me;
+ this.defaultTopic = false;
+ }
 
-    botAll("The topic was changed by " + mePlayer + " to: " + this.topic, this.id);
-    return;
-};
-*/
+ botAll("The topic was changed by " + mePlayer + " to: " + this.topic, this.id);
+ return;
+ };
+ */
 
 POChannel.prototype.changeAuth = function (name, auth) {
     name = util.player.name(name);

@@ -1,12 +1,7 @@
 /*
  Dependencies:
  - modules/jsext.js
- - modules/datahash.js for better util.player.name lookup
-
-
- Custom types used in JSDoc
- - POPlayer: Id or name of a player
- - POChannel: Id or name of a channel
+ + modules/datahash.js
  */
 
 /**
@@ -42,17 +37,17 @@ util = {};
 util.player = {
     /**
      * To check if a player's ip is the same as the given target's
-     * @param {Number} src Id of the player to check
-     * @param {String} tarName Name of another person to check
+     * @param {PID} src Player identifier
+     * @param {PID} tar Player identifier of player to check against
      * @return {Boolean} If the ip of src is the same of tarName
      * @example util.player.self(src, sys.name(src)); // true
      */
-    self: function (src, tarName) {
-        return sys.ip(src) === sys.dbIp(tarName);
+    self: function (src, tar) {
+        return util.player.ip(src) === util.player(tar);
     },
     /**
      * Returns the players "true" auth (Config.PlayerPermissions and maxAuth on ip calculated)
-     * @param {POPlayer} src Player identifier
+     * @param {PID} src Player identifier
      * @return {Number} Auth level
      */
     auth: function (src) {
@@ -82,7 +77,7 @@ util.player = {
     },
     /**
      * Checks if a player has permission to perform a specific action
-     * @param {POPlayer} src Player identifier
+     * @param {PID} src Player identifier
      * @param {Number} minAuth Minimum auth required to perform the action
      * @return {Boolean} If the player has permission to do the action
      */
@@ -91,7 +86,7 @@ util.player = {
     },
     /**
      * Formatted player name
-     * @param {POPlayer} user Player identifier
+     * @param {PID} user Player identifier
      * @return {String} Formatted name
      */
     player: function (user) {
@@ -99,7 +94,7 @@ util.player = {
     },
     /**
      * Properly capitalizes a name or makes a name out of an Id
-     * @param {POPlayer} user Player identifier
+     * @param {PID} user Player identifier
      * @return {String|*} Name of the player, or (user) if the player doesn't exist
      */
     name: function (user) {
@@ -113,7 +108,7 @@ util.player = {
     },
     /**
      * Gets the id of a player. Throws the id back if the given number (id) is online, or -1 neither worked
-     * @param {POPlayer} user Player identifier
+     * @param {PID} user Player identifier
      * @return {Number|*} Id of the player, or (user) if the player isn't online
      */
     id: function (user) {
@@ -127,7 +122,7 @@ util.player = {
     },
     /**
      * Returns the color of a player
-     * @param {POPlayer} user Player Identifier
+     * @param {PID} user Player Identifier
      * @return {String} The player's color
      */
     color: function (user) {
@@ -143,7 +138,7 @@ util.player = {
     },
     /**
      * Returns the IP of a player
-     * @param {POPlayer} player Player identifier
+     * @param {PID} player Player identifier
      * @return {String|Undefined} The player's ip or undefined if they don't exist
      */
     ip: function (player) {
@@ -160,7 +155,7 @@ util.player = {
 util.channel = {
     /**
      * Returns a channel's id
-     * @param {POChannel} name Channel identifier
+     * @param {CID} name Channel identifier
      * @return {Number} The channel's id, or -1 if the channel doesn't exist
      */
     id: function (name) {
@@ -177,6 +172,26 @@ util.channel = {
         }
 
         return -1;
+    },
+    /**
+     * Returns a channel's name
+     * @param {CID} id Channel identifier
+     * @return {String} The channel's name, or an empty string
+     */
+    name: function (id) {
+        return sys.channel(util.channel.id(id)) || "";
+    },
+    /**
+     * Creates a channel or returns its id
+     * @param {String} name Channel name
+     * @return {Number} Id of the channel
+     */
+    create: function (name) {
+        if (!sys.existChannel(name)) {
+            return sys.createChannel(name);
+        }
+
+        return util.channel.id(name);
     }
 };
 
@@ -188,7 +203,7 @@ util.channel = {
 util.mod = {
     /**
      * Bans a player, and kicks them
-     * @param {POPlayer} name Player identifier to ban
+     * @param {PID} name Player identifier to ban
      */
     ban: function (name) {
         var id;
@@ -207,17 +222,19 @@ util.mod = {
     },
     /**
      * Disconnects a player in 20 milliseconds
-     * @param {POPlayer} src Player identifier to disconnect
+     * @param {PID} src Player identifier to disconnect
      */
     disconnect: function (src) {
         sys.callQuickly("sys.disconnect(" + util.player.id(src) + ")", 20);
     },
     /**
      * Disconnects a player and their online alts in 20 milliseconds
-     * @param {Number|String} src Id or name of the player to disconnect
+     * @param {PID} src Player identifier to disconnect
      */
     disconnectAll: function (src) {
-        var x, id, ip = sys.ip(util.player.id(src)),
+        var x,
+            id,
+            ip = util.player.ip(src),
             pids = sys.playerIds();
 
         for (x in pids) {
@@ -229,17 +246,19 @@ util.mod = {
     },
     /**
      * Kicks a player in 20 milliseconds
-     * @param {POPlayer} src Player identifier to kick
+     * @param {PID} src Player identifier to kick
      */
     kick: function (src) {
         sys.callQuickly("sys.kick(" + util.player.id(src) + ");", 20);
     },
     /**
      * Kicks a player and their online alts in 20 milliseconds
-     * @param {POPlayer} src Player identifier to kick
+     * @param {PID} src Player identifier to kick
      */
     kickAll: function (src) {
-        var x, id, ip = sys.ip(util.player.id(src)),
+        var x,
+            id,
+            ip = sys.ip(util.player.ip(src)),
             pids = sys.playerIds();
 
         for (x in pids) {
@@ -255,7 +274,8 @@ util.mod = {
      */
     kickAliases: function (ip) {
         var aliases = sys.aliases(ip),
-            alias, id;
+            alias,
+            id;
 
         for (alias in aliases) {
             id = sys.id(aliases[alias]);
@@ -274,9 +294,9 @@ util.mod = {
 util.bot = {
     /**
      * Sends a message from the bot to src, in an optional channel
-     * @param {POPlayer} src Player identifier
+     * @param {PID} src Player identifier
      * @param {String} message Message to send to src
-     * @param {POChannel} [channel=all] Channel identifier
+     * @param {CID} [channel=all] Channel identifier
      */
     send: function (src, message, channel) {
         var color = Bot.color,
@@ -294,9 +314,9 @@ util.bot = {
     },
     /**
      * HTML-escaped message using JSEXT send to src
-     * @param {POPlayer} src Player identifier
+     * @param {PID} src Player identifier
      * @param {String} message Message to send to src
-     * @param {POChannel} [channel=all] Channel identifier
+     * @param {CID} [channel=all] Channel identifier
      */
     sendText: function (src, message, channel) {
         util.bot.send(src, message.escapeHtml(), channel);
@@ -304,7 +324,7 @@ util.bot = {
     /**
      * Sends a message to everyone on the server
      * @param {String} message Message to send
-     * @param {POChannel} [channel=all] Channel identifier
+     * @param {CID} [channel=all] Channel identifier
      */
     sendAll: function (message, channel) {
         var color = Bot.color,
@@ -322,14 +342,14 @@ util.bot = {
     /**
      * HTML-escaped message using JSEXT send to everyone
      * @param {String} message Message to send
-     * @param {POChannel} [channel=all] Channel identifier
+     * @param {CID} [channel=all] Channel identifier
      */
     sendAllText: function (message, channel) {
         util.sendAllText(message.escapeHtml(), channel);
     },
     /**
      * Sends an empty line (whitespace) to everyone
-     * @param {POChannel} [chan=all] Channel identifier
+     * @param {CID} [chan=all] Channel identifier
      */
     line: function (chan) {
         chan = util.channel.id(chan);
@@ -342,8 +362,8 @@ util.bot = {
     },
     /**
      * Sends an empty line (whitespace) to src
-     * @param {POPlayer} src Player identifier
-     * @param {POChannel} [chan=all] Channel identifier
+     * @param {PID} src Player identifier
+     * @param {CID} [chan=all] Channel identifier
      */
     lineTo: function (src, chan) {
         chan = util.channel.id(chan);
@@ -536,7 +556,6 @@ util.message = {
  * @param {String} [join=":"] String to use to join the array
  * @return {String} Joined array starting from (entry)
  */
-
 util.cut = function (array, entry, join) {
     if (!join) {
         join = ":";
@@ -547,6 +566,23 @@ util.cut = function (array, entry, join) {
     }
 
     return [].concat(array).splice(entry).join(join);
+};
+
+/**
+ * Returns the proper type of a variable
+ * @param {*} variable Variable to check
+ * @return {String} The variable's type
+ */
+util.type = function (variable) {
+    if (Array.isArray(variable)) {
+        return "array";
+    }
+
+    if (variable === null) {
+        return "null";
+    }
+
+    return typeof variable;
 };
 
 /**

@@ -23,12 +23,21 @@
 
  - All modules are available in modules/ -
 
-    - cache.js
-    - datahash.js
-    - enum.js
-    - jsession.js
-    - jsext.js
-    - utilities.js
+ - cache.js
+ - channels.js
+ - datahash.js
+ - enum.js
+ - jsession.js
+ - jsext.js
+ - utilities.js
+
+ ==== NOTES ====
+ - Dependencies with '*' in front of them are required at runtime -
+ - Dependencies with '+' in front of them are optional -
+
+ - Custom types used in JSDoc: -
+ - PID: Id or name of a player
+ - CID: Id or name of a channel
  */
 
 
@@ -136,7 +145,7 @@ BRANCH = "devel";
  * Modules to load
  * @type {Array}
  */
-// TODO: Add jsession.js once done
+// TODO: Add jsession.js and channels.js once done
 Modules = ["modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/cache.js", "modules/datahash.js"];
 
 /**
@@ -443,11 +452,14 @@ call = function (hook_name, hook_args) {
     return stop;
 };
 
-/* Downloads and loads all modules */
-for (var module in Modules) {
-    download(Modules[module], Modules[module], OverwriteModules);
-    include(Modules[module], null, OverwriteModules);
-}
+/* Downloads and loads all modules in an anonymous function */
+(function () {
+    var module;
+    for (module in Modules) {
+        download(Modules[module], Modules[module], OverwriteModules);
+        include(Modules[module], null, OverwriteModules);
+    }
+}());
 
 ({
 
