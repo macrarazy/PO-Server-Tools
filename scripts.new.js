@@ -462,5 +462,20 @@ call = function (hook_name, hook_args) {
 }());
 
 ({
-
+    /**
+     * When a channel is about to be deleted (stoppable)
+     * @param {Number} chan Channel id
+     */
+    beforeChannelDestroyed: function (chan) {
+        if (call("beforeChannelDestroyed", chan)) {
+            sys.stopEvent();
+        }
+    },
+    /**
+     * After a channel is destroyed
+     * @param {Number} chan Channel id
+     */
+    afterChannelDestroyed: function (chan) {
+        call("afterChannelDestroyed", chan);
+    }
 })

@@ -367,6 +367,9 @@ POUser = function (id) {
      */
 };
 
+/**
+ * Adds +1 flood count to this player if they are not auth
+ */
 POUser.prototype.addFlood = function () {
     if (util.player.auth(this.id) < 0) {
         this.floodCount++;
@@ -374,10 +377,19 @@ POUser.prototype.addFlood = function () {
     }
 };
 
+/**
+ * Attempts to mute a player for caps, if (message) has too many caps in it
+ * @param {String} message Message to check
+ * @param {CID} channel Channel identifier to send the caps mute message in
+ * @return {Boolean}
+ */
 POUser.prototype.capsMute = function (message, channel) {
     var newCapsAmount = 0,
         x, time = sys.time() * 1 + (60 * 5);
 
+    channel = util.channel.id(channel);
+
+    // TODO: Change this to a settings namespace?
     if (!AutoMute) {
         return false;
     }
@@ -393,6 +405,8 @@ POUser.prototype.capsMute = function (message, channel) {
             newCapsAmount = 0;
         }
     }
+
+    this.caps = newCapsAmount;
 
     if (this.caps >= 70) {
         // TODO: Update
@@ -469,12 +483,9 @@ POChannel.prototype.manageTourAuth = function (name, add) {
         delete this.tourAuth[toLower];
     }
 
-    // TODO: add cData or something
-    if (typeof cData == 'undefined') {
-        return;
+    if (cData) {
+        cData.set(this.id, "tourAuth", this.tourAuth);
     }
-
-    cData.changeTourAuth(this.id, this.tourAuth);
 };
 
 // TODO: Add this as command instead
@@ -528,10 +539,13 @@ POChannel.prototype.changeAuth = function (name, auth) {
 
     if (auth.isNegative() && this.chanAuth.has(name.toLowerCase())) {
         delete this.chanAuth[name];
-        return;
+    } else {
+    this.chanAuth[name] = auth;
     }
 
-    this.chanAuth[name] = auth;
+    if (cData) {
+        cData.set(this.id, "chanAuth", this.chanAuth);
+    }
 };
 
 POChannel.prototype.canIssue = function (src, tar) {
@@ -554,10 +568,20 @@ POChannel.prototype.canIssue = function (src, tar) {
     return true;
 };
 
+/**
+ * If an ip is banned in this channel
+ * @param {String} ip Ip to check
+ * @return {Boolean}
+ */
 POChannel.prototype.isBanned = function (ip) {
     return this.banlist.has(ip);
 };
 
+/**
+ * If an ip is muted in this channel
+ * @param {String} ip Ip to check
+ * @return {Boolean}
+ */
 POChannel.prototype.isMuted = function (ip) {
     return this.mutelist.has(ip);
 };
@@ -596,5 +620,17 @@ JSESSION.refill();
      */
     Name: function () {
         return "JavaScript SESSION";
+    },
+    /**
+     * Returns the hooks of this module
+     * @private
+     * @return {Object}
+     */
+    Hooks: function () {
+        return {
+            "afterChannelDestroyed": function (chan) {
+                JSESSION.removeChannel(chan);
+            }
+        };
     }
 })

@@ -2,6 +2,7 @@
  Dependencies:
  - modules/jsext.js
  + modules/datahash.js
+ + modules/channels.js (for util.watch)
  */
 
 /**
@@ -192,6 +193,16 @@ util.channel = {
         }
 
         return util.channel.id(name);
+    },
+    /**
+     * Returns a click-able link in the client to join (channel)
+     * @param {CID} channel Channel identifier
+     * @return {String}
+     */
+    link: function (channel) {
+        channel = util.channel.name(channel);
+
+        return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
     }
 };
 
@@ -296,7 +307,7 @@ util.bot = {
      * Sends a message from the bot to src, in an optional channel
      * @param {PID} src Player identifier
      * @param {String} message Message to send to src
-     * @param {CID} [channel=all] Channel identifier
+     * @param {CID} [channel] Channel identifier
      */
     send: function (src, message, channel) {
         var color = Bot.color,
@@ -316,7 +327,7 @@ util.bot = {
      * HTML-escaped message using JSEXT send to src
      * @param {PID} src Player identifier
      * @param {String} message Message to send to src
-     * @param {CID} [channel=all] Channel identifier
+     * @param {CID} [channel] Channel identifier
      */
     sendText: function (src, message, channel) {
         util.bot.send(src, message.escapeHtml(), channel);
@@ -324,7 +335,7 @@ util.bot = {
     /**
      * Sends a message to everyone on the server
      * @param {String} message Message to send
-     * @param {CID} [channel=all] Channel identifier
+     * @param {CID} [channel] Channel identifier
      */
     sendAll: function (message, channel) {
         var color = Bot.color,
@@ -342,14 +353,14 @@ util.bot = {
     /**
      * HTML-escaped message using JSEXT send to everyone
      * @param {String} message Message to send
-     * @param {CID} [channel=all] Channel identifier
+     * @param {CID} [channel] Channel identifier
      */
     sendAllText: function (message, channel) {
         util.sendAllText(message.escapeHtml(), channel);
     },
     /**
      * Sends an empty line (whitespace) to everyone
-     * @param {CID} [chan=all] Channel identifier
+     * @param {CID} [chan] Channel identifier
      */
     line: function (chan) {
         chan = util.channel.id(chan);
@@ -550,6 +561,49 @@ util.message = {
 };
 
 /**
+ * Logging Utilities
+ * @namespace
+ * @type {Object}
+ */
+util.watch = {
+    /**
+     * Logs a player's action to Watch (if it exists)
+     * @param {PID} player Player identifier
+     * @param {String} [message=""] Message to log
+     * @param {String} type Type of event
+     * @param {CID} [channel] Channel identifier
+     */
+    player: function (player, message, type, channel) {
+        var chan = util.channel.link(channel),
+            src = util.player.player(player);
+
+        if (chan !== "") {
+            chan = "[" + chan + "]";
+        }
+
+        if (message) {
+            message = ": " + message.escapeHtml();
+        } else {
+            message = "";
+        }
+
+        if (util.type(watch) === "number") {
+            sys.sendHtmlAll("<timestamp/><b>" + chan + "</b> <i>" + type + "</i> by " + src + message, watch);
+        }
+    },
+    /**
+     * Logs a channel's action to Watch (if it exists)
+     * @param {CID} channel Channel identifier
+     * @param {String} message Event to log
+     */
+    channel: function (channel, message) {
+        if (util.type(watch) === "number") {
+            sys.sendHtmlAll("<timestamp/><b>" + util.channel.name(channel) + "</b>: " + message, watch);
+        }
+    }
+};
+
+/**
  * Cuts an array from (entry) and joins it
  * @param {Array} array Array to cut
  * @param {Number} entry Index of the value to cut from
@@ -583,6 +637,14 @@ util.type = function (variable) {
     }
 
     return typeof variable;
+};
+
+/**
+ * An empty function
+ * @example (util.mod.kick || util.noop)(id);
+ */
+util.noop = function () {
+
 };
 
 /**

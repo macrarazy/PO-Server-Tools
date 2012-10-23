@@ -1,6 +1,6 @@
 /*
  Dependencies:
- - modules/datahash.js for String.prototype.name
+ - modules/datahash.js
  */
 
 /**

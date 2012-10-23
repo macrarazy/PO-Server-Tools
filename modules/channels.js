@@ -114,7 +114,7 @@ if (!cData) {
                 return "ERROR: No Channel";
             }
 
-            if (data.has(channelName) && !shouldOverwrite) {
+            if (data.has(name) && !shouldOverwrite) {
                 return;
             }
 
@@ -170,9 +170,8 @@ if (!cData) {
         }
     }
 
-    for (x in DefaultChannels) {
-        current = DefaultChannels[x];
-        cData.loadDataFor(current);
+    for (x in Channels) {
+        cData.loadDataFor(Channels[x]);
     }
 }());
 
@@ -184,5 +183,20 @@ if (!cData) {
      */
     Name: function () {
         return "Channel Data Manager";
+    },
+    /**
+     * Returns the hooks of this module
+     * @private
+     * @return {Object}
+     */
+    Hooks: function () {
+        return {
+            "beforeChannelDestroyed": function (chan) {
+                return Channels.has(chan) || JSESSION.channels(chan).perm;
+            },
+            "afterChannelDestroyed": function (chan) {
+                util.watch.channel(chan, "Destroyed");
+            }
+        };
     }
 })
