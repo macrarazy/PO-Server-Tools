@@ -69,19 +69,24 @@ Cache.prototype.save = function (key, value) {
  * Writes a key to the cache, and saves it
  * @param {*} key Name of the key
  * @param {*} value Value of the key
+ * @param {Boolean} [noSave=false] If saveAll won't be called
  */
-Cache.prototype.write = function (key, value) {
+Cache.prototype.write = function (key, value, noSave) {
     this.hash[key] = value;
-    this.saveAll();
+
+    if (!noSave) {
+        this.saveAll();
+    }
 };
 
 /**
  * Same as write(), but performs stringify on (value)
  * @param {*} key Name of the key
  * @param {Array|Object} value Value of the key
+ * @param {Boolean} [noSave=false] If saveAll won't be called
  */
-Cache.prototype.writeJSON = function (key, value) {
-    this.write(key, JSON.stringify(value));
+Cache.prototype.writeJSON = function (key, value, noSave) {
+    this.write(key, JSON.stringify(value), noSave);
 };
 
 /**
