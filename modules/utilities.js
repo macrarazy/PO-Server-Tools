@@ -203,6 +203,25 @@ util.channel = {
         channel = util.channel.name(channel);
 
         return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
+    },
+    /**
+     * Puts (src) in one or more channel(s)
+     * @param {PID} src Player identifier
+     * @param {CID|CIDArray} channel Channel identifier or an array of channel identifiers
+     */
+    putIn: function (src, channel) {
+        var x,
+            type = util.type(channel);
+
+        src = util.player.id(src);
+
+        if (type === "array") {
+            for (x in channel) {
+                sys.putInChannel(src, util.channel.id(channel[x]));
+            }
+        } else {
+            sys.putInChannel(util.channel.id(channel));
+        }
     }
 };
 
@@ -359,6 +378,36 @@ util.bot = {
         util.sendAllText(message.escapeHtml(), channel);
     },
     /**
+     * Sends a message to everyone except (src)
+     * @param {PID} src Player identifier
+     * @param message
+     * @param channel
+     * @param type
+     */
+    sendAllExcept: function (src, message, channel, type) {
+        var func,
+            pID,
+            pIDs = sys.playerIds(),
+            p;
+
+        src = util.player.id(src);
+
+        pIDs = pIDs.filter(function (id) {
+            return id !== src;
+        });
+
+        if (type === 1) { // escapeHtml
+            func = util.bot.sendAllText;
+        } else {
+            func = util.bot.sendAll;
+        }
+
+        for (pID in pIDs) {
+            p = pIDs[pID];
+            func(p, message, channel);
+        }
+    },
+    /**
      * Sends an empty line (whitespace) to everyone
      * @param {CID} [chan] Channel identifier
      */
@@ -377,6 +426,7 @@ util.bot = {
      * @param {CID} [chan=all] Channel identifier
      */
     lineTo: function (src, chan) {
+        src = util.player.id(src);
         chan = util.channel.id(chan);
 
         if (chan !== -1) {
@@ -557,6 +607,29 @@ util.message = {
      */
     caps: function (char) {
         return /[QWERTYUIOPASDFGHJKLZXCVBNM]/.test(char);
+    },
+    /**
+     * Sends the stfu truck to (src)
+     * @param {PID} src Player identifier
+     * @param {CID} [chan] Channel identifier
+     */
+    stfuTruck: function (src, chan) {
+        bot.send(src, '|^^^^^^^^^^^\||____', chan);
+        // TODO: "The STFU Truck" to lang specific
+        bot.send(src, '| The STFU Truck  |||""\'|""\__,_', chan);
+        bot.send(src, '| _____________ l||__|__|__|)', chan);
+        bot.send(src, '...|(@)@)"""""""**|(@)(@)**|(@)', chan);
+    },
+    /**
+     * Sends the fail whale to (id)
+     * @param {PID} id Player identifier
+     * @param {CID} [chan] Channel identifier
+     */
+    failWhale: function (id, chan) {
+        bot.send(id, "▄██████████████▄▐█▄▄▄▄█▌", chan);
+        bot.send(id, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
+        bot.send(id, "████▄█▌▄▌▄▐▐▌▀███▄▄█▌", chan);
+        bot.send(id, "▄▄▄▄▄██████████████▀", chan);
     }
 };
 
@@ -588,7 +661,7 @@ util.watch = {
         }
 
         if (util.type(watch) === "number") {
-            sys.sendHtmlAll("<timestamp/><b>" + chan + "</b> <i>" + type + "</i> by " + src + message, watch);
+            sys.sendHtmlAll("<timestamp/><b>" + chan + "</b> <i>" + type + "</i> (" + src + ")" + message, watch);
         }
     },
     /**

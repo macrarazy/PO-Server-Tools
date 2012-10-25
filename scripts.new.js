@@ -145,7 +145,7 @@ BRANCH = "devel";
  * Modules to load
  * @type {Array}
  */
-// TODO: Add jsession.js and channels.js once done
+// TODO: Add jsession.js, users.js, and channels.js once done
 Modules = ["modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/cache.js", "modules/datahash.js"];
 
 /**

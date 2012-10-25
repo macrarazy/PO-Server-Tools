@@ -26,18 +26,23 @@ if (!util.datahash) {
         write: function (cacheInst, name) {
             cacheInst.writeJSON(name, DataHash[name]);
         },
-        //TODO:JSDOC update
         /**
          * Resolves a player's hostname and country
-         * @param src
-         * @param ip
-         * @param sync
+         * @param {PID} [src] Player identifier
+         * @param {String} [ip] Player IP. Required if (src) isn't passed/doesn't exist/isn't online
+         * @param {Boolean} [sync=false] If the webCall is synchronous
          */
         resolveLocation: function (src, ip, sync) {
             var loc = DataHash.locations,
                 url = "http://ip2country.sourceforge.net/ip2c.php?ip=" + ip,
                 code,
                 json_code;
+
+            src = util.player.id(src);
+
+            if (!ip && src) {
+                ip = util.player.ip(src);
+            }
 
             if (!loc.has(ip)) {
                 loc[ip] = {
@@ -56,9 +61,8 @@ if (!util.datahash) {
 
                         if (sys.loggedIn(src)) {
                             if (code.country_name === "Anonymous Proxy") {
-                                //TODO: add util.message.failWhale and util.message.stfuTruck
                                 util.message.failWhale(src, 0);
-                                bot.sendMessage(src, "Remove the proxy to enter the server.");
+                                bot.send(src, "Remove the proxy to enter the server.");
                                 bot.sendAll(util.player.player(src) + " tried to use a proxy.", watch);
                                 util.mod.kickAll(src);
                             }
@@ -71,11 +75,11 @@ if (!util.datahash) {
                     loc[ip] = code;
                     util.datahash.write("locations");
 
-                    if (sys.loggedIn(src)) {
+                    if (sys.loggedIn(src) && util.player.auth(src) < 1) {
                         if (code.country_name === "Anonymous Proxy") {
                             util.message.failWhale(src, 0);
-                            bot.sendMessage(src, "Remove the proxy to enter the server.");
-                            bot.sendAll(util.player.player(src) + " tried to use a proxy.", watch);
+                            bot.send(src, "Remove your proxy to enter the server.");
+                            util.watch.player(src, "", "kicked for using a proxy");
                             util.mod.kickAll(src);
                         }
                     }

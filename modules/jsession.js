@@ -13,8 +13,6 @@
  * @version 3.0.0 Devel
  */
 
-// TODO: Add JSDOC
-
 if (!JSESSION) {
     /**
      * JSESSION
@@ -381,7 +379,7 @@ POUser.prototype.addFlood = function () {
  * Attempts to mute a player for caps, if (message) has too many caps in it
  * @param {String} message Message to check
  * @param {CID} channel Channel identifier to send the caps mute message in
- * @return {Boolean}
+ * @return {Boolean} If the player was CAPS muted
  */
 POUser.prototype.capsMute = function (message, channel) {
     var newCapsAmount = 0,
@@ -389,8 +387,8 @@ POUser.prototype.capsMute = function (message, channel) {
 
     channel = util.channel.id(channel);
 
-    // TODO: Change this to a settings namespace?
-    if (!AutoMute) {
+    // TODO: Implement settings namespace (settings will be options which can be changed by command)
+    if (!Settings.AutoMute) {
         return false;
     }
 
@@ -409,8 +407,7 @@ POUser.prototype.capsMute = function (message, channel) {
     this.caps = newCapsAmount;
 
     if (this.caps >= 70) {
-        // TODO: Update
-        WatchPlayer(this.id, "CAPS Mute Message", message, channel);
+        util.watch.player(this.id, message, "CAPS Mute Message", channel);
         bot.sendAll(util.player.player(this.id) + " was muted for 5 minutes by " + Bot.bot + ".", channel);
         bot.sendAll("Reason: Spamming caps.", channel);
 
@@ -446,12 +443,13 @@ POChannel = function (id) {
 
     this.perm = false;
 
-    // TODO: Add tours
     if (Channels && Channels.has(id)) {
         this.perm = true;
-        if (Tours) {
-            Tours.add(id);
-        }
+    }
+
+    // TODO: Add tours
+    if (Tours && !Tours.channels.has(id)) {
+        Tours.add(id);
     }
 
     this.private = false;
@@ -464,6 +462,11 @@ POChannel = function (id) {
     this.tourAuth = {};
 };
 
+/**
+ * Managesa player's channel tour auth
+ * @param {PID} name Player identifier
+ * @param {Boolean} [add=false] If tourAuth will be given, or taken
+ */
 POChannel.prototype.manageTourAuth = function (name, add) {
     var toLower = util.player.name(name).toLowerCase();
 
@@ -534,13 +537,18 @@ POChannel.prototype.manageTourAuth = function (name, add) {
  };
  */
 
+/**
+ * Changes a player's channel auth.
+ * @param {PID} name Player identifier
+ * @param {Number} auth The auth level to give
+ */
 POChannel.prototype.changeAuth = function (name, auth) {
     name = util.player.name(name);
 
     if (auth.isNegative() && this.chanAuth.has(name.toLowerCase())) {
         delete this.chanAuth[name];
     } else {
-    this.chanAuth[name] = auth;
+        this.chanAuth[name] = auth;
     }
 
     if (cData) {
@@ -548,6 +556,12 @@ POChannel.prototype.changeAuth = function (name, auth) {
     }
 };
 
+/**
+ * If a player can issue a channel mute or ban to someone else
+ * @param {PID} src Player identifier of the issuer
+ * @param {PID} tar Player identifier of the target
+ * @return {Boolean} If (src) can channel ban/mute (tar)
+ */
 POChannel.prototype.canIssue = function (src, tar) {
     var self, target;
 
@@ -586,14 +600,29 @@ POChannel.prototype.isMuted = function (ip) {
     return this.mutelist.has(ip);
 };
 
+/**
+ * If a player is a channel moderator
+ * @param {PID} src Player identifier
+ * @return {Boolean}
+ */
 POChannel.prototype.isChanMod = function (src) {
     return this.chanAuth[util.player.name(src)] >= 1 || util.player.auth(src) >= 1;
 };
 
+/**
+ * If a player is a channel administrator
+ * @param {PID} src Player identifier
+ * @return {Boolean}
+ */
 POChannel.prototype.isChanAdmin = function (src) {
     return this.chanAuth[util.player.name(src)] >= 2 || util.player.auth(src) >= 2;
 };
 
+/**
+ * If a player is a channel owner
+ * @param {PID} src Player identifier
+ * @return {Boolean}
+ */
 POChannel.prototype.isChanOwner = function (src) {
     return this.chanAuth[util.player.name(src)] >= 3 || util.player.auth(src) >= 3;
 };
