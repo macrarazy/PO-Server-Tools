@@ -10886,69 +10886,69 @@ if(message == "Maximum Players Changed.") {
             return ret;
         }
 
-        format = function (src, str) {
-            if (typeof str != "string") {
-                str = String(str);
-            }
+            format = function (src, str) {
+                if (typeof str != "string") {
+                    str = String(str);
+                }
 
-            var auth = hpAuth(src);
-            GlobalHostVar = isHost(src);
+                var auth = hpAuth(src);
+                GlobalHostVar = isHost(src);
 
-            if (src == "lvl0") {
-                auth = 0;
-                GlobalHostVar = false;
-            }
+                if (src == "lvl0") {
+                    auth = 0;
+                    GlobalHostVar = false;
+                }
 
-            if (src == "lvl2") {
-                auth = 2;
-                GlobalHostVar = false;
-            }
+                if (src == "lvl2") {
+                    auth = 2;
+                    GlobalHostVar = false;
+                }
 
-            if (src == 0) {
-                auth = 3;
-                GlobalHostVar = true;
-            }
-
-            if (typeof src == 'number' && sys.loggedIn(src)) {
-                var srcName = sys.name(src).toLowerCase();
-                if (DataHash.evalops.has(srcName)) {
+                if (src == 0) {
+                    auth = 3;
                     GlobalHostVar = true;
                 }
-            }
 
-            if (auth > 2 || GlobalHostVar) { // Format this first for other bbcodes.
-                str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
-            }
+                if (typeof src == 'number' && sys.loggedIn(src)) {
+                    var srcName = sys.name(src).toLowerCase();
+                    if (DataHash.evalops.has(srcName)) {
+                        GlobalHostVar = true;
+                    }
+                }
 
-            str.linkify();
+                if (auth > 2 || GlobalHostVar) { // Format this first for other bbcodes.
+                    str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
+                }
 
-            str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
-            str = str.replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>');
-            str = str.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
-            str = str.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
-            str = str.replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>');
-            str = str.replace(/\[sup\](.*?)\[\/sup\]/gi, '<sup>$1</sup>');
-            str = str.replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>');
-            str = str.replace(/\[code\](.*?)\[\/code\]/gi, '<code>$1</code>');
-            str = str.replace(/\[servername\]/gi, servername.bold());
-            str = str.replace(/\[spoiler\](.*?)\[\/spoiler\]/gi, '<a style="color: black; background-color:black;">$1</a>');
-            str = str.replace(/\[time\]/gi, "<timestamp/>");
-            str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, '<font color=$1>$2</font>')
-            str = str.replace(/\[face=(.*?)\](.*?)\[\/face\]/gi, '<font face=$1>$2</font>');
-            str = str.replace(/\[font=(.*?)\](.*?)\[\/font\]/gi, '<font face=$1>$2</font>');
+                str.linkify();
 
-            if (auth > 0) {
-                str = str.replace(/\[size=([0-9]{1,})\](.*?)\[\/size\]/gi, '<font size=$1>$2</font>');
-                str = str.replace(/\[pre\](.*?)\[\/pre\]/gi, '<pre>$1</pre>');
-                str = str.replace(/\[ping\]/gi, "<ping/>");
-                str = str.replace(/\[br\]/gi, "<br/>");
-                str = str.replace(/\[hr\]/gi, "<hr/>");
-            }
+                str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
+                str = str.replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>');
+                str = str.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
+                str = str.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
+                str = str.replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>');
+                str = str.replace(/\[sup\](.*?)\[\/sup\]/gi, '<sup>$1</sup>');
+                str = str.replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>');
+                str = str.replace(/\[code\](.*?)\[\/code\]/gi, '<code>$1</code>');
+                str = str.replace(/\[servername\]/gi, servername.bold());
+                str = str.replace(/\[spoiler\](.*?)\[\/spoiler\]/gi, '<a style="color: black; background-color:black;">$1</a>');
+                str = str.replace(/\[time\]/gi, "<timestamp/>");
+                str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, '<font color=$1>$2</font>')
+                str = str.replace(/\[face=(.*?)\](.*?)\[\/face\]/gi, '<font face=$1>$2</font>');
+                str = str.replace(/\[font=(.*?)\](.*?)\[\/font\]/gi, '<font face=$1>$2</font>');
 
-            str = addChannelLinks(str); // do this late for other bbcodes to work properly
-            delete GlobalHostVar;
+                if (auth > 0) {
+                    str = str.replace(/\[size=([0-9]{1,})\](.*?)\[\/size\]/gi, '<font size=$1>$2</font>');
+                    str = str.replace(/\[pre\](.*?)\[\/pre\]/gi, '<pre>$1</pre>');
+                    str = str.replace(/\[ping\]/gi, "<ping/>");
+                    str = str.replace(/\[br\]/gi, "<br/>");
+                    str = str.replace(/\[hr\]/gi, "<hr/>");
+                }
 
-            return str;
+                str = addChannelLinks(str); // do this late for other bbcodes to work properly
+                delete GlobalHostVar;
+
+                return str;
         }
 
         hpAuth = function (src) {

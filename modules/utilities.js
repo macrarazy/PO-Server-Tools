@@ -2,7 +2,7 @@
  Dependencies:
  - modules/jsext.js
  + modules/datahash.js
- + modules/channels.js (for util.watch)
+ + modules/channels.js
  */
 
 /**
@@ -630,6 +630,106 @@ util.message = {
         bot.send(id, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
         bot.send(id, "████▄█▌▄▌▄▐▐▌▀███▄▄█▌", chan);
         bot.send(id, "▄▄▄▄▄██████████████▀", chan);
+    },
+
+    /*
+     function clink($1) {
+     return ChannelLink(sys.channel($1));
+     }
+
+
+     */
+    format: function (str, authLvl) {
+        var auth = authLvl,
+            isHost = authLvl === -1,
+            name,
+            urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
+            pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
+            emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
+            poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+
+        if (authLvl === -1) {
+            auth = 3;
+        }
+
+        str = String(str);
+
+        if (typeof authLvl == 'number' && sys.loggedIn(authLvl)) {
+            name = sys.name(authLvl).toLowerCase();
+
+            isHost = util.player.host(authLvl);
+
+            if (DataHash && DataHash.evalops && DataHash.evalops.has(name)) {
+                isHost = true;
+            }
+
+            auth = util.player.auth(authLvl);
+        }
+
+        if (auth > 2 || isHost) { /* Format this first for other bbcodes. */
+            str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, function ($1) {
+                var toEval,
+                    ret;
+
+                // TODO: Add EvalEnabled as command
+                if (!Settings.EvalEnabled && !isHost) {
+                    return $1;
+                }
+
+                toEval = $1.substr(6, $1.lastIndexOf("[") - 6);
+
+                try {
+                    ret = eval(toEval);
+                }
+                catch (e) {
+                    return util.error.format("", e);
+                }
+
+                if (ret == undefined) {
+                    ret = "(Nothing was returned)";
+                }
+
+                return ret;
+            });
+        }
+
+        str = str.replace(urlPattern, '<a target="_blank" href="$&">$&</a>')
+            .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
+            .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>')
+            .replace(poPattern, function ($) {
+            var type = $.substring($.indexOf(":", $.indexOf("/"))),
+                thing = $.substring($.indexOf("/"));
+
+            type = type[0].toUpperCase() + type.substring(1);
+
+            return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
+        });
+
+        // TODO: Reminder to remove [servername] as bbcode
+        str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
+            .replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>')
+            .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
+            .replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>')
+            .replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>')
+            .replace(/\[sup\](.*?)\[\/sup\]/gi, '<sup>$1</sup>')
+            .replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>')
+            .replace(/\[code\](.*?)\[\/code\]/gi, '<code>$1</code>')
+            .replace(/\[spoiler\](.*?)\[\/spoiler\]/gi, '<a style="color: black; background-color:black;">$1</a>')
+            .replace(/\[time\]/gi, "<timestamp/>")
+            .replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, '<font color=$1>$2</font>')
+            .replace(/\[face=(.*?)\](.*?)\[\/face\]/gi, '<font face=$1>$2</font>')
+            .replace(/\[font=(.*?)\](.*?)\[\/font\]/gi, '<font face=$1>$2</font>');
+
+        if (auth > 0) {
+            str = str.replace(/\[size=([0-9]{1,})\](.*?)\[\/size\]/gi, '<font size=$1>$2</font>')
+                .replace(/\[pre\](.*?)\[\/pre\]/gi, '<pre>$1</pre>')
+                .replace(/\[ping\]/gi, "<ping/>")
+                .replace(/\[br\]/gi, "<br/>")
+                .replace(/\[hr\]/gi, "<hr/>");
+        }
+
+        // TODO: util.message.addchannelLinks
+        return util.message.addChannelLinks(str); /* Do this last for other BBcodes to work */
     }
 };
 
@@ -674,6 +774,15 @@ util.watch = {
             sys.sendHtmlAll("<timestamp/><b>" + util.channel.name(channel) + "</b>: " + message, watch);
         }
     }
+};
+
+/**
+ * Time Utilities
+ * @type {Object}
+ */
+// TODO: Work on these
+util.time = {
+
 };
 
 /**
@@ -743,5 +852,17 @@ bot = util.bot;
      */
     Name: function () {
         return "Utilities";
+    },
+    /**
+     * Returns the hooks of this module
+     * @private
+     * @return {Object}
+     */
+    Hooks: function () {
+        return {
+            "serverStartUp": function () {
+                util.time.startup = sys.time() * 1;
+            }
+        };
     }
 })

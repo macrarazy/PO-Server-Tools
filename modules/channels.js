@@ -3,6 +3,7 @@
  * modules/jsext.js
  * modules/utilities.js
  - modules/jsession.js
+ - modules/datahash.js
  */
 
 /**
@@ -196,6 +197,31 @@ if (!cData) {
             },
             "afterChannelDestroyed": function (chan) {
                 util.watch.channel(chan, "Destroyed");
+            },
+            "afterLogIn": function (src) {
+                var channels,
+                    auth = util.player.auth(src);
+
+                if (Config.AutoChannelJoin) {
+                    channels = [mafiachan, trivia];
+
+                    if (auth > 0 || JSESSION.channels(watch).isChanMod(src)) {
+                        channels.push(watch);
+                    }
+
+                    if (JSESSION.users(src).megauser || auth > 0 || JSESSION.channels(staffchannel).isChanMod(src)) {
+                        channels.push(staffchannel);
+                    }
+
+                    if (auth > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
+                        channels.push(scriptchannel);
+                    }
+                    if (auth > 1 || JSESSION.channels(trivreview).isChanMod(src)) {
+                        channels.push(trivreview);
+                    }
+
+                    util.channel.putIn(src, channels);
+                }
             }
         };
     }

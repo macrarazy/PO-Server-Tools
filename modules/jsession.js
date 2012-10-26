@@ -387,7 +387,7 @@ POUser.prototype.capsMute = function (message, channel) {
 
     channel = util.channel.id(channel);
 
-    // TODO: Implement settings namespace (settings will be options which can be changed by command)
+    // TODO: AutoMute command
     if (!Settings.AutoMute) {
         return false;
     }

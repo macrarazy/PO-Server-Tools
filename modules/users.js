@@ -4,6 +4,7 @@
  - modules/utilities.js
  - modules/datahash.js
  - modules/jsession.js
+ + modules/tours.js
  */
 
 /**
@@ -93,7 +94,7 @@ if (!util.user) {
                 bot.send(src, "Welcome, " + player + "!", 0);
                 bot.send(src, "Type in <b><font color='green'>/Commands</font></b> to see the commands and <b><font color='green'>/Rules</font></b> to see the rules.", 0);
 
-                // TODO: Add these
+                // TODO: Add util.time.startUpTime()
                 if (util.type(util.time.startup) === "number") {
                     bot.send(src, "The server has been up for " + util.time.startUpTime() + "</b>.", 0);
                 }
@@ -113,41 +114,18 @@ if (!util.user) {
                 }
 
                 // TODO: Add Tours.notification
-                Tours.notification(src, 0);
+                if (Tours) {
+                    Tours.notification(src, 0);
+                }
 
                 sys.sendMessage(src, "", 0);
 
-                if (Config.AutoChannelJoin && mafia && trivia && watch && staffchannel && scriptchannel && trivreview) {
-                    channels = [mafiachan, trivia];
-
-                    if (auth > 0 || JSESSION.channels(watch).isChanMod(src)) {
-                        channels.push(watch);
-                    }
-
-                    if (JSESSION.users(src).megauser || auth > 0 || JSESSION.channels(staffchannel).isChanMod(src)) {
-                        channels.push(staffchannel);
-                    }
-
-                    if (auth > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
-                        channels.push(scriptchannel);
-                    }
-                    if (auth > 1 || JSESSION.channels(trivreview).isChanMod(src)) {
-                        channels.push(trivreview);
-                    }
-
-                    util.channel.putIn(src, channels);
-                }
-
                 if (idles.has(name)) {
                     if (idles[name].entry) {
-                        // TODO: Add util.message.format
                         bot.sendAll(util.message.format(idles[name].entry, 2), 0);
                     }
                     sys.changeAway(src, true);
                 }
-
-                // TODO: Add ify as hook
-                //ify.afterLogIn(src);
 
                 // TODO: Add afterChangeTeam hooks that have from:afterLogIn param
                 call("afterChangeTeam", src, true);

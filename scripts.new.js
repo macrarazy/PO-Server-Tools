@@ -146,7 +146,10 @@ BRANCH = "devel";
  * @type {Array}
  */
 // TODO: Add jsession.js, users.js, and channels.js once done
-Modules = ["modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/cache.js", "modules/datahash.js"];
+Modules = [
+    "modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/cache.js", "modules/datahash.js",
+    "modules/ify.js"
+];
 
 /**
  * If modules will get overwritten and re-downloaded every time the script reloads (useful for development)
@@ -155,10 +158,16 @@ Modules = ["modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modul
 OverwriteModules = true;
 
 /**
- * Object which contains commands. Keep it empty!
+ * Contains commands
  * @type {Object}
  */
 Commands = {};
+
+/**
+ * Contains command-defined settings
+ * @type {Object}
+ */
+Settings = {};
 
 /**
  * PO sys object
@@ -281,7 +290,7 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
         "allowedWhenMuted": allowedWhenMuted
     };
 
-    Commands[name] = this.commands[name] = hash;
+    Commands[name] = hash;
 };
 
 /**
@@ -293,7 +302,10 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
  * @return {*} Result of include.get
  */
 include = function (FileName, GetMethod, NoCache) {
-    var source = {}, code, module = {};
+    var source = {},
+        code,
+        module = {},
+        x;
 
     if (include.modules[FileName] && !NoCache) {
         return include.get(FileName, GetMethod);
@@ -324,6 +336,10 @@ include = function (FileName, GetMethod, NoCache) {
 
     if (source.Commands) {
         module.commands = source.Commands();
+
+        for (x in module.commands) {
+            addCommand(module.commands[x]);
+        }
     }
 
     module.source = source;
@@ -463,6 +479,18 @@ call = function (hook_name, hook_args) {
 
 ({
     /**
+     * When the server starts up
+     */
+    serverStartUp: function () {
+        call("serverStartUp");
+    },
+    /**
+     * When the server shuts down
+     */
+    serverShutDown: function () {
+        call("serverShutDown");
+    },
+    /**
      * When a channel is about to be deleted (stoppable)
      * @param {Number} chan Channel id
      */
@@ -477,5 +505,28 @@ call = function (hook_name, hook_args) {
      */
     afterChannelDestroyed: function (chan) {
         call("afterChannelDestroyed", chan);
+    },
+    /**
+     * When a player logs in (stoppable)
+     * @param {Number} src Player id
+     */
+    beforeLogIn: function (src) {
+        if (call("beforeLogIn", src)) {
+            sys.stopEvent();
+        }
+    },
+    /**
+     * After a player logs in
+     * @param {Number} src Player id
+     */
+    afterLogIn: function (src) {
+        call("afterLogIn", src);
+    },
+    /**
+     * After a player changed team
+     * @param {Number} src Player id
+     */
+    afterChangeTeam: function (src) {
+        call("afterChangeTeam", src);
     }
 })
