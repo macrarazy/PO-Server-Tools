@@ -312,7 +312,7 @@ function POUser(id) {
     this.isAutoAFK = false;
     this.teamChanges = 0;
 
-    if (typeof DataHash == "undefined") { /* Shouldn't matter. */
+    if (typeof DataHash == "undefined" || typeof DataHash.voices === "undefined") { /* Shouldn't matter. */
         return;
     }
 
