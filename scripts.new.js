@@ -27,8 +27,10 @@
  - channels.js
  - datahash.js
  - enum.js
+ - ify.js
  - jsession.js
  - jsext.js
+ - users.js
  - utilities.js
 
  ==== NOTES ====
@@ -38,6 +40,8 @@
  - Custom types used in JSDoc: -
  - PID: Id or name of a player
  - CID: Id or name of a channel
+ - PIDArray: Array of PIDs
+ - CIDArray: Array of CIDs
  */
 
 
@@ -483,12 +487,42 @@ call = function (hook_name, hook_args) {
      */
     serverStartUp: function () {
         call("serverStartUp");
+        call("beforeNewMessage", "Script Check: OK");
+        call("afterNewMessage", "Script Check: OK");
+
+        if (sys.getFileContent("server.lck") === "") {
+            Config.NoCrash = true;
+            sys.writeToFile("server.crashed", "Delete this file to turn automatic Config.NoCrash off.");
+        } else if (sys.getFileContent("server.crashed") !== undefined) {
+            Config.NoCrash = true;
+        }
+
+        sys.updateDatabase();
     },
     /**
      * When the server shuts down
      */
     serverShutDown: function () {
         call("serverShutDown");
+
+        sys.deleteFile("server.lck");
+    },
+    /**
+     * Before a message gets outputted to the console from stdout
+     * @param {String} message Message from stdout
+     */
+    beforeNewMessage: function (message) {
+        if (message === "Script Check: OK") {
+            call("beforeNewMessage", message);
+            sys.writeToFile("server.lck", "");
+        }
+    },
+    /**
+     * After a message is outputted in the console
+     * @param {String} message Outputted message
+     */
+    afterNewMessage: function (message) {
+      // Possibly add hooks? Might lag the server
     },
     /**
      * When a channel is about to be deleted (stoppable)
