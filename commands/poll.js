@@ -1,3 +1,16 @@
+/*
+ Dependencies:
+ - modules/jsext.js
+ - modules/utilities.js
+ - modules/datahash.js
+ */
+
+/**
+ * @fileOverview Commands for polls
+ * @author TheUnknownOne
+ * @version 3.0.0 Devel
+ */
+
 ({
     /**
      * Returns the name of this module
@@ -16,7 +29,7 @@
         return {
             "afterChannelJoin": function (src, chan) { // TODO: Add this module
                 if (DataHash.poll.mode) {
-                    bot.send(src, "A poll is going on! Use <font color='green'><b>/viewpoll</b></font> for more information.", chan);
+                    bot.send(src, "A poll is going on! Use <font color='green'><b>/pollinfo</b></font> for more information.", chan);
                 }
             }
         };
@@ -37,7 +50,7 @@
                 allowedWhenMuted: false,
                 handler: function (command) {
                     var num = command.data * 1,
-                        ip = command.srcInfo.ip, // TODO: command.srcInfo
+                        ip = command.self.ip, // TODO: command.self in hook commandInfoRequested
                         Poll = DataHash.poll;
 
                     if (!Poll.mode) {
@@ -59,40 +72,45 @@
                     command.send("You voted for option " + num + " (" + Poll.options[num].name + ") on the poll!");
                 }
             },
+            {
+                name: "pollinfo",
+                category: "0",
+                help: [
+                    "To view the running poll's information"
+                ],
+                allowedWhenMuted: true,
+                handler: function (command) {
+                    var Poll = DataHash.poll,
+                        x,
+                        option;
 
-            viewpoll
-        :
-        function () {
-            if (!Poll.mode) {
-                botMessage(src, "No poll is going on.", chan);
-                return;
+                    if (!Poll.mode) {
+                        command.send("There is no poll running at the time.");
+                        return;
+                    }
+
+                    command.send("Poll started by " + Poll.starter.bold() + "!");
+
+                    for (x in Poll.options) {
+                        option = Poll.options[x].name;
+                        command.send(x + ". " + option);
+                    }
+
+                    command.line();
+
+                    if (Poll.votes === 0) {
+                        command.send("No one has voted yet.");
+                        return;
+                    }
+
+                    command.send(Poll.subject + " - Results so far:");
+
+                    for (x in Poll.options) {
+                        option = Poll.options[x];
+                        command.send(x + ". " + option.name + " - " + option.votes.length);
+                    }
+                }
             }
-
-            botMessage(src, "Poll started by " + Poll.starter.bold() + "!", chan);
-
-            var x, current_votes, option;
-            for (x in Poll.options) {
-                option = Poll.options[x].name;
-                botMessage(src, x + ". " + option, chan)
-            }
-
-            sys.sendMessage(src, '', chan);
-
-            if (Poll.votes === 0) {
-                botMessage(src, "No one voted yet.", chan);
-                return;
-            }
-
-            botMessage(src, Poll.subject + " - Results so far:", chan);
-
-            for (x in Poll.options) {
-                option = Poll.options[x];
-                current_votes = option.votes;
-                botMessage(src, x + ". " + option.name + " - " + current_votes.length, chan);
-            }
-        }
-
-        ]
-        ;
+        ];
     }
 })

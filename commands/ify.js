@@ -84,7 +84,7 @@ Dependencies:
             {
                 name: "unify",
                 category: "2",
-                help: ["", "Turns global server name-ify off and restores the name of everyone."],
+                help: ["Turns global server name-ify off and restores the name of everyone."],
                 allowedWhenMuted: false,
                 handler: function (command) {
                     var ids = sys.playerIds(),

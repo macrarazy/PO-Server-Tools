@@ -33,6 +33,13 @@
  - users.js
  - utilities.js
 
+ ==== AVAILABLE COMMAND CATEGORIES ===
+
+ - All command categories are available in commands/ -
+
+ - ify.js
+ - poll.js
+
  ==== NOTES ====
  - Dependencies with '*' in front of them are required at runtime -
  - Dependencies with '+' in front of them are optional -
@@ -42,6 +49,7 @@
  - CID: Id or name of a channel
  - PIDArray: Array of PIDs
  - CIDArray: Array of CIDs
+ - !{Type}Array: Array of with any type of variable except {Type}
  */
 
 
@@ -149,9 +157,18 @@ BRANCH = "devel";
  * Modules to load
  * @type {Array}
  */
-// TODO: Add jsession.js, users.js, and channels.js once done
+// TODO: Add users.js, and channels.js once done
 Modules = [
     "modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/cache.js", "modules/datahash.js",
+    "modules/jsession.js"
+];
+
+/**
+ * Command categories to load
+ * @type {Array}
+ */
+
+CommandCategories = [
     "commands/ify.js", "commands/poll.js"
 ];
 
@@ -160,6 +177,12 @@ Modules = [
  * @type {Boolean}
  */
 OverwriteModules = true;
+
+/**
+ * If commands will get overwritten and re-downloaded every time the script reloads (useful for development)
+ * @type {Boolean}
+ */
+OverwriteCommands = true;
 
 /**
  * Contains commands
@@ -380,7 +403,8 @@ include.GetMethod = {
  * @return {*} Full module, source, hooks, name, or commands.
  */
 include.get = function (FileName, Method) {
-    var query, methods;
+    var query,
+        methods;
 
     if (typeof include.modules[FileName] === "undefined") {
         include(FileName, Method);
@@ -410,19 +434,25 @@ include.get = function (FileName, Method) {
  * @param {String} FileName Name for the file when it will be written on the disk
  * @param {String} FilePath Online file path/name of the file
  * @param {Boolean} [ForceDownload=false] If the file will still get downloaded even when it already exists on disk
+ * @param {Boolean} [Synchronously=false] If the file will be downloaded synchronously
  * @return {String} Content of URL + Branch + / + FilePath
  */
-download = function (FileName, FilePath, ForceDownload) {
-    var result;
+download = function (FileName, FilePath, ForceDownload, Synchronously) {
+    var filePath = FilePath.split(/\/|\\/);
 
     if (sys.getFileContent(FileName) && !ForceDownload) {
         return "";
     }
 
-    result = sys.synchronousWebCall(URL + BRANCH + "/" + FilePath);
-    sys.writeToFile(FileName, result);
+    sys.makeDir(filePath[filePath.length - 2] || ""); /* Creates the directories if they do not yet exist */
 
-    return result;
+    if (Synchronously) {
+        sys.writeToFile(FileName, sys.synchronousWebCall(URL + BRANCH + "/" + FilePath));
+    } else {
+        sys.webCall(URL + BRANCH + "/" + FilePath, function (httpResponse) {
+            sys.writeToFile(FileName, httpResponse);
+        })
+    }
 };
 
 /**
@@ -432,7 +462,9 @@ download = function (FileName, FilePath, ForceDownload) {
  */
 getHooks = function (event) {
     var ret = [],
-        x, current_mod, Modules = include.modules;
+        x,
+        current_mod,
+        Modules = include.modules;
 
     for (x in Modules) {
         current_mod = Modules[x];
@@ -455,7 +487,9 @@ call = function (hook_name, hook_args) {
     var args = [].slice.call(arguments),
         event = args.splice(0, 1)[0],
         hooks = getHooks(event),
-        x, current, stop = false,
+        x,
+        current,
+        stop = false,
         i;
 
     for (x in hooks) {
@@ -465,19 +499,63 @@ call = function (hook_name, hook_args) {
                 stop = true;
             }
         } catch (Exception) {
-            sys.sendAll('Error in module "' + current.name + '" when calling hook "' + event + '" with ' + args.length + ' arguments on line ' + Exception.lineNumber + ': ' + Exception, arena);
+            sys.sendAll('Error in module "' + current.name + '" when calling hook "' + event + '" with ' + args.length + ' arguments on line ' + Exception.lineNumber + ': ' + Exception);
         }
     }
 
     return stop;
 };
 
-/* Downloads and loads all modules in an anonymous function */
+/**
+ * To call all hooks which have the name hook_name, and returns their result
+ * @param {String} hook_name Name of the hook
+ * @param {*} hook_args Arguments for the hook (everything after the 1st argument)
+ * @return {!BooleanArray} Result returned from the hooks
+ */
+callResult = function (hook_name, hook_args) {
+    var args = [].slice.call(arguments),
+        event = args.splice(0, 1)[0],
+        hooks = getHooks(event),
+        x,
+        current,
+        res = [],
+        i,
+        currentRes;
+
+    for (x in hooks) {
+        current = hooks[x];
+        try {
+            currentRes = current.hooks[event].apply(current, args);
+
+            if (typeof currentRes !== "boolean") {
+                ret.push(currentRes);
+            }
+        } catch (Exception) {
+            sys.sendAll('Error in module "' + current.name + '" when calling hook "' + event + '" with ' + args.length + ' arguments on line ' + Exception.lineNumber + ': ' + Exception);
+        }
+    }
+
+    return res;
+};
+
+/* Downloads and loads all modules  and command categories in an anonymous function */
 (function () {
-    var module;
+    var module,
+        command,
+        current;
+
     for (module in Modules) {
-        download(Modules[module], Modules[module], OverwriteModules);
-        include(Modules[module], null, OverwriteModules);
+        current = Modules[module];
+
+        download(current, "scripts/" + current, OverwriteModules, true);
+        include(current, null, OverwriteModules);
+    }
+
+    for (command in CommandCategories) {
+        current = CommandCategories[command];
+
+        download(current, "scripts/" + current, OverwriteCommands, false);
+        include(current, null, OverwriteCommands);
     }
 }());
 
@@ -524,7 +602,7 @@ call = function (hook_name, hook_args) {
      * @param {String} message Outputted message
      */
     afterNewMessage: function (message) {
-      // Possibly add hooks? Might lag the server
+        // Possibly add hooks? Might lag the server
     },
     /**
      * When a channel is about to be deleted (stoppable)
@@ -564,6 +642,133 @@ call = function (hook_name, hook_args) {
      */
     afterChangeTeam: function (src) {
         call("afterChangeTeam", src);
+    },
+    /**
+     * When the server receives a player's chat message (stoppable)
+     * @param {Number} src The player's id
+     * @param {String} message The message sent
+     * @param {Number} chan The id of the channel which this message was sent in
+     */
+    beforeChatMessage: function (src, message, chan) {
+        var command = {},
+            commandName,
+            fullCommand,
+            data = "",
+            pos = message.indexOf(' '),
+            queryRes,
+            totalAuth = sys.maxAuth(sys.ip(src)),
+            auth = totalAuth,
+            cmd,
+            commandInfo = {},
+            maxAuth = {
+                auth: 0,
+                index: 0
+            };
+
+        /* Command parser */
+        if (message.length > 1 && Config.CommandStarts.indexOf(message[0]) !== -1) {
+            sys.stopEvent();
+
+            if (pos !== -1) {
+                fullCommand = message.substring(1, pos);
+                data = message.substr(pos + 1);
+            } else {
+                fullCommand = message.substring(1);
+            }
+
+            commandName = fullCommand.toLowerCase();
+
+            queryRes = callResult("commandNameRequested", src, message, chan, commandName);
+            queryRes = queryRes[queryRes.length - 1];
+            /* Last command in the query */
+
+            if (queryRes) {
+                commandName = queryRes;
+            }
+
+            //TODO: Port to mafia.js
+            /*
+             if (chan == mafiachan) {
+             try {
+             mafia.handleCommand(src, message.substr(1));
+             return;
+             }
+             catch (err) {
+             if (err != "no valid command") {
+             botAll(FormatError("A mafia error has occured.", err), mafiachan);
+
+             mafia.endGame(0);
+             if (mafia.theme.name != "default") {
+             mafia.themeManager.disable(0, mafia.theme.name);
+             }
+
+             return;
+             }
+             }
+             }
+             */
+
+            //TODO: Port to utilities.js
+            /*
+             if (commandName != "sendmail") {
+             WatchPlayer(src, "Command", message, chan);
+             }*/
+
+            queryRes = callResult("commandPlayerAuthRequested", src, commandName).forEach(function (auth, index) {
+                if (auth > maxAuth.auth) {
+                    maxAuth = {
+                        index: index,
+                        auth: auth
+                    };
+                }
+            })[maxAuth.index];
+
+            if (queryRes) {
+                totalAuth = auth = queryRes;
+            }
+
+            if (auth > 3) {
+                auth = 3;
+            }
+
+            if (auth < 0) {
+                auth = 0;
+            }
+
+            callResult("commandInfoRequested", src, message, chan).forEach(function (info) {
+                commandInfo.extend(info);
+            });
+
+            //TODO: Port
+            /*
+             if (commandName == "eval" && DataHash.evalops.has(selfLower)) {
+             auth = 3;
+             }*/
+
+            cmd = Commands[commandName];
+            if (typeof cmd === "undefined") {
+                call("onCommandError", src, fullCommand, chan, "invalid");
+                //TODO: Port
+                // invalidCommandMessage(src, fullCommand, chan);
+                return;
+            }
+
+            if (!cmd.permissionHandler(src)) {
+                call("onCommandError", src, fullCommand, chan, "nopermission");
+                //TODO: Port
+                // noPermissionMessage(src, fullCommand, chan);
+                return;
+            }
+
+            try {
+                cmd(commandInfo.extend({
+                    command: command,
+                    fullCommand: fullCommand
+                }));
+            } catch (Exception) {
+                call("onCommandError", src, fullCommand, chan, "exception", Exception);
+            }
+        }
     },
     /**
      * Initialization function for hooks and core globals
