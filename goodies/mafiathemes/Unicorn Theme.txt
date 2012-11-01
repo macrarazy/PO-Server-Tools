@@ -211,7 +211,7 @@
             "role": "Leader-2",
             "translation": "White Unicorn Leader",
             "side": "village",
-            "help": "Your vote counts as 2 (use this to lead the White Unicorns!) and you can find out who kills, who protects, who safeguards, who distracts, who colorizes, and who inspects (That's a lot of whos). You can kill someone with /kill [name] too (which can only be used 3 times per game)!",
+            "help": "Your vote counts as 2 (use this to lead the White Unicorns!) and you can find out who kills, who protects, who distracts, who colorizes, and who inspects (That's a lot of whos). You can kill someone with /kill [name] too (which can only be used 3 times per game)!",
             "actions": {
                 "night": {
                     "kill": {
@@ -235,10 +235,6 @@
                         "revealPlayer": 0.05
                     },
                     "protect": {
-                        "revealTeam": 0.1,
-                        "revealPlayer": 0.05
-                    },
-                    "safeguard": {
                         "revealTeam": 0.1,
                         "revealPlayer": 0.05
                     },
