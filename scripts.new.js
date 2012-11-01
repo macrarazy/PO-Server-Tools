@@ -152,7 +152,7 @@ BRANCH = "devel";
 // TODO: Add jsession.js, users.js, and channels.js once done
 Modules = [
     "modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/cache.js", "modules/datahash.js",
-    "modules/ify.js"
+    "commands/ify.js", "commands/poll.js"
 ];
 
 /**
@@ -514,6 +514,8 @@ call = function (hook_name, hook_args) {
     beforeNewMessage: function (message) {
         if (message === "Script Check: OK") {
             call("beforeNewMessage", message);
+            script.init();
+
             sys.writeToFile("server.lck", "");
         }
     },
@@ -562,5 +564,13 @@ call = function (hook_name, hook_args) {
      */
     afterChangeTeam: function (src) {
         call("afterChangeTeam", src);
+    },
+    /**
+     * Initialization function for hooks and core globals
+     */
+    init: function () {
+        ServerName = sys.getFileContent("config").split("\n")[30].substring(5).replace(/\\xe9/i, "é").trim();
+
+        call("init");
     }
 })

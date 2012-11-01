@@ -2,6 +2,7 @@
  Dependencies:
  - modules/jsext.js
  - modules/utilities.js
+ - modules/cache.js
  */
 
 /**
@@ -57,7 +58,7 @@ if (!util.datahash) {
                         code = JSON.parse(json_code);
 
                         loc[ip] = code;
-                        util.datahash.write("locations");
+                        util.datahash.write(cache, "locations");
 
                         if (sys.loggedIn(src)) {
                             if (code.country_name === "Anonymous Proxy") {
@@ -73,7 +74,7 @@ if (!util.datahash) {
                     code = JSON.parse(json_code);
 
                     loc[ip] = code;
-                    util.datahash.write("locations");
+                    util.datahash.write(cache, "locations");
 
                     if (sys.loggedIn(src) && util.player.auth(src) < 1) {
                         if (code.country_name === "Anonymous Proxy") {
@@ -124,6 +125,18 @@ if (util.sandbox.DataHash.isEmpty()) {
      * @type {Object}
      */
     DataHash.locations = {};
+
+    /**
+     * The currently running poll
+     * @type {Object}
+     */
+    DataHash.poll = {
+        mode: 0,
+        subject: "",
+        starter: "",
+        options: {},
+        votes: 0
+    };
 
     /* Write to file */
     util.json.write(DataHash.file, DataHash);
