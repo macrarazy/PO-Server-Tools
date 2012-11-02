@@ -92,7 +92,7 @@ if (!util.datahash) {
 }
 
 /**
- * The DataHash
+ * Hash in which all kinds of data can be stored
  * @namespace
  * @type {Object}
  */
@@ -138,6 +138,13 @@ if (util.sandbox.DataHash.isEmpty()) {
         votes: 0
     };
 
+    /**
+     * Contains all of the evaluation operators
+     * @type {Object}
+     */
+
+    DataHash.evalOperators = {}; // NOTE: evalops -> evalOperators
+
     /* Write to file */
     util.json.write(DataHash.file, DataHash);
 } else {
@@ -153,5 +160,19 @@ if (util.sandbox.DataHash.isEmpty()) {
      */
     Name: function () {
         return "DataHash";
+    },
+    /**
+     * Returns the hooks of this module
+     * @private
+     * @return {Object}
+     */
+    Hooks: function () {
+        return {
+            "commandPlayerAuthRequested": function (src, message, chan, commandName) {
+                if (commandName === "eval" && DataHash.evalOperators.has(sys.name(src).toLowerCase())) { // HARDCODED
+                    return 3;
+                }
+            }
+        };
     }
 })

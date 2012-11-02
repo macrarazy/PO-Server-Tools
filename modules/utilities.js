@@ -380,11 +380,11 @@ util.bot = {
     /**
      * Sends a message to everyone except (src)
      * @param {PID} src Player identifier
-     * @param message
-     * @param channel
-     * @param type
+     * @param {String} message Message to send
+     * @param {CID} [channel] Channel identifier
+     * @param {Number} [type=0] If the message will me html-escaped. 1 = true, anything else = false
      */
-    sendAllExcept: function (src, message, channel, type) {
+    sendOthers: function (src, message, channel, type) {
         var func,
             pID,
             pIDs = sys.playerIds(),
@@ -697,13 +697,13 @@ util.message = {
             .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
             .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>')
             .replace(poPattern, function ($) {
-            var type = $.substring($.indexOf(":", $.indexOf("/"))),
-                thing = $.substring($.indexOf("/"));
+                var type = $.substring($.indexOf(":", $.indexOf("/"))),
+                    thing = $.substring($.indexOf("/"));
 
-            type = type[0].toUpperCase() + type.substring(1);
+                type = type[0].toUpperCase() + type.substring(1);
 
-            return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
-        });
+                return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
+            });
 
         // TODO: Reminder to remove [servername] as bbcode
         str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
@@ -728,8 +728,9 @@ util.message = {
                 .replace(/\[hr\]/gi, "<hr/>");
         }
 
-        // TODO: util.message.addchannelLinks
-        return util.message.addChannelLinks(str); /* Do this last for other BBcodes to work */
+        // TODO: util.message.addChannelLinks
+        return util.message.addChannelLinks(str);
+        /* Do this last for other BBcodes to work */
     }
 };
 
@@ -862,6 +863,62 @@ bot = util.bot;
         return {
             "serverStartUp": function () {
                 util.time.startup = sys.time() * 1;
+            },
+            "commandNameRequested": function (src, message, chan, commandName) {
+                if (commandName != "sendmail") { // HARDCODED
+                    util.watch.player(src, message, "Command", chan);
+                }
+            },
+            "commandInfoRequested": function (src, message, chan, commandInfo) {
+                return {
+                    /* Improve tar */
+                    tar: util.player.id(commandInfo.mcmd[0]),
+
+                    /* Message utility functions */
+                    send: function (message) {
+                        bot.send(src, message, chan);
+                    },
+                    sendAll: function (message) {
+                        bot.sendAll(message, chan);
+                    },
+                    sendOthers: function (message, escapeHtml) {
+                        bot.sendOthers(src, message, chan, escapeHtml);
+                    },
+                    line: function () {
+                        bot.line(src, chan);
+                    },
+                    lineAll: function () {
+                        bot.lineAll(chan);
+                    },
+                    sendMain: function () {
+                        bot.sendAll(message, 0);
+                    },
+                    nativeSend: function (message) {
+                        sys.sendMessage(src, message, chan);
+                    },
+                    nativeHtml: function (message) {
+                        sys.sendHtmlMessage(src, message, chan);
+                    },
+                    nativeSendAll: function (message) {
+                        sys.sendAll(message, chan);
+                    },
+                    nativeHtmlAll: function (message) {
+                        sys.sendHtmlAll(message, chan);
+                    }
+                };
+            },
+            "onCommandError": function (src, fullCommand, chan, errorType, Exception) {
+                if (errorType === "nopermission") {
+                    bot.sendText(src, "You don't have the proper permissions to use the command \"" + fullCommand + "\".", chan);
+                } else if (errorType === "invalid") {
+                    bot.sendText(src, "The command \"" + fullCommand + "\" doesn't exist.", chan);
+                } else {
+                    bot.sendText(src, "An exception occurred when you tried to use the \"" + util.error.format("", Exception || {
+                        name: "UnknownError",
+                        message: "An unknown exception has occurred",
+                        lineNumber: 1
+                    }) + "\".");
+                }
             }
         };
     }

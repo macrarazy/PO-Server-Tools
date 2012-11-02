@@ -224,14 +224,14 @@ handlers = {};
  */
 handlers.permissionHandler = function (level) {
     return function (src) {
-        if (typeof sys == "undefined") {
+        if (!sys) {
             return true;
         }
-        if (typeof hpAuth == "undefined") {
+        if (!util || !util.player || !util.player.auth) { // HARDCODED
             return sys.auth(src) >= level;
         }
 
-        return hpAuth(src) >= level;
+        return util.player.auth(src) >= level;
     }
 };
 
@@ -527,7 +527,7 @@ callResult = function (hook_name, hook_args) {
         try {
             currentRes = current.hooks[event].apply(current, args);
 
-            if (typeof currentRes !== "boolean") {
+            if (typeof currentRes !== "boolean" && currentRes != undefined) {
                 ret.push(currentRes);
             }
         } catch (Exception) {
@@ -659,11 +659,12 @@ callResult = function (hook_name, hook_args) {
             totalAuth = sys.maxAuth(sys.ip(src)),
             auth = totalAuth,
             cmd,
-            commandInfo = {},
+            commandInfo,
             maxAuth = {
                 auth: 0,
                 index: 0
-            };
+            },
+            mcmd;
 
         /* Command parser */
         if (message.length > 1 && Config.CommandStarts.indexOf(message[0]) !== -1) {
@@ -672,13 +673,16 @@ callResult = function (hook_name, hook_args) {
             if (pos !== -1) {
                 fullCommand = message.substring(1, pos);
                 data = message.substr(pos + 1);
+                mcmd = data.split(":");
             } else {
                 fullCommand = message.substring(1);
             }
 
             commandName = fullCommand.toLowerCase();
 
-            queryRes = callResult("commandNameRequested", src, message, chan, commandName);
+            queryRes = callResult("commandNameRequested", src, message, chan, commandName).map(function (value) {
+                return !!value;
+            });
             queryRes = queryRes[queryRes.length - 1];
             /* Last command in the query */
 
@@ -708,13 +712,7 @@ callResult = function (hook_name, hook_args) {
              }
              */
 
-            //TODO: Port to utilities.js
-            /*
-             if (commandName != "sendmail") {
-             WatchPlayer(src, "Command", message, chan);
-             }*/
-
-            queryRes = callResult("commandPlayerAuthRequested", src, commandName).forEach(function (auth, index) {
+            queryRes = callResult("commandPlayerAuthRequested", src, message, chan, commandName).forEach(function (auth, index) {
                 if (auth > maxAuth.auth) {
                     maxAuth = {
                         index: index,
@@ -735,36 +733,39 @@ callResult = function (hook_name, hook_args) {
                 auth = 0;
             }
 
-            callResult("commandInfoRequested", src, message, chan).forEach(function (info) {
+            commandInfo = {
+                /* Basic Components */
+                src: src,
+                tar: sys.id(mcmd[0]),
+
+                data: data,
+                dataLower: data.toLowerCase(),
+                mcmd: mcmd,
+
+                chan: chan,
+
+                command: command,
+                fullCommand: fullCommand
+            };
+
+            /* Note: commandInfo with basic components only is passed */
+            callResult("commandInfoRequested", src, message, chan, commandInfo).forEach(function (info) {
                 commandInfo.extend(info);
             });
-
-            //TODO: Port
-            /*
-             if (commandName == "eval" && DataHash.evalops.has(selfLower)) {
-             auth = 3;
-             }*/
 
             cmd = Commands[commandName];
             if (typeof cmd === "undefined") {
                 call("onCommandError", src, fullCommand, chan, "invalid");
-                //TODO: Port
-                // invalidCommandMessage(src, fullCommand, chan);
                 return;
             }
 
             if (!cmd.permissionHandler(src)) {
                 call("onCommandError", src, fullCommand, chan, "nopermission");
-                //TODO: Port
-                // noPermissionMessage(src, fullCommand, chan);
                 return;
             }
 
             try {
-                cmd(commandInfo.extend({
-                    command: command,
-                    fullCommand: fullCommand
-                }));
+                cmd(commandInfo);
             } catch (Exception) {
                 call("onCommandError", src, fullCommand, chan, "exception", Exception);
             }

@@ -88,7 +88,7 @@ if (!util.user) {
                 util.watch.player(src, "Log In on IP " + ip);
 
                 if (sendWelcomeMessage) {
-                    bot.sendAllExcept(src, player + " joined the server!", 0);
+                    bot.sendOthers(src, player + " joined the server!", 0);
                 }
 
                 bot.send(src, "Welcome, " + player + "!", 0);
@@ -118,7 +118,7 @@ if (!util.user) {
                     Tours.notification(src, 0);
                 }
 
-                sys.sendMessage(src, "", 0);
+                bot.line(src, 0);
 
                 if (idles.has(name)) {
                     if (idles[name].entry) {

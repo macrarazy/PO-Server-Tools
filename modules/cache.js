@@ -1,13 +1,13 @@
-/**
- * @fileOverview JSON cache
- * @author TheUnknownOne
- * @version 3.0.0 Devel
- */
-
 /*
  Dependencies:
  - modules/jsext.js
  - modules/utilities.js
+ */
+
+/**
+ * @fileOverview JSON cache
+ * @author TheUnknownOne
+ * @version 3.0.0 Devel
  */
 
 /**
@@ -34,10 +34,11 @@ Cache = function (file) {
     util.file.create(this.file, "{}");
 
     try {
-        this.hash = JSON.parse(sys.getFileContent(this.file));
+        this.hash = util.json.read(this.file);
     }
     catch (e) {
-        sys.writeToFile(file + "-corrupted.json", JSON.stringify(this.hash));
+        util.json.write(file + "-corrupted.json", this.hash);
+
         this.hash = {};
         this.saveAll();
 

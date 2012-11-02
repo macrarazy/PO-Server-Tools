@@ -71,7 +71,7 @@ Dependencies:
 
                     Settings.IfyName = data;
 
-                    command.sendMain(command.player + " changed the name of everyone on the server to " + data + "!");
+                    command.sendMain(command.self.player + " changed the name of everyone on the server to " + data + "!");
 
                     for (x in ids) {
                         id = ids[x];
@@ -98,7 +98,7 @@ Dependencies:
 
                     Settings.IfyName = false;
 
-                    command.sendMain(command.self.originalName + " changed all names back!");
+                    command.sendMain(command.self.jsession.originalName + " changed all names back!");
 
                     for (id in ids) {
                         current = ids[id];

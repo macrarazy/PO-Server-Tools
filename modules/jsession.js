@@ -16,7 +16,7 @@
 if (!JSESSION) {
     /**
      * JSESSION
-     * @namespace
+     * @class
      * @type {Function}
      */
     JSESSION = new (function () {
@@ -659,6 +659,32 @@ JSESSION.refill();
         return {
             "afterChannelDestroyed": function (chan) {
                 JSESSION.removeChannel(chan);
+            },
+            "commandInfoRequested": function (src, message, chan, commandInfo) {
+                var selfName = sys.name(src),
+                    tar = commandInfo.target,
+                    tarName = sys.name(tar);
+
+                return {
+                    self: {
+                        name: selfName,
+                        nameLower: selfName.toLowerCase(),
+                        player: util.player.player(src),
+                        auth: util.player.auth(src),
+                        ip: sys.ip(src),
+                        isHost: util.player.host(src),
+                        jsession: JSESSION.users(src)
+                    },
+                    target: {
+                        name: tarName,
+                        nameLower: tarName.toLowerCase(),
+                        player: util.player.player(tar),
+                        auth: util.player.auth(tar),
+                        ip: sys.ip(tar),
+                        isHost: util.player.host(tar),
+                        jsession: JSESSION.users(tar)
+                    }
+                };
             }
         };
     }

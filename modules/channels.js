@@ -22,6 +22,11 @@ scriptchannel = util.channel.create("Eval Area");
 Channels = [0, mafiachan, trivia, trivreview, watch, staffchannel, scriptchannel];
 
 if (!cData) {
+    /**
+     * Channel Data Manager
+     * @class
+     * @type {Object}
+     */
     cData = new (function () {
         this.file = "ChannelData.json";
 
