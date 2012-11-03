@@ -127,21 +127,19 @@
             "role": "Bodyguard-2",
             "translation": "White Unicorn Bodyguard",
             "side": "village",
-            "help": "You are a White Unicorn Bodyguard! You can use /protect [name] to keep that person alive (How nice of you!), and you have a 5% chance to dodge someone who wants your blood (Meanies!), and your vote counts as 0 because you are slow/fat/etc.",
-            "info": "Can protect one unicorn durning the night. Has a 5% chance to evade a kill. Sided with White Unicorns.",
+            "help": "You are a White Unicorn Bodyguard! You can use /protect [name] to keep that person alive (How nice of you!), which also applies safeguard to them! Don't spam it though, as it can kill you sometimes (sometimes = 0.5%). And to top it off: your vote counts as 0 because you are slow/fat/etc.",
+            "info": "Can protect (protect + safeguard) one unicorn durning the night. Has 0.5% chance to die when protecting someone. Sided with White Unicorns.",
             "actions": {
                 "night": {
                     "protect": {
                         "target": "AnyButSelf",
-                        "common": "Role",
+                        "common": "Self",
                         "priority": 3,
                         "command": ["protect", "safeguard"]
                     }
                 },
-                "kill": {
-                    "mode": {
-                        "evadeChance": 0.05
-                    }
+                "protect": {
+                    "suicideChance": 0.005
                 },
                 "vote": 0
             }
@@ -208,8 +206,16 @@
             "role": "Leader-2",
             "translation": "White Unicorn Leader",
             "side": "village",
-            "help": "Your vote counts as 3 (use this to lead the White Unicorns!) and you can find out who kills, who protects, who safeguards, who distracts, who colorizes, and who inspects (That's a lot of whos).",
+            "help": "Your vote counts as 2 (use this to lead the White Unicorns!) and you can find out who kills, who protects, who safeguards, who distracts, who colorizes, and who inspects (That's a lot of whos). You can kill someone with /kill [name] too (which can only be used 3 times per game)!",
             "actions": {
+                "night": {
+                    "kill": {
+                        "target": "AnyButSelf",
+                       "common": "Self",
+                       "priority": 19,
+                       "charges": 3
+                    }
+                },
                 "hax": {
                     "kill": {
                         "revealTeam": 0.1,
@@ -227,16 +233,12 @@
                         "revealTeam": 0.1,
                         "revealPlayer": 0.05
                     },
-                    "safeguard": {
-                        "revealTeam": 0.1,
-                        "revealPlayer": 0.05
-                    },
                     "colorize": {
                         "revealTeam": 0.08,
                         "revealRole": 0.03
                     }
                 },
-                "vote": 3
+                "vote": 2
             }
         },
         {
@@ -308,7 +310,7 @@
             "role": "Black-1",
             "translation": "Black Unicorn",
             "side": "Black",
-            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is.",
+            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is. You are also faster than Grey Unicorns, but you don't have any additional abilities!.",
             "actions": {
                 "night": {
                     "kill": {
@@ -330,7 +332,7 @@
             "role": "Black-2",
             "translation": "Black Unicorn",
             "side": "Black",
-            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like!",
+            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! You are faster than Grey Unicorns, but you don't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
@@ -347,27 +349,30 @@
             "role": "Black-Inspector",
             "translation": "Black Unicorn Inspector",
             "side": "Black",
-            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn Bodyguard because you are fat (lol).",
+            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates. You can also use /inspect [name] to inspect something because you are one of those fancy Sherlock unicorns! You are faster than Grey Unicorns, but you don't have any additional abilities!",
             "actions": {
                 "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Team",
+                        "priority": 11,
+                        "broadcast": "team"
+                    },
                     "inspect": {
                         "target": "AnyButTeam",
                         "common": "Self",
                         "priority": 21,
-                        "broadcast": "Team"
+                        "broadcast": "team"
                     }
                 },
-                "inspect": {
-                    "revealAs": "Bodyguard-2"
-                },
-                "startup": "team-reveal"
+                "startup": "team-reveal-with-roles"
             }
         },
         {
             "role": "Black-Leader",
             "translation": "Black Unicorn Leader",
             "side": "Black",
-            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail.",
+            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail. You are faster than Grey Unicorns, but you don't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
@@ -381,7 +386,7 @@
                         "common": "Self",
                         "priority": 12,
                         "broadcast": "team",
-                        "broadcastmsg": "±Game: Your partner(s) have decided to kill ~Target~!",
+                        "broadcastmsg": "±Game: The Black Unicorn Leader (~Player~) has decided to use their additional kill on ~Target~!",
                         "initialrecharge": 3,
                         "recharge": 3,
                         "failChance": 0.2,
@@ -409,13 +414,13 @@
             "role": "Grey-1",
             "translation": "Grey Unicorn",
             "side": "Grey",
-            "help": "You are a Grey Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is.",
+            "help": "You are a Grey Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is. You are slower than Black Unicorns, but your vote counts as 1.1 making you more important and stuff.",
             "actions": {
                 "night": {
                     "kill": {
                         "target": "AnyButTeam",
                         "common": "Team",
-                        "priority": 11,
+                        "priority": 12,
                         "broadcast": "team"
                     }
                 },
@@ -424,51 +429,33 @@
                         "revealPlayer": 0.01
                     }
                 },
-                "startup": "team-reveal"
+                "startup": "team-reveal",
+                "vote": 1.1
             }
         },
         {
             "role": "Grey-2",
             "translation": "Grey Unicorn",
             "side": "Grey",
-            "help": "You are a Grey Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like!",
+            "help": "You are a Grey Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! You are slower than Black Unicorns, but your vote counts as 1.1 making you more important and stuff.",
             "actions": {
                 "night": {
                     "kill": {
                         "target": "AnyButTeam",
                         "common": "Team",
-                        "priority": 11,
+                        "priority": 12,
                         "broadcast": "team"
                     }
                 },
-                "startup": "team-reveal-with-roles"
+                "startup": "team-reveal-with-roles",
+                "vote": 1.1
             }
         },
         {
             "role": "Grey-Inspector",
             "translation": "Grey Unicorn Inspector",
             "side": "Grey",
-            "help": "Use /inspect [name] to inspect something! Other inspectors see you as a White Unicorn Bodyguard because you are fat (lol).",
-            "actions": {
-                "night": {
-                    "inspect": {
-                        "target": "AnyButTeam",
-                        "common": "Self",
-                        "priority": 21,
-                        "broadcast": "Team"
-                    }
-                },
-                "inspect": {
-                    "revealAs": "Bodyguard-2"
-                },
-                "startup": "team-reveal"
-            }
-        },
-        {
-            "role": "Grey-Leader",
-            "translation": "Grey Unicorn Leader",
-            "side": "Grey",
-            "help": "You are a Grey Unicorn Leader, and, because of this, you can do /kill [name] to kill someone you don't like! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail.",
+            "help": "You are a Grey Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates. You can also use /inspect [name] to inspect something because you are one of those fancy Sherlock unicorns! You are faster than Grey Unicorns, but you don't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
@@ -477,12 +464,36 @@
                         "priority": 12,
                         "broadcast": "team"
                     },
+                    "inspect": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 22,
+                        "broadcast": "team"
+                    }
+                },
+                "startup": "team-reveal-with-roles",
+                "vote": 1.1
+            }
+        },
+        {
+            "role": "Grey-Leader",
+            "translation": "Grey Unicorn Leader",
+            "side": "Grey",
+            "help": "You are a Grey Unicorn Leader, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail. You are slower than Black Unicorns, but your vote counts as 1.1 making you more important and stuff.",
+            "actions": {
+                "night": {
+                    "kill": {
+                        "target": "AnyButTeam",
+                        "common": "Team",
+                        "priority": 13,
+                        "broadcast": "team"
+                    },
                     "kill2": {
                         "target": "AnyButTeam",
                         "common": "Self",
-                        "priority": 12,
+                        "priority": 13,
                         "broadcast": "team",
-                        "broadcastmsg": "±Game: Your partner(s) have decided to kill ~Target~!",
+                        "broadcastmsg": "±Game: The Grey Unicorn Leader (~Player~) has decided to use their additional kill on ~Target~!",
                         "initialrecharge": 3,
                         "recharge": 3,
                         "failChance": 0.2,
@@ -492,7 +503,8 @@
                 "distract": {
                     "mode": "ignore"
                 },
-                "startup": "team-reveal-with-roles"
+                "startup": "team-reveal-with-roles",
+                "vote": 1.1
             }
         },
         {
@@ -516,7 +528,7 @@
                     "kill": {
                         "target": "AnyButSelf",
                         "common": "Self",
-                        "priority": 19,
+                        "priority": 20,
                         "limit": 2
                     }
                 },
@@ -540,8 +552,8 @@
             "role": "Rainbow_Flying",
             "translation": "Flying Rainbow Unicorn",
             "side": "Flying",
-            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 3 nights. Your vote counts as 5.",
-            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 3. Can't be lynched. Dies in 3 nights. Sided with Flying Unicorn.",
+            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 4 nights. Your vote counts as 5.",
+            "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 3. Can't be lynched. Dies in 4 nights. Sided with Flying Unicorn.",
             "actions": {
                 "vote": 3,
                 "voteshield": -9999,
@@ -693,7 +705,7 @@
                 },
                 "distract": {
                     "mode": "die",
-                    "msg": "~Target~ (~Role~) tried to ~Action~ you, but you just can't handle tears.",
+                    "msg": "~Target~ (~Role~) tried to ~Action~ you, but you just can't handle tears, so you committed suicide.",
                     "targetmsg": "You didn't know that you could kill Mad Scientists with tears!?!?"
                 },
                 "onDeath": {
@@ -707,9 +719,9 @@
             "role": "Mutated",
             "translation": "Mutated Unicorn",
             "side": "Mutated",
-            "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team!",
-            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Wins with Humans. Sided with Mutated Unicorns.",
-            "winningSides": ["Human"],
+            "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team, but you do win with anyone except the Humans.",
+            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Wins with White Unicorns, Black Unicorns, Grey Unicorns, the Rainbow Unicorn, and the Flying Unicorn. Sided with Mutated Unicorns.",
+            "winningSides": ["village", "Black", "Grey", "Rainbow", "Flying"],
             "actions": {
                 "vote": 0,
                 "initialCondition": {
@@ -744,9 +756,9 @@
         "Leader-2",
         "Grey-Leader",
         "Miller-Hunter",
-        "Black-Leader"
-        "Rainbow",
+        "Black-Leader",
         "Villager",
+        "Rainbow",
         "Black-Inspector",
         "Grey-Inspector",
         "Hunter-2",
@@ -791,7 +803,7 @@
         "Inspector-3"
     ],
     "killmsg": "±Game: ~Player~, who was a ~Role~, has been banished from the land of Unicorns!",
-    "killusermsg": "±Game: 0 lives left.",
+    "killusermsg": "±Game: 0 lives left, try again some day!",
     "lynchmsg": "±Game: ~Player~ (~Role~), wasn't very liked here! Guiliotine!",
-    "drawmsg": "±Game: An eternal conflict shall never end."
+    "drawmsg": "±Game: Everyone (kinda) won. Deal with it!"
 }
