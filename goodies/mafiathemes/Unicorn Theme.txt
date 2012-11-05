@@ -3,7 +3,7 @@
     "author": [
         "TheUnknownOne"
     ],
-    "summary": "A kids theme (The only mafia theme which is for ages 7 (actually 18, sort of) and up). You will have to figure everything out yourself as kids don't like reading.",
+    "summary": "Unicorn returns! The teams are White Unicorns (village), Black & Grey Unicorns (the mafias), Flying Unicorn (godfather-ish), Rainbow Unicorn (conspirator), and the Humans (Unicorn Hunter and Mad Scientist(s)). The PRs are: Inspector (small: inspect; medium: inspect + reveal; big: inspect + daykill), Bodyguard (small: protect; medium-big: protect + safeguard; 0.5% chance to die when /protect is used), Sad (small: distract; medium: distract + stalk; big: distract x2 + stalk), Leader (small: hax on all + -1 vote; medium-big: hax on all, +2 vote, kill). The Black and Grey Unicorns have an inspector and a leader of their own too! The Flying Unicorn has two kills, and a daykill with chance to be revealed, and the Rainbow Unicorn wins with anyone and can convert someone (can't convert the white unicorn inspector though!) to a pretty much useless version of what they once were. The Unicorn Hunter is alone in small-medium games (1 kill), but will eventually get backup from mad scientists who mutate unicorns (outspeeds anything except the white unicorn bodyguard) causing them to die in 2 nights and revenge poison those who want them dead (they do win with any unicorn). That should be about it! Have fun! ~ TheUnknownOne [Take a look at /roles!]",
     "sides": [
         {
             "side": "village",
@@ -135,7 +135,10 @@
                         "target": "AnyButSelf",
                         "common": "Self",
                         "priority": 3,
-                        "command": ["protect", "safeguard"]
+                        "command": [
+                            "protect",
+                            "safeguard"
+                        ]
                     }
                 },
                 "protect": {
@@ -163,13 +166,36 @@
             "role": "Hooker-2",
             "translation": "Crying White Unicorn",
             "side": "village",
-            "help": "You are a Crying White Unicorn! You can use /distract [name] to distract someone with tears and stuff, which you can do twice.",
+            "help": "You are a Crying White Unicorn! You can use /distract [name] to distract someone with tears and stuff, which also tells you what they did. Creepyyyyy stalking work...",
             "actions": {
                 "night": {
                     "distract": {
                         "target": "AnyButSelf",
                         "common": "Self",
                         "priority": 1,
+                        "command": [
+                            "distract",
+                            "stalk"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "role": "Hooker-3",
+            "translation": "Crying White Unicorn",
+            "side": "village",
+            "help": "You are a Crying White Unicorn! You can use /distract [name] to distract someone with tears and stuff twice, which also tells you what they did. Creepyyyyy stalking work...",
+            "actions": {
+                "night": {
+                    "distract": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 1,
+                        "command": [
+                            "distract",
+                            "stalk"
+                        ],
                         "limit": 2
                     }
                 }
@@ -211,9 +237,9 @@
                 "night": {
                     "kill": {
                         "target": "AnyButSelf",
-                       "common": "Self",
-                       "priority": 19,
-                       "charges": 3
+                        "common": "Self",
+                        "priority": 19,
+                        "charges": 3
                     }
                 },
                 "hax": {
@@ -709,7 +735,9 @@
                     "targetmsg": "You didn't know that you could kill Mad Scientists with tears!?!?"
                 },
                 "onDeath": {
-                    "killRoles": ["Mutated"],
+                    "killRoles": [
+                        "Mutated"
+                    ],
                     "killmsg": "~Player~ took all ~Role~s (~Target~) with him!"
                 },
                 "startup": "team-reveal-with-roles"
@@ -721,7 +749,13 @@
             "side": "Mutated",
             "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team, but you do win with anyone except the Humans.",
             "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Wins with White Unicorns, Black Unicorns, Grey Unicorns, the Rainbow Unicorn, and the Flying Unicorn. Sided with Mutated Unicorns.",
-            "winningSides": ["village", "Black", "Grey", "Rainbow", "Flying"],
+            "winningSides": [
+                "village",
+                "Black",
+                "Grey",
+                "Rainbow",
+                "Flying"
+            ],
             "actions": {
                 "vote": 0,
                 "initialCondition": {
@@ -748,7 +782,7 @@
     "roles2": [
         "Bodyguard-2",
         "Inspector-2",
-        "Hooker-1",
+        "Hooker-2",
         "Black-2",
         "Grey-2",
         "Villager",
@@ -769,7 +803,7 @@
     "roles3": [
         "Bodyguard-2",
         "Inspector-3",
-        "Hooker-2",
+        "Hooker-3",
         "Black-2",
         "Grey-2",
         "Villager",
@@ -792,7 +826,7 @@
         "Miller-Flying",
         "Flying",
         "Bodyguard-2",
-        "Hooker-1",
+        "Villager",
         "Grey-2",
         "Black-2",
         "Villager",
