@@ -3,7 +3,7 @@
     "author": [
         "TheUnknownOne"
     ],
-    "summary": "Unicorn returns! The teams are White Unicorns (village), Black & Grey Unicorns (the mafias), Flying Unicorn (godfather-ish), Rainbow Unicorn (conspirator), and the Humans (Unicorn Hunter and Mad Scientist(s)). The PRs are: Inspector (small: inspect; medium: inspect + reveal; big: inspect + daykill), Bodyguard (small: protect; medium-big: protect + safeguard; 0.5% chance to die when /protect is used), Sad (small: distract; medium: distract + stalk; big: distract x2 + stalk), Leader (small: hax on all + -1 vote; medium-big: hax on all, +2 vote, kill). The Black and Grey Unicorns have an inspector and a leader of their own too! The Flying Unicorn has two kills, and a daykill with chance to be revealed, and the Rainbow Unicorn wins with anyone and can convert someone (can't convert the white unicorn inspector though!) to a pretty much useless version of what they once were. The Unicorn Hunter is alone in small-medium games (1 kill), but will eventually get backup from mad scientists who mutate unicorns (outspeeds anything except the white unicorn bodyguard) causing them to die in 2 nights and revenge poison those who want them dead (they do win with any unicorn). That should be about it! Have fun! ~ TheUnknownOne [Take a look at /roles!]",
+    "summary": "Unicorn returns! The teams are White Unicorns (village), Black & Grey Unicorns (the mafias), Flying Unicorn (godfather-ish), Rainbow Unicorn (conspirator), and the Humans (Unicorn Hunter and Mad Scientist(s)). The PRs are: Intelligent (small: inspect; medium: inspect + reveal; big: inspect + daykill), Wizard (small: protect; medium-big: protect + safeguard; 0.5% chance to die when /protect is used), Crying (small: distract; medium: distract + stalk; big: distract x2 + stalk), King (small: hax on all; medium-big: hax on all, +2 vote, kill). The Black and Grey Unicorns have an intelligent unicorn and a king of their own too! The Flying Unicorn has two kills, and a daykill with chance to be revealed, and the Rainbow Unicorn wins with anyone and can convert someone (can't convert any intelligent unicorns for obvious reasons) to a pretty much useless version of what they once were. The Unicorn Hunter is alone in small-medium games (1 kill), but will eventually get backup from mad scientists who mutate unicorns (outspeeds anything the Sad White Unicorn and the White Unicorn Wizard) causing them to die in 2 nights and revenge killers with a poison effect (that takes only 2 nights). That should be about it! Have fun! ~ TheUnknownOne [Take a look at /roles!]",
     "sides": [
         {
             "side": "village",
@@ -39,7 +39,7 @@
             "role": "Villager",
             "translation": "White Unicorn",
             "side": "village",
-            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
+            "help": "You are one of those simple, plain, and boring unicorns that has nothing to do at all. You get some hax 'n stuff, just for being boring.",
             "actions": {
                 "hax": {
                     "kill": {
@@ -52,9 +52,9 @@
         },
         {
             "role": "Inspector-1",
-            "translation": "White Unicorn Inspector",
+            "translation": "Intelligent White Unicorn",
             "side": "village",
-            "help": "You are a White Unicorn Inspector! You can use /inspect [name] to creep a person out (and find who they are).",
+            "help": "You are a very intelligent unicorn, selected to aid the other White Unicorns to victory! Use /inspect [name] to find out what kind of a person someone is. Use this to your advantage!",
             "actions": {
                 "night": {
                     "inspect": {
@@ -67,9 +67,9 @@
         },
         {
             "role": "Inspector-2",
-            "translation": "White Unicorn Inspector",
+            "translation": "Intelligent White Unicorn",
             "side": "village",
-            "help": "You are a White Unicorn Inspector! You can use /inspect [name] to creep a person out (and find who they are). You can reveal yourself with /reveal, but why would you do that?",
+            "help": "You are a very intelligent unicorn, selected to aid the other White Unicorns to victory! Use /inspect [name] to find out what kind of a person someone is, and you can also use /reveal to make your identity known to the public.",
             "actions": {
                 "night": {
                     "inspect": {
@@ -80,17 +80,17 @@
                 },
                 "standby": {
                     "reveal": {
-                        "msg": "You can now reveal yourself with /reveal :",
-                        "revealmsg": "~Self~ has revealed to be ~Role~. That kid has guts."
+                        "msg": "±Unicorn: Reveal your identity with /reveal while you still can!",
+                        "revealmsg": "There was once a very intelligent White Unicorn named ~Self~, who wanted to be famous!"
                     }
                 }
             }
         },
         {
             "role": "Inspector-3",
-            "translation": "White Unicorn Inspector",
+            "translation": "Intelligent White Unicorn",
             "side": "village",
-            "help": "You are a White Unicorn Inspector! You can use /inspect [name] to creep a person out (and find who they are). You can also kill someone durning standby (which is very, very mean of course).",
+            "help": "You are a very intelligent unicorn, selected to aid the other White Unicorns to victory! Use /inspect [name] to find out what kind of a person someone is. You are also a commander of the White Unicorn Army (don't ask me!), so you can use /kill [name] in the day to \"remove\" someone from these lands. Keep in mind that there are traitors who might reveal your name while you do this.",
             "actions": {
                 "night": {
                     "inspect": {
@@ -102,17 +102,19 @@
                 "standby": {
                     "kill": {
                         "target": "AnyButSelf",
-                        "msg": "You can now kill using /kill [name] (You will be revealed) :",
-                        "killmsg": "The White Unicorn Inspector (~Self~) has used unicorn lazar beam on ~Target~! Haters gonna hate?"
+                        "revealChance": 0.15,
+                        "msg": "±Unicorn: Command your army to banish someone with /kill [name]! Watch out for traitors though!",
+                        "killmsg": "The White Unicorn Army approaches ~Target~, kicking them to death!",
+                        "revealmsg": "A White Unicorn Army traitor has revealed that ~Self~ is a ~Role~!"
                     }
                 }
             }
         },
         {
             "role": "Bodyguard-1",
-            "translation": "White Unicorn Bodyguard",
+            "translation": "White Unicorn Wizard",
             "side": "village",
-            "help": "You are a White Unicorn Bodyguard! You can use /protect [name] to keep that person alive (How nice of you!).",
+            "help": "You are one of those fancy wizard thingies. Cast protective spells on your teammates with /protect [name] to keep them alive!",
             "actions": {
                 "night": {
                     "protect": {
@@ -125,9 +127,9 @@
         },
         {
             "role": "Bodyguard-2",
-            "translation": "White Unicorn Bodyguard",
+            "translation": "White Unicorn Wizard",
             "side": "village",
-            "help": "You are a White Unicorn Bodyguard! You can use /protect [name] to keep that person alive (How nice of you!), which also applies safeguard to them! Don't spam it though, as it can kill you sometimes (sometimes = 0.5%). And to top it off: your vote counts as 0 because you are slow/fat/etc.",
+            "help": "You are one of those fancy wizard thingies! Cast protective spells on your teammates with /protect [name] to keep them alive! The spell is powerful enough to kill you, though, so watch out!",
             "info": "Can protect (protect + safeguard) one unicorn durning the night. Has 0.5% chance to die when protecting someone. Sided with White Unicorns.",
             "actions": {
                 "night": {
@@ -138,20 +140,18 @@
                         "command": [
                             "protect",
                             "safeguard"
-                        ]
+                        ],
+                        "suicideChance": 0.005,
+                        "suicidemsg": "You killed yourself because of your own spell!"
                     }
-                },
-                "protect": {
-                    "suicideChance": 0.005
-                },
-                "vote": 0
+                }
             }
         },
         {
             "role": "Hooker-1",
             "translation": "Crying White Unicorn",
             "side": "village",
-            "help": "You are a Crying White Unicorn! You can use /distract [name] to distract someone with tears and stuff.",
+            "help": "You are a very sad unicorn, possibly very young.. No one wants to see you crying, which you can take advantage of with /distract [name]!",
             "actions": {
                 "night": {
                     "distract": {
@@ -166,7 +166,7 @@
             "role": "Hooker-2",
             "translation": "Crying White Unicorn",
             "side": "village",
-            "help": "You are a Crying White Unicorn! You can use /distract [name] to distract someone with tears and stuff, which also tells you what they did. Creepyyyyy stalking work...",
+            "help": "You are a very sad unicorn, possibly very young.. No one wants to see you crying, which you can take advantage of with /distract [name]! You apperantly figure out what they were doing, too.",
             "actions": {
                 "night": {
                     "distract": {
@@ -185,7 +185,7 @@
             "role": "Hooker-3",
             "translation": "Crying White Unicorn",
             "side": "village",
-            "help": "You are a Crying White Unicorn! You can use /distract [name] to distract someone with tears and stuff twice, which also tells you what they did. Creepyyyyy stalking work...",
+            "help": "You are a very sad unicorn, possibly very young.. No one wants to see you crying, which you can take advantage of with /distract [name], which you can do twice (what an annoyance)! You apperantly figure out what they were doing, too.",
             "actions": {
                 "night": {
                     "distract": {
@@ -203,9 +203,9 @@
         },
         {
             "role": "Leader-1",
-            "translation": "White Unicorn Leader",
+            "translation": "White Unicorn King",
             "side": "village",
-            "help": "Your vote counts as -1 and you can find out who kills, who protects, who distracts, and who inspects (That's a lot of whos).",
+            "help": "You are the mighty king of all White Unicorns! Your messengers tell you who is going to something, if they find out..",
             "actions": {
                 "hax": {
                     "kill": {
@@ -224,15 +224,14 @@
                         "revealTeam": 0.1,
                         "revealPlayer": 0.05
                     }
-                },
-                "vote": -1
+                }
             }
         },
         {
             "role": "Leader-2",
-            "translation": "White Unicorn Leader",
+            "translation": "White Unicorn King",
             "side": "village",
-            "help": "Your vote counts as 2 (use this to lead the White Unicorns!) and you can find out who kills, who protects, who safeguards, who distracts, who colorizes, and who inspects (That's a lot of whos). You can kill someone with /kill [name] too (which can only be used 3 times per game)!",
+            "help": "You are the mighty king of all White Unicorns, which gives you an additional vote! Your messengers tell you who is going to something, if they find out.. You can also command your army to kill someone with /kill [name], but only 3 times!",
             "actions": {
                 "night": {
                     "kill": {
@@ -271,7 +270,8 @@
             "role": "Miller-Hunter",
             "translation": "White Unicorn",
             "side": "village",
-            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
+            "help": "You are one of those simple, plain, and boring unicorns that has nothing to do at all. You get some hax 'n stuff, just for being boring.",
+            "info": "Miller who appears as the Unicorn Hunter. Sided with White Unicorns.",
             "actions": {
                 "inspect": {
                     "revealAs": "Hunter-1"
@@ -289,7 +289,8 @@
             "role": "Miller-Scientist",
             "translation": "White Unicorn",
             "side": "village",
-            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
+            "info": "Miller who appears as the Unicorn Hunter. Sided with White Unicorns.",
+            "help": "You are one of those simple, plain, and boring unicorns that has nothing to do at all. You get some hax 'n stuff, just for being boring.",
             "actions": {
                 "inspect": {
                     "revealAs": "Scientist"
@@ -307,7 +308,8 @@
             "role": "Miller-Flying",
             "translation": "White Unicorn",
             "side": "village",
-            "help": "Thou is one of the friendly unicorns (Since when do friendly unicorn exist?). You are very young (and annoying), so you get hax on killers :(",
+            "info": "Miller who appears as the Unicorn Hunter. Sided with White Unicorns.",
+            "help": "You are one of those simple, plain, and boring unicorns that has nothing to do at all. You get some hax 'n stuff, just for being boring.",
             "actions": {
                 "inspect": {
                     "revealAs": "Flying"
@@ -336,7 +338,7 @@
             "role": "Black-1",
             "translation": "Black Unicorn",
             "side": "Black",
-            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is. You are also faster than Grey Unicorns, but you don't have any additional abilities!.",
+            "help": "You are a simple Black Unicorn who can kill others with /kill [name] (shared with your team)! You have a small chance to find out who the White Unicorn Wizard is. The Black Unicorn Army is also faster than Grey Unicorn Army, but you don't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
@@ -358,7 +360,7 @@
             "role": "Black-2",
             "translation": "Black Unicorn",
             "side": "Black",
-            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! You are faster than Grey Unicorns, but you don't have any additional abilities!",
+            "help": "You are a simple Black Unicorn who can kill others with /kill [name] (shared with your team)! The Black Unicorn Army is faster than Grey Unicorn Army, but doesn't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
@@ -373,9 +375,9 @@
         },
         {
             "role": "Black-Inspector",
-            "translation": "Black Unicorn Inspector",
+            "translation": "Intelligent Black Unicorn",
             "side": "Black",
-            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates. You can also use /inspect [name] to inspect something because you are one of those fancy Sherlock unicorns! You are faster than Grey Unicorns, but you don't have any additional abilities!",
+            "help": "You are an intelligent Black Unicorn who can kill others with /kill [name] (shared with your team), and can also find out the identity of others with /inspect [name]! The Black Unicorn Army is faster than Grey Unicorn Army, but doesn't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
@@ -396,9 +398,9 @@
         },
         {
             "role": "Black-Leader",
-            "translation": "Black Unicorn Leader",
+            "translation": "Black Unicorn King",
             "side": "Black",
-            "help": "You are a Black Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail. You are faster than Grey Unicorns, but you don't have any additional abilities!",
+            "help": "You are the mighty king of the Black Unicorns who can kill others with /kill [name] (shared with your team), and kill another person every 3 nights starting at the 3rd night with /kill2 [name] (has 20% chance to fail)! You are somehow immume to the Sad White Unicorn. The Black Unicorn Army is faster than Grey Unicorn Army, but doesn't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
@@ -412,7 +414,7 @@
                         "common": "Self",
                         "priority": 12,
                         "broadcast": "team",
-                        "broadcastmsg": "±Game: The Black Unicorn Leader (~Player~) has decided to use their additional kill on ~Target~!",
+                        "broadcastmsg": "±Game: The Black Unicorn King (~Player~) has decided to use their additional kill on ~Target~!",
                         "initialrecharge": 3,
                         "recharge": 3,
                         "failChance": 0.2,
@@ -440,7 +442,7 @@
             "role": "Grey-1",
             "translation": "Grey Unicorn",
             "side": "Grey",
-            "help": "You are a Grey Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! Additionaly you have a small chance to find out who the White Unicorn Bodyguard is. You are slower than Black Unicorns, but your vote counts as 1.1 making you more important and stuff.",
+            "help": "You are a simple Grey Unicorn who can kill others with /kill [name] (shared with your team)! You have a small chance to find out who the White Unicorn Wizard is. The Grey Unicorn Army is slower than the Black Unicorn Army, but is slightly more important when lynching (vote: 1.1)!",
             "actions": {
                 "night": {
                     "kill": {
@@ -463,7 +465,7 @@
             "role": "Grey-2",
             "translation": "Grey Unicorn",
             "side": "Grey",
-            "help": "You are a Grey Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! You are slower than Black Unicorns, but your vote counts as 1.1 making you more important and stuff.",
+            "help": "You are a simple Grey Unicorn who can kill others with /kill [name] (shared with your team)! The Grey Unicorn Army is slower than the Black Unicorn Army, but is slightly more important when lynching (vote: 1.1)!",
             "actions": {
                 "night": {
                     "kill": {
@@ -479,9 +481,9 @@
         },
         {
             "role": "Grey-Inspector",
-            "translation": "Grey Unicorn Inspector",
+            "translation": "Intelligent Grey Unicorn",
             "side": "Grey",
-            "help": "You are a Grey Unicorn, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates. You can also use /inspect [name] to inspect something because you are one of those fancy Sherlock unicorns! You are faster than Grey Unicorns, but you don't have any additional abilities!",
+            "help": "You are an intelligent Grey Unicorn who can kill others with /kill [name] (shared with your team), and can also find out the identity of others with /inspect [name]! The Grey Unicorn Army is slower than the Black Unicorn Army, but is slightly more important when lynching (vote: 1.1)!",
             "actions": {
                 "night": {
                     "kill": {
@@ -503,9 +505,9 @@
         },
         {
             "role": "Grey-Leader",
-            "translation": "Grey Unicorn Leader",
+            "translation": "Grey Unicorn King",
             "side": "Grey",
-            "help": "You are a Grey Unicorn Leader, and, because of this, you can do /kill [name] to kill someone you don't like, but keep in mind that it is shared amoung your teammates! You can't be distracted because you are a busy thing. You can get an extra kill in every 3 nights using /kill2 [name], but it has a 20% chance to fail. You are slower than Black Unicorns, but your vote counts as 1.1 making you more important and stuff.",
+            "help": "You are the mighty king of the Grey Unicorns who can kill others with /kill [name] (shared with your team), and kill another person every 3 nights starting at the 3rd night with /kill2 [name] (has 20% chance to fail)! You are somehow immume to the Sad White Unicorn. The Black Unicorn Army is faster than Grey Unicorn Army, but doesn't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
@@ -519,7 +521,7 @@
                         "common": "Self",
                         "priority": 13,
                         "broadcast": "team",
-                        "broadcastmsg": "±Game: The Grey Unicorn Leader (~Player~) has decided to use their additional kill on ~Target~!",
+                        "broadcastmsg": "±Game: The Grey Unicorn King (~Player~) has decided to use their additional kill on ~Target~!",
                         "initialrecharge": 3,
                         "recharge": 3,
                         "failChance": 0.2,
@@ -548,7 +550,7 @@
             "role": "Flying",
             "translation": "Flying Unicorn",
             "side": "Flying",
-            "help": "You are a murdering machine for some stupid reason (don't ask me). You can kill twice per night, and once a day (20% chance to be revealed). You kill last in the night, however. Annoying unicorns who want to be distract you from doing your stuffz will simply die, since this game is serious business.",
+            "help": "You are the mythical Flying Unicorn, which can murder people with it's feet using /kill [name], twice! You also get an additional kill in the day with /kill [name] (20% chance for someone to see you)!",
             "actions": {
                 "night": {
                     "kill": {
@@ -558,16 +560,11 @@
                         "limit": 2
                     }
                 },
-                "distract": {
-                    "mode": "ChangeTarget",
-                    "hookermsg": "You tried to annoy the Flying Unicorn! You have been rewarded with a Flying Kick.",
-                    "msg": "The ~Distracter~ came to you last night! What an idiot."
-                },
                 "standby": {
                     "kill": {
                         "target": "AnyButSelf",
-                        "msg": "Time to fly. Type /Kill [Name] to do so! (You have 20% to be revealed):",
-                        "killmsg": "The Flying Unicorn has used the Flying Kick (wtf is that) on ~Target~! ~Target~ fell out of the mafia channel (because it is flat)!",
+                        "msg": "±Unicorn: Time to fly! Murder someone with /kill [name] (you have 20% chance to be revealed)!",
+                        "killmsg": "The Flying Unicorn used their goomba stomp on ~Target~, dealing a critical hit!",
                         "revealChance": 0.2,
                         "revealmsg": "Someone saw the ~Role~ (~Name~) fly by!"
                     }
@@ -578,7 +575,7 @@
             "role": "Rainbow_Flying",
             "translation": "Flying Rainbow Unicorn",
             "side": "Flying",
-            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 4 nights. Your vote counts as 5.",
+            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 4 nights, but your vote counts as 3.",
             "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 3. Can't be lynched. Dies in 4 nights. Sided with Flying Unicorn.",
             "actions": {
                 "vote": 3,
@@ -595,8 +592,8 @@
             "role": "Rainbow",
             "translation": "Rainbow Unicorn",
             "side": "Rainbow",
-            "help": "You are a rainbow unicorn! Being all so colorish you can /colorize [name] to make someone have lots of colors (You can't colorize White Unicorn Inspectors or Humans, though)! You win with everyone except the Humans, because they want to kill you.",
-            "info": "Can colorize (convert) 1 player in the night (Can't convert White Unicorn Inspectors or any Humans). Wins with any side except Humans.",
+            "help": "You are a Rainbow Unicorn! Being all so colo(u)r-ish you can /colorize [name] or /colourize [name] to make someone have lots of colo(u)rs (You can't colo(u)rize intelligent unicorns or Humans, though)! You win with everyone except the Humans, because they want to kill you.",
+            "info": "Can colorize or colourize (convert) 1 player in the night (Can't convert Intelligent White, Black, or Grey Unicorns or any Humans). Wins with any side except Humans.",
             "winningSides": [
                 "village",
                 "Black",
@@ -628,7 +625,63 @@
                                 "Bodyguard-2",
                                 "Hooker-2",
                                 "Leader-2",
-                                "Miller-Flying"
+                                "Miller-Flying",
+                                "Miller-Scientist",
+                                "Hooker-3"
+                            ]
+                        },
+                        "canConvert": [
+                            "Black-1",
+                            "Black-Leader",
+                            "Black-2",
+                            "Grey-1",
+                            "Grey-Leader",
+                            "Grey-2",
+                            "Flying",
+                            "Bodyguard-1",
+                            "Hooker-1",
+                            "Villager",
+                            "Miller-Hunter",
+                            "Leader-1",
+                            "Bodyguard-2",
+                            "Hooker-2",
+                            "Leader-2",
+                            "Miller-Flying",
+                            "Miller-Scientist",
+                            "Hooker-3"
+                        ],
+                        "convertmsg": "~Target~, who was ~Old~, has been colorized by the Rainbow Unicorn, making them a ~New~!",
+                        "usermsg": "~Target~ (~Old~) is now a ~New~!",
+                        "command": "convert",
+                        "restrict": [
+                            "colourize"
+                        ]
+                    },
+                    "colourize": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 5,
+                        "newRole": {
+                            "Rainbow_Grey": [
+                                "Grey-1",
+                                "Grey-Leader",
+                                "Grey-2",
+                                "Grey-Inspector"
+                            ],
+                            "Rainbow_Flying": [
+                                "Flying"
+                            ],
+                            "Rainbow_Village": [
+                                "Bodyguard-1",
+                                "Hooker-1",
+                                "Villager",
+                                "Miller-Hunter",
+                                "Leader-1",
+                                "Bodyguard-2",
+                                "Hooker-2",
+                                "Leader-2",
+                                "Miller-Flying",
+                                "Hooker-3"
                             ]
                         },
                         "canConvert": [
@@ -649,11 +702,16 @@
                             "Bodyguard-2",
                             "Hooker-2",
                             "Leader-2",
-                            "Miller-Flying"
+                            "Miller-Flying",
+                            "Miller-Scientist",
+                            "Hooker-3"
                         ],
-                        "convertmsg": "~Target~, who was ~Old~, has been colorized by the Rainbow Unicorn, making them a ~New~!",
+                        "convertmsg": "~Target~, who was ~Old~, has been colourized by the Rainbow Unicorn, making them a ~New~!",
                         "usermsg": "~Target~ (~Old~) is now a ~New~!",
-                        "command": "convert"
+                        "command": "convert",
+                        "restrict": [
+                            "colorize"
+                        ]
                     }
                 }
             }
@@ -662,7 +720,7 @@
             "role": "Hunter-1",
             "translation": "Unicorn Hunter",
             "side": "Human",
-            "help": "You are a human, a hunter, and a unicorn hater! Type /Kill [name] to kill one of the unicorns! You kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
+            "help": "You are a very skilled hunter, whos job it is to kill defenceless little unicorns for money! Starting is easy: Just use /kill [name] on them to begin receiving payment! You kill someone in one shot, so no one will know what you did. You also don't really like crybabies so you simply kill them.",
             "actions": {
                 "night": {
                     "kill": {
@@ -673,8 +731,8 @@
                 },
                 "distract": {
                     "mode": "ChangeTarget",
-                    "hookermsg": "You went to the Unicorn Hunter (stupid!), cried, and died!",
-                    "msg": "The ~Distracter~ came to you last night! You shot her to death (meanie)!"
+                    "hookermsg": "The Unicorn Hunter didn't want to see you so he killed you..",
+                    "msg": "The ~Distracter~ came to you last night... You quickly decided to kill it with fire!"
                 },
                 "avoidHax": [
                     "kill"
@@ -685,7 +743,7 @@
             "role": "Hunter-2",
             "translation": "Unicorn Hunter",
             "side": "Human",
-            "help": "You are a human, a hunter, and a unicorn hater! Type /kill [name] to kill someone! You have a voteshield of -1 and you kill the Crying White Unicorn when he/it comes to you. Since your kill is a one-hit shot, no one will be able to hax you!",
+            "help": "You are a very skilled hunter, whos job it is to kill defenceless little unicorns for money! Starting is easy: Just use /kill [name] on them to begin receiving payment! You kill someone in one shot, so no one will know what you did. You also don't really like crybabies so you simply kill them. There will also always be a single government agent thingy to keep you alive when you are being lynched (-1 vote).",
             "actions": {
                 "night": {
                     "kill": {
@@ -697,8 +755,8 @@
                 },
                 "distract": {
                     "mode": "ChangeTarget",
-                    "hookermsg": "You went to the Unicorn Hunter (stupid!), cried, and died!",
-                    "msg": "The ~Distracter~ came to you last night! You shot her to death (meanie)!"
+                    "hookermsg": "The Unicorn Hunter didn't want to see you so he killed you..",
+                    "msg": "The ~Distracter~ came to you last night... You quickly decided to kill it with fire!"
                 },
                 "avoidHax": [
                     "kill"
@@ -711,7 +769,7 @@
             "role": "Scientist",
             "translation": "Mad Scientist",
             "side": "Human",
-            "help": "You are a scientist, sent out by the government to kill all unicorns once and for all, along with the Unicorn Hunter. Type /mutate [name] to mutate a unicorn into an even filthier creature (they win with the humans, somehow)! They die if you die, so don't (shouldn't be hard anyway since you have 30% chance to evade a kill). Crying White Unicorns can kill you with their tears, so watch out!",
+            "help": "You are a evil scientist, send out by the government to kill all unicorns once and for all. You are permitted to use /mutate [name] to mutate a unicorn into an even filthier creature! They die if you die, so don't (shouldn't be hard anyway since you have 30% chance to evade a kill). Crying White Unicorns can kill you with their tears, so watch out!",
             "actions": {
                 "night": {
                     "mutate": {
@@ -747,8 +805,8 @@
             "role": "Mutated",
             "translation": "Mutated Unicorn",
             "side": "Mutated",
-            "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team, but you do win with anyone except the Humans.",
-            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Wins with White Unicorns, Black Unicorns, Grey Unicorns, the Rainbow Unicorn, and the Flying Unicorn. Sided with Mutated Unicorns.",
+            "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team, but you do win with anyone except the Humans. Anyone who kills you unprotected will suffer from poison! :D",
+            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Wins with White Unicorns, Black Unicorns, Grey Unicorns, the Rainbow Unicorn, and the Flying Unicorn. Poisons attackers (2 nights) silently. Sided with Mutated Unicorns.",
             "winningSides": [
                 "village",
                 "Black",
@@ -763,6 +821,12 @@
                         "count": 3,
                         "poisonDeadMessage": "Your time is up. Mutation is deadly."
                     }
+                },
+                "kill": {
+                    "mode": "poisonattacker",
+                    "count": 2,
+                    "poisonDeadMessage": "Mutated Unicorns do not like to die :|",
+                    "silent": true
                 }
             }
         }
@@ -836,8 +900,8 @@
         "Leader-2",
         "Inspector-3"
     ],
-    "killmsg": "±Game: ~Player~, who was a ~Role~, has been banished from the land of Unicorns!",
-    "killusermsg": "±Game: 0 lives left, try again some day!",
-    "lynchmsg": "±Game: ~Player~ (~Role~), wasn't very liked here! Guiliotine!",
-    "drawmsg": "±Game: Everyone (kinda) won. Deal with it!"
+    "killmsg": "±Unicorn: ~Player~, who was a ~Role~, has been banished from the land of Unicorns!",
+    "killusermsg": "±Unicorn: 0 lives left, try again some day!",
+    "lynchmsg": "±Unicorn: ~Player~ (~Role~), wasn't very liked here! Guiliotine!",
+    "drawmsg": "±Unicorn: Everyone (kinda) won. Deal with it!"
 }
