@@ -94,7 +94,6 @@ if (!util.user) {
                 bot.send(src, "Welcome, " + player + "!", 0);
                 bot.send(src, "Type in <b><font color='green'>/Commands</font></b> to see the commands and <b><font color='green'>/Rules</font></b> to see the rules.", 0);
 
-                // TODO: Add util.time.startUpTime()
                 if (util.type(util.time.startup) === "number") {
                     bot.send(src, "The server has been up for " + util.time.startUpTime() + "</b>.", 0);
                 }

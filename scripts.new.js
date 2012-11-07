@@ -30,6 +30,7 @@
  - ify.js
  - jsession.js
  - jsext.js
+ - mafia.js
  - users.js
  - utilities.js
 
@@ -157,10 +158,10 @@ BRANCH = "devel";
  * Modules to load
  * @type {Array}
  */
-// TODO: Add users.js, and channels.js once done
+// TODO: Add channels.js once done
 Modules = [
     "modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/cache.js", "modules/datahash.js",
-    "modules/jsession.js"
+    "modules/jsession.js", "modules/users.js", "modules/mafia.js"
 ];
 
 /**
@@ -403,16 +404,13 @@ include.GetMethod = {
  * @return {*} Full module, source, hooks, name, or commands.
  */
 include.get = function (FileName, Method) {
-    var query,
-        methods;
+    var query = include.modules[FileName],
+        methods = include.GetMethod;
 
-    if (typeof include.modules[FileName] === "undefined") {
+    if (typeof query === "undefined") {
         include(FileName, Method);
         return;
     }
-
-    query = include.modules[FileName],
-        methods = include.GetMethod;
 
     if (Method === methods.Full) {
         return query;
@@ -586,6 +584,12 @@ callResult = function (hook_name, hook_args) {
         sys.deleteFile("server.lck");
     },
     /**
+     * Called every second
+     */
+    step: function () {
+        call("step");
+    },
+    /**
      * Before a message gets outputted to the console from stdout
      * @param {String} message Message from stdout
      */
@@ -656,8 +660,7 @@ callResult = function (hook_name, hook_args) {
             data = "",
             pos = message.indexOf(' '),
             queryRes,
-            totalAuth = sys.maxAuth(sys.ip(src)),
-            auth = totalAuth,
+            auth = sys.maxAuth(sys.ip(src)),
             cmd,
             commandInfo,
             maxAuth = {
@@ -722,7 +725,7 @@ callResult = function (hook_name, hook_args) {
             })[maxAuth.index];
 
             if (queryRes) {
-                totalAuth = auth = queryRes;
+                auth = queryRes;
             }
 
             if (auth > 3) {

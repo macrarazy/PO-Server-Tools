@@ -563,13 +563,24 @@ util.error = {
      * @return {String} Error message
      */
     format: function (mess, e) {
-        var lastChar, lineData = "", name = e.name, msg = e.message, str;
+        var lastChar,
+            lineData = "",
+            name,
+            msg,
+            str;
+
+        if (arguments.length === 1) {
+            e = mess;
+            mess = "";
+        }
 
         if (typeof mess !== "string") {
             mess = "";
         }
 
-        lastChar = mess[mess.length - 1];
+        name = e.name,
+            msg = e.message,
+            lastChar = mess[mess.length - 1];
 
         if (mess !== "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
             mess += ".";
@@ -781,9 +792,64 @@ util.watch = {
  * Time Utilities
  * @type {Object}
  */
-// TODO: Work on these
 util.time = {
+    /**
+     * Returns the time since epoch in seconds
+     * @return {Number}
+     */
+    time: function () {
+        return sys.time () * 1;
+    },
+    /**
+     * Formats a number (time) to a readable string
+     * @param {Number} time Time to format
+     * @return {String}
+     */
+    format: function (time) {
+        var n,
+            s = [],
+            d = [
+                [2629744, "<b>Month</b>"],
+                [604800, "<b>Week</b>"],
+                [86400, "<b>Day</b>"],
+                [3600, "<b>Hour</b>"],
+                [60, "<b>Minute</b>"],
+                [1, "<b>Second</b>"]
+            ],
+            sec = util.time.time() - time,
+            j,
+            sL,
+            len = d.length;
 
+        for (j in d) {
+            n = parseInt(sec / d[j][0]);
+            if (n > 0) {
+                sL = "";
+                if (n > 1) {
+                    sL = "<b>s</b>";
+                }
+
+                s.push((n + " " + d[j][1] + sL));
+                sec -= n * d[j][0];
+
+                if (s.length >= len) {
+                    break;
+                }
+            }
+        }
+        if (s.length === 0) {
+            return "1 <b>Second</b>";
+        }
+
+        return s.fancyJoin() + "</b>";
+    },
+    /**
+     * Returns the time since the server started up
+     * @return {String} Result of util.time.format
+     */
+    startUpTime: function () {
+        return util.time.format(util.time.startup);
+    }
 };
 
 /**
@@ -862,7 +928,7 @@ bot = util.bot;
     Hooks: function () {
         return {
             "serverStartUp": function () {
-                util.time.startup = sys.time() * 1;
+                util.time.startup = util.time.time() * 1;
             },
             "commandNameRequested": function (src, message, chan, commandName) {
                 if (commandName != "sendmail") { // HARDCODED
@@ -913,7 +979,7 @@ bot = util.bot;
                 } else if (errorType === "invalid") {
                     bot.sendText(src, "The command \"" + fullCommand + "\" doesn't exist.", chan);
                 } else {
-                    bot.sendText(src, "An exception occurred when you tried to use the \"" + util.error.format("", Exception || {
+                    bot.sendText(src, "An exception occurred when you tried to use the \"" + util.error.format(Exception || {
                         name: "UnknownError",
                         message: "An unknown exception has occurred",
                         lineNumber: 1
