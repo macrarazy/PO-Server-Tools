@@ -1,0 +1,60 @@
+{
+    "name": "MvM",
+    "summary": "The robots are here. Defend Mann Co. ! This theme requires 10 players to start, has no voting phase, the night is 35 seconds, and the day is 25 seconds. Everyone has their own unique role, and has to defeat the other team to win (Mann Co. vs Machines)! There is a Sentry Buster at medium-large games which can be sided with either side (even though it's a robot).",
+    "author": [
+        "TheUnknownOne"
+    ],
+    "minplayers": 10,
+    "nolynch": true,
+    "ticks": {
+        "night": 35,
+        "day": 25
+    },
+    "sides": [
+        {
+            "side": "Mann",
+            "translation": "Mann Co."
+        },
+        {
+            "side": "Machine",
+            "translation": "Machines"
+        },
+        {
+            "side": "Sentry_Buster",
+            "translation": "Sentry Buster"
+        }
+    ],
+    "roles": [
+        {
+            "role": "Robot_Scout_Minor_League_Scout",
+            "translation": "Minor League Scout (Machine)",
+            "side": "Machine",
+            "help": "You are sided with the Machines (defeat all Manns!). Hit someone with the /sandman [name] to distract them in the night. Your aim is bad so you have 40% chance to miss, and you can only use it every other night because the ball has to recharge!",
+            "info": "Can sandman (distract) one person in the night w/ 40% chance to fail and can only be used every other night. Sided with the Machines.",
+            "actions": {
+                "night": {
+                    "sandman": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 20,
+                        "recharge": 2,
+                        "failChance": 0.4,
+                        "command": "distract"
+                    }
+                }
+            }
+        }
+    ],
+    "roles1": [
+        "Robot_Scout_Minor_League_Scout"
+    ],
+    "killmsg": "±Kill Feed: ~Player~ (~Role~) was destroyed!",
+    "killusermsg": "±Kill Feed: Respawn in: Never",
+    "drawmsg": "±Stalemate: You're all losers.",
+    "priority": {
+        "optional": true,
+        "night": {
+            "Robot_Scout_Minor_League_Scout": 20
+        }
+    }
+}
