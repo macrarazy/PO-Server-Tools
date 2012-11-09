@@ -3,7 +3,7 @@
     "author": [
         "TheUnknownOne"
     ],
-    "summary": "Unicorn returns! The teams are White Unicorns (village), Black & Grey Unicorns (the mafias), Flying Unicorn (godfather-ish), Rainbow Unicorn (conspirator), and the Humans (Unicorn Hunter and Mad Scientist(s)). The PRs are: Intelligent (small: inspect; medium: inspect + reveal; big: inspect + daykill), Wizard (small: protect; medium-big: protect + safeguard; 0.5% chance to die when /protect is used), Crying (small: distract; medium: distract + stalk; big: distract x2 + stalk), King (small: hax on all; medium-big: hax on all, +2 vote, kill). The Black and Grey Unicorns have an intelligent unicorn and a king of their own too! The Flying Unicorn has two kills, and a daykill with chance to be revealed, and the Rainbow Unicorn wins with anyone and can convert someone (can't convert any intelligent unicorns for obvious reasons) to a pretty much useless version of what they once were. The Unicorn Hunter is alone in small-medium games (1 kill), but will eventually get backup from mad scientists who mutate unicorns (outspeeds anything the Sad White Unicorn and the White Unicorn Wizard) causing them to die in 2 nights and revenge killers with a poison effect (that takes only 2 nights). That should be about it! Have fun! ~ TheUnknownOne [Take a look at /roles!]",
+    "summary": "Unicorn returns! The village in this theme are the White Unicorns, whos PRs are: Intelligent (insp), Wizard (bg), Crying (pl), King (high hax), and Commander (nightkill). Don't claim if there is the Flying Unicorn (daykill w/ 20% reveal chance), and the Mad Scientist (convert to a role which will die in 2 nights and revenge-poisons killers) assuming there is no Wizard (bg) alive. The Rainbow Unicorn is the Conspirator and can convert someone into a useless version, which will still be sided on the same team (can't convert Intelligent Unicorns or Humans though, so you can safely claim). Read the /roles, /sides, and the /priority list! That should be about it! Have fun! ~ TheUnknownOne.",
     "minplayers": 6,
     "sides": [
         {
@@ -604,7 +604,7 @@
             "role": "Rainbow",
             "translation": "Rainbow Unicorn",
             "side": "Rainbow",
-            "help": "You are a Rainbow Unicorn! Being all so color-ish you can /colorize [name] or to make someone have lots of colours (You can't colourize intelligent unicorns or Humans, though)! You win with everyone except the Humans, because they want to kill you.",
+            "help": "You are a Rainbow Unicorn! Being all so color-ish you can /colorize [name] or to make someone have lots of colours (You can't colorize Intelligent Unicorns, Humans, or Mutated Unicorns, though)! You win with everyone except the Humans, because they want to kill you.",
             "info": "Can colorize (convert) 1 player in the night (Can't convert Intelligent White, Black, or Grey Unicorns or any Humans). Wins with any side except Humans.",
             "winningSides": [
                 "village",
@@ -622,45 +622,51 @@
                             "Rainbow_Grey": [
                                 "Grey-1",
                                 "Grey-Leader",
-                                "Grey-2",
-                                "Grey-Inspector"
+                                "Grey-2"
+                            ],
+                            "Rainbow_Black": [
+                                "Black-1",
+                                "Black-Leader",
+                                "Black-2"
                             ],
                             "Rainbow_Flying": [
                                 "Flying"
                             ],
                             "Rainbow_Village": [
-                                "Bodyguard-1",
-                                "Hooker-1",
                                 "Villager",
-                                "Miller-Hunter",
-                                "Leader-1",
+                                "Bodyguard-1",
                                 "Bodyguard-2",
+                                "Hooker-1",
                                 "Hooker-2",
+                                "Hooker-3",
+                                "Leader-1",
                                 "Leader-2",
+                                "Miller-Hunter",
                                 "Miller-Flying",
                                 "Miller-Scientist",
-                                "Hooker-3"
+                                "Commander"
                             ]
                         },
                         "canConvert": [
+                            "Villager",
+                            "Bodyguard-1",
+                            "Bodyguard-2",
+                            "Hooker-1",
+                            "Hooker-2",
+                            "Hooker-3",
+                            "Leader-1",
+                            "Leader-2",
+                            "Commander",
+                            "Miller-Hunter",
+                            "Miller-Flying",
+                            "Miller-Scientist",
                             "Black-1",
                             "Black-Leader",
                             "Black-2",
                             "Grey-1",
                             "Grey-Leader",
                             "Grey-2",
-                            "Flying",
-                            "Bodyguard-1",
-                            "Hooker-1",
-                            "Villager",
-                            "Miller-Hunter",
-                            "Leader-1",
-                            "Bodyguard-2",
-                            "Hooker-2",
-                            "Leader-2",
-                            "Miller-Flying",
-                            "Miller-Scientist",
-                            "Hooker-3"
+                            "Flying"
                         ],
                         "convertmsg": "~Target~, who was ~Old~, has been colorized by the Rainbow Unicorn, making them a ~New~!",
                         "usermsg": "~Target~ (~Old~) is now a ~New~!",
@@ -722,17 +728,47 @@
             "role": "Scientist",
             "translation": "Mad Scientist",
             "side": "Human",
-            "help": "You are a evil scientist, send out by the government to kill all unicorns once and for all. You are permitted to use /mutate [name] to mutate a unicorn into an even filthier creature (10% chance to fail because science isn't perfect)! They die if you die, so don't (shouldn't be hard anyway since you have 30% chance to evade a kill). Crying White Unicorns can kill you with their tears, so watch out! Your fancy scientist things somehow give you a crappy superpower (20% chance to see who did something in the day.. pfft)",
+            "help": "You are a evil scientist, send out by the government to kill all unicorns once and for all. You are permitted to use /mutate [name] to mutate a unicorn into an even filthier creature (5% chance to fail because science isn't perfect. It is also shared with all other scientists)! They die if you die, so don't (shouldn't be hard anyway since you have 30% chance to evade a kill). Crying White Unicorns can kill you with their tears, so watch out! Your fancy scientist things somehow give you a crappy superpower (20% chance to see who did something in the day.. pfft)",
             "actions": {
                 "night": {
                     "mutate": {
                         "target": "AnyButTeam",
-                        "common": "Self",
+                        "common": "Role",
                         "priority": 4,
                         "broadcast": "team",
-                        "canConvert": "*",
+                        "canConvert": [
+                            "Villager",
+                            "Inspector-1",
+                            "Inspector-2",
+                            "Inspector-3",
+                            "Bodyguard-1",
+                            "Bodyguard-2",
+                            "Hooker-1",
+                            "Hooker-2",
+                            "Hooker-3",
+                            "Leader-1",
+                            "Leader-2",
+                            "Commander",
+                            "Miller-Hunter",
+                            "Miller-Flying",
+                            "Miller-Scientist",
+                            "Rainbow_Village",
+                            "Black-1",
+                            "Black-Leader",
+                            "Nlack-Inspector",
+                            "Black-2",
+                            "Rainbow_Black",
+                            "Grey-1",
+                            "Grey-Leader",
+                            "Grey-Inspector",
+                            "Grey-2",
+                            "Rainbow_Grey",
+                            "Flying",
+                            "Rainbow_Flying",
+                            "Rainbow"
+                        ],
                         "newRole": "Mutated",
-                        "failChance": 0.1,
+                        "failChance": 0.05,
                         "command": "convert"
                     }
                 },
@@ -765,7 +801,7 @@
             "translation": "Mutated Unicorn",
             "side": "Mutated",
             "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team, but you do win with anyone except the Humans. Anyone who kills you unprotected will suffer from poison! :D",
-            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Wins with White Unicorns, Black Unicorns, Grey Unicorns, the Rainbow Unicorn, and the Flying Unicorn. Poisons attackers (2 nights) silently. Sided with Mutated Unicorns.",
+            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Wins with White Unicorns, Black Unicorns, Grey Unicorns, the Rainbow Unicorn, or the Flying Unicorn. Poisons attackers (2 nights) silently. Sided with Mutated Unicorns.",
             "winningSides": [
                 "village",
                 "Black",
