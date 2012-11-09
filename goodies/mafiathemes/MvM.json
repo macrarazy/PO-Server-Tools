@@ -8,16 +8,16 @@
     "nolynch": true,
     "ticks": {
         "night": 35,
-        "day": 25
+        "standby": 25
     },
     "sides": [
         {
-            "side": "Mann",
-            "translation": "Mann Co."
-        },
-        {
             "side": "Machine",
             "translation": "Machines"
+        },
+        {
+            "side": "Mann",
+            "translation": "Mann Co."
         },
         {
             "side": "Sentry_Buster",
@@ -26,27 +26,134 @@
     ],
     "roles": [
         {
+            "role": "Robot_Scout",
+            "translation": "Scout (Machine)",
+            "side": "Machine",
+            "help": "You are sided with the Machines (defeat all of Mann Co.!). You pretty much have nothing else to do other than annoy people in the day with /annoy. You also dodge all day kills.",
+            "info": "Can annoy (reveal) in the day. Ignores Demoknights. Sided with the Machines.",
+            "actions": {
+                "standby": {
+                    "annoy": {
+                        "msg": "±Tip of the Day: As a Scout, you can annoy others with /annoy."
+                        "revealmsg": "NEED A DISPENSER HERE! NEED A DISPENSER HERE! NEED A DISPENSER HERE!",
+                        "command": "reveal"
+                    }
+                },
+                "daykill": "revenge"
+            }
+        },
+        {
             "role": "Robot_Scout_Minor_League_Scout",
             "translation": "Minor League Scout (Machine)",
             "side": "Machine",
-            "help": "You are sided with the Machines (defeat all Manns!). Hit someone with the /sandman [name] to distract them in the night. Your aim is bad so you have 40% chance to miss, and you can only use it every other night because the ball has to recharge!",
-            "info": "Can sandman (distract) one person in the night w/ 40% chance to fail and can only be used every other night. Sided with the Machines.",
+            "help": "You are sided with the Machines (defeat all of Mann Co.!). Hit someone with the /sandman [name] to distract them in the night. Your aim is bad so you have 40% chance to miss, and you can only use it every other night because the ball has to recharge! You also dodge all day kills.",
+            "info": "Can sandman (distract) one person every other night w/ 40% chance to fail. Ignores Demoknights. Sided with the Machines.",
             "actions": {
                 "night": {
                     "sandman": {
                         "target": "AnyButSelf",
                         "common": "Self",
-                        "priority": 20,
+                        "priority": 30,
                         "recharge": 2,
                         "failChance": 0.4,
                         "command": "distract"
+                    }
+                },
+                "daykill": "revenge"
+            }
+        },
+        {
+            "role": "Robot_Scout_Bonk_Scout",
+            "translation": "Bonk Scout (Machine)",
+            "side": "Machine",
+            "help": "You are sided with the Machines (defeat all of Mann Co.!). You have 75% chance to dodge hits for your team! You also dodge all day kills.",
+            "info": "Has 75% chance to evade a kill in the night. Ignores Demoknights. Sided with the Machines.",
+            "actions": {
+                "kill": {
+                    "mode": {
+                        "evadeChance": 0.75
+                    },
+                    "silent": true
+                },
+                "daykill": "revenge"
+            }
+        },
+        {
+            "role": "Robot_Demoman",
+            "translation": "Demoman (Machine)",
+            "side": "Machine",
+            "help": "You are sided with the Machines (defeat all of Mann Co.!). You can kill someone with /explode [name] every other night (because you have to reload, silly), but has 27% chance to fail because your aim isn't really that perfect.",
+            "info": "Can kill one person every other night w/ 27% chance to fail. Sided with the Machines.",
+            "actions": {
+                "night": {
+                    "explode": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 76,
+                        "recharge": 2,
+                        "failChance": 0.27,
+                        "command": "kill"
+                    }
+                }
+            }
+        },
+        {
+            "role": "Robot_Demoman_Demoknight",
+            "translation": "Demoknight (Machine)",
+            "side": "Machine",
+            "help": "You are sided with the Machines (defeat all of Mann Co.!). You can kill someone with /charge [name] in the day, but it takes 3 days to recharge and certain classes dodge it, causing you to die somehow.",
+            "info": "Can kill one person in the day (can be repeated 3 days afterwards). Sided with the Machines.",
+            "actions": {
+                "standby": {
+                    "charge": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "recharge": 3,
+                        "command": "kill"
+                    }
+                }
+            }
+        },
+        {
+            "role": "Robot_Heavy",
+            "translation": "Heavy (Machine)",
+            "side": "Machine",
+            "help": "You are sided with the Machines (defeat all of Mann Co.!). Your fat body allows you to /protect [name] someone in the night. You aren't really the quickest class so most classes would have killed their victim before you could arrive.",
+            "info": "Can protect one person in the night. Sided with the Machines.",
+            "actions": {
+                "night": {
+                    "protect": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 75
+                    }
+                }
+            }
+        },
+        {
+            "role": "Robot_Heavy",
+            "translation": "Heavy (Machine)",
+            "side": "Machine",
+            "help": "You are sided with the Machines (defeat all of Mann Co.!). Your fat body allows you to /protect [name] someone in the night. You aren't really the quickest class so most classes would have killed their victim before you could arrive.",
+            "info": "Can protect one person in the night. Sided with the Machines.",
+            "actions": {
+                "night": {
+                    "protect": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 75
                     }
                 }
             }
         }
     ],
     "roles1": [
-        "Robot_Scout_Minor_League_Scout"
+        "Robot_Scout",
+        "Robot_Scout_Minor_League_Scout",
+        "Robot_Scout_Bonk_Scout",
+        "Robot_Demoman",
+        "Robot_Demoknight",
+        "Robot_Heavy"
     ],
     "killmsg": "±Kill Feed: ~Player~ (~Role~) was destroyed!",
     "killusermsg": "±Kill Feed: Respawn in: Never",
@@ -54,7 +161,12 @@
     "priority": {
         "optional": true,
         "night": {
-            "Robot_Scout_Minor_League_Scout": 20
+            "Robot_Scout": "standby",
+            "Robot_Scout_Minor_League_Scout": 30,
+            "Robot_Scout_Bonk_Scout": "none",
+            "Robot_Demoman": 76,
+            "Robot_Demoknight": "standby",
+            "Robot_Heavy": 75
         }
     }
 }

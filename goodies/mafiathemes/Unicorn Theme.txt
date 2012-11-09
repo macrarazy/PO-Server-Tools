@@ -4,6 +4,7 @@
         "TheUnknownOne"
     ],
     "summary": "Unicorn returns! The teams are White Unicorns (village), Black & Grey Unicorns (the mafias), Flying Unicorn (godfather-ish), Rainbow Unicorn (conspirator), and the Humans (Unicorn Hunter and Mad Scientist(s)). The PRs are: Intelligent (small: inspect; medium: inspect + reveal; big: inspect + daykill), Wizard (small: protect; medium-big: protect + safeguard; 0.5% chance to die when /protect is used), Crying (small: distract; medium: distract + stalk; big: distract x2 + stalk), King (small: hax on all; medium-big: hax on all, +2 vote, kill). The Black and Grey Unicorns have an intelligent unicorn and a king of their own too! The Flying Unicorn has two kills, and a daykill with chance to be revealed, and the Rainbow Unicorn wins with anyone and can convert someone (can't convert any intelligent unicorns for obvious reasons) to a pretty much useless version of what they once were. The Unicorn Hunter is alone in small-medium games (1 kill), but will eventually get backup from mad scientists who mutate unicorns (outspeeds anything the Sad White Unicorn and the White Unicorn Wizard) causing them to die in 2 nights and revenge killers with a poison effect (that takes only 2 nights). That should be about it! Have fun! ~ TheUnknownOne [Take a look at /roles!]",
+    "minplayers": 6,
     "sides": [
         {
             "side": "village",
@@ -60,7 +61,7 @@
                     "inspect": {
                         "target": "AnyButSelf",
                         "common": "Self",
-                        "priority": 20
+                        "priority": 22
                     }
                 }
             }
@@ -75,7 +76,7 @@
                     "inspect": {
                         "target": "AnyButSelf",
                         "common": "Self",
-                        "priority": 20
+                        "priority": 22
                     }
                 },
                 "standby": {
@@ -90,13 +91,13 @@
             "role": "Inspector-3",
             "translation": "Intelligent White Unicorn",
             "side": "village",
-            "help": "You are a very intelligent unicorn, selected to aid the other White Unicorns to victory! Use /inspect [name] to find out what kind of a person someone is. You are also a commander of the White Unicorn Army (don't ask me!), so you can use /kill [name] in the day to \"remove\" someone from these lands. Keep in mind that there are traitors who might reveal your name while you do this.",
+            "help": "You are a very intelligent unicorn, selected to aid the other White Unicorns to victory! Use /inspect [name] to find out what kind of a person someone is. You are also a commander of the White Unicorn Army (don't ask me!), so you can use /kill [name] in the day to \"remove\" someone from these lands. Keep in mind that there are traitors who might reveal your name when you do this.",
             "actions": {
                 "night": {
                     "inspect": {
                         "target": "AnyButSelf",
                         "common": "Self",
-                        "priority": 20
+                        "priority": 22
                     }
                 },
                 "standby": {
@@ -105,7 +106,7 @@
                         "revealChance": 0.15,
                         "msg": "±Unicorn: Command your army to banish someone with /kill [name]! Watch out for traitors though!",
                         "killmsg": "The White Unicorn Army approaches ~Target~, kicking them to death!",
-                        "revealmsg": "A White Unicorn Army traitor has revealed that ~Self~ is a ~Role~!"
+                        "revealmsg": "A traitor in the White Unicorn Army has revealed that ~Self~ is an Intelligent White Unicorn!"
                     }
                 }
             }
@@ -231,16 +232,8 @@
             "role": "Leader-2",
             "translation": "White Unicorn King",
             "side": "village",
-            "help": "You are the mighty king of all White Unicorns, which gives you an additional vote! Your messengers tell you who is going to something, if they find out.. You can also command your army to kill someone with /kill [name], but only 3 times!",
+            "help": "You are the mighty king of all White Unicorns, which gives you an additional vote! Your messengers tell you what is going to happen, when they find something.",
             "actions": {
-                "night": {
-                    "kill": {
-                        "target": "AnyButSelf",
-                        "common": "Self",
-                        "priority": 19,
-                        "charges": 3
-                    }
-                },
                 "hax": {
                     "kill": {
                         "revealTeam": 0.1,
@@ -260,10 +253,29 @@
                     },
                     "colorize": {
                         "revealTeam": 0.08,
-                        "revealRole": 0.03
+                        "revealPlayer": 0.03
                     }
                 },
                 "vote": 2
+            }
+        },
+        {
+            "role": "Commander",
+            "translation": "White Unicorn Commander",
+            "side": "village",
+            "help": "Commander it is then. You know the king from the start (but he doesn't know you), and you can command your army to kill someone with /kill [name], but only 3 times!",
+            "actions": {
+                "night": {
+                    "kill": {
+                        "target": "AnyButSelf",
+                        "common": "Self",
+                        "priority": 19,
+                        "charges": 3
+                    }
+                },
+                "startup": {
+                    "revealRole": "Leader-2"
+                }
             }
         },
         {
@@ -338,7 +350,7 @@
             "role": "Black-1",
             "translation": "Black Unicorn",
             "side": "Black",
-            "help": "You are a simple Black Unicorn who can kill others with /kill [name] (shared with your team)! You have a small chance to find out who the White Unicorn Wizard is. The Black Unicorn Army is also faster than Grey Unicorn Army, but you don't have any additional abilities!",
+            "help": "You are a simple Black Unicorn who can kill others with /kill [name] (shared with your team)! You have a small chance to find out who the White Unicorn Wizard is. The Black Unicorn Army is faster than Grey Unicorn Army, but you don't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
@@ -389,7 +401,7 @@
                     "inspect": {
                         "target": "AnyButTeam",
                         "common": "Self",
-                        "priority": 21,
+                        "priority": 23,
                         "broadcast": "team"
                     }
                 },
@@ -495,7 +507,7 @@
                     "inspect": {
                         "target": "AnyButTeam",
                         "common": "Self",
-                        "priority": 22,
+                        "priority": 24,
                         "broadcast": "team"
                     }
                 },
@@ -575,7 +587,7 @@
             "role": "Rainbow_Flying",
             "translation": "Flying Rainbow Unicorn",
             "side": "Flying",
-            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 4 nights, but your vote counts as 3.",
+            "help": "You are now a Flying Rainbow Unicorn! You can't be lynched, but you will die in 4 nights. Thankfully, your vote counts as 3.",
             "info": "Used for convert in code (by Rainbow Unicorn). Vote counts as 3. Can't be lynched. Dies in 4 nights. Sided with Flying Unicorn.",
             "actions": {
                 "vote": 3,
@@ -592,8 +604,8 @@
             "role": "Rainbow",
             "translation": "Rainbow Unicorn",
             "side": "Rainbow",
-            "help": "You are a Rainbow Unicorn! Being all so colo(u)r-ish you can /colorize [name] or /colourize [name] to make someone have lots of colo(u)rs (You can't colo(u)rize intelligent unicorns or Humans, though)! You win with everyone except the Humans, because they want to kill you.",
-            "info": "Can colorize or colourize (convert) 1 player in the night (Can't convert Intelligent White, Black, or Grey Unicorns or any Humans). Wins with any side except Humans.",
+            "help": "You are a Rainbow Unicorn! Being all so color-ish you can /colorize [name] or to make someone have lots of colours (You can't colourize intelligent unicorns or Humans, though)! You win with everyone except the Humans, because they want to kill you.",
+            "info": "Can colorize (convert) 1 player in the night (Can't convert Intelligent White, Black, or Grey Unicorns or any Humans). Wins with any side except Humans.",
             "winningSides": [
                 "village",
                 "Black",
@@ -652,66 +664,7 @@
                         ],
                         "convertmsg": "~Target~, who was ~Old~, has been colorized by the Rainbow Unicorn, making them a ~New~!",
                         "usermsg": "~Target~ (~Old~) is now a ~New~!",
-                        "command": "convert",
-                        "restrict": [
-                            "colourize"
-                        ]
-                    },
-                    "colourize": {
-                        "target": "AnyButSelf",
-                        "common": "Self",
-                        "priority": 5,
-                        "newRole": {
-                            "Rainbow_Grey": [
-                                "Grey-1",
-                                "Grey-Leader",
-                                "Grey-2",
-                                "Grey-Inspector"
-                            ],
-                            "Rainbow_Flying": [
-                                "Flying"
-                            ],
-                            "Rainbow_Village": [
-                                "Bodyguard-1",
-                                "Hooker-1",
-                                "Villager",
-                                "Miller-Hunter",
-                                "Leader-1",
-                                "Bodyguard-2",
-                                "Hooker-2",
-                                "Leader-2",
-                                "Miller-Flying",
-                                "Hooker-3"
-                            ]
-                        },
-                        "canConvert": [
-                            "Black-1",
-                            "Black-Leader",
-                            "Black-2",
-                            "Black-Inspector",
-                            "Grey-1",
-                            "Grey-Leader",
-                            "Grey-2",
-                            "Grey-Inspector",
-                            "Flying",
-                            "Bodyguard-1",
-                            "Hooker-1",
-                            "Villager",
-                            "Miller-Hunter",
-                            "Leader-1",
-                            "Bodyguard-2",
-                            "Hooker-2",
-                            "Leader-2",
-                            "Miller-Flying",
-                            "Miller-Scientist",
-                            "Hooker-3"
-                        ],
-                        "convertmsg": "~Target~, who was ~Old~, has been colourized by the Rainbow Unicorn, making them a ~New~!",
-                        "usermsg": "~Target~ (~Old~) is now a ~New~!",
-                        "command": "convert",
-                        "restrict": [
-                            "colorize"
-                        ]
+                        "command": "convert"
                     }
                 }
             }
@@ -769,7 +722,7 @@
             "role": "Scientist",
             "translation": "Mad Scientist",
             "side": "Human",
-            "help": "You are a evil scientist, send out by the government to kill all unicorns once and for all. You are permitted to use /mutate [name] to mutate a unicorn into an even filthier creature! They die if you die, so don't (shouldn't be hard anyway since you have 30% chance to evade a kill). Crying White Unicorns can kill you with their tears, so watch out!",
+            "help": "You are a evil scientist, send out by the government to kill all unicorns once and for all. You are permitted to use /mutate [name] to mutate a unicorn into an even filthier creature (10% chance to fail because science isn't perfect)! They die if you die, so don't (shouldn't be hard anyway since you have 30% chance to evade a kill). Crying White Unicorns can kill you with their tears, so watch out! Your fancy scientist things somehow give you a crappy superpower (20% chance to see who did something in the day.. pfft)",
             "actions": {
                 "night": {
                     "mutate": {
@@ -779,6 +732,7 @@
                         "broadcast": "team",
                         "canConvert": "*",
                         "newRole": "Mutated",
+                        "failChance": 0.1,
                         "command": "convert"
                     }
                 },
@@ -797,6 +751,11 @@
                         "Mutated"
                     ],
                     "killmsg": "~Player~ took all ~Role~s (~Target~) with him!"
+                },
+                "standbyHax": {
+                    "kill": {
+                        "revealPlayer": 0.2
+                    }
                 },
                 "startup": "team-reveal-with-roles"
             }
@@ -860,9 +819,9 @@
         "Black-Inspector",
         "Grey-Inspector",
         "Hunter-2",
-        "Black-2",
-        "Villager",
-        "Grey-2"
+        "Commander",
+        "Grey-2",
+        "Black-2"
     ],
     "roles3": [
         "Bodyguard-2",
@@ -881,7 +840,7 @@
         "Grey-Leader",
         "Villager",
         "Black-Inspector",
-        "Villager",
+        "Commander",
         "Grey-Inspector",
         "Miller-Scientist",
         "Grey-2",
@@ -898,7 +857,8 @@
     ],
     "villageCantLoseRoles": [
         "Leader-2",
-        "Inspector-3"
+        "Inspector-3",
+        "Commander"
     ],
     "killmsg": "±Unicorn: ~Player~, who was a ~Role~, has been banished from the land of Unicorns!",
     "killusermsg": "±Unicorn: 0 lives left, try again some day!",
