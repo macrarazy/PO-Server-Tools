@@ -1714,6 +1714,11 @@ Tours.prototype.roundPairing = function () {
                         money[name] = 0;
                     }
                     var randNum = sys.rand(320, 751);
+
+                    if (randNum < 350) {
+                        randNum = sys.rand(330, 380); // Give some more points (most of the time)
+                    }
+
                     money[name] += randNum;
                     cache.write("money", JSON.stringify(DataHash.money));
 
@@ -9198,18 +9203,16 @@ if(message == "Maximum Players Changed.") {
 
     afterBattleEnded: function (winner, loser, result, battle_id) {
         if (result != "tie" && sys.ip(winner) != sys.ip(loser)) {
-            var winMoney = sys.rand(10, 101),
-                loseMoney = sys.rand(1, 101),
+            var winMoney = sys.rand(50, 81),
+                loseMoney = sys.rand(13, 36),
                 winnerName = sys.name(winner).toLowerCase(),
                 loserName = sys.name(loser).toLowerCase(),
                 money = DataHash.money;
 
             if (typeof money[loserName] === "undefined") {
-                botMessage(loser, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you will!", 0);
                 money[loserName] = 0;
             }
             if (typeof money[winnerName] === "undefined") {
-                botMessage(winner, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you will!", 0);
                 money[winnerName] = 0;
             }
 
