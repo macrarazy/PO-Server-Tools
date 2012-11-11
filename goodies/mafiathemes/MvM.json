@@ -30,7 +30,7 @@
             "translation": "Scout (Machine)",
             "side": "Machine",
             "help": "You are sided with the Machines (defeat all of Mann Co.!). You pretty much have nothing else to do other than annoy people in the day with /annoy. You also dodge all day kills.",
-            "info": "Can annoy (reveal) in the day. Ignores Demoknights. Sided with the Machines.",
+            "info": "Can annoy (reveal) in the day. Revenges daykills. Sided with the Machines.",
             "actions": {
                 "standby": {
                     "annoy": {
@@ -47,7 +47,7 @@
             "translation": "Minor League Scout (Machine)",
             "side": "Machine",
             "help": "You are sided with the Machines (defeat all of Mann Co.!). Hit someone with the /sandman [name] to distract them in the night. Your aim is bad so you have 40% chance to miss, and you can only use it every other night because the ball has to recharge! You also dodge all day kills.",
-            "info": "Can sandman (distract) one person every other night w/ 40% chance to fail. Ignores Demoknights. Sided with the Machines.",
+            "info": "Can sandman (distract) one person every other night w/ 40% chance to fail. Revenges daykills. Sided with the Machines.",
             "actions": {
                 "night": {
                     "sandman": {
@@ -67,7 +67,7 @@
             "translation": "Bonk Scout (Machine)",
             "side": "Machine",
             "help": "You are sided with the Machines (defeat all of Mann Co.!). You have 75% chance to dodge hits for your team! You also dodge all day kills.",
-            "info": "Has 75% chance to evade a kill in the night. Ignores Demoknights. Sided with the Machines.",
+            "info": "Has 75% chance to evade a kill in the night. Revenges daykills. Sided with the Machines.",
             "actions": {
                 "kill": {
                     "mode": {
@@ -119,29 +119,37 @@
             "translation": "Heavy (Machine)",
             "side": "Machine",
             "help": "You are sided with the Machines (defeat all of Mann Co.!). Your fat body allows you to /protect [name] someone in the night. You aren't really the quickest class so most classes would have killed their victim before you could arrive.",
-            "info": "Can protect one person in the night. Sided with the Machines.",
+            "info": "Can protect (protect (60% chance) or safeguard (40% chance)) one person in the night. Sided with the Machines.",
             "actions": {
                 "night": {
                     "protect": {
                         "target": "AnyButSelf",
                         "common": "Self",
-                        "priority": 75
+                        "priority": 75,
+                        "command": {
+                            "protect": 0.6,
+                            "safeguard": 0.4
+                        }
                     }
                 }
             }
         },
         {
-            "role": "Robot_Heavy",
-            "translation": "Heavy (Machine)",
+            "role": "Robot_Heavy_Steel_Gauntlet",
+            "translation": "Steel Gauntlet (Machine)",
             "side": "Machine",
-            "help": "You are sided with the Machines (defeat all of Mann Co.!). Your fat body allows you to /protect [name] someone in the night. You aren't really the quickest class so most classes would have killed their victim before you could arrive.",
-            "info": "Can protect one person in the night. Sided with the Machines.",
+            "help": "You are sided with the Machines (defeat all of Mann Co.!). Your fists deal great amounts of damage, causing someone to die in 3 nights after your first hit with /fist [name]. You're quite slow though, so you need to wait 3 nights before you can find another target.",
+            "info": "Can fist (poison) one player in the night which lasts 3 nights (takes 3 nights to recharge). Sided with the Machines.",
             "actions": {
                 "night": {
-                    "protect": {
+                    "fist": {
                         "target": "AnyButSelf",
                         "common": "Self",
-                        "priority": 75
+                        "priority": 81,
+                        "count": 3,
+                        "poisonDeadMessage": "A Steel Gauntlet has been chasing you for 3 nights! You're dead now..",
+                        "recharge": 3
+                        "command": "poison"
                     }
                 }
             }
@@ -153,7 +161,8 @@
         "Robot_Scout_Bonk_Scout",
         "Robot_Demoman",
         "Robot_Demoknight",
-        "Robot_Heavy"
+        "Robot_Heavy",
+        "Robot_Heavy_Steel_Gauntlet"
     ],
     "killmsg": "±Kill Feed: ~Player~ (~Role~) was destroyed!",
     "killusermsg": "±Kill Feed: Respawn in: Never",
@@ -166,7 +175,8 @@
             "Robot_Scout_Bonk_Scout": "none",
             "Robot_Demoman": 76,
             "Robot_Demoknight": "standby",
-            "Robot_Heavy": 75
+            "Robot_Heavy": 75,
+            "Robot_Heavy_Steel_Gauntlet": 81
         }
     }
 }
