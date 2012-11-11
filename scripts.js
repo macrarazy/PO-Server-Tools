@@ -11549,7 +11549,7 @@ if(message == "Maximum Players Changed.") {
             }
 
             this.loadDataForAll = function () {
-                var cd = JSESSION.ChannelData,
+                var cd = sys.channelIds(),
                     x;
 
                 for (x in cd) {
@@ -11570,7 +11570,7 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 var cData = this.channelData[cChan.name],
-                    isPerm = DefaultChannels.has(cChan.id) || cData.perm,
+                    isPerm = DefaultChannels.has(cChan.id),
                     properties = {
                         "creator": "~Unknown~",
                         "topic": "Welcome to " + cChan.name + "!",
@@ -11579,7 +11579,7 @@ if(message == "Maximum Players Changed.") {
                         "private": false,
                         "defaultTopic": true,
                         "silence": 0,
-                        "toursEnabled": cData.toursEnabled,
+                        "toursEnabled": DefaultChannels.has(cChan.id)
                     },
                     json_properties = ["chanAuth", "banlist", "mutelist", "tourAuth"],
                     tour_properties = {
