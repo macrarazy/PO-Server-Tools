@@ -128,6 +128,84 @@ if (!util.user) {
 
                 // TODO: Add afterChangeTeam hooks that have from:afterLogIn param
                 call("afterChangeTeam", src, true);
+            },
+            "beforePlayerKick": function (src, tar) {
+                var self = JSESSION.users(src),
+                    target = JSESSION.users(tar),
+                    ip = util.player.ip(src),
+                    mutes = DataHash.mutes[ip],
+                    info = {};
+
+                sys.stopEvent();
+
+                if (self.muted) {
+                    util.watch.player(src, null, "Attempted to kick " + target.originalName + " while muted.");
+
+                    if (mutes.time != 0) {
+                        info.time = "Muted for " + util.time.format(mutes.time.time - util.time.time());
+                    } else {
+                        info.time = "Muted forever";
+                    }
+
+                    // NOTE: Mute & ban why -> reason
+                    info.by = mutes.by,
+                        info.reason = mutes.reason;
+
+                    // TODO: Move this to the actual command
+                    /*
+                        lastChar = why[why.length - 1],
+                        lastChars = [".", "?", "!"];
+
+                    if (lastChars.indexOf(lastChar) == -1) {
+                        why += ".";
+                    }
+                    */
+
+                    bot.send(src, "You are muted by " + info.by + ". Reason: " + info.reason + " " + info.time + "!");
+                    return;
+                }
+                sys.sendHtmlAll("<font color='midnightblue'><timestamp/><b> " + self.originalName + " kicked " + target.originalName + "!</b></font>");
+
+                util.mod.kickAll(tar);
+            },
+            "beforePlayerBan": function (src, tar) {
+                var self = JSESSION.users(src),
+                    target = JSESSION.users(tar),
+                    ip = util.player.ip(src),
+                    mutes = DataHash.mutes[ip],
+                    info = {};
+
+                sys.stopEvent();
+
+                if (self.muted) {
+                    util.watch.player(src, null, "Attempted to ban " + target.originalName + " while muted.");
+
+                    if (mutes.time != 0) {
+                        info.time = "Muted for " + util.time.format(mutes.time.time - util.time.time());
+                    } else {
+                        info.time = "Muted forever";
+                    }
+
+                    // NOTE: Mute & ban why -> reason
+                    info.by = mutes.by,
+                        info.reason = mutes.reason;
+
+                    // TODO: Move this to the actual command
+                    /*
+                     lastChar = why[why.length - 1],
+                     lastChars = [".", "?", "!"];
+
+                     if (lastChars.indexOf(lastChar) == -1) {
+                     why += ".";
+                     }
+                     */
+
+                    bot.send(src, "You are muted by " + info.by + ". Reason: " + info.reason + " " + info.time + "!");
+                    return;
+                }
+                sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + self.originalName + " banned " + target.originalName + "!</b></font>");
+
+                util.mod.ban(tar);
             }
         };
     }

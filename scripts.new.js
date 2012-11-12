@@ -160,7 +160,7 @@ BRANCH = "devel";
  */
 // TODO: Add channels.js once done
 Modules = [
-    "modules/jsext.js", "modules/utilities.js", "modules/enum.js", "modules/cache.js", "modules/datahash.js",
+    "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
     "modules/jsession.js", "modules/users.js", "modules/mafia.js"
 ];
 
@@ -442,7 +442,8 @@ download = function (FileName, FilePath, ForceDownload, Synchronously) {
         return "";
     }
 
-    sys.makeDir(filePath[filePath.length - 2] || ""); /* Creates the directories if they do not yet exist */
+    sys.makeDir(filePath[filePath.length - 2] || "");
+    /* Creates the directories if they do not yet exist */
 
     if (Synchronously) {
         sys.writeToFile(FileName, sys.synchronousWebCall(URL + BRANCH + "/" + FilePath));

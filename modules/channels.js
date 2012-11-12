@@ -44,7 +44,7 @@ if (!cData) {
         };
 
         this.loadDataForAll = function () {
-            var cd = JSESSION.ChannelData,
+            var cd = sys.channelIds(),
                 x;
 
             for (x in cd) {
@@ -72,7 +72,7 @@ if (!cData) {
                 return this.importFromChannel(chan.id);
             }
 
-            isPerm = Channels.has(chan.id) || cData.perm,
+            isPerm = Channels.has(chan.id),
                 properties = {
                     "creator": "~Unknown~",
                     "topic": "Welcome to " + chan.name + "!",
@@ -81,7 +81,7 @@ if (!cData) {
                     "private": false,
                     "defaultTopic": true,
                     "silence": 0,
-                    "toursEnabled": cData.toursEnabled
+                    "toursEnabled": isPerm
                 },
                 json_properties = ["chanAuth", "banlist", "mutelist", "tourAuth"],
                 tour_properties = {
@@ -205,7 +205,8 @@ if (!cData) {
             },
             "afterLogIn": function (src) {
                 var channels,
-                    auth = util.player.auth(src);
+                    auth = util.player.auth(src),
+                    user = JSESSION.users(src);
 
                 if (Config.AutoChannelJoin) {
                     channels = [mafiachan, trivia];
@@ -214,11 +215,11 @@ if (!cData) {
                         channels.push(watch);
                     }
 
-                    if (JSESSION.users(src).megauser || auth > 0 || JSESSION.channels(staffchannel).isChanMod(src)) {
+                    if (user.megauser || auth > 0 || JSESSION.channels(staffchannel).isChanMod(src)) {
                         channels.push(staffchannel);
                     }
 
-                    if (auth > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
+                    if (auth > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(user.originalName.toLowerCase())) {
                         channels.push(scriptchannel);
                     }
                     if (auth > 1 || JSESSION.channels(trivreview).isChanMod(src)) {
