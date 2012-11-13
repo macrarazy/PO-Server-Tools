@@ -3,7 +3,7 @@
     "author": [
         "TheUnknownOne"
     ],
-    "summary": "Unicorn returns! The village in this theme are the White Unicorns, whos PRs are: Intelligent (insp), Wizard (bg), Crying (pl), King (high hax), and Commander (nightkill). Don't claim if there is the Flying Unicorn (daykill w/ 20% reveal chance), and the Mad Scientist (convert to a role which will die in 2 nights and revenge-poisons killers) assuming there is no Wizard (bg) alive. The Rainbow Unicorn is the Conspirator and can convert someone into a useless version, which will still be sided on the same team (can't convert Intelligent Unicorns, the Colorless Unicorn, Humans though, so you can safely claim). Read the /roles, /sides, and the /priority list! That should be about it! Have fun! ~ TheUnknownOne.",
+    "summary": "Unicorn returns (and now requires 6 players)! The village in this theme are the White Unicorns, who's PRs are: Intelligent (insp), Wizard (bg), Crying (pl), King (high hax), and Commander (nightkill). Don't claim if there is the Flying Unicorn (daykill w/ 20% reveal chance). Read the /roles, /sides, and the /priority list! That should be about it! Have fun! ~ TheUnknownOne.",
     "minplayers": 6,
     "sides": [
         {
@@ -21,10 +21,6 @@
         {
             "side": "Flying",
             "translation": "Flying Unicorn"
-        },
-        {
-            "side": "Colorless",
-            "translation": "Colorless Unicorn"
         },
         {
             "side": "Human",
@@ -576,7 +572,8 @@
                         "usermsg": "~Target~ (~Old~) is now a ~New~!",
                         "command": "convert"
                     }
-                }
+                },
+                "startup": "team-reveal-with-roles"
             }
         },
         {
@@ -625,7 +622,8 @@
                         "copymsg": "The Colorless Unicorn has decided to become a(n) ~New~!",
                         "command": "copy"
                     }
-                }
+                },
+                "startup": "team-reveal-with-roles"
             }
         },
         {
