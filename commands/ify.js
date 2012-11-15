@@ -4,8 +4,6 @@ Dependencies:
     - modules/jsession.js
  */
 
-//TODO: Possibly merge with commands/ or add it as a file there
-
 /**
  * @fileOverview Name-ify module
  * @author TheUnknownOne
@@ -44,7 +42,6 @@ Dependencies:
      * @return {Array}
      */
     Commands: function () {
-        //TODO: Work on commands in scripts.new.js
         return [
             {
                 name: "ify",

@@ -144,6 +144,76 @@ util.player = {
      */
     ip: function (player) {
         return sys.dbIp(util.player.name(player));
+    },
+    /**
+     * Returns the player's pokeball image thingy
+     * @param {PID} name Player identifier
+     * @return {String} Player status/auth image
+     */
+    authImage: function (name) {
+        var auth = util.player.auth(name),
+            authString = "U",
+            status = 'Available',
+            id = util.player.id(name);
+
+        if (!util.player.ip(name)) {
+            return "<img src='Themes/Classic/Client/" + authString + "Away.png'>";
+        }
+
+        if (auth === 1) {
+            authString = "M";
+        } else if (auth === 2) {
+            authString = "A";
+        } else if (auth === 3) {
+            authString = "O";
+        }
+
+
+        if (sys.away(id)) {
+            status = 'Away';
+        }
+        else if (sys.battling(id)) {
+            status = 'Battle';
+        }
+
+        return '<img src="Themes/Classic/Client/' + authString + status + '.png">';
+    },
+    /**
+     * Returns the date the player was last on as a html-formatted string
+     * @param {PID} name Player identifier
+     * @return {String} Formatted last online date
+     */
+    lastOnline: function (name) {
+        var lastOnline = sys.dbLastOn(util.player.name(name));
+
+        if (!lastOnline) {
+            lastOnline = "Unknown";
+        }
+
+        return "<b><font color='blue' size='2'>Last Online:</font></b> <i>" + lastOnline + "</i>";
+    },
+    /**
+     * Returns a player's info as a html-formatted string
+     * @param {PID} name Player identifier
+     * @return {String} Formatted player info
+     */
+    playerInfo: function (name) {
+        var id = util.player.id(name),
+            auth = util.player.auth(name),
+            status,
+            icon = util.player.authImage(name),
+            player = util.player.player(name),
+            lastOn = util.player.lastOnline(name);
+
+        if (!util.player.ip(name)) {
+            return icon + player + " <small style='color: red;'>Offline</small> " + lastOn;
+        }
+
+        if (id == undefined) {
+            return icon + " " + player + " <small style='color: red;'>Offline</small> " + lastOn;
+        }
+
+        return icon + " " + player + " <small style='color: green;'>Online</small> <small>(<b style='color: blue;'>Player ID: " + id + "</b>)</small>";
     }
 };
 
@@ -466,7 +536,7 @@ util.json = {
 };
 
 /**
- * Grammar utilities. Note: Only apply to lang-en.txt
+ * Grammar utilities. Only applies to lang-en.txt
  * @namespace
  * @type {Object}
  */
@@ -716,7 +786,7 @@ util.message = {
                 return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
             });
 
-        // TODO: Reminder to remove [servername] as bbcode
+        // NOTE: Reminder to remove [servername] as bbcode
         str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
             .replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>')
             .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
@@ -798,7 +868,7 @@ util.time = {
      * @return {Number}
      */
     time: function () {
-        return sys.time () * 1;
+        return sys.time() * 1;
     },
     /**
      * Formats a number (time) to a readable string
@@ -851,7 +921,6 @@ util.time = {
         return util.time.format(util.time.startup);
     }
 };
-
 
 /**
  * Creates an enum

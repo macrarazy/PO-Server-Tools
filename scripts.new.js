@@ -626,6 +626,22 @@ callResult = function (hook_name, hook_args) {
         call("afterChannelDestroyed", chan);
     },
     /**
+     * When a player joins a channel (stoppable)
+     * @param {Number} src Player id
+     * @param {Number} chan Channel id
+     */
+    beforeChannelJoin: function (src, chan) {
+        call("beforeChannelJoin", src, chan);
+    },
+    /**
+     * After a player joins a channel
+     * @param {Number} src Player id
+     * @param {Number} chan Channel id
+     */
+    afterChannelJoin: function (src, chan) {
+        call("afterChannelJoin", src, chan);
+    },
+    /**
      * When a player logs in (stoppable)
      * @param {Number} src Player id
      */
@@ -670,6 +686,11 @@ callResult = function (hook_name, hook_args) {
             },
             mcmd;
 
+        if (call("beforeChatMessage", src, message, chan, true)) {
+            sys.stopEvent();
+            return;
+        }
+
         /* Command parser */
         if (message.length > 1 && Config.CommandStarts.indexOf(message[0]) !== -1) {
             sys.stopEvent();
@@ -684,6 +705,10 @@ callResult = function (hook_name, hook_args) {
 
             commandName = fullCommand.toLowerCase();
 
+            if (!call("onCommand", src, message, chan, commandName, data)) {
+                return;
+            }
+
             queryRes = callResult("commandNameRequested", src, message, chan, commandName).map(function (value) {
                 return !!value;
             });
@@ -693,28 +718,6 @@ callResult = function (hook_name, hook_args) {
             if (queryRes) {
                 commandName = queryRes;
             }
-
-            //TODO: Port to mafia.js
-            /*
-             if (chan == mafiachan) {
-             try {
-             mafia.handleCommand(src, message.substr(1));
-             return;
-             }
-             catch (err) {
-             if (err != "no valid command") {
-             botAll(FormatError("A mafia error has occured.", err), mafiachan);
-
-             mafia.endGame(0);
-             if (mafia.theme.name != "default") {
-             mafia.themeManager.disable(0, mafia.theme.name);
-             }
-
-             return;
-             }
-             }
-             }
-             */
 
             queryRes = callResult("commandPlayerAuthRequested", src, message, chan, commandName).forEach(function (auth, index) {
                 if (auth > maxAuth.auth) {
@@ -773,6 +776,10 @@ callResult = function (hook_name, hook_args) {
             } catch (Exception) {
                 call("onCommandError", src, fullCommand, chan, "exception", Exception);
             }
+        }
+
+        if (call("beforeChatMessage", src, message, chan, false)) {
+            sys.stopEvent();
         }
     },
     /**

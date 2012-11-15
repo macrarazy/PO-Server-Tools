@@ -27,7 +27,7 @@
      */
     Hooks: function () {
         return {
-            "afterChannelJoin": function (src, chan) { // TODO: Add this module
+            "afterChannelJoin": function (src, chan) {
                 if (DataHash.poll.mode) {
                     bot.send(src, "A poll is going on! Use <font color='green'><b>/pollinfo</b></font> for more information.", chan);
                 }
@@ -50,7 +50,7 @@
                 allowedWhenMuted: false,
                 handler: function (command) {
                     var num = command.data * 1,
-                        ip = command.self.ip, // TODO: command.self in hook commandInfoRequested
+                    ip = command.self.ip,
                         Poll = DataHash.poll;
 
                     if (!Poll.mode) {

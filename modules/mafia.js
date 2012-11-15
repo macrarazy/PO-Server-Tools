@@ -3933,26 +3933,26 @@
      */
     Hooks: function () {
         return {
-            onMute: function (src) {
+            "onMute": function (src) {
                 if (mafia.state != "day") {
                     mafia.slayUser(Bot.name, sys.name(src));
                 } else {
                     mafia.usersToSlay.push(sys.name(src));
                 }
             },
-            onChannelKick: function (src, chan) {
+            "onChannelKick": function (src, chan) {
                 if (chan === mafiachan) {
                     mafia.slayUser(Bot.name, sys.name(src));
                 }
             },
-            onKick: function (src) {
+            "onKick": function (src) {
                 if (this.state != "day") {
                     mafia.slayUser(Bot.name, sys.name(src));
                 } else {
                     mafia.usersToSlay.push(sys.name(src));
                 }
             },
-            step: function () {
+            "step": function () {
                 try {
                     this.tickDown();
                 } catch (err) {
@@ -3961,19 +3961,35 @@
                     }
                 }
             },
-            init: function () {
+            "init": function () {
                 if (util.bot) {
                     util.bot.sendAll("Mafia was reloaded, please start a new game!", mafiachan);
                 }
             },
-
-            beforeChatMessage: function (src, message, chan) {
-                if (chan !== 0 && chan === mafiachan && mafia.ticks > 0 && [
+            "beforeChatMessage": function (src, message, chan, beforeCommandParsed) {
+                if (!beforeCommandParsed && chan !== 0 && chan === mafiachan && mafia.ticks > 0 && [
                     "blank", "voting", "entry"
                 ].indexOf(mafia.state) === -1 && !mafia.isInGame(sys.name(src)) && util.player && util.player.auth(src) < 1 && !mafia.isMafiaAdmin(src)) {
                     if (!((message[0] == '/' || message[0] == '!') && message.length > 1)) {
                         sys.sendMessage(src, "±Game: The game is in progress. Please type /join to join the next mafia game.", mafiachan);
                         return true;
+                    }
+                }
+            },
+            "onCommand": function (src, message, chan, commandName, data) {
+                if (chan === mafiachan) {
+                    try {
+                        mafia.handleCommand(src, message.substr(1));
+                    }
+                    catch (err) {
+                        if (err != "no valid command" && util && util.error && bot) {
+                            bot.sendAll(util.error.format("A mafia error has occured.", err), mafiachan);
+
+                            mafia.endGame(0);
+                            if (mafia.theme.name != "default") {
+                                mafia.themeManager.disable(0, mafia.theme.name);
+                            }
+                        }
                     }
                 }
             }
