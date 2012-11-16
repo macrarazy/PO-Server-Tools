@@ -15,10 +15,10 @@
     /**
      * Returns the name of this module
      * @private
-     * @return {String} Polls
+     * @return {String} Commands - Polls
      */
     Name: function () {
-        return "Polls";
+        return "Commands - Polls";
     },
     /**
      * Returns the hooks of this module

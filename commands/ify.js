@@ -14,10 +14,10 @@ Dependencies:
     /**
      * Returns the name of this module
      * @private
-     * @return {String} Ify
+     * @return {String} Commands - Ify
      */
     Name: function () {
-        return "Ify";
+        return "Commands - Ify";
     },
     /**
      * Returns the hooks of this module
