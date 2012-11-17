@@ -32,7 +32,12 @@
         {
             "side": "Server",
             "translation": "Server Scripts",
-            "winmsg": "±Server: Servers have now officially outmatched the client scripting languages! Everyone will now use servers to navigate the internet!"
+            "winmsg": "±Server: Server Scripting Languages (~Players~) have now officially outmatched the client scripting languages! Everyone will now use servers to navigate the internet!"
+        },
+        {
+            "side": "Python",
+            "translation": "Python",
+            "winmsg": "±Python: Poisonous scripting languages (~Players~) are obviously the best. Period."
         }
     ],
     "roles": [
@@ -289,6 +294,7 @@
             "side": "Server",
             "help": "You are PHP, a very popular server-side scripting language! You can block (kill) another scripting language in the night with /block [name], so that they will never be able to visit websites again! Your immensely fast speed makes you kill just before CoffeeScripts. You win with any side, because of your popularity.",
             "info": "Can block (kill) one player in the night. Wins with every side except Bash. Sided with Server Scripts.",
+            "winningSides": ["village", "JScript"],
             "actions": {
                 "night": {
                     "block": {
@@ -298,9 +304,7 @@
                         "command": "kill"
                     }
                 }
-            },
-
-            "winningSides": ["village", "JScript"]
+            }
         },
         {
             "role": "PHP_2",
@@ -308,6 +312,7 @@
             "side": "Server",
             "help": "You are PHP, a very popular server-side scripting language! You can block (kill) another scripting language in the night with /block [name] (shared with ASP)! Your immensely fast speed makes you kill just before CoffeeScripts. You win with any side, because of your popularity.",
             "info": "Can block (kill) one player in the night. Wins with every side except xxx. Sided with Server Scripts.",
+            "winningSides": ["village", "JScript"],
             "actions": {
                 "night": {
                     "block": {
@@ -318,9 +323,7 @@
                     }
                 }
             },
-
-            "startup": "team-reveal-with-roles",
-            "winningSides": ["village", "JScript"]
+            "startup": "team-reveal-with-roles"
         },
         {
             "role": "ASP",
@@ -351,7 +354,7 @@
                 "night": {
                     "block": {
                         "target": "AnyButTeam",
-                        "common": "Team",
+                        "common": "Self",
                         "priority": 12,
                         "command": "kill"
                     }
@@ -366,6 +369,33 @@
             },
 
             "startup": "team-reveal-with-roles"
+        },
+        {
+            "role": "Python",
+            "translation": "Python",
+            "side": "Python",
+            "help": "You are the deadly Python. Easy to use, and quite new too! Your python-ish powers give you the power to poison someone with /poison [name], turning them into Django (which is on your side). They'll die shortly after that. You're death kills Djangos too, because it's based off of you!",
+            "info": "Can poison (poison + curse) one player in the night (poison-count: 3, curse-count: 2). Sided with Python.",
+            "actions": {
+                "night": {
+                    "poison": {
+                        "target": "AnyButTeam",
+                        "common": "Self",
+                        "priority": 10,
+                        "canCurse": "*",
+                        "cursedRole": "Django",
+                        "curseCount": 2,
+                        "curseConvertMessage": "You have become Django, a web framework written in Python (you're on it's side now too)!",
+                        "count": 3,
+                        "poisonDeadMessage": "Python's poison still killed you!",
+                        "command": ["poison", "curse"]
+                    }
+                }
+            },
+            "onDeath": {
+                "killRoles": ["Django"],
+                "killmsg": "All ~Role~s died because they required Python (~Player~) to run!"
+            }
         }
     ],
     "roles1": [
