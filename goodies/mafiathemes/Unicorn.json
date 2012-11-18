@@ -99,7 +99,7 @@
                 "standby": {
                     "kill": {
                         "target": "AnyButSelf",
-                        "revealChance": 0.15,
+                        "revealChance": 0.30,
                         "msg": "±Unicorn: Command your army to banish someone with /kill [name]! Watch out for traitors though!",
                         "killmsg": "The White Unicorn Army approaches ~Target~, kicking them to death!",
                         "revealmsg": "A traitor in the White Unicorn Army has revealed that ~Self~ is an Intelligent White Unicorn!"
@@ -139,7 +139,7 @@
                             "safeguard"
                         ],
                         "suicideChance": 0.005,
-                        "suicidemsg": "You killed yourself because of your own spell!"
+                        "suicidemsg": "Your own spell killed you!"
                     }
                 }
             }
@@ -182,7 +182,7 @@
             "role": "Hooker-3",
             "translation": "Crying White Unicorn",
             "side": "village",
-            "help": "You are a very sad unicorn, possibly very young.. No one wants to see you crying, which you can take advantage of with /distract [name], which you can do twice (keep in mind that you can only use this ability 10 times!)! You apparently figure out what they were doing, too.",
+            "help": "You are a very sad unicorn, possibly very young.. No one wants to see you crying, which you can take advantage of with /distract [name], which you can do twice (keep in mind that you can only use this ability 8 times)! You apparently figure out what they were doing, too.",
             "actions": {
                 "night": {
                     "distract": {
@@ -194,7 +194,7 @@
                             "stalk"
                         ],
                         "limit": 2,
-                        "charges": 10
+                        "charges": 8
                     }
                 }
             }
@@ -368,7 +368,8 @@
             "side": "Black",
             "help": "You are one of those simple, plain, and boring unicorns that has nothing to do at all. Wait, yes you do you, you're sided with the Black Unicorns! Your vote counts as 1.2 (use this to have an advantage when voting).",
             "actions": {
-                "startup": "team-reveal-with-roles"
+                "startup": "team-reveal-with-roles",
+                "vote": 1.2
             }
         },
         {
@@ -467,14 +468,15 @@
             "role": "Mafia-Leader",
             "translation": "Black Unicorn King",
             "side": "Black",
-            "help": "You are the mighty king of the Black Unicorns who can kill others with /kill [name] (not shared with your team), and kill another person every 3 nights starting at the 3rd night with /kill2 [name] (has 20% chance to fail)! You are somehow immume to the Sad White Unicorn. The Black Unicorn Army is faster than Grey Unicorn Army, but doesn't have any additional abilities!",
+            "help": "You are the mighty king of the Black Unicorns who can kill others with /kill [name] (not shared with your team), and kill another person every 3 nights with /kill2 [name] (has 25% chance to fail)! You are immune to the Sad White Unicorn, because you have a wive unlike anyone else. The Black Unicorn Army is faster than Grey Unicorn Army, but doesn't have any additional abilities!",
             "actions": {
                 "night": {
                     "kill": {
                         "target": "AnyButTeam",
                         "common": "Self",
                         "priority": 12,
-                        "broadcast": "team"
+                        "broadcast": "team",
+                        "broadcastmsg": "±Game: The Black Unicorn King (~Player~) has decided to use their kill on ~Target~!"
                     },
                     "kill2": {
                         "target": "AnyButTeam",
@@ -482,9 +484,8 @@
                         "priority": 12,
                         "broadcast": "team",
                         "broadcastmsg": "±Game: The Black Unicorn King (~Player~) has decided to use their additional kill on ~Target~!",
-                        "initialrecharge": 3,
                         "recharge": 3,
-                        "failChance": 0.2,
+                        "failChance": 0.25,
                         "command": "kill"
                     }
                 },
