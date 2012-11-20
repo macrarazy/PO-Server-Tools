@@ -36,3 +36,5 @@ Standard for commandInfo passed in all commands.
             + ip: IP of tar
             + isHost: If tar is on the server host IP
             + jsession: tar's JSESSION object
+
+modules/templates.js is required for command lists.
