@@ -1,0 +1,38 @@
+Standard for commandInfo passed in all commands.
+
+    Defined in "scripts.new.js": Basic Components
+        + src (Number): The player's id
+        + tar (Number|Undefined): Result of sys.id(mcmd[0])
+        + data (String): Command data specified by player
+        + dataLower (String): Result of commandInfo.data.toLowerCase()
+        + mcmd (Array): Command arguments (Result of data.split(":"))
+        + chan (Number): Channel this command was used in
+        + command (String): Command name (manipulated)
+        + fullCommand (string): Command name (original incl. caps)
+
+    Defined in "modules/utilities.js": Enhanced Components
+        * tar (Number): Result of util.player.id(commandInfo.mcmd[0]);, allows ID to be the player's actual ID.
+        + send (Function): Short for bot.send(commandInfo.src, Arg: message, commandInfo.chan);
+        + sendAll (Function): Short for bot.sendAll(Arg: message, commandInfo.chan);
+        + sendOthers (Function): Short for bot.sendOthers(commandInfo.src, Arg: message, commandInfo.chan, Arg OPTIONAL: escapeHtml);
+        + line (Function): Short for bot.line(commandInfo.src, commandInfo.chan);
+        + lineAll (Function): Short for bot.lineAll(commandInfo.chan);
+        + sendMain (Function): Short for bot.sendAll(Arg: message, 0);
+
+    Defined in "modules/jsession.js": Player Components
+        + self (Object): src Information:
+            + name: Name of src
+            + nameLower: Name of src, in lower case
+            + player: Player name HTML string (with color)
+            + auth: The player's absolute auth (e.g. after PlayerPermissions & maxAuth)
+            + ip: IP of src
+            + isHost: If src is on the server host IP
+            + jsession: src's JSESSION object
+        + target (Object): tar Information:
+            + name: Name of tar
+            + nameLower: Name of tar, in lower case
+            + player: Player name HTML string (with color)
+            + auth: The player's absolute auth (e.g. after PlayerPermissions & maxAuth)
+            + ip: IP of tar
+            + isHost: If tar is on the server host IP
+            + jsession: tar's JSESSION object

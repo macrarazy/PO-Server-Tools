@@ -3598,38 +3598,6 @@ if(message == "Maximum Players Changed.") {
                     t.render(src, chan);
                 },
 
-                pokedex: function () {
-                    var formeIndex = commandData.indexOf("-");
-                    if (formeIndex != -1) {
-                        commandData = commandData.substr(0, formeIndex);
-                    }
-
-                    if (sys.pokeNum(commandData) == undefined) {
-                        commandData = parseInt(commandData);
-                        if (sys.pokemon(commandData) != undefined) {
-                            commandData = sys.pokemon(commandData);
-                        }
-                    }
-
-                    else {
-                        commandData = sys.pokemon(sys.pokeNum(commandData)); // Correcting case.
-                    }
-
-                    try {
-                        pokedex(src, chan, commandData);
-                    }
-                    catch (e) {
-                        var rand = sys.pokemon(sys.rand(1, 650));
-                        rands = rand + "'s";
-                        if (rand[rand.length - 1] == "s") {
-                            rands = rand + "'";
-                        }
-
-                        botEscapeMessage(src, "Since the Pokémon " + commandData + " doesn't exist, the Pokédex displayed " + rands + " data instead.", chan);
-                        pokedex(src, chan, rand);
-                    }
-                },
-
                 channels: function () {
                     var channels = sys.channelIds(),
                         x, pl, t = new Templater('Channels');

@@ -1202,18 +1202,6 @@ bot = util.bot;
                     },
                     sendMain: function () {
                         bot.sendAll(message, 0);
-                    },
-                    nativeSend: function (message) {
-                        sys.sendMessage(src, message, chan);
-                    },
-                    nativeHtml: function (message) {
-                        sys.sendHtmlMessage(src, message, chan);
-                    },
-                    nativeSendAll: function (message) {
-                        sys.sendAll(message, chan);
-                    },
-                    nativeHtmlAll: function (message) {
-                        sys.sendHtmlAll(message, chan);
                     }
                 };
             },
@@ -1223,7 +1211,8 @@ bot = util.bot;
                 } else if (errorType === "invalid") {
                     bot.sendText(src, "The command \"" + fullCommand + "\" doesn't exist.", chan);
                 } else {
-                    bot.sendText(src, "An exception occurred when you tried to use the \"" + util.error.format(Exception || {
+                    bot.sendText(src, "An exception occurred when you tried to use the \"" + fullCommand + "\" command.");
+                    print("CommandError: " + util.error.format(Exception || {
                         name: "UnknownError",
                         message: "An unknown exception has occurred",
                         lineNumber: 1

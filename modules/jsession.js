@@ -575,7 +575,7 @@ POChannel.prototype.canIssue = function (src, tar) {
     self = util.player.name(src),
         target = util.player.name(tar);
 
-    if (util.player.auth(tar) >= util.player.auth(src) || this.chanAuth[targetName] >= this.chanAuth[self] && !this.isChanOwner(src)) {
+    if (util.player.auth(tar) >= util.player.auth(src) || this.chanAuth[target] >= this.chanAuth[self] && !this.isChanOwner(src)) {
         return false;
     }
 
@@ -657,14 +657,24 @@ JSESSION.refill();
      */
     Hooks: function () {
         return {
+            "afterChannelCreated": function (chan, name, src) {
+                JSESSION.createChannel(chan);
+            },
             "afterChannelDestroyed": function (chan) {
                 JSESSION.removeChannel(chan);
+            },
+            "beforeLogIn": function (src) {
+                JSESSION.createUser(src);
+            },
+            "beforeLogOut": function (src) {
+                JSESSION.removeUser(src);
             },
             "commandInfoRequested": function (src, message, chan, commandInfo) {
                 var selfName = sys.name(src),
                     tar = commandInfo.target,
                     tarName = sys.name(tar);
 
+                // TODO: Channel components
                 return {
                     self: {
                         name: selfName,

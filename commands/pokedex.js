@@ -644,8 +644,9 @@
                 } catch (ignore) {
                     rand = sys.pokemon(sys.rand(1, 650));
                     rands = rand + "'s";
-                    if (rand[rand.length - 1] === "s") {
-                        rands = rand + "'";
+
+                    if (util && util.grammar) {
+                        rands = util.grammar.es(rand);
                     }
 
                     command.send("Since the Pokémon " + data + " doesn't exist, the Pokédex displayed " + rands + " data instead.".escapeHtml());
