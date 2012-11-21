@@ -16,7 +16,7 @@
  */
 
 defineOn = function (core, props) {
-    var x, curr;
+    var x;
     for (x in props) {
         Object.defineProperty(core, x, {
             "value": props[x],
@@ -93,7 +93,8 @@ defineOn(String.prototype, {
      * @return {String} The string if modules/datahash.js isn't loaded or the proper capitalized
      */
     name: function () {
-        var str = this, tl = str.toLowerCase();
+        var str = this,
+            tl = str.toLowerCase();
         if (!DataHash || !DataHash.names || !DataHash.names.has(tl)) {
             return str;
         }
@@ -166,14 +167,16 @@ defineOn(Object.prototype, {
      * Extends this Object (adding all properties from arguments to this array)
      */
     extend: function () {
-        var x, current;
+        var x,
+            y,
+            current;
 
         for (x in arguments) {
             current = arguments[x];
             if (typeof current === "object" && !Array.isArray(current) && current !== null) {
-                this.extend(current);
-            } else {
-                this[x] = current;
+                for (y in current) {
+                    this[y] = current[y];
+                }
             }
         }
     },
@@ -220,17 +223,19 @@ defineOn(Array.prototype, {
      */
     // TODO: Change "and" to language specific
     fancyJoin: function () {
-        var array = this, x, retstr = '',
+        var array = this,
+            x,
+            retstr = "",
             arrlen = array.length;
 
-        if (arrlen === 0 || arrlen === 1) {
+        if (arrlen < 2) {
             return array.join("");
         }
 
         arrlen--;
 
         for (x in array) {
-            if (Number(x) === arrlen) {
+            if (arrlen === x * 1) {
                 retstr = retstr.substr(0, retstr.lastIndexOf(","));
                 retstr += " and " + array[x];
 
@@ -240,7 +245,7 @@ defineOn(Array.prototype, {
             retstr += array[x] + ", ";
         }
 
-        return "";
+        return retstr;
     }
 });
 

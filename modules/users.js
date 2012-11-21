@@ -75,16 +75,6 @@ if (!util.user) {
                     channels,
                     player = util.player.player(src);
 
-                /*
-                 var me = player(src),
-                 self = JSESSION.users(src),
-                 srcToLower = sys.name(src).toLowerCase(),
-                 myAuth = sys.auth(src),
-                 sendWelcomeMessage = Config.WelcomeMessages && (myAuth < 1 || myAuth > 3),
-                 temp = "",
-                 pNum = sys.numPlayers();
-                 */
-
                 util.watch.player(src, "Log In on IP " + ip);
 
                 if (sendWelcomeMessage) {
@@ -136,8 +126,6 @@ if (!util.user) {
                     mutes = DataHash.mutes[ip],
                     info = {};
 
-                sys.stopEvent();
-
                 if (self.muted) {
                     util.watch.player(src, null, "Attempted to kick " + target.originalName + " while muted.");
 
@@ -162,11 +150,13 @@ if (!util.user) {
                     */
 
                     bot.send(src, "You are muted by " + info.by + ". Reason: " + info.reason + " " + info.time + "!");
-                    return;
+                    return true;
                 }
+
                 sys.sendHtmlAll("<font color='midnightblue'><timestamp/><b> " + self.originalName + " kicked " + target.originalName + "!</b></font>");
 
                 util.mod.kickAll(tar);
+                return true;
             },
             "beforePlayerBan": function (src, tar) {
                 var self = JSESSION.users(src),
@@ -174,8 +164,6 @@ if (!util.user) {
                     ip = util.player.ip(src),
                     mutes = DataHash.mutes[ip],
                     info = {};
-
-                sys.stopEvent();
 
                 if (self.muted) {
                     util.watch.player(src, null, "Attempted to ban " + target.originalName + " while muted.");
@@ -201,11 +189,12 @@ if (!util.user) {
                      */
 
                     bot.send(src, "You are muted by " + info.by + ". Reason: " + info.reason + " " + info.time + "!");
-                    return;
+                    return true;
                 }
                 sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + self.originalName + " banned " + target.originalName + "!</b></font>");
 
                 util.mod.ban(tar);
+                return true;
             }
         };
     }

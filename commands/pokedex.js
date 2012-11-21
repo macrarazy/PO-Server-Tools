@@ -9,6 +9,8 @@
  * @version 3.0.0 Devel
  */
 
+// TODO: Improve w/ Array.prototype.forEach
+
 (function () {
     try {
         if (!Pokedex) {
@@ -338,37 +340,25 @@
 
         Pokedex.formatStatsOf = function (poke) {
             var stats = ["HP", "ATK", "DEF", "SPATK", "SPDEF", "SPD"],
-                ret = "",
-                z,
-                stt;
+                ret = "";
 
-            for (z in stats) {
-                stt = stats[z];
-                ret += stt + ": " + Pokedex.formatStat(poke, stt) + " | ";
-
-                if (stt === "SPD") {
-                    ret += " | ";
-                }
-            }
+            stats.forEach(function (index, value, array) {
+                ret += value + ": " + Pokedex.formatStat(poke, value) + " | ";
+            });
 
             return ret;
         };
 
         Pokedex.movesOf = function (poke) {
             return Pokedex.data[poke].moves.split(" ").map(function (move) {
-                return Number(move);
+                return move * 1;
             }).sort(function (a, b) {
                     return sys.moveType(b) - sys.moveType(a);
                 });
         };
 
         Pokedex.evosOf = function (poke) {
-            var PD = Pokedex.data[poke];
-            if (PD.evos === undefined) {
-                return [];
-            }
-
-            return PD.evos;
+            return Pokedex.data[poke].evos || [];
         };
 
         Pokedex.moveColours = {
@@ -388,63 +378,65 @@
             13: "#f85888",
             14: "#98d8d8",
             15: "#7038f8",
-            16: "#705848"
+            16: "#705848",
+            17: "black"
         };
 
         Pokedex.formatEvosOf = function (poke) {
             var evos = Pokedex.evosOf(poke),
-                y,
-                retString = [];
+                ret = [];
 
-            for (y in evos) {
-                retString.push(sys.pokemon(evos[y]).fontcolor(Pokedex.moveColours[sys.pokeType1(evos[y])]).bold());
-            }
+            evos.forEach(function (index, value, array) {
+                ret.push("<b>" + sys.pokemon(value).fontcolor(Pokedex.moveColours[sys.pokeType1(value)]) + "</b>");
+            });
 
-            return retString.fancyJoin();
+            return ret.fancyJoin();
         };
 
         Pokedex.formatMovesOf = function (poke) {
             var moves = Pokedex.movesOf(poke),
-                y,
                 retString = "",
                 ml = moves.length - 1;
 
-            for (y in moves) {
-                retString += "<small>" + sys.move(moves[y]).fontcolor(Pokedex.moveColours[sys.moveType(moves[y])]).bold() + "</small>";
-                if (ml != y) {
+            moves.forEach(function (index, value, array) {
+                retString += "<small><b style='color: " + Pokedex.moveColours[sys.moveType(value)] + "'>" + sys.move(value) + "</b></small>";
+                if (ml !== index) {
                     retString += ", ";
                 }
-            }
+            });
 
             return retString + ".";
         };
 
         Pokedex.baseStatTotal = function (pokemon) {
             var poke = Pokedex.data[pokemon].stats,
-                retnum = 0,
-                y;
+                ret = 0;
 
-            for (y in poke) {
-                retnum += Number(poke[y]);
-            }
+            poke.forEach(function (index, value, array) {
+                ret += value * 1;
+            });
 
-            return retnum;
+            return ret;
         };
 
         Pokedex.formatBaseStatTotal = function (poke) {
             var stat = Pokedex.baseStatTotal(poke),
-                string = String(stat).bold(),
-                y,
+                string = "",
                 ranges = [180, 300, 360, 420, 480, 540, 600, 1200, 1800],
                 colors = [
                     "#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"
                 ];
 
-            for (y in ranges) {
-                if (stat <= ranges[y]) {
-                    return string.fontcolor(colors[y]);
+            ranges.forEach(function (index, value, array) {
+                if (string.isEmpty() && stat <= value) {
+                    string = string.fontcolor(colors[index]);
                 }
+            });
+
+            if (string.isEmpty()) {
+                string = String(stat).bold();
             }
+
             return string;
         };
 
@@ -470,17 +462,11 @@
 
             if (poke < 152) {
                 return 1;
-            }
-
-            else if (poke < 252) {
+            } else if (poke < 252) {
                 return 2;
-            }
-
-            else if (poke < 387) {
+            } else if (poke < 387) {
                 return 3;
-            }
-
-            else if (poke < 494) {
+            } else if (poke < 494) {
                 return 4;
             }
 
@@ -496,10 +482,10 @@
 
             ret += sys.ability(abil[0]).bold();
 
-            if (abil[1] != 0) {
+            if (abil[1] !== 0) {
                 ret += " | " + sys.ability(abil[1]).bold();
             }
-            if (abil[2] != 0) {
+            if (abil[2] !== 0) {
                 ret += " | " + sys.ability(abil[2]).bold() + " (<u>Dream World Ability</u>)";
             }
             return ret;
@@ -510,13 +496,9 @@
 
             if (pD === 3) {
                 return "<img src='Themes/Classic/genders/gender1.png'> <img src='Themes/Classic/genders/gender2.png'>";
-            }
-
-            else if (pD === 2) {
+            } else if (pD === 2) {
                 return "<img src='Themes/Classic/genders/gender2.png'>";
-            }
-
-            else if (pD === 1) {
+            } else if (pD === 1) {
                 return "<img src='Themes/Classic/genders/gender1.png'>";
             }
 
@@ -524,8 +506,7 @@
         };
 
         Pokedex.run = function (src, pokemon, chan, showSource) {
-            // TODO: Add templater
-            var t = new Templater("Pokedex - " + pokemon.fontcolor(Pokedex.moveColours[sys.pokeType1(sys.pokeNum(pokemon))])),
+            var t = new Templates.list("Pokedex - " + pokemon.fontcolor(Pokedex.moveColours[sys.pokeType1(sys.pokeNum(pokemon))])),
                 n = sys.pokeNum(pokemon),
                 PD = Pokedex.data[pokemon],
                 s = sys.pokeType2(n) == 17 ? '' : 's',
@@ -540,11 +521,11 @@
             t.register("National Dex Number: " + String(n).bold() + ".");
             t.register("Generation " + String(Pokedex.firstGen(pokemon)).bold() + " Pokemon. ");
 
-            if ((PD.evos !== undefined || (PD.minlvl !== 1 && PD.minlvl !== 100))) {
+            if (!!PD.evos || (PD.minlvl !== 1 && PD.minlvl !== 100)) {
                 t.register("");
             }
 
-            if (PD.evos !== undefined) {
+            if (!!PD.evos) {
                 if (PD.evos.length !== 1) {
                     evoS = "s";
                 }
@@ -589,12 +570,12 @@
                 t.register("<br/> Smeargle learns all moves except Chatter and Transform.");
             }
 
-            if (!showSource) {
-                t.render(src, chan);
+            if (showSource) {
+                sys.sendHtmlMessage(src, t.template.join("<br/>").escapeHtml(), chan);
                 return;
             }
 
-            sys.sendHtmlMessage(src, t.template.join("<br/>").escapeHtml(), chan);
+            t.render(src, chan);
         }
     } catch (Exception) {
         if (util && util.error) {
@@ -618,48 +599,51 @@
      * @return {Object}
      */
     Commands: function () {
-        return {
-            // TODO: Actually do this properly; check ify.js
-            "pokedex": function (command) {
-                var data = command.data,
-                    formeIndex = data.indexOf("-"),
-                    rand,
-                    rands;
+        return [
+            {
+                name: "pokedex",
+                handler: function (command) {
+                    var data = command.data,
+                        formeIndex = data.indexOf("-"),
+                        rand,
+                        rands;
 
-                if (formeIndex != -1) {
-                    data = data.substr(0, formeIndex);
-                }
-
-                if (!sys.pokeNum(data)) {
-                    data = data * 1;
-                    if (!!sys.pokemon(data)) {
-                        data = sys.pokemon(data);
-                    }
-                } else {
-                    data = sys.pokemon(sys.pokeNum(data)); /* Correcting case. */
-                }
-
-                try {
-                    Pokedex.run(src, data, chan);
-                } catch (ignore) {
-                    rand = sys.pokemon(sys.rand(1, 650));
-                    rands = rand + "'s";
-
-                    if (util && util.grammar) {
-                        rands = util.grammar.es(rand);
+                    if (formeIndex != -1) {
+                        data = data.substr(0, formeIndex);
                     }
 
-                    command.send("Since the Pokémon " + data + " doesn't exist, the Pokédex displayed " + rands + " data instead.".escapeHtml());
+                    if (!sys.pokeNum(data)) {
+                        data = data * 1;
+                        if (!!sys.pokemon(data)) {
+                            data = sys.pokemon(data);
+                        }
+                    } else {
+                        data = sys.pokemon(sys.pokeNum(data));
+                        /* Correcting case. */
+                    }
+
                     try {
-                        Pokedex.run(src, rand, chan);
-                    } catch (PokedexException) {
-                        command.send("The Pokédex isn't functional at the moment.");
-                        if (util && util.error) {
-                            print("PokedexException: " + util.error.format(PokedexException));
+                        Pokedex.run(src, data, chan);
+                    } catch (ignore) {
+                        rand = sys.pokemon(sys.rand(1, 650));
+                        rands = rand + "'s";
+
+                        if (util && util.grammar) {
+                            rands = util.grammar.es(rand);
+                        }
+
+                        command.send("Since the Pokémon " + data + " doesn't exist, the Pokédex displayed " + rands + " data instead.".escapeHtml());
+                        try {
+                            Pokedex.run(command.src, rand, command.chan);
+                        } catch (PokedexException) {
+                            command.send("The Pokédex isn't functional at the moment.");
+                            if (util && util.error) {
+                                print("PokedexException: " + util.error.format(PokedexException));
+                            }
                         }
                     }
                 }
             }
-        };
+        ];
     }
 })

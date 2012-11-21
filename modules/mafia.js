@@ -3932,6 +3932,7 @@
      * @return {Object}
      */
     Hooks: function () {
+        // TODO: Remember these hooks
         return {
             "onMute": function (src) {
                 if (mafia.state != "day") {
@@ -3981,9 +3982,9 @@
                     try {
                         mafia.handleCommand(src, message.substr(1));
                     }
-                    catch (err) {
-                        if (err != "no valid command" && util && util.error && bot) {
-                            bot.sendAll(util.error.format("A mafia error has occured.", err), mafiachan);
+                    catch (Exception) {
+                        if (Exception != "no valid command" && util && util.error && bot) {
+                            bot.sendAll(util.error.format("A mafia error has occured.", Exception), mafiachan);
 
                             mafia.endGame(0);
                             if (mafia.theme.name != "default") {

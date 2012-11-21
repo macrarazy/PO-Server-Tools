@@ -38,3 +38,13 @@ Standard for commandInfo passed in all commands.
             + jsession: tar's JSESSION object
 
 modules/templates.js is required for command lists.
+
+
+Properties for each command:
+    Defined in "scripts.new.js":
+        + name: Name of the command
+        + handler: Command handler
+        + [permissionHandler]: Handler for special permissions
+        + [category="0"]: Command category (0, 1, 2, 3, or 4)
+        + [help=["", ""]]: Command help for command lists
+        + [allowedWhenMuted=true]: If the command can be used while muted.

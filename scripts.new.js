@@ -224,6 +224,10 @@ handlers = {};
  * @return {Function} The handler
  */
 handlers.permissionHandler = function (level) {
+    if (level > 4) {
+        level = 4;
+    }
+
     return function (src) {
         if (!sys) {
             return true;
@@ -252,6 +256,8 @@ handlers.defaultHandler = function (category) {
         return handlers.permissionHandler(2);
     } else if (category === "3") {
         return handlers.permissionHandler(3);
+    } else if (category === "4") {
+        return handlers.permissionHandler(4);
     }
 
     return -1;
@@ -267,7 +273,8 @@ handlers.defaultHandler = function (category) {
  * @param {Boolean} [allowedWhenMuted=true] If this command can be used, even when muted
  */
 addCommand = function (name, handler, permissionHandler, category, help, allowedWhenMuted) {
-    var cmd, hash;
+    var cmd,
+        hash;
 
     if (arguments.length == 1) {
         cmd = arguments[0];
@@ -275,15 +282,20 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
             return;
         }
 
-        name = cmd.name, handler = cmd.handler, category = cmd.category, permissionHandler = cmd.permissionHandler, category = cmd.category, help = cmd.help, allowedWhenMuted = cmd.allowedWhenMuted;
+        name = cmd.name,
+            handler = cmd.handler,
+            category = cmd.category,
+            permissionHandler = cmd.permissionHandler,
+            category = cmd.category, help = cmd.help,
+            allowedWhenMuted = cmd.allowedWhenMuted;
     }
 
-    if (name == undefined) {
+    if (!name) {
         print("module.command.error: Could not add an unknown command. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
         return;
     }
 
-    if (handler == undefined) {
+    if (!handler) {
         print("module.command.error: Could not add command " + name + " because the handler is missing. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
         return;
     }
@@ -292,7 +304,7 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
         category = "0"; // Default
     }
 
-    if (permissionHandler == undefined) {
+    if (!permissionHandler) {
         permissionHandler = auth.defaultHandler(category);
 
         if (permissionHandler == -1) {
@@ -301,7 +313,7 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
         }
     }
 
-    if (help == undefined) {
+    if (!help) {
         help = ["", ""];
     }
 
@@ -585,12 +597,6 @@ callResult = function (hook_name, hook_args) {
         sys.deleteFile("server.lck");
     },
     /**
-     * Called every second
-     */
-    step: function () {
-        call("step");
-    },
-    /**
      * Before a message gets outputted to the console from stdout
      * @param {String} message Message from stdout
      */
@@ -610,38 +616,6 @@ callResult = function (hook_name, hook_args) {
         // Possibly add hooks? Might lag the server
     },
     /**
-     * When a channel is about to be deleted (stoppable)
-     * @param {Number} chan Channel id
-     */
-    beforeChannelDestroyed: function (chan) {
-        if (call("beforeChannelDestroyed", chan)) {
-            sys.stopEvent();
-        }
-    },
-    /**
-     * After a channel is destroyed
-     * @param {Number} chan Channel id
-     */
-    afterChannelDestroyed: function (chan) {
-        call("afterChannelDestroyed", chan);
-    },
-    /**
-     * When a player joins a channel (stoppable)
-     * @param {Number} src Player id
-     * @param {Number} chan Channel id
-     */
-    beforeChannelJoin: function (src, chan) {
-        call("beforeChannelJoin", src, chan);
-    },
-    /**
-     * After a player joins a channel
-     * @param {Number} src Player id
-     * @param {Number} chan Channel id
-     */
-    afterChannelJoin: function (src, chan) {
-        call("afterChannelJoin", src, chan);
-    },
-    /**
      * When a player logs in (stoppable)
      * @param {Number} src Player id
      */
@@ -658,11 +632,37 @@ callResult = function (hook_name, hook_args) {
         call("afterLogIn", src);
     },
     /**
+     * When a player logs out
+     * @param {Number} src Player id
+     */
+    beforeLogOut: function (src) {
+        call("beforeLogOut", src);
+    },
+    /**
+     * After a player logs out
+     * @param {Number} src Player id
+     */
+    afterLogOut: function (src) {
+        call("afterLogOut", src);
+    },
+    /**
+     * When a player changes their team
+     * @param {Number} src Player id
+     */
+    beforeChangeTeam: function (src) {
+        call("beforeChangeTeam", src);
+    },
+    /**
      * After a player changed team
      * @param {Number} src Player id
      */
     afterChangeTeam: function (src) {
         call("afterChangeTeam", src);
+    },
+    beforePlayerKick: function (src, tar) {
+        if (call("beforePlayerKick", src, tar)) {
+            sys.stopEvent();
+        }
     },
     /**
      * When the server receives a player's chat message (stoppable)
@@ -692,6 +692,7 @@ callResult = function (hook_name, hook_args) {
         }
 
         /* Command parser */
+        // TODO: Config.CommandStarts
         if (message.length > 1 && Config.CommandStarts.indexOf(message[0]) !== -1) {
             sys.stopEvent();
 
@@ -765,9 +766,13 @@ callResult = function (hook_name, hook_args) {
                 call("onCommandError", src, fullCommand, chan, "invalid");
                 return;
             }
-
             if (!cmd.permissionHandler(src)) {
                 call("onCommandError", src, fullCommand, chan, "nopermission");
+                return;
+            }
+            // TODO: Implement allowedWhenMuted hook
+            if (!cmd.allowedWhenMuted && !call("allowedWhenMuted", src, command, chan)) {
+                call("onCommandError", src, fullCommand, chan, "muted");
                 return;
             }
 
@@ -778,9 +783,48 @@ callResult = function (hook_name, hook_args) {
             }
         }
 
+        // TODO: beforeChatMessage hooks
         if (call("beforeChatMessage", src, message, chan, false)) {
             sys.stopEvent();
         }
+    },
+    /**
+     * When a channel is about to be deleted (stoppable)
+     * @param {Number} chan Channel id
+     */
+    beforeChannelDestroyed: function (chan) {
+        if (call("beforeChannelDestroyed", chan)) {
+            sys.stopEvent();
+        }
+    },
+    /**
+     * After a channel is destroyed
+     * @param {Number} chan Channel id
+     */
+    afterChannelDestroyed: function (chan) {
+        call("afterChannelDestroyed", chan);
+    },
+    /**
+     * When a player joins a channel (stoppable)
+     * @param {Number} src Player id
+     * @param {Number} chan Channel id
+     */
+    beforeChannelJoin: function (src, chan) {
+        call("beforeChannelJoin", src, chan);
+    },
+    /**
+     * After a player joins a channel
+     * @param {Number} src Player id
+     * @param {Number} chan Channel id
+     */
+    afterChannelJoin: function (src, chan) {
+        call("afterChannelJoin", src, chan);
+    },
+    /**
+     * Called every second
+     */
+    step: function () {
+        call("step");
     },
     /**
      * Initialization function for hooks and core globals

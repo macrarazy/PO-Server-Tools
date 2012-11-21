@@ -19,7 +19,7 @@ if (!JSESSION) {
      * @class
      * @type {Function}
      */
-    JSESSION = new (function () {
+    JSESSION = (function () {
         /**
          * Contains data for users
          * @type {Object}
@@ -316,7 +316,7 @@ if (!JSESSION) {
 
             this.ScriptID = undefined;
         }
-    })();
+    }());
 }
 
 /**

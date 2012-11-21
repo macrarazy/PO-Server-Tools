@@ -1210,8 +1210,10 @@ bot = util.bot;
                     bot.sendText(src, "You don't have the proper permissions to use the command \"" + fullCommand + "\".", chan);
                 } else if (errorType === "invalid") {
                     bot.sendText(src, "The command \"" + fullCommand + "\" doesn't exist.", chan);
+                } else if (errorType === "muted") {
+                    bot.sendText(src, "You can't use the \"" + fullCommand + "\" command because you are muted", chan);
                 } else {
-                    bot.sendText(src, "An exception occurred when you tried to use the \"" + fullCommand + "\" command.");
+                    bot.sendText(src, "An exception occurred when you tried to use the \"" + fullCommand + "\" command.", chan);
                     print("CommandError: " + util.error.format(Exception || {
                         name: "UnknownError",
                         message: "An unknown exception has occurred",

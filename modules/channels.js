@@ -27,7 +27,7 @@ if (!cData) {
      * @class
      * @type {Object}
      */
-    cData = new (function () {
+    cData = (function () {
         this.file = "ChannelData.json";
 
         /* Creates the file */

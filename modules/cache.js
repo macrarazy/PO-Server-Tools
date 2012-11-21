@@ -149,3 +149,14 @@ Cache.prototype.saveEnsured = function () {
         this.saveAll();
     }
 };
+
+({
+    /**
+     * Returns the name of this module
+     * @private
+     * @return {String} Cache
+     */
+    Name: function () {
+        return "Cache";
+    }
+})
