@@ -59,7 +59,7 @@ Templates = {
                     bolds = ['<td>', '</td>'];
                 }
 
-                arr.forEach(function (index, value, array) {
+                arr.forEach(function (value, index, array) {
                     mess += bolds[0] + value + bolds[1];
                 });
 
@@ -112,7 +112,7 @@ Templates = {
                     return;
                 }
 
-                args.forEach(function (index, value, array) {
+                args.forEach(function (value, index, array) {
                     args_joined += (this.format(value) + form[1] + ":" + form[0]);
                 }, this);
 

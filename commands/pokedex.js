@@ -1,6 +1,6 @@
 /* Dependencies:
  - modules/jsext.js
- + modules/utilities.js
+ - modules/utilities.js
  */
 
 /**
@@ -9,22 +9,51 @@
  * @version 3.0.0 Devel
  */
 
-// TODO: Improve w/ Array.prototype.forEach
-
 (function () {
+    var parseFile,
+        parseMoveFile,
+        Files,
+        stats,
+        fweigh,
+        fheigh,
+        fevol,
+        fgen,
+        fcc,
+        fegg1,
+        fegg2,
+        fmoves,
+        pokeId = 0,
+        hasFegg2,
+        moveObj = {},
+        fdw,
+        fegg,
+        fevent,
+        flevel,
+        fevom,
+        ftms,
+        ftutor,
+        current_move,
+        dwMoves = {},
+        eggMoves = {},
+        eventMoves = {},
+        levelMoves = {},
+        evoMoves = {},
+        tmMoves = {},
+        tutorMoves = {},
+        i = 1,
+        importMoves,
+        fEgg2Pokes = {},
+        hasFegg1,
+        evos,
+        statsLoopStopped = false;
+
     try {
         if (!Pokedex) {
             Pokedex = {};
         }
         if (!Pokedex.data) { /* Only do this once! Takes too much time! */
-            var parseFile = function (file) {
-                    var res = sys.getFileContent("db/pokes/" + file + ".txt");
-
-                    if (!res) {
-                        return [];
-                    }
-
-                    return res.split("\n");
+            parseFile = function (file) {
+                    return (sys.getFileContent("db/pokes/" + file + ".txt") || "").split("\n");
                 },
                 parseMoveFile = function (file) {
                     return parseFile("5G/" + file + "_moves");
@@ -51,24 +80,15 @@
                         'tutor': parseMoveFile("tutor")
                     }
                 },
-                x,
-                curr_stats,
-                curr_poke_stats,
-                poke,
-                spl,
-                fstats = Files.stats,
-                pMF,
+                stats = Files.stats,
                 fweigh = Files.weight,
                 fheigh = Files.height,
                 fevol = Files.evolevels,
                 fgen = Files.genders,
                 fcc = Files.cc,
-                oldCurrStat, fegg1 = Files.egggroup1,
+                fegg1 = Files.egggroup1,
                 fegg2 = Files.egggroup2,
                 fmoves = Files.moves,
-                pokeId = 0,
-                hasFegg2,
-                moveObj = {},
                 fdw = fmoves.dw,
                 fegg = fmoves.dw,
                 fevent = fmoves.event,
@@ -76,13 +96,6 @@
                 fevom = fmoves.evo,
                 ftms = fmoves.tms,
                 ftutor = fmoves.tutor,
-                fevo = Files.evos.map(function (pokeIds) {
-                    return pokeIds.split(" ");
-                }),
-                current_move,
-                c_m_spl,
-                c_m_space,
-                c_poke,
                 dwMoves = {},
                 eggMoves = {},
                 eventMoves = {},
@@ -90,39 +103,23 @@
                 evoMoves = {},
                 tmMoves = {},
                 tutorMoves = {},
-                i = 1,
                 importMoves = function (moveArray, Obj) {
-                    for (x in moveArray) {
-                        current_move = moveArray[x];
+                    moveArray.forEach(function (value, index, array) {
+                        var moveSplit = value.split(":"),
+                            moveSpace = value.split(" "),
+                            poke = +(moveSplit[0]);
 
-                        c_m_spl = current_move.split(":");
-                        c_m_space = current_move.split(" ");
-                        c_poke = Number(c_m_spl[0]);
-
-                        if (current_move === "" || current_move === " ") {
-                            continue;
+                        if (value.isEmpty() || moveSplit[1].charAt(0) !== "0") { // Empty line, forme
+                            return;
                         }
 
-                        if (c_m_spl[1].charAt(0) !== "0") { // A forme.
-                            continue;
-                        }
-
-                        c_m_space.splice(0, 1);
-                        Obj[c_poke] = c_m_space.join(" ");
-                    }
+                        moveSpace.splice(0, 1);
+                        Obj[poke] = moveSpace.join(" ");
+                    });
                 },
-                mTA,
-                doneMoves,
-                c_mTA,
-                fEgg2Pokes = {},
-                curr_fegg2,
-                hasFegg1,
-                pArr = Files.evos.map(function (a) {
-                    return a.split(" ");
-                }),
-                c_entry,
-                next_entry,
-                c_poke;
+                evos = Files.evos.map(function (evo) {
+                    return evo.split(" ");
+                });
 
             Pokedex.data = {};
 
@@ -135,231 +132,180 @@
             importMoves(ftms, tmMoves);
             importMoves(ftutor, tutorMoves);
 
-            while (i != 650) {
-                c_poke = i, current_move = "";
+            while (i !== 650) {
+                current_move = levelMoves[i];
 
-                current_move += levelMoves[c_poke];
-
-                if (c_poke in dwMoves) {
-                    current_move += " " + dwMoves[c_poke];
+                if (i in dwMoves) {
+                    current_move += " " + dwMoves[i];
                 }
 
-                if (c_poke in eggMoves) {
-                    current_move += " " + eggMoves[c_poke];
+                if (i in eggMoves) {
+                    current_move += " " + eggMoves[i];
                 }
 
-                if (c_poke in eventMoves) {
-                    current_move += " " + eventMoves[c_poke];
+                if (i in eventMoves) {
+                    current_move += " " + eventMoves[i];
                 }
 
-                if (c_poke in evoMoves) {
-                    current_move += " " + evoMoves[c_poke];
+                if (i in evoMoves) {
+                    current_move += " " + evoMoves[i];
                 }
 
-                if (c_poke in tutorMoves) {
-                    current_move += " " + tutorMoves[c_poke];
+                if (i in tutorMoves) {
+                    current_move += " " + tutorMoves[i];
                 }
 
-                if (c_poke in tmMoves) {
-                    current_move += " " + tmMoves[c_poke];
+                if (i in tmMoves) {
+                    current_move += " " + tmMoves[i];
                 }
 
-                moveObj[sys.pokemon(c_poke)] = current_move;
+                moveObj[sys.pokemon(i)] = current_move;
                 i++;
             }
 
-            /* Double checks for multiple moves */
-            for (x in moveObj) {
-                doneMoves = [];
-                current_move = moveObj[x];
-                mTA = current_move.split(" ");
+            /* Checks for duplicate moves */
+            moveObj.forEach(function (value, index, array) {
+                var movesDone = [],
+                    move2Array = value.split(" ");
 
-                for (i in mTA) {
-                    c_mTA = sys.move(Number(mTA[i]));
-                    if (doneMoves.has(c_mTA)) {
-                        mTA.splice(i, 3);
-                        continue;
+                move2Array.forEach(function (value, index, array) {
+                    var moveId = sys.move(+(value));
+                    if (movesDone.has(moveId)) {
+                        array.splice(i, 3);
+                        return;
                     }
 
-                    doneMoves.push(c_mTA);
-                }
+                    movesDone.push(moveId);
+                });
 
-                moveObj[x] = mTA.join(" ");
-            }
+                array[index] = move2Array.join(" ");
+            });
 
             /* We check CC later, as it's a little messy.
-             We also will check evos later as some pokes don't have one. */
-            for (x in fegg2) {
-                curr_fegg2 = fegg2[x].split(" ");
-                if (curr_fegg2 == "0") {
-                    continue;
+               We also will check evolutions later as some pokes don't have one. */
+            fegg2.forEach(function (value, index, array) {
+                var current = value.split(" ");
+                if (current == "0") {
+                    return;
                 }
 
-                fEgg2Pokes[curr_fegg2[0]] = curr_fegg2[1];
-            }
+                fEgg2Pokes[current[0]] = current[1];
+            });
 
-            for (x in fstats) {
-                x = Number(x);
+            stats.forEach(function (value, index, array) {
+                var currentStats,
+                    statsTemp,
+                    split,
+                    poke;
+
+                if (statsLoopStopped) {
+                    return;
+                }
+
                 pokeId++;
 
                 /* Put stuff into an array here. */
-                curr_stats = [fstats[x].split(" ")];
-                oldCurrStat = curr_stats[0];
-                spl = fstats[x].split(":");
+                currentStats = [value.split(" ")],
+                    statsTemp = currentStats[0],
+                    split = value.split(":");
 
-                if (spl[1] == undefined) {
-                    break;
+                if (!split[1]) {
+                    statsLoopStopped = true;
+                    return;
                 }
 
                 /* First is for formes. Second is missingno check. */
-                if (spl[1][0] != "0" || spl[0] == "0") {
+                if (split[1].charAt(0) !== "0" || split[0] === "0") {
                     pokeId--;
-                    continue;
+                    return;
                 }
 
-                curr_stats = [
-                    oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "),
+                currentStats = [
+                    statsTemp,
+                    fweigh[pokeId].split(" "),
+                    fheigh[pokeId].split(" "),
+                    fgen[pokeId].split(" "),
                     fevol[pokeId].split(" ")
                 ];
 
-                if (fegg1[pokeId] != undefined) {
+                if (!!fegg1[pokeId]) {
                     hasFegg1 = true;
-                    curr_stats.push(fegg1[pokeId].split(" "));
+                    currentStats.push(fegg1[pokeId].split(" "));
                 } else {
                     hasFegg1 = false;
-                    curr_stats.push(" ");
+                    currentStats.push(" ");
                 }
 
-                if (fEgg2Pokes[pokeId] != undefined) {
+                if (!!fEgg2Pokes[pokeId]) {
                     hasFegg2 = true;
-                    curr_stats.push([pokeId, fEgg2Pokes[pokeId]]);
+                    currentStats.push([pokeId, fEgg2Pokes[pokeId]]);
                 } else {
                     hasFegg2 = false;
-                    curr_stats.push(" ");
+                    currentStats.push(" ");
                 }
 
-                poke = sys.pokemon(spl[0]);
-                curr_poke_stats = curr_stats[0];
+                poke = +(split[0]);
+
                 /* Egg Groups */
                 if (hasFegg1) {
-                    curr_stats[5][1] = cut(curr_stats[5], 1, ' ');
+                    currentStats[5][1] = util.message.cut(currentStats[5], 1, ' ');
                 }
                 if (hasFegg2) {
-                    curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
+                    currentStats[6][1] = util.message.cut(currentStats[6], 1, ' ');
                 }
 
                 Pokedex.data[poke] = {
                     "stats": {
-                        'HP': curr_poke_stats[1],
-                        'ATK': curr_poke_stats[2],
-                        'DEF': curr_poke_stats[3],
-                        'SPATK': curr_poke_stats[4],
-                        'SPDEF': curr_poke_stats[5],
-                        'SPD': curr_poke_stats[6]
+                        'HP': statsTemp[1],
+                        'ATK': statsTemp[2],
+                        'DEF': statsTemp[3],
+                        'SPATK': statsTemp[4],
+                        'SPDEF': statsTemp[5],
+                        'SPD': statsTemp[6]
                     },
 
-                    "weight": curr_stats[1][1],
-                    "height": curr_stats[2][1],
-                    "minlvl": Number(curr_stats[4][1].split("/")[0]),
-                    "genders": curr_stats[3][1],
-                    "egg": [curr_stats[5][1], curr_stats[6][1]],
+                    "weight": statsTemp[1][1],
+                    "height": statsTemp[2][1],
+                    "minlvl": +(statsTemp[4][1].split("/").charAt(0)),
+                    "genders": statsTemp[3][1],
+                    "egg": [statsTemp[5][1], statsTemp[6][1]],
                     "moves": moveObj[poke]
                 };
+            }); /* Done! */
 
-                /* Done! */
-            }
+            /* Parsing evolutions */
+            evos.forEach(function (value, index, array) {
+                var nextEntry = array[index + 1],
+                    poke = sys.pokemon(value[0]),
+                    data = Pokedex.data[poke],
+                    length = value.length;
 
-            /* Parsing evos */
-            for (x in pArr) {
-                c_entry = pArr[x];
-                next_entry = pArr[Number(x) + 1];
-                c_poke = sys.pokemon(c_entry[0]);
-
-                if (next_entry !== undefined && Number(c_entry[1]) == Number(next_entry[0])) {
-                    Pokedex.data[c_poke].evos = [c_entry[1], next_entry[1]];
+                if (!!nextEntry && +(value[1]) === +(nextEntry[0])) {
+                    data.evos = [value[1], nextEntry[1]];
+                } else if (length === 3 && value[1] === value[2]) { /* Feebas evo bug. */
+                    data.evos = [value[1]];
+                } else if (length !== 2) {
+                    array[index].splice(0, 1);
+                    data.evos = value;
+                } else if (+(value[0]) + 1 === +(value[1])) {
+                    data.evos = [value[1]];
                 }
-                else if (c_entry.length === 3 && c_entry[1] === c_entry[2]) { /* Feebas evo bug. */
-                    Pokedex.data[c_poke].evos = [c_entry[1]];
-                }
-                else if (c_entry.length !== 2) {
-                    c_entry.splice(0, 1);
-                    Pokedex.data[c_poke].evos = c_entry;
-                }
-                else if (Number(c_entry[0]) + 1 === Number(c_entry[1])) {
-                    Pokedex.data[c_poke].evos = [c_entry[1]];
-                }
-            }
-
-            /* Done! */
+            }); /* Done! */
 
             /* Checking CC levels */
-            for (x in fcc) {
-                c_entry = fcc[x];
-                spl = c_entry.split(":");
-                c_m_space = c_entry.split(" ");
-                c_poke = sys.pokemon(Number(spl[0]));
+            fcc.forEach(function (value, index, array) {
+                var split = value.split(":"),
+                    ccSpace = value.split(" "),
+                    poke = sys.pokemon(+(split[0]));
 
-                if (c_poke == undefined || c_poke == "Missingno" || spl[1][0] !== "0") { // Formes. Missingno.
-                    continue;
+                if (!poke || poke === "Missingno" || split[1].charAt(0) !== "0") { // Formes. Missingno.
+                    return;
                 }
 
-                Pokedex.data[c_poke].cc = Number(c_m_space[1]);
-            }
+                Pokedex.data[poke].cc = +(ccSpace[1]);
+            });
         }
         /* End of loading pokemon data */
-
-        /* Pokedex functions */
-        Pokedex.formatStat = function (poke, pokeStat) {
-            var stat = Pokedex.data[poke].stats[pokeStat],
-                string = stat.bold(),
-                y,
-                ranges = [30, 50, 60, 70, 80, 90, 100, 200, 300],
-                colors = [
-                    "#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"
-                ];
-
-            for (y in ranges) {
-                if (stat <= ranges[y]) {
-                    return string.fontcolor(colors[y]);
-                }
-            }
-
-            return string.fontcolor(colors[colors.length - 1]);
-        };
-
-        Pokedex.statsOf = function (poke) {
-            var stat = Pokedex.data[poke].stats,
-                ret = [],
-                z;
-
-            for (z in stat) {
-                ret.push(stat[z]);
-            }
-            return ret;
-        };
-
-        Pokedex.formatStatsOf = function (poke) {
-            var stats = ["HP", "ATK", "DEF", "SPATK", "SPDEF", "SPD"],
-                ret = "";
-
-            stats.forEach(function (index, value, array) {
-                ret += value + ": " + Pokedex.formatStat(poke, value) + " | ";
-            });
-
-            return ret;
-        };
-
-        Pokedex.movesOf = function (poke) {
-            return Pokedex.data[poke].moves.split(" ").map(function (move) {
-                return move * 1;
-            }).sort(function (a, b) {
-                    return sys.moveType(b) - sys.moveType(a);
-                });
-        };
-
-        Pokedex.evosOf = function (poke) {
-            return Pokedex.data[poke].evos || [];
-        };
 
         Pokedex.moveColours = {
             0: "#a8a878",
@@ -382,11 +328,64 @@
             17: "black"
         };
 
+        /* Pokedex functions */
+        Pokedex.formatStat = function (poke, pokeStat) {
+            var stat = Pokedex.data[poke].stats[pokeStat],
+                string = stat.bold(),
+                ranges = [30, 50, 60, 70, 80, 90, 100, 200, 300],
+                colors = [
+                    "#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"
+                ],
+                loopDone;
+
+
+            ranges.forEach(function (value, index, array) {
+                if (!loopDone && stat <= value) {
+                    string = string.fontcolor(colors[index]);
+                    loopDone = true;
+                }
+            });
+
+            return string;
+        };
+
+        Pokedex.statsOf = function (poke) {
+            var ret = [];
+
+            Pokedex.data[poke].stats.forEach(function (value, index, array) {
+                ret.push(value);
+            });
+
+            return ret;
+        };
+
+        Pokedex.formatStatsOf = function (poke) {
+            var ret = "";
+
+            ["HP", "ATK", "DEF", "SPATK", "SPDEF", "SPD"].forEach(function (value, index, array) {
+                ret += value + ": " + Pokedex.formatStat(poke, value) + " | ";
+            });
+
+            return ret;
+        };
+
+        Pokedex.movesOf = function (poke) {
+            return Pokedex.data[poke].moves.split(" ").map(function (move) {
+                return move * 1;
+            }).sort(function (a, b) {
+                    return sys.moveType(b) - sys.moveType(a);
+                });
+        };
+
+        Pokedex.evosOf = function (poke) {
+            return Pokedex.data[poke].evos || [];
+        };
+
         Pokedex.formatEvosOf = function (poke) {
             var evos = Pokedex.evosOf(poke),
                 ret = [];
 
-            evos.forEach(function (index, value, array) {
+            evos.forEach(function (value, index, array) {
                 ret.push("<b>" + sys.pokemon(value).fontcolor(Pokedex.moveColours[sys.pokeType1(value)]) + "</b>");
             });
 
@@ -398,7 +397,7 @@
                 retString = "",
                 ml = moves.length - 1;
 
-            moves.forEach(function (index, value, array) {
+            moves.forEach(function (value, index, array) {
                 retString += "<small><b style='color: " + Pokedex.moveColours[sys.moveType(value)] + "'>" + sys.move(value) + "</b></small>";
                 if (ml !== index) {
                     retString += ", ";
@@ -412,7 +411,7 @@
             var poke = Pokedex.data[pokemon].stats,
                 ret = 0;
 
-            poke.forEach(function (index, value, array) {
+            poke.forEach(function (value, index, array) {
                 ret += value * 1;
             });
 
@@ -421,21 +420,19 @@
 
         Pokedex.formatBaseStatTotal = function (poke) {
             var stat = Pokedex.baseStatTotal(poke),
-                string = "",
+                string = stat.bold(),
                 ranges = [180, 300, 360, 420, 480, 540, 600, 1200, 1800],
                 colors = [
                     "#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"
-                ];
+                ],
+                loopDone = false;
 
-            ranges.forEach(function (index, value, array) {
-                if (string.isEmpty() && stat <= value) {
+            ranges.forEach(function (value, index, array) {
+                if (!loopDone && stat <= value) {
                     string = string.fontcolor(colors[index]);
+                    loopDone = true;
                 }
             });
-
-            if (string.isEmpty()) {
-                string = String(stat).bold();
-            }
 
             return string;
         };
@@ -578,9 +575,7 @@
             t.render(src, chan);
         }
     } catch (Exception) {
-        if (util && util.error) {
-            print(util.error.format(Exception));
-        }
+        print(util.error.format(Exception));
     }
 }());
 
@@ -613,7 +608,7 @@
                     }
 
                     if (!sys.pokeNum(data)) {
-                        data = data * 1;
+                        data = +(data);
                         if (!!sys.pokemon(data)) {
                             data = sys.pokemon(data);
                         }
@@ -626,20 +621,14 @@
                         Pokedex.run(src, data, chan);
                     } catch (ignore) {
                         rand = sys.pokemon(sys.rand(1, 650));
-                        rands = rand + "'s";
-
-                        if (util && util.grammar) {
-                            rands = util.grammar.es(rand);
-                        }
+                        rands = util.grammar.es(rand);
 
                         command.send("Since the Pokémon " + data + " doesn't exist, the Pokédex displayed " + rands + " data instead.".escapeHtml());
                         try {
                             Pokedex.run(command.src, rand, command.chan);
                         } catch (PokedexException) {
                             command.send("The Pokédex isn't functional at the moment.");
-                            if (util && util.error) {
-                                print("PokedexException: " + util.error.format(PokedexException));
-                            }
+                            print("PokedexException: " + util.error.format(PokedexException));
                         }
                     }
                 }
