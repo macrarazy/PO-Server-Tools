@@ -135,29 +135,11 @@
             while (i !== 650) {
                 current_move = levelMoves[i];
 
-                if (i in dwMoves) {
-                    current_move += " " + dwMoves[i];
-                }
-
-                if (i in eggMoves) {
-                    current_move += " " + eggMoves[i];
-                }
-
-                if (i in eventMoves) {
-                    current_move += " " + eventMoves[i];
-                }
-
-                if (i in evoMoves) {
-                    current_move += " " + evoMoves[i];
-                }
-
-                if (i in tutorMoves) {
-                    current_move += " " + tutorMoves[i];
-                }
-
-                if (i in tmMoves) {
-                    current_move += " " + tmMoves[i];
-                }
+                [dwMoves, eggMoves, eventMoves, evoMoves, tutorMoves, tmMoves].forEach(function (value, index, array) {
+                    if (value.has(i)) {
+                        current_move += " " + value[i];
+                    }
+                });
 
                 moveObj[sys.pokemon(i)] = current_move;
                 i++;
@@ -185,7 +167,7 @@
                We also will check evolutions later as some pokes don't have one. */
             fegg2.forEach(function (value, index, array) {
                 var current = value.split(" ");
-                if (current == "0") {
+                if (current === "0") {
                     return;
                 }
 
@@ -336,7 +318,7 @@
                 colors = [
                     "#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"
                 ],
-                loopDone;
+                loopDone = false;
 
 
             ranges.forEach(function (value, index, array) {
@@ -371,7 +353,7 @@
 
         Pokedex.movesOf = function (poke) {
             return Pokedex.data[poke].moves.split(" ").map(function (move) {
-                return move * 1;
+                return +(move);
             }).sort(function (a, b) {
                     return sys.moveType(b) - sys.moveType(a);
                 });
@@ -395,11 +377,11 @@
         Pokedex.formatMovesOf = function (poke) {
             var moves = Pokedex.movesOf(poke),
                 retString = "",
-                ml = moves.length - 1;
+                movesLength = moves.length - 1;
 
             moves.forEach(function (value, index, array) {
                 retString += "<small><b style='color: " + Pokedex.moveColours[sys.moveType(value)] + "'>" + sys.move(value) + "</b></small>";
-                if (ml !== index) {
+                if (index !== movesLength) {
                     retString += ", ";
                 }
             });
@@ -444,7 +426,7 @@
                 type2 = sys.pokeType2(poke_num),
                 type_name2;
 
-            ret += type_name = sys.type(type).bold().fontcolor(Pokedex.moveColours[type]);
+            ret += sys.type(type).bold().fontcolor(Pokedex.moveColours[type]);
 
             if (type2 != 17) {
                 type_name2 = sys.type(type2).bold().fontcolor(Pokedex.moveColours[type2]);
@@ -489,7 +471,7 @@
         };
 
         Pokedex.pokeGender = function (poke) {
-            var pD = Number(Pokedex.data[poke].genders);
+            var pD = +(Pokedex.data[poke].genders);
 
             if (pD === 3) {
                 return "<img src='Themes/Classic/genders/gender1.png'> <img src='Themes/Classic/genders/gender2.png'>";
@@ -506,8 +488,8 @@
             var t = new Templates.list("Pokedex - " + pokemon.fontcolor(Pokedex.moveColours[sys.pokeType1(sys.pokeNum(pokemon))])),
                 n = sys.pokeNum(pokemon),
                 PD = Pokedex.data[pokemon],
-                s = sys.pokeType2(n) == 17 ? '' : 's',
-                s2 = sys.pokeAbility(n, 1) == 0 && sys.pokeAbility(n, 2) == 0 ? 'y' : 'ies',
+                s = sys.pokeType2(n) == 17 ? "" : "s",
+                s2 = sys.pokeAbility(n, 1) == 0 && sys.pokeAbility(n, 2) == 0 ? "y" : "ies",
                 gender = Pokedex.pokeGender(pokemon),
                 eggs = PD.egg,
                 eggstr = "",
@@ -516,7 +498,7 @@
             t.register("<img src='pokemon:num=" + n + "'> <img src='pokemon:num=" + n + "&back=true'> <img src='pokemon:num=" + n + "&shiny=true'> <img src='pokemon:num=" + n + "&shiny=true&back=true'><br/>");
             t.register("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + gender);
             t.register("National Dex Number: " + String(n).bold() + ".");
-            t.register("Generation " + String(Pokedex.firstGen(pokemon)).bold() + " Pokemon. ");
+            t.register("Generation " + (Pokedex.firstGen(pokemon) + "").bold() + " Pokemon. ");
 
             if (!!PD.evos || (PD.minlvl !== 1 && PD.minlvl !== 100)) {
                 t.register("");

@@ -1,0 +1,23 @@
+Version 0.1:
+    - Usage of switch, case, default is not allowed
+    - Usage of ternary operators is not allowed
+    - Not allowed to create anything in a core data type's prototype. Use defineOn in modules/jsext.js instead.
+    - Array.prototype.forEach has to be used to iterate over an array's values.
+    - All methods in a constructor must return this when it would otherwise have nothing to return.
+    - Use single quotes (') only for when HTML/CSS is used in the string or when you'd have to do \".
+    - Use TODO:, NOTE:, and HARDCODED when you think this will be helpful in some way.
+    - Try to hardcode as little as possible (try to use hooks instead).
+    - Always do the file's JSDoc. If you don't want to do this add "// TODO: JSDOC" at the top of the script
+    - Always list a file's dependencies.
+   - Usage of parseInt or the Number constructor is not allowed. Use +(variable) instead. (ex. +(pokeId)) to convert a string into a number.
+   - Usage of the String constructor or Number.prototype.toString is not allowed. Use (variable + "") instead. (ex. (pokeId + "") to convert a number into a string).
+   - Variables are always written on the first line of the current scope (global or function). No exceptions (not even comments). Declare the variables, but don't assign anything to them, if needed.
+   - If you wish to chain function calls, add a newline between each function call
+        (ex. "a"
+                .replace("a", "B")
+                .replace("B", "A");
+        )
+
+
++ Code IDE of choice should be JetBrains WebStorm.
++ Correct anything that doesn't meet these guidelines that you might find.

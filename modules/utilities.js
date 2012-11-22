@@ -548,23 +548,17 @@ util.grammar = {
      * @return {String} Corrected word
      */
     an: function (word, cap) {
-        var ret;
+        var ret = "a ";
 
         if (/[aeiouAEIOU]/.test(word[0])) {
-            if (cap) {
-                ret = "An";
-            } else {
-                ret = "an";
-            }
-        } else {
-            if (cap) {
-                ret = "A";
-            } else {
-                ret = "a";
-            }
+            ret = "an ";
         }
 
-        return ret + " " + word;
+        if (cap) {
+            ret = ret.cap();
+        }
+
+        return ret + word;
     },
     /**
      * To correct -s or -es
@@ -585,7 +579,7 @@ util.grammar = {
      * @return {String} Corrected word
      */
     s: function (word, number) {
-        if (number != 1) {
+        if (number !== 1) {
             word += "s";
         }
 
@@ -696,7 +690,6 @@ util.message = {
      */
     stfuTruck: function (src, chan) {
         bot.send(src, '|^^^^^^^^^^^\||____', chan);
-        // TODO: "The STFU Truck" to lang specific
         bot.send(src, '| The STFU Truck  |||""\'|""\__,_', chan);
         bot.send(src, '| _____________ l||__|__|__|)', chan);
         bot.send(src, '...|(@)@)"""""""**|(@)(@)**|(@)', chan);
@@ -733,7 +726,7 @@ util.message = {
             auth = 3;
         }
 
-        str = String(str);
+        str = (str + "");
 
         if (typeof authLvl == 'number' && sys.loggedIn(authLvl)) {
             name = sys.name(authLvl).toLowerCase();

@@ -99,10 +99,17 @@ Config.NoCrash = false;
 Config.AdminsCanAuth = true;
 
 /**
- * Clears logs when logs.txt has the given size or more. NOTE: Doesn't work with current version of PO
+ * Clears logs when logs.txt has the given size in bytes or more. NOTE: Doesn't work with current version of PO
  * @type {Number}
  */
+// TODO: Size in kb or possibly mb instead.
 Config.ClearLogsAtSize = 36700160;
+
+/**
+ * Characters which can be used to "start" a command with.
+ * @type {Array}
+ */
+Config.CommandStarts = ["/", "!"];
 
 /**
  * Changes that players authority to that level at auth calculations (so an auth with auth level 2 has permissions of auth level 3, but that would not be visible)
@@ -158,7 +165,7 @@ BRANCH = "devel";
  * Modules to load
  * @type {Array}
  */
-// TODO: Add channels.js + templates.js once done
+// TODO: Add channels.js, templates.js, pokedex.js once done
 Modules = [
     "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
     "modules/jsession.js", "modules/users.js", /*"modules/templates.js",*/ "modules/mafia.js"
@@ -189,7 +196,12 @@ OverwriteCommands = true;
  * Contains commands
  * @type {Object}
  */
-Commands = {};
+Commands = {
+    /**
+     * Object for command lists. Can't be changed by addCommand.
+     */
+    Lists: {}
+};
 
 /**
  * Contains command-defined settings
@@ -320,6 +332,8 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
     if (allowedWhenMuted == undefined) {
         allowedWhenMuted = true;
     }
+
+    name = name.toLowerCase();
 
     hash = {
         "name": name,
@@ -692,7 +706,6 @@ callResult = function (hook_name, hook_args) {
         }
 
         /* Command parser */
-        // TODO: Config.CommandStarts
         if (message.length > 1 && Config.CommandStarts.indexOf(message[0]) !== -1) {
             sys.stopEvent();
 

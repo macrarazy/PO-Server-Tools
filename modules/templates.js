@@ -4,6 +4,12 @@
  - modules/utilities.js
  */
 
+/**
+ * @fileOverview Message templates
+ * @author TheUnknownOne
+ * @version 3.0.0 Devel
+ */
+
 // TODO: Find a way to not make this as hardcoded as it is with styles
 // TODO: Find a way to not make this as hardcoded as it is with pointer commands
 // TODO: Find a way to not make this as hardcoded as it is with chat color randomizers
@@ -67,13 +73,16 @@ Templates = {
                 this.template.push(mess);
             },
             render: function (src, chan) {
+                /*var index,
+                    code;*/
+
                 this.template.push("</table><br/>", style.footer);
 
                 sys.sendHtmlMessage(src, this.template.join(''), chan);
 
-                // TODO: "fix" this
+                // TODO: "fix" this with a hook
                 if (ChatColorRandomizers.has(chan)) { // Tables reset fix
-                    var index = ChatColorRandomizers[chan],
+                    index = ChatColorRandomizers[chan],
                         code = '<div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
 
                     sys.sendHtmlMessage(src, code, chan);
@@ -82,7 +91,7 @@ Templates = {
         });
     },
     /* Command template - for command lists */
-    command: function (template_name, nohelp) {
+    command: function (template_name) {
         this.extend({
             template: [
                 style.header,
@@ -90,17 +99,36 @@ Templates = {
                 style.help + "<br/>"
             ],
             format: function (str) {
-                // TODO: Improve this
-                return str.replace(/\{Player::Online (.*?)\}/gi, '<b><font color="red">$1</font></b>')
-                    .replace(/\{Player::Database (.*?)\}/gi, '<b><font color="orangered">$1</font></b>')
-                    .replace(/\{Player::Tournament (.*?)\}/gi, '<b><font color="green">$1</font></b>')
-                    .replace(/\{Text::Number (.*?)\}/gi, '<b><font color="orange">$1</font></b>')
-                    .replace(/\{Text::Any (.*?)\}/gi, '<b><font color="purple">$1</font></b>')
-                    .replace(/\{Text::Choice (.*?)\}/gi, '<b><font color="blue">$1</font></b>')
-                    .replace(/\{Text::Time (.*?)\}/gi, '<b><font color="blueviolet">$1</font></b>');
+                // TODO: Improve this - update /help
+                // New syntax: (Category)::(Type) {(TEXT)}, ex. Player::Online {Player} (Old: {(Category)::Type (TEXT)} ex. {Player::Online Player}
+                /* New colors:
+                 Player::Online (online only) | slateblue
+                 Player::Offline (offline only) | red
+                 Player::Database (online or offline) | mediumpurple
+                 Player::Tournament (must be in channel's tournament) | seagreen
+                 Player::Auth (must be auth) | orange
+
+                 Text::Number (must be a number) | darksalmon
+                 Text::Choice (multiple options defined in (TEXT)) | cadetblue
+                 Text::Time (time (number)) | mediumvioletred
+                 Text::TimeUnit (time (unit)) | darkviolet
+                 Text::Any (any text) | silver
+                 */
+                return str
+                    .replace(/Player::Online \{(.*?)\}/gi, "<b><font color='slateblue'>$1</font></b>")
+                    .replace(/Player::Offline \{(.*?)\}/gi, "<b><font color='red'>$1</font></b>")
+                    .replace(/Player::Database \{(.*?)\}/gi, "<b><font color='mediumpurple'>$1</font></b>")
+                    .replace(/Player::Tournament \{(.*?)\}/gi, "<b><font color='seagreen'>$1</font></b>")
+                    .replace(/Player::Auth \{(.*?)\}/gi, "<b><font color='orange'>$1</font></b>")
+
+                    .replace(/Text::Number \{(.*?)\}/gi, "<b><font color='darksalmon'>$1</font></b>")
+                    .replace(/Text::Choice \{(.*?)\}/gi, "<b><font color='cadetblue'>$1</font></b>")
+                    .replace(/Text::Time \{(.*?)\}/gi, "<b><font color='mediumvioletred'>$1</font></b>")
+                    .replace(/Text::TimeUnit \{(.*?)\}/gi, "<b><font color='darkviolet'>$1</font></b>")
+                    .replace(/Text::Any \{(.*?)\}/gi, "<b><font color='silver'>$1</font></b>");
             },
             register: function (name, args, desc) {
-                var aliases = this.formattedAliases(name),
+                var aliases = this.aliases(name),
                     form = style["command-style"],
                     pre_command = style["pre-command"],
                     args_joined = "",
@@ -108,8 +136,10 @@ Templates = {
                     argsLength = arguments.length;
 
                 if (argsLength == 2) {
-                    this.template.push(pre_command + form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font>" + form[1] + ": " + this.format(args) + aliases);
-                    return;
+                    this.template.push(
+                        pre_command + form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font>" + form[1] + ": " + this.format(args) + aliases
+                    );
+                    return this;
                 }
 
                 args.forEach(function (value, index, array) {
@@ -118,32 +148,32 @@ Templates = {
 
                 args_joined = args_joined.substring(0, args_joined.length - form[0].length);
 
-                this.template.push(pre_command + form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font> " + args_joined + " " + this.format(desc) + aliases);
+                this.template.push(
+                    pre_command + form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font> " + args_joined + " " + this.format(desc) + aliases
+                );
+
+                return this;
             },
             span: function (name) {
                 this.template.push("<br/>" + style.span.replace(/{{Name}}/gi, name) + "<br/>");
+                return this;
             },
             render: function (src, chan) {
                 this.template.push(style.footer);
 
                 sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
             },
-            aliases: function (name) {
-                if (!PointerCommands["!!/Reverse/!!"].has(name)) {
-                    return [];
-                }
-
-                return PointerCommands["!!/Reverse/!!"][name].keys();
-            },
-            formattedAliases: function (cmd) {
-                var a = this.aliases(cmd);
-                if (a.length === 0) {
+            aliases: function (cmd) {
+                var aliases = (PointerCommands["!!/Reverse/!!"][cmd] || {}).keys();
+                if (aliases.length === 0) {
                     return "";
                 }
 
-                return " <i>(Aliases: " + a.join(", ") + ")</i>";
+                return " <i>(Aliases: " + aliases.join(", ") + ")</i>";
             }
         });
+
+        return this;
     }
 };
 

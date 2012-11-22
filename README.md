@@ -16,3 +16,5 @@ All made beautiful with a simple, yet powerful templating system that is customi
 Modules are in modules/, command categories are in commands/
 
 Command Categories require all of the modules defined in commands/README.md
+
+Coding requirements (a note to myself as well) are in CODING.txt (root)

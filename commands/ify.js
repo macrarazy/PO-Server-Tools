@@ -42,19 +42,21 @@ Dependencies:
      * @return {Array}
      */
     Commands: function () {
+        if (Commands.Lists.admin) {
+            Command.Lists.admin.push("ifycommands");
+        }
+
         return [
             {
                 name: "ify",
                 category: "2",
                 help: [
-                    "{Template::String Name}",
-                    "Turns global server name-ify on and uses {Template::String Name} as name."
+                    "Text::Any {Name}",
+                    "Turns global server name-ify on and uses Text::Any {Name} as name."
                 ],
                 allowedWhenMuted: false,
                 handler: function (command) {
                     var ids = sys.playerIds(),
-                        x,
-                        id,
                         data = command.data;
 
                     if (!!Settings.IfyName) {
@@ -70,12 +72,10 @@ Dependencies:
 
                     command.sendMain(command.self.player + " changed the name of everyone on the server to " + data + "!");
 
-                    for (x in ids) {
-                        id = ids[x];
-
-                        sys.changeName(id, data);
-                        bot.send(id, "Your name was changed to " + data + "!");
-                    }
+                    ids.forEach(function (value, index, array) {
+                        sys.changeName(value, data);
+                        bot.send(value, "Your name was changed to " + data + "!");
+                    });
                 }
             },
             {
@@ -84,9 +84,7 @@ Dependencies:
                 help: ["Turns global server name-ify off and restores the name of everyone."],
                 allowedWhenMuted: false,
                 handler: function (command) {
-                    var ids = sys.playerIds(),
-                        id,
-                        current;
+                    var ids = sys.playerIds();
 
                     if (!Settings.IfyName) {
                         command.send("Ify isn't on!");
@@ -97,10 +95,20 @@ Dependencies:
 
                     command.sendMain(command.self.jsession.originalName + " changed all names back!");
 
-                    for (id in ids) {
-                        current = ids[id];
-                        sys.changeName(current, JSESSION.users(current).originalName);
-                    }
+                    ids.forEach(function (value, index, array) {
+                        sys.changeName(value, JSESSION.users(value).originalName);
+                    });
+                }
+            },
+            {
+                name: "ifycommands",
+                category: "2",
+                help: ["To view the <b>ify</b> commands."],
+                handler: function (command) {
+                    new Templates.command("Ify Commands")
+                        .listCommands(["ify", "unify"])
+                        .render(command.src, command.chan);
+                    // TODO: Templates.command: list & listCommands
                 }
             }
         ];
