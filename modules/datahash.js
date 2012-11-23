@@ -23,9 +23,12 @@ if (!util.datahash) {
          * Writes a DataHash property to the given (cacheInst)
          * @param {Cache} cacheInst An instance of Cache
          * @param {String} name Name of the DataHash property
+         * @return {Object} this
          */
         write: function (cacheInst, name) {
             cacheInst.writeJSON(name, DataHash[name]);
+
+            return this;
         },
         /**
          * Resolves a player's hostname and country
@@ -85,8 +88,9 @@ if (!util.datahash) {
                         }
                     }
                 }
-
             }
+
+            return this;
         }
     };
 }

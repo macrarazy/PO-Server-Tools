@@ -23,10 +23,12 @@ Templates = {
             template: [],
             register: function (m) {
                 this.template.push(m);
+
                 return this;
             },
             render: function (src, chan) {
                 sys.sendHtmlMessage(src, this.template.join("<br/>"), chan);
+
                 return this;
             }
         });
@@ -42,15 +44,18 @@ Templates = {
             ],
             register: function (mess) {
                 this.template.push(mess);
+
                 return this;
             },
             span: function (name) {
                 this.register(style.span.replace(/{{Name}}/gi, name) + "<br/>");
+
                 return this;
             },
             render: function (src, chan) {
                 this.register(style.footer);
                 sys.sendHtmlMessage(src, this.template.join("<br/>"), chan);
+
                 return this;
             }
         });
@@ -153,7 +158,7 @@ Templates = {
                     args_joined = "",
                     argsLength = arguments.length;
 
-                if (argsLength == 2) {
+                if (argsLength === 2) {
                     this.template.push(
                         pre_command + form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font>" + form[1] + ": " + this.format(args) + aliases
                     );
@@ -172,13 +177,37 @@ Templates = {
 
                 return this;
             },
+            list: function (command) {
+                var cmd = Commands[command.toLowerCase()];
+
+                if (!cmd) {
+                    return this;
+                }
+
+                if (help.length === 1) {
+                    this.register(cmd.name, cmd.help[0]);
+                } else {
+                    this.register(cmd.name, cmd.help[0], cmd.help[1]);
+                }
+
+                return this;
+            },
+            listCommands: function (commands) {
+                commands.forEach(function (value, index, array) {
+                    this.list(value);
+                });
+
+                return this;
+            },
             span: function (name) {
                 this.template.push("<br/>" + style.span.replace(/{{Name}}/gi, name) + "<br/>");
+
                 return this;
             },
             render: function (src, chan) {
                 this.template.push(style.footer);
                 sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
+
                 return this;
             },
             aliases: function (cmd) {

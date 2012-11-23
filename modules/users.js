@@ -13,33 +13,6 @@
  * @version 3.0.0 Devel
  */
 
-/* Extends util with "user" */
-
-if (!util.user) {
-    util.user = {
-        hostAuth: function (src) {
-            var auth = util.player.auth(src);
-
-            if (auth < 3 || auth > 3) {
-                return;
-            }
-
-            if (!util.user.host(src)) {
-                return;
-            }
-
-            if (!sys.dbRegistered(util.player.name(src))) {
-                return;
-            }
-
-            sys.changeAuth(src, 3);
-        },
-        host: function (src) {
-            return util.player.ip(src) === "127.0.0.1";
-        }
-    };
-}
-
 ({
     Name: function () {
         return "User Data Manager";
@@ -51,15 +24,16 @@ if (!util.user) {
                     name = util.player.name(src),
                     names = DataHash.names;
 
-                util.user.hostAuth(src);
+                util.player.hostAuth(src);
 
-                names[ip] = name;
-                names[name.toLowerCase()] = name;
+                names[ip] = names[name.toLowerCase()] = name;
 
-                util.datahash.write("names");
-                util.datahash.resolveLocation(src, ip, false);
+                util.datahash
+                    .write("names")
+                    .resolveLocation(src, ip, false);
 
-                if (util.user.testName(src)) {
+                // TODO: util.player.testName
+                if (util.player.testName(src)) {
                     util.sandbox.kickedPlayer = src;
                     return true;
                 }
@@ -72,7 +46,6 @@ if (!util.user) {
                     maxPlayersOnline = cache.get("MaxPlayersOnline"),
                     name = sys.name(src).toLowerCase(),
                     idles = DataHash.idles,
-                    channels,
                     player = util.player.player(src);
 
                 util.watch.player(src, "Log In on IP " + ip);
@@ -81,8 +54,9 @@ if (!util.user) {
                     bot.sendOthers(src, player + " joined the server!", 0);
                 }
 
-                bot.send(src, "Welcome, " + player + "!", 0);
-                bot.send(src, "Type in <b><font color='green'>/Commands</font></b> to see the commands and <b><font color='green'>/Rules</font></b> to see the rules.", 0);
+                util.bot
+                    .send(src, "Welcome, " + player + "!", 0)
+                    .send(src, "Type in <b><font color='green'>/Commands</font></b> to see the commands and <b><font color='green'>/Rules</font></b> to see the rules.", 0);
 
                 if (util.type(util.time.startup) === "number") {
                     bot.send(src, "The server has been up for " + util.time.startUpTime() + "</b>.", 0);

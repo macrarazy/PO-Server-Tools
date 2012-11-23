@@ -14,6 +14,7 @@
  * A cache instance
  * @param {String} file File for this cache
  * @constructor
+ * @return {Object} this
  */
 Cache = function (file) {
     var cacheName;
@@ -35,35 +36,39 @@ Cache = function (file) {
 
     try {
         this.hash = util.json.read(this.file);
-    }
-    catch (e) {
+    } catch (Exception) {
         util.json.write(file + "-corrupted.json", this.hash);
 
         this.hash = {};
         this.saveAll();
 
         cacheName = file;
-        if (file != "Cache") {
+        if (file !== "Cache") {
             cacheName += " cache";
         } else {
             cacheName = "cache";
         }
 
-        print(util.error.format("Could not load " + cacheName + " from file " + this.file + "!", e));
+        print(util.error.format("Could not load " + cacheName + " from file " + this.file + "!", Exception));
         print("Old cache available in " + file + "-corrupted.json. Cache and " + this.file + " have been cleared.");
     }
+
+    return this;
 };
 
 /**
  * Ensures that a key is in the cache, and writes the cache to file if it wasn't
  * @param {*} key Name of the key
  * @param {*} value Value of the key
+ * @return {Object} this
  */
 Cache.prototype.save = function (key, value) {
     if (!this.hash.has(key)) {
         this.hash[key] = value;
         this.saveAll();
     }
+
+    return this;
 };
 
 /**
@@ -71,6 +76,7 @@ Cache.prototype.save = function (key, value) {
  * @param {*} key Name of the key
  * @param {*} value Value of the key
  * @param {Boolean} [noSave=false] If saveAll won't be called
+ * @return {Object} this
  */
 Cache.prototype.write = function (key, value, noSave) {
     this.hash[key] = value;
@@ -78,6 +84,8 @@ Cache.prototype.write = function (key, value, noSave) {
     if (!noSave) {
         this.saveAll();
     }
+
+    return this;
 };
 
 /**
@@ -85,22 +93,28 @@ Cache.prototype.write = function (key, value, noSave) {
  * @param {*} key Name of the key
  * @param {Array|Object} value Value of the key
  * @param {Boolean} [noSave=false] If saveAll won't be called
+ * @return {Object} this
  */
 Cache.prototype.writeJSON = function (key, value, noSave) {
     this.write(key, JSON.stringify(value), noSave);
+
+    return this;
 };
 
 /**
  * Removes a key from the cache, saving the cache if it didn't exist
  * @param {*} key Name of the key
+ * @return {Object} this
  */
 Cache.prototype.remove = function (key) {
-    if (!this.hash[key]) {
-        return;
+    if (!this.hash.has(key)) {
+        return this;
     }
 
     delete this.hash[key];
     this.saveAll();
+
+    return this;
 };
 
 /**
@@ -114,41 +128,57 @@ Cache.prototype.get = function (key) {
 
 /**
  * Resets the cache
+ * @return {Object} this
  */
 Cache.prototype.reset = function () {
     this.hash = {};
 
     sys.writeToFile(this.file, "{}");
+
+    return this;
 };
 
 /**
  * Saves all data of this cache's hash to it's file
+ * @return {Object} this
  */
 Cache.prototype.saveAll = function () {
     util.json.write(this.file, this.hash);
+
+    return this;
 };
 
 /**
  * Makes sure key exists, but doesn't write the cache to file
  * @param {*} key Name of the key
  * @param {*} value Value of the key
+ * @return {Object} this
  */
 Cache.prototype.ensure = function (key, value) {
-    if (!this.hash[key]) {
+    if (!this.hash.has(key)) {
         this.hash[key] = value;
         this.ensures++;
     }
+
+    return this;
 };
 
 /**
  * Saves the cache to it's file, if it has ensured at least one key using ensure()
+ * @return {Object} this
  */
 Cache.prototype.saveEnsured = function () {
     if (this.ensures) {
         this.ensures = 0;
         this.saveAll();
     }
+
+    return this;
 };
+
+if (!cache) {
+    cache = new Cache("Cache");
+}
 
 ({
     /**

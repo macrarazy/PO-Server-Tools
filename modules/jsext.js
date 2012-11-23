@@ -47,12 +47,13 @@ defineOn(String.prototype, {
     /**
      * Formats the string, replacing %(NUM) with the number of the argument + 1
      * @return {String} Formatted code
-     * @example "%1 are very %2".format("Strings", "cool");
+     * @example "%1 are very %2".format("Strings", "cool"); // Strings are very cool
      */
     format: function () {
         var str = this,
             exp, i, args = arguments.length,
             num = 0;
+
         for (i = 0; i < args; i++) {
             num++;
             exp = new RegExp("%" + num, "g");

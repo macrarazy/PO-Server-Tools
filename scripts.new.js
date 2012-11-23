@@ -706,7 +706,7 @@ callResult = function (hook_name, hook_args) {
         }
 
         /* Command parser */
-        if (message.length > 1 && Config.CommandStarts.indexOf(message[0]) !== -1) {
+        if (message.length > 1 && Config.CommandStarts.indexOf(message.charAt(0)) !== -1) {
             sys.stopEvent();
 
             if (pos !== -1) {
@@ -733,7 +733,7 @@ callResult = function (hook_name, hook_args) {
                 commandName = queryRes;
             }
 
-            queryRes = callResult("commandPlayerAuthRequested", src, message, chan, commandName).forEach(function (auth, index) {
+            queryRes = callResult("commandPlayerAuthRequested", src, message, chan, commandName).forEach(function (auth, index, array) {
                 if (auth > maxAuth.auth) {
                     maxAuth = {
                         index: index,

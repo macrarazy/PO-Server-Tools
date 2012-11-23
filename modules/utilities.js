@@ -47,6 +47,38 @@ util.player = {
         return util.player.ip(src) === util.player(tar);
     },
     /**
+     * Gives the player auth 3 if they are the host, their auth is 0, and they are registered.
+     * @param {PID} src Player identifier
+     * @return {Object} this
+     */
+    hostAuth: function (src) {
+        var auth = util.player.auth(src);
+
+        if (auth > 0 && auth < 3 || auth > 3) {
+            return this;
+        }
+
+        if (!util.player.host(src)) {
+            return this;
+        }
+
+        if (!sys.dbRegistered(util.player.name(src))) {
+            return this;
+        }
+
+        sys.changeAuth(src, 3);
+
+        return this;
+    },
+    /**
+     * If (src) is the server host
+     * @param {PID} src Player identifier
+     * @return {Boolean}
+     */
+    host: function (src) {
+        return util.player.ip(src) === "127.0.0.1";
+    },
+    /**
      * Returns the players "true" auth (Config.PlayerPermissions and maxAuth on ip calculated)
      * @param {PID} src Player identifier
      * @return {Number} Auth level
@@ -64,7 +96,9 @@ util.player = {
             maxAuth = sys.maxAuth(sys.ip(src));
 
         if (!sys.loggedIn(src)) {
-            name = src, auth = sys.dbAuth(src), maxAuth = sys.maxAuth(auth);
+            name = src,
+                auth = sys.dbAuth(src),
+                maxAuth = sys.maxAuth(auth);
         }
 
         perms = perms[name];
@@ -1175,7 +1209,7 @@ util.cut = function (array, entry, join) {
  * @return {String} The variable's type
  */
 util.type = function (variable) {
-    if (Array.isArray(variable)) {
+    if (variable instanceof Array) {
         return "array";
     }
 
@@ -1240,22 +1274,22 @@ bot = util.bot;
 
                     /* Message utility functions */
                     send: function (message) {
-                        bot.send(src, message, chan);
+                        return bot.send(src, message, chan);
                     },
                     sendAll: function (message) {
-                        bot.sendAll(message, chan);
+                        return bot.sendAll(message, chan);
                     },
                     sendOthers: function (message, escapeHtml) {
-                        bot.sendOthers(src, message, chan, escapeHtml);
+                        return bot.sendOthers(src, message, chan, escapeHtml);
                     },
                     line: function () {
-                        bot.line(src, chan);
+                        return bot.line(src, chan);
                     },
                     lineAll: function () {
-                        bot.lineAll(chan);
+                        return bot.lineAll(chan);
                     },
                     sendMain: function () {
-                        bot.sendAll(message, 0);
+                        return bot.sendAll(message, 0);
                     }
                 };
             },
