@@ -23,11 +23,15 @@ Templates = {
             template: [],
             register: function (m) {
                 this.template.push(m);
+                return this;
             },
             render: function (src, chan) {
-                sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
+                sys.sendHtmlMessage(src, this.template.join("<br/>"), chan);
+                return this;
             }
         });
+
+        return this;
     },
     /* List/info template. For helpful lists/info/etc. */
     list: function (template_name) {
@@ -38,18 +42,27 @@ Templates = {
             ],
             register: function (mess) {
                 this.template.push(mess);
+                return this;
             },
             span: function (name) {
                 this.register(style.span.replace(/{{Name}}/gi, name) + "<br/>");
+                return this;
             },
             render: function (src, chan) {
                 this.register(style.footer);
-                sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
+                sys.sendHtmlMessage(src, this.template.join("<br/>"), chan);
+                return this;
             }
         });
+
+        return this;
     },
     /* Table template. For tables */
     table: function (template_name, color, border) {
+        if (!border) {
+            border = 2;
+        }
+
         this.extend({
             template: [
                 style.header,
@@ -71,6 +84,8 @@ Templates = {
 
                 mess += "</tr>";
                 this.template.push(mess);
+
+                return this;
             },
             render: function (src, chan) {
                 /*var index,
@@ -78,7 +93,7 @@ Templates = {
 
                 this.template.push("</table><br/>", style.footer);
 
-                sys.sendHtmlMessage(src, this.template.join(''), chan);
+                sys.sendHtmlMessage(src, this.template.join(""), chan);
 
                 // TODO: "fix" this with a hook
                 if (ChatColorRandomizers.has(chan)) { // Tables reset fix
@@ -87,8 +102,12 @@ Templates = {
 
                     sys.sendHtmlMessage(src, code, chan);
                 }
+
+                return this;
             }
         });
+
+        return this;
     },
     /* Command template - for command lists */
     command: function (template_name) {
@@ -132,7 +151,6 @@ Templates = {
                     form = style["command-style"],
                     pre_command = style["pre-command"],
                     args_joined = "",
-                    y,
                     argsLength = arguments.length;
 
                 if (argsLength == 2) {
@@ -160,8 +178,8 @@ Templates = {
             },
             render: function (src, chan) {
                 this.template.push(style.footer);
-
                 sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
+                return this;
             },
             aliases: function (cmd) {
                 var aliases = (PointerCommands["!!/Reverse/!!"][cmd] || {}).keys();

@@ -99,7 +99,7 @@ util.player = {
      * @return {String|*} Name of the player, or (user) if the player doesn't exist
      */
     name: function (user) {
-        if (user !== undefined && typeof user === "string" || DataHash && DataHash.names && DataHash.names.has(user.toLowerCase())) {
+        if (typeof user === "string" && (DataHash && DataHash.names && DataHash.names.has(user.toLowerCase()))) {
             return user.name();
         } else if (typeof user === "number") {
             return sys.name(user);
@@ -127,12 +127,14 @@ util.player = {
      * @return {String} The player's color
      */
     color: function (user) {
-        var src = util.player.id(user), myColor = sys.getColor(src), colorlist;
-        if (myColor == '#000000') {
+        var src = util.player.id(user),
+            myColor = sys.getColor(src),
             colorlist = [
                 '#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f',
                 '#1b1390', '#028678', '#0324b1'
             ];
+
+        if (myColor == '#000000') {
             return colorlist[src % colorlist.length];
         }
         return myColor;
@@ -233,7 +235,7 @@ util.channel = {
         var id;
         if (typeof name === "string") {
             id = sys.channelId(name);
-            if (id == undefined) {
+            if (id === undefined) {
                 return -1;
             }
 
@@ -267,7 +269,7 @@ util.channel = {
     /**
      * Returns a click-able link in the client to join (channel)
      * @param {CID} channel Channel identifier
-     * @return {String}
+     * @return {String} po:join link for the channel
      */
     link: function (channel) {
         channel = util.channel.name(channel);
@@ -278,20 +280,20 @@ util.channel = {
      * Puts (src) in one or more channel(s)
      * @param {PID} src Player identifier
      * @param {CID|CIDArray} channel Channel identifier or an array of channel identifiers
+     * @return {Object} this
      */
     putIn: function (src, channel) {
-        var x,
-            type = util.type(channel);
-
         src = util.player.id(src);
 
-        if (type === "array") {
-            for (x in channel) {
-                sys.putInChannel(src, util.channel.id(channel[x]));
-            }
+        if (channel instanceof Array) {
+            channel.forEach(function (value, index, array) {
+                sys.putInChannel(src, util.channel.id(value));
+            });
         } else {
             sys.putInChannel(util.channel.id(channel));
         }
+
+        return this;
     }
 };
 
@@ -304,6 +306,7 @@ util.mod = {
     /**
      * Bans a player, and kicks them
      * @param {PID} name Player identifier to ban
+     * @return {Object} this
      */
     ban: function (name) {
         var id;
@@ -313,76 +316,82 @@ util.mod = {
 
         sys.ban(name);
 
-        if (id != undefined) {
+        if (id !== undefined) {
             util.mod.kick(id);
-        }
-        else {
+        } else {
             util.mod.kickAliases(sys.dbIp(name));
         }
+
+        return this;
     },
     /**
      * Disconnects a player in 20 milliseconds
      * @param {PID} src Player identifier to disconnect
+     * @return {Object} this
      */
     disconnect: function (src) {
         sys.callQuickly("sys.disconnect(" + util.player.id(src) + ")", 20);
+
+        return this;
     },
     /**
      * Disconnects a player and their online alts in 20 milliseconds
      * @param {PID} src Player identifier to disconnect
+     * @return {Object} this
      */
     disconnectAll: function (src) {
-        var x,
-            id,
-            ip = util.player.ip(src),
-            pids = sys.playerIds();
+        var ip = util.player.ip(src);
 
-        for (x in pids) {
-            id = playerIdList[x];
-            if (ip === sys.ip(id)) {
-                util.mod.disconnect(id);
+        sys.playerIds().forEach(function (value, index, array) {
+            if (ip === sys.ip(value)) {
+                util.mod.disconnect(value);
             }
-        }
+        });
+
+        return this;
     },
     /**
      * Kicks a player in 20 milliseconds
      * @param {PID} src Player identifier to kick
+     * @return {Object} this
      */
     kick: function (src) {
         sys.callQuickly("sys.kick(" + util.player.id(src) + ");", 20);
+
+        return this;
     },
     /**
      * Kicks a player and their online alts in 20 milliseconds
      * @param {PID} src Player identifier to kick
+     * @return {Object} this
      */
     kickAll: function (src) {
-        var x,
-            id,
-            ip = sys.ip(util.player.ip(src)),
-            pids = sys.playerIds();
+        var ip = util.player.ip(src);
 
-        for (x in pids) {
-            id = playerIdList[x];
-            if (ip == sys.ip(id)) {
-                util.mod.kick(id);
+        sys.playerIds().forEach(function (value, index, array) {
+            if (ip === sys.ip(value)) {
+                util.mod.kick(value);
             }
-        }
+        });
+
+        return this;
     },
     /**
      * Kicks an ip's alts (when the target is offline)
      * @param {String} ip IP used to check for alts to kick them
+     * @return {Object} this
      */
     kickAliases: function (ip) {
-        var aliases = sys.aliases(ip),
-            alias,
-            id;
+        var aliases = sys.aliases(ip);
 
-        for (alias in aliases) {
-            id = sys.id(aliases[alias]);
+        aliases.forEach(function (value, index, array) {
+            var id = sys.id(value);
             if (id !== undefined) {
                 util.mod.kick(id);
             }
-        }
+        });
+
+        return this;
     }
 };
 
@@ -397,6 +406,7 @@ util.bot = {
      * @param {PID} src Player identifier
      * @param {String} message Message to send to src
      * @param {CID} [channel] Channel identifier
+     * @return {Object} this
      */
     send: function (src, message, channel) {
         var color = Bot.color,
@@ -407,24 +417,29 @@ util.bot = {
 
         if (channel !== -1) {
             sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
-        }
-        else {
+        } else {
             sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message);
         }
+
+        return this;
     },
     /**
      * HTML-escaped message using JSEXT send to src
      * @param {PID} src Player identifier
      * @param {String} message Message to send to src
      * @param {CID} [channel] Channel identifier
+     * @return {Object} this
      */
     sendText: function (src, message, channel) {
         util.bot.send(src, message.escapeHtml(), channel);
+
+        return this;
     },
     /**
      * Sends a message to everyone on the server
      * @param {String} message Message to send
      * @param {CID} [channel] Channel identifier
+     * @return {Object} this
      */
     sendAll: function (message, channel) {
         var color = Bot.color,
@@ -434,18 +449,22 @@ util.bot = {
 
         if (channel !== -1) {
             sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
-        }
-        else {
+        } else {
             sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message);
         }
+
+        return this;
     },
     /**
-     * HTML-escaped message using JSEXT send to everyone
+     * HTML-escaped message using JSExt send to everyone
      * @param {String} message Message to send
      * @param {CID} [channel] Channel identifier
+     * @return {Object} this
      */
     sendAllText: function (message, channel) {
         util.sendAllText(message.escapeHtml(), channel);
+
+        return this;
     },
     /**
      * Sends a message to everyone except (src)
@@ -453,6 +472,7 @@ util.bot = {
      * @param {String} message Message to send
      * @param {CID} [channel] Channel identifier
      * @param {Number} [type=0] If the message will me html-escaped. 1 = true, anything else = false
+     * @return {Object} this
      */
     sendOthers: function (src, message, channel, type) {
         var func,
@@ -476,10 +496,13 @@ util.bot = {
             p = pIDs[pID];
             func(p, message, channel);
         }
+
+        return this;
     },
     /**
      * Sends an empty line (whitespace) to everyone
      * @param {CID} [chan] Channel identifier
+     * @return {Object} this
      */
     line: function (chan) {
         chan = util.channel.id(chan);
@@ -489,11 +512,14 @@ util.bot = {
         } else {
             sys.sendAll("");
         }
+
+        return this;
     },
     /**
      * Sends an empty line (whitespace) to src
      * @param {PID} src Player identifier
      * @param {CID} [chan=all] Channel identifier
+     * @return {Object} this
      */
     lineTo: function (src, chan) {
         src = util.player.id(src);
@@ -504,6 +530,8 @@ util.bot = {
         } else {
             sys.sendMessage(src, "");
         }
+
+        return this;
     }
 };
 
@@ -529,9 +557,12 @@ util.json = {
      * Stringifies an object, then writes it to file
      * @param {String} file Path to the file
      * @param {Object} code Object to stringify
+     * @return {Object} this
      */
     write: function (file, code) {
         sys.writeToFile(file, JSON.stringify(code));
+
+        return this;
     }
 };
 
@@ -597,20 +628,26 @@ util.file = {
      * Creates a file if it already doesn't exist (suppresses any errors)
      * @param {String} file Path to the file
      * @param {String} replacement Data to write to the file if it doesn't exist
+     * @return {Object} this
      */
     create: function (file, replacement) {
         sys.appendToFile(file, "");
         if (sys.getFileContent(file) === "") {
             sys.writeToFile(file, replacement);
         }
+
+        return this;
     },
     /**
      * Prepends data to a file
      * @param {String} file Path to the file
      * @param {String} data Data to prepend to the file
+     * @return {Object} this
      */
     prepend: function (file, data) {
         sys.writeToFile(file, data + sys.getFileContent(file));
+
+        return this;
     }
 };
 
@@ -687,23 +724,29 @@ util.message = {
      * Sends the stfu truck to (src)
      * @param {PID} src Player identifier
      * @param {CID} [chan] Channel identifier
+     * @return {Object} this
      */
     stfuTruck: function (src, chan) {
         bot.send(src, '|^^^^^^^^^^^\||____', chan);
         bot.send(src, '| The STFU Truck  |||""\'|""\__,_', chan);
         bot.send(src, '| _____________ l||__|__|__|)', chan);
         bot.send(src, '...|(@)@)"""""""**|(@)(@)**|(@)', chan);
+
+        return this;
     },
     /**
      * Sends the fail whale to (id)
      * @param {PID} id Player identifier
      * @param {CID} [chan] Channel identifier
+     * @return {Object} this
      */
     failWhale: function (id, chan) {
         bot.send(id, "▄██████████████▄▐█▄▄▄▄█▌", chan);
         bot.send(id, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
         bot.send(id, "████▄█▌▄▌▄▐▐▌▀███▄▄█▌", chan);
         bot.send(id, "▄▄▄▄▄██████████████▀", chan);
+
+        return this;
     },
 
     /*
@@ -820,6 +863,7 @@ util.watch = {
      * @param {String} [message=""] Message to log
      * @param {String} type Type of event
      * @param {CID} [channel] Channel identifier
+     * @return {Object} this
      */
     player: function (player, message, type, channel) {
         var chan = util.channel.link(channel),
@@ -838,16 +882,21 @@ util.watch = {
         if (util.type(watch) === "number") {
             sys.sendHtmlAll("<timestamp/><b>" + chan + "</b> <i>" + type + "</i> (" + src + ")" + message, watch);
         }
+
+        return this;
     },
     /**
      * Logs a channel's action to Watch (if it exists)
      * @param {CID} channel Channel identifier
      * @param {String} message Event to log
+     * @return {Object} this
      */
     channel: function (channel, message) {
         if (util.type(watch) === "number") {
             sys.sendHtmlAll("<timestamp/><b>" + util.channel.name(channel) + "</b>: " + message, watch);
         }
+
+        return this;
     }
 };
 
@@ -869,9 +918,8 @@ util.time = {
      * @return {String}
      */
     format: function (time) {
-        var n,
-            s = [],
-            d = [
+        var ret = [],
+            times = [
                 [2629744, "<b>Month</b>"],
                 [604800, "<b>Week</b>"],
                 [86400, "<b>Day</b>"],
@@ -879,32 +927,27 @@ util.time = {
                 [60, "<b>Minute</b>"],
                 [1, "<b>Second</b>"]
             ],
-            sec = util.time.time() - time,
-            j,
-            sL,
-            len = d.length;
+            timeToFormat = util.time.time() - time;
 
-        for (j in d) {
-            n = parseInt(sec / d[j][0]);
-            if (n > 0) {
-                sL = "";
-                if (n > 1) {
-                    sL = "<b>s</b>";
+        times.forEach(function (value, index, array) {
+            var currentTime = +(timeToFormat / value[0]),
+                s = "";
+
+            if (currentTime > 0) {
+                if (currentTime > 1) {
+                    s = "<b>s</b>";
                 }
 
-                s.push((n + " " + d[j][1] + sL));
-                sec -= n * d[j][0];
-
-                if (s.length >= len) {
-                    break;
-                }
+                ret.push((currentTime + " " + value[1] + s));
+                timeToFormat -= currentTime * value[0];
             }
-        }
-        if (s.length === 0) {
+        });
+
+        if (ret.length === 0) {
             return "1 <b>Second</b>";
         }
 
-        return s.fancyJoin() + "</b>";
+        return ret.fancyJoin() + "</b>";
     },
     /**
      * Returns the time since the server started up
@@ -917,8 +960,9 @@ util.time = {
 
 /**
  * Creates an enum
- * @param {Enum|String|Array} [flags] Enum to copy flags from, a single flag, or an array of flags
+ * @param {util.enum|String|Array} [flags] Enum to copy flags from, a single flag, or an array of flags
  * @constructor
+ * @return {Object} this
  */
 util.enum = function (flags) {
     /**
@@ -935,7 +979,7 @@ util.enum = function (flags) {
     this.flags = {};
 
     if (!flags) {
-        return;
+        return this;
     }
 
     if (flags.toString() === "[class Enum]") {
@@ -959,27 +1003,31 @@ util.enum.prototype.toString = function () {
 /**
  * Adds a flag to this enum
  * @param {String} flag Name of the flag
+ * @return {Object} this
  */
 
 util.enum.prototype.addFlag = function (flag) {
     if (this.flags.has(flag)) {
-        return;
+        return this;
     }
 
     this.flags[flag] = this.cFlagNum;
-
     this.cFlagNum *= 2;
+
+    return this;
 };
 
 /**
  * Adds an array of flags to this enum
  * @param {Array} flags Flags to add
+ * @return {Object} this
  */
 util.enum.prototype.addFlags = function (flags) {
-    var x;
-    for (x in flags) {
-        this.addFlag(flags[x]);
-    }
+    flags.forEach(function (value, index, array) {
+        this.addFlag(value);
+    });
+
+    return this;
 };
 
 /**
@@ -993,14 +1041,14 @@ util.enum.prototype.flag = function (name) {
 
 /**
  * Creates a Mask for flags
- * @param {Mask|Number|Array|Enum} [flags] Mask to copy flags from, a number, an array of flags, or an enum
+ * @param {util.mask|Number|Array|util.enum} [flags] Mask to copy flags from, a number, an array of flags, or an enum
  * @constructor
  */
 util.mask = function (flags) {
     this.flags = 0;
 
     if (!flags) {
-        return;
+        return this;
     }
 
     if (flags.toString() === "[class Mask]") {
@@ -1012,6 +1060,8 @@ util.mask = function (flags) {
     } else if (flags.toString() === "[class Enum]") {
         this.addFlags(flags.flags);
     }
+
+    return this;
 };
 
 /**
@@ -1025,10 +1075,13 @@ util.mask.prototype.toString = function () {
 /**
  * Adds a flag to this mask
  * @param {Number} flag Flag to add
+ * @return {Object} this
  */
 
 util.mask.prototype.addFlag = function (flag) {
     this.flags |= flag;
+
+    return this;
 };
 
 /**
@@ -1041,26 +1094,34 @@ util.mask.prototype.addFlags = function (flags) {
     for (x in flags) {
         this.flags |= flags[x];
     }
+
+    return this;
 };
 
 /**
  * Removes a flag from this mask
  * @param {Number} flag Flag to remove
+ * @return {Object} this
  */
 
 util.mask.prototype.removeFlag = function (flag) {
     this.flags &= ~flag;
+
+    return this;
 };
 
 /**
  * Removes an array or object (must be name=>flag) of flags
  * @param {Array|Object} flags Flags to add
+ * @return {Object} this
  */
 util.mask.prototype.removeFlags = function (flags) {
     var x;
     for (x in flags) {
         this.flags &= ~flags[x];
     }
+
+    return this;
 };
 
 /**
@@ -1074,7 +1135,7 @@ util.mask.prototype.hasFlag = function (flag) {
 
 /**
  * If this mask has those flags
- * @param {Mask|Object|Number|Enum} flags Flags to check (Object, Number, or Enum as flags will be passed to new Mask)
+ * @param {util.mask|Object|Number|util.enum} flags Flags to check (Object, Number, or Enum as flags will be passed to new Mask)
  * @return {Boolean} If this mask has those flags
  */
 util.mask.prototype.hasFlags = function (flags) {
@@ -1083,7 +1144,7 @@ util.mask.prototype.hasFlags = function (flags) {
     if (flags.toString() === "[class Mask]") {
         compare_mask = flags.flags;
     } else {
-        compare_mask = new Mask(flags).flags;
+        compare_mask = new util.mask(flags).flags;
     }
 
     return !!this.flags & compare_mask;

@@ -381,7 +381,7 @@
 
             moves.forEach(function (value, index, array) {
                 retString += "<small><b style='color: " + Pokedex.moveColours[sys.moveType(value)] + "'>" + sys.move(value) + "</b></small>";
-                if (index !== movesLength) {
+                if (movesLength !== index) {
                     retString += ", ";
                 }
             });
@@ -394,7 +394,7 @@
                 ret = 0;
 
             poke.forEach(function (value, index, array) {
-                ret += value * 1;
+                ret += +(value);
             });
 
             return ret;
@@ -402,7 +402,7 @@
 
         Pokedex.formatBaseStatTotal = function (poke) {
             var stat = Pokedex.baseStatTotal(poke),
-                string = stat.bold(),
+                string = "<b>" + stat + "</b>",
                 ranges = [180, 300, 360, 420, 480, 540, 600, 1200, 1800],
                 colors = [
                     "#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"
