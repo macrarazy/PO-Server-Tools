@@ -9,8 +9,7 @@
 
 **Report bugs/post suggestions/ideas in Issues**
 
-It has many useful features for you and your community. Ranging from an easy changable league, to custom ability bans, private channels, and even triple elimination tournaments!
-All made beautiful with a simple, yet powerful templating system that is customizable with styles.  
+Currently in development.
 ***
 
 Modules are in modules/, command categories are in commands/

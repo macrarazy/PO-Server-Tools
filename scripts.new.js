@@ -165,7 +165,7 @@ BRANCH = "devel";
  * Modules to load
  * @type {Array}
  */
-// TODO: Add channels.js, templates.js, pokedex.js once done
+// TODO: Add channels.js, templates.js once done
 Modules = [
     "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
     "modules/jsession.js", "modules/users.js", /*"modules/templates.js",*/ "modules/mafia.js"
@@ -176,8 +176,16 @@ Modules = [
  * @type {Array}
  */
 
+// TODO: commands/user/fun.js once done
+// TODO: commands/init(Authname).js
 CommandCategories = [
-    "commands/ify.js", "commands/poll.js"
+    /* Commands - User */
+    //"commands/user/fun.js",
+    "commands/user/pokedex.js",
+    "commands/user/poll.js",
+
+    /* Commands - Admin */
+    "commands/admin/ify.js"
 ];
 
 /**
@@ -359,7 +367,8 @@ include = function (FileName, GetMethod, NoCache) {
     var source = {},
         code,
         module = {},
-        x;
+        x,
+        commandModule = false;
 
     if (include.modules[FileName] && !NoCache) {
         return include.get(FileName, GetMethod);
@@ -384,6 +393,10 @@ include = function (FileName, GetMethod, NoCache) {
         module.name = source.Name();
     }
 
+    if (module.name.indexOf("Commands - ") !== -1) {
+        commandModule = true;
+    }
+
     if (source.Hooks) {
         module.hooks = source.Hooks();
     }
@@ -397,6 +410,7 @@ include = function (FileName, GetMethod, NoCache) {
     }
 
     module.source = source;
+    module.commandModule = commandModule;
 
     include.modules[FileName] = module;
 
@@ -420,7 +434,8 @@ include.GetMethod = {
     "Source": 1,
     "Hooks": 2,
     "Commands": 3,
-    "Name": 4
+    "Name": 4,
+    "CommandModule": 5
 };
 
 /**
@@ -448,6 +463,8 @@ include.get = function (FileName, Method) {
         return query.commands;
     } else if (Method === methods.Name) {
         return query.name;
+    } else if (Method === methods.CommandModule) {
+        return query.commandModule;
     }
 
     return query;
@@ -462,14 +479,16 @@ include.get = function (FileName, Method) {
  * @return {String} Content of URL + Branch + / + FilePath
  */
 download = function (FileName, FilePath, ForceDownload, Synchronously) {
-    var filePath = FilePath.split(/\/|\\/);
+    var filePath = FileName.split(/\/|\\/);
 
     if (sys.getFileContent(FileName) && !ForceDownload) {
         return "";
     }
 
-    sys.makeDir(filePath[filePath.length - 2] || "");
-    /* Creates the directories if they do not yet exist */
+    if (filePath.length !== 1) {
+        /* Creates the directories if they do not yet exist */
+        sys.makeDir(filePath.splice(filePath.length - 1).join("/"));
+    }
 
     if (Synchronously) {
         sys.writeToFile(FileName, sys.synchronousWebCall(URL + BRANCH + "/" + FilePath));
@@ -783,7 +802,6 @@ callResult = function (hook_name, hook_args) {
                 call("onCommandError", src, fullCommand, chan, "nopermission");
                 return;
             }
-            // TODO: Implement allowedWhenMuted hook
             if (!cmd.allowedWhenMuted && !call("allowedWhenMuted", src, command, chan)) {
                 call("onCommandError", src, fullCommand, chan, "muted");
                 return;
@@ -796,7 +814,6 @@ callResult = function (hook_name, hook_args) {
             }
         }
 
-        // TODO: beforeChatMessage hooks
         if (call("beforeChatMessage", src, message, chan, false)) {
             sys.stopEvent();
         }

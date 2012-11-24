@@ -3932,7 +3932,6 @@
      * @return {Object}
      */
     Hooks: function () {
-        // TODO: Remember these hooks
         return {
             "onMute": function (src) {
                 if (mafia.state != "day") {
@@ -3975,6 +3974,15 @@
                         sys.sendMessage(src, "±Game: The game is in progress. Please type /join to join the next mafia game.", mafiachan);
                         return true;
                     }
+                }
+            },
+            "onMessageCommand": function (command) {
+                var chan = command.chan;
+                if (chan !== 0 && chan === mafiachan && mafia.ticks > 0 && [
+                    "blank", "voting", "entry"
+                ].indexOf(mafia.state) === -1 && !mafia.isInGame(sys.name(src)) && !mafia.isMafiaAdmin(src)) {
+                    sys.sendMessage(command.src, "±Game: The game is in progress. Please type /join to join the next mafia game.", mafiachan);
+                    return true;
                 }
             },
             "onCommand": function (src, message, chan, commandName, data) {

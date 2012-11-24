@@ -15,10 +15,10 @@
     /**
      * Returns the name of this module
      * @private
-     * @return {String} Commands - Polls
+     * @return {String}
      */
     Name: function () {
-        return "Commands - Polls";
+        return "Commands - User: Polls";
     },
     /**
      * Returns the hooks of this module
@@ -39,6 +39,8 @@
      * @private
      * @return {Object}
      */
+    // TODO: Use new template stuff.
+        // TODO: Admin/Mod poll commands.
     Commands: function () {
         return [
             {
@@ -50,8 +52,9 @@
                 allowedWhenMuted: false,
                 handler: function (command) {
                     var num = command.data * 1,
-                    ip = command.self.ip,
-                        Poll = DataHash.poll;
+                        ip = command.self.ip,
+                        Poll = DataHash.poll,
+                        options;
 
                     if (!Poll.mode) {
                         command.send("There is no poll.");
@@ -61,12 +64,13 @@
                         command.send("Invalid option '" + num + "'.");
                         return;
                     }
-                    if (Poll.options[num].votes.has(ip)) {
+                    options = Poll.options[num].votes;
+                    if (options.has(ip)) {
                         command.send("You already voted!");
                         return;
                     }
 
-                    Poll.options[num].votes.push(ip);
+                    options.push(ip);
                     Poll.votes++;
 
                     command.send("You voted for option " + num + " (" + Poll.options[num].name + ") on the poll!");

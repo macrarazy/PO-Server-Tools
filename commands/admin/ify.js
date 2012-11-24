@@ -1,9 +1,3 @@
-/*
-Dependencies:
-    - modules/utilities.js
-    - modules/jsession.js
- */
-
 /**
  * @fileOverview Name-ify module
  * @author TheUnknownOne
@@ -14,10 +8,10 @@ Dependencies:
     /**
      * Returns the name of this module
      * @private
-     * @return {String} Commands - Ify
+     * @return {String}
      */
     Name: function () {
-        return "Commands - Ify";
+        return "Commands - Admin: Ify";
     },
     /**
      * Returns the hooks of this module
@@ -42,8 +36,8 @@ Dependencies:
      * @return {Array}
      */
     Commands: function () {
-        if (Commands.Lists.admin) {
-            Command.Lists.admin.push("ifycommands");
+        if (Commands.Lists.admin && !Commands.Lists.admin.has("ifycommands")) {
+            Commands.Lists.admin.push("ifycommands");
         }
 
         return [
@@ -108,7 +102,6 @@ Dependencies:
                     new Templates.command("Ify Commands")
                         .listCommands(["ify", "unify"])
                         .render(command.src, command.chan);
-                    // TODO: Templates.command: list & listCommands
                 }
             }
         ];

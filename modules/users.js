@@ -90,7 +90,6 @@
                     sys.changeAway(src, true);
                 }
 
-                // TODO: Add afterChangeTeam hooks that have from:afterLogIn param
                 call("afterChangeTeam", src, true);
             },
             "beforePlayerKick": function (src, tar) {

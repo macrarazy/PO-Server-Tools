@@ -37,7 +37,14 @@ Standard for commandInfo passed in all commands.
             + isHost: If tar is on the server host IP
             + jsession: tar's JSESSION object
 
-modules/templates.js is required for command lists.
+    modules/jsext.js,
+    modules/utilities.js,
+    modules/jsession.js,
+    modules/users.js,
+    modules/channels.js,
+    modules/datahash.js,
+    modules/templates.js,
+    and modules/cache.js should all loaded for commands.
 
 
 Properties for each command:

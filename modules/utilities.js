@@ -1274,22 +1274,34 @@ bot = util.bot;
 
                     /* Message utility functions */
                     send: function (message) {
-                        return bot.send(src, message, chan);
+                        bot.send(src, message, chan);
+
+                        return this;
                     },
                     sendAll: function (message) {
-                        return bot.sendAll(message, chan);
+                        bot.sendAll(message, chan);
+
+                        return this;
                     },
                     sendOthers: function (message, escapeHtml) {
-                        return bot.sendOthers(src, message, chan, escapeHtml);
+                        bot.sendOthers(src, message, chan, escapeHtml);
+
+                        return this;
                     },
                     line: function () {
-                        return bot.line(src, chan);
+                        bot.line(src, chan);
+
+                        return this;
                     },
                     lineAll: function () {
-                        return bot.lineAll(chan);
+                        bot.lineAll(chan);
+
+                        return this;
                     },
                     sendMain: function () {
-                        return bot.sendAll(message, 0);
+                        bot.sendAll(message, 0);
+
+                        return this;
                     }
                 };
             },
