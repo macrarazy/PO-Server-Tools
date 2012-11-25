@@ -12,7 +12,7 @@
             Commands.Lists.user.push("funcommands");
         }
 
-        // Add other fun commands
+        // TODO: Add other fun commands
         return [
             {
                 name: "roulette",

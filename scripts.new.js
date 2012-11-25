@@ -572,7 +572,7 @@ callResult = function (hook_name, hook_args) {
             currentRes = current.hooks[event].apply(current, args);
 
             if (typeof currentRes !== "boolean" && currentRes != undefined) {
-                ret.push(currentRes);
+                res.push(currentRes);
             }
         } catch (Exception) {
             sys.sendAll('Error in module "' + current.name + '" when calling hook "' + event + '" with ' + args.length + ' arguments on line ' + Exception.lineNumber + ': ' + Exception);
@@ -851,10 +851,47 @@ callResult = function (hook_name, hook_args) {
         call("afterChannelJoin", src, chan);
     },
     /**
+     * When a channel is created (stoppable)
+     * @param {Number} chan The id of the channel
+     * @param {String} name The name of the channel
+     * @param {Number} src The id of the player who created the channel (0 if it was created by the app/script)
+     */
+    beforeChannelCreated: function (chan, name, src) {
+        if (call("beforeChannelCreated", chan, name, src)) {
+            sys.stopEvent();
+        }
+    },
+    /**
+     * After a channel is created
+     * @param {Number} chan The id of the channel
+     * @param {String} name The name of the channel
+     * @param {Number} src The id of the player who created the channel (0 if it was created by the app/script)
+     */
+    afterChannelCreated: function (chan, name, src) {
+        call("afterChannelCreated", chan, name, src);
+    },
+    /**
      * Called every second
      */
     step: function () {
         call("step");
+    },
+    /**
+     * When a sys function issues a warning (stoppable, but automatically stopped anyway)
+     * @param {String} from The function's name
+     * @param {String} warning The warning (message)
+     */
+    warning: function (from, warning) {
+        call("warning", from, warning);
+
+        sys.stopEvent();
+    },
+    /**
+     * When there is a fatal error in scripts.js
+     * @param {Error} newScript Error to be formatted
+     */
+    switchError: function (newScript) {
+        call("switchError", newScript);
     },
     /**
      * Initialization function for hooks and core globals

@@ -42,7 +42,8 @@ All Hooks:
     beforeChannelJoin(Number src, Number chan)
     afterChannelJoin(Number src, Number chan)
 
-    (undefined) afterChannelCreated(Number chan, String name, Number src)
+    beforeChannelCreated(Number chan, String name, Number src)
+    afterChannelCreated(Number chan, String name, Number src)
 
 
     /* Module hooks */

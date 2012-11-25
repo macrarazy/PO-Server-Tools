@@ -1,4 +1,4 @@
-Version 0.1.6:
+Version 0.1.7:
     - Usage of switch, case, default is not allowed
     - Usage of ternary operators is not allowed
     - Not allowed to create anything in a core data type's prototype. Use defineOn in modules/jsext.js instead.
@@ -24,6 +24,7 @@ Version 0.1.6:
     - Use !!(variable) instead of (variable) if you want to check if a variable is truthy (ex. if (!!fancyString))). Also used in return statements.
     - Usage of string[charPosition] is not allowed. Use string.charAt(charPosition) instead.
     - Comments should be multi-line (i.e. /* */) unless if "TODO:" or "HARDCODED" is used inside the comment. (ex. // TODO: JSDOC)
+    - Use the new setTimer function (String|Function script, Number msecs, Boolean repeat), stopTimer -> unsetTimer
 
 
 + Code IDE of choice should be JetBrains WebStorm.

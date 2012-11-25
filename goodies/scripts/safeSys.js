@@ -62,25 +62,34 @@ safeSys = function () {
         resetLadder: noop,
         synchronizeTierWithSQL: noop,
         clearChat: noop,
-        callLater: function () {
+        callLater: function (str, sec) {
             return -1;
         },
-        callQuickly: function () {
+        callQuickly: function (str, msec) {
             return -1;
         },
-        quickCall: function () {
+        quickCall: function (func, msec) {
             return -1;
         },
-        delayedCall: function () {
+        delayedCall: function (func, sec) {
             return -1;
         },
-        intervalTimer: function () {
+        intervalTimer: function (str, msec) {
             return -1;
         },
-        intervalCall: function () {
+        intervalCall: function (func, msec) {
             return -1;
         },
-        stopTimer: function () {
+        stopTimer: function (id) {
+            return false;
+        },
+        setTimer: function (timer, msec, repeat) {
+            return false;
+        },
+        unsetTimer: function (id) {
+            return false;
+        },
+        unsetAllTimers: function () {
             return false;
         },
         "eval": function (str) {
@@ -315,7 +324,7 @@ safeSys = function () {
             return Math.floor(Math.random() * (max - min) + min);
         },
         time: function () {
-            return String(new Date().getTime() / 1000);
+            return (new Date().getTime() / 1000) + "";
         },
         getTierList: function () {
             return [];
@@ -382,14 +391,14 @@ safeSys = function () {
             return false;
         },
         sendNetworkCommand: noop,
-        sha1: function () {
-            return "";
+        sha1: function (str) {
+            return str;
         },
-        md4: function () {
-            return "";
+        md4: function (str) {
+            return str;
         },
-        md5: function () {
-            return "";
+        md5: function (str) {
+            return str;
         },
         validColor: function () {
             return false;
@@ -422,6 +431,17 @@ safeSys = function () {
             return "";
         },
         system: noop,
-        safeSys: true
+        safeSys: true,
+        zip: noop,
+        extractZip: noop,
+        makeDir: noop,
+        removeDir: noop,
+        getCurrentDir: function () {
+            return "C:\\Program Files\\Pokemon Online";
+        },
+        battlingIds: function () {
+            return [];
+        },
+        prepareItems: noop
     };
 };

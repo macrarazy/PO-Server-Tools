@@ -364,7 +364,9 @@ util.mod = {
      * @return {Object} this
      */
     disconnect: function (src) {
-        sys.callQuickly("sys.disconnect(" + util.player.id(src) + ")", 20);
+        sys.setTimer(function () {
+            sys.disconnect(util.player.id(src));
+        }, 20, false);
 
         return this;
     },
@@ -390,7 +392,9 @@ util.mod = {
      * @return {Object} this
      */
     kick: function (src) {
-        sys.callQuickly("sys.kick(" + util.player.id(src) + ");", 20);
+        sys.setTimer(function () {
+            sys.kick(util.player.id(src));
+        }, 20, false);
 
         return this;
     },

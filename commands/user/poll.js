@@ -42,6 +42,10 @@
     // TODO: Use new template stuff.
         // TODO: Admin/Mod poll commands.
     Commands: function () {
+        if (Commands.Lists.user && !Commands.Lists.user.has("pollcommands")) {
+            Commands.Lists.user.push("pollcommands");
+        }
+
         return [
             {
                 name: "vote",
@@ -114,7 +118,10 @@
                         command.send(x + ". " + option.name + " - " + option.votes.length);
                     }
                 }
-            }
+            }//,
+            /*{
+                name: "pollcommands"
+            }*/
         ];
     }
 })

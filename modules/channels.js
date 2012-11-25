@@ -35,24 +35,44 @@ if (!cData) {
 
         this.channelData = util.json.read(this.file);
 
+        /**
+         * Imports a JSON property
+         * @param {Object} from Object from where the property comes
+         * @param {Object} to Object where the property is copied to
+         * @param {Object} property_name The property's name
+         * @return {Object} this
+         */
         this.importJSON = function (from, to, property_name) {
             if (typeof from[property_name] === "undefined") {
                 to[property_name] = {};
             } else {
                 to[property_name] = JSON.parse(from[property_name]);
             }
+
+            return this;
         };
 
-        this.loadDataForAll = function () {
+        /**
+         * Loads all channel data
+         * @return {Object} this
+         */
+        this.loadAll = function () {
             var cd = sys.channelIds(),
                 x;
 
             for (x in cd) {
-                this.loadDataFor(cd[x]);
+                this.loadFor(cd[x]);
             }
+
+            return this;
         };
 
-        this.loadDataFor = function (channel) {
+        /**
+         * Loads data for a specific channel
+         * @param {Number} channel The channel's id
+         * @return {Object} this
+         */
+        this.loadFor = function (channel) {
             var chan = JSESSION.channels(channel),
                 data,
                 isPerm,
@@ -63,13 +83,14 @@ if (!cData) {
                 tour;
 
             if (!chan) {
-                return;
+                return this;
             }
 
             data = this.channelData[chan.name];
 
             if (!data) {
-                return this.importFromChannel(chan.id);
+                this.importFromChannel(chan.id);
+                return this;
             }
 
             isPerm = Channels.has(chan.id),
@@ -102,12 +123,20 @@ if (!cData) {
                     tour.setOption(x, tour_properties[x]);
                 }
             }
+
+            return this;
         };
 
+        /**
+         * Imports all data of a specific channel into cData
+         * @param {CID} id Channel identifier
+         * @param [shouldOverwrite=false] If the data should be overwritten.
+         * @return {Object} this
+         */
         this.importFromChannel = function (id, shouldOverwrite) {
             var name = util.channel.name(id),
                 data = this.channelData,
-                chan = JSESSION.channels(cid),
+                chan = JSESSION.channels(util.channel.id(id)),
                 hash = {},
                 props = [
                     "creator", "topic", "topicsetter", "perm", "private", "defaultTopic", "silence", "banlist",
@@ -117,11 +146,11 @@ if (!cData) {
                 current;
 
             if (!chan) {
-                return "ERROR: No Channel";
+                return this;
             }
 
             if (data.has(name) && !shouldOverwrite) {
-                return;
+                return this;
             }
 
             for (x in props) {
@@ -134,13 +163,23 @@ if (!cData) {
             data[name] = hash;
 
             this.save();
+
+            return this;
         };
 
+        /**
+         * Sets (cid)'s cData (stored) property (name) to (value). Saves if (noSave) is false
+         * @param {CID} cid Channel identifier
+         * @param {String} name The property name
+         * @param {*} value (name)'s value.
+         * @param [noSave=false] If the data shouldn't be saved to disk right away
+         * @return {Object} this
+         */
         this.set = function (cid, name, value, noSave) {
             var chan = this.channelData[util.channel.name(cid)];
 
             if (!chan) {
-                return;
+                return this;
             }
 
             chan[name] = value;
@@ -150,8 +189,14 @@ if (!cData) {
             }
         };
 
+        /**
+         * Saves all data to disk.
+         * @return {Object} this
+         */
         this.save = function () {
             util.json.write(this.file, this.channelData);
+
+            return this;
         };
     })();
 }
@@ -161,14 +206,13 @@ if (!cData) {
     var chanList = cData.channelData,
         x,
         c_chan,
-        creator_id,
-        current;
+        creator_id;
 
     for (x in chanList) {
         c_chan = chanList[x];
         if (c_chan.perm && !sys.existChannel(x)) {
-            creator_id = util.player.id(c_chan.creator);
-            if (creator_id === -1) {
+            creator_id = sys.id(c_chan.creator);
+            if (!creator_id) {
                 creator_id = 0;
             }
 
@@ -177,7 +221,7 @@ if (!cData) {
     }
 
     for (x in Channels) {
-        cData.loadDataFor(Channels[x]);
+        cData.loadFor(Channels[x]);
     }
 }());
 
@@ -197,6 +241,9 @@ if (!cData) {
      */
     Hooks: function () {
         return {
+            "afterChannelCreated": function (chan, name, src) {
+                cData.loadFor(chan);
+            },
             "beforeChannelDestroyed": function (chan) {
                 return Channels.has(chan) || JSESSION.channels(chan).perm;
             },
@@ -228,6 +275,12 @@ if (!cData) {
 
                     util.channel.putIn(src, channels);
                 }
+            },
+            "warning": function (from, warning) {
+                bot.sendAll("Script Warning received from " + from + ": " + warning, watch);
+            },
+            "switchError": function (newScript) {
+                bot.sendAll("Automatically recovered from a fatal exception. Error: " + util.error.format(newScript), watch);
             }
         };
     }
