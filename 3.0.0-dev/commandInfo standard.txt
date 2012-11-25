@@ -19,7 +19,7 @@ Standard for commandInfo passed in all commands.
         + lineAll (Function): Short for bot.lineAll(commandInfo.chan);
         + sendMain (Function): Short for bot.sendAll(Arg: message, 0);
 
-    Defined in "modules/jsession.js": Player Components
+    Defined in "modules/jsession.js": Player/Channel Components
         + self (Object): src Information:
             + name: Name of src
             + nameLower: Name of src, in lower case
@@ -36,16 +36,11 @@ Standard for commandInfo passed in all commands.
             + ip: IP of tar
             + isHost: If tar is on the server host IP
             + jsession: tar's JSESSION object
-
-    modules/jsext.js,
-    modules/utilities.js,
-    modules/jsession.js,
-    modules/users.js,
-    modules/channels.js,
-    modules/datahash.js,
-    modules/templates.js,
-    and modules/cache.js should all loaded for commands.
-
+        + chan (Object): chan Information:
+            + name: Name of chan
+            + nameLower: Name of chan, in lower case
+            + players: Players of chan by id (Array)
+            + jsession: chans JSESSION object
 
 Properties for each command:
     Defined in "scripts.new.js":
@@ -55,3 +50,14 @@ Properties for each command:
         + [category="0"]: Command category (0, 1, 2, 3, or 4)
         + [help=["", ""]]: Command help for command lists
         + [allowedWhenMuted=true]: If the command can be used while muted.
+
+Files needed for commands: (excluding commands/base.js)
+    commands/base.js,
+    modules/jsext.js,
+    modules/utilities.js,
+    modules/jsession.js,
+    modules/users.js,
+    modules/channels.js,
+    modules/datahash.js,
+    modules/templates.js,
+    modules/cache.js

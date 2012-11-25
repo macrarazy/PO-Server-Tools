@@ -16,6 +16,12 @@
 // TODO: JSDOC
 
 /* Define Templates - all should be called with "new" */
+
+/**
+ * Contains the message templates
+ * @namespace
+ * @type {Object}
+ */
 Templates = {
     /* Basic template - very default */
     basic: function () {

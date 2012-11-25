@@ -5,7 +5,7 @@
  - Special Thanks to Lamperi, Mystra, and Intel_iX -
 
  Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
- - Has no known bugs
+ - Has no known errors
  Beta: https://github.com/TheUnknownOne/PO-Server-Tools/beta/
  - Has no obvious errors
  Alpha: https://github.com/TheUnknownOne/PO-Server-Tools/alpha/
@@ -15,31 +15,11 @@
 
  JSDoc is available at:
  - Release: http://theunknownone.github.com/PO-Server-Tools/jsdoc/release/
- - Pre-Release (End of Beta stage): http://theunknownone.github.com/PO-Server-Tools/jsdoc/prerelease/
 
  Beta, Alpha, and Development don't have a public JSDoc (make it yourself if you need it)
 
- ==== AVAILABLE MODULES ====
-
  - All modules are available in modules/ -
-
- - cache.js
- - channels.js
- - datahash.js
- - enum.js
- - ify.js
- - jsession.js
- - jsext.js
- - mafia.js
- - users.js
- - utilities.js
-
- ==== AVAILABLE COMMAND CATEGORIES ===
-
  - All command categories are available in commands/ -
-
- - ify.js
- - poll.js
 
  ==== NOTES ====
  - Dependencies with '*' in front of them are required at runtime -
@@ -95,15 +75,14 @@ Config.NoCrash = false;
  * If admins can give and take auth from users and to moderators.
  * @type {Boolean}
  */
-
 Config.AdminsCanAuth = true;
 
 /**
- * Clears logs when logs.txt has the given size in bytes or more. NOTE: Doesn't work with current version of PO
+ * Clears logs when logs.txt has the given size in MB or more. NOTE: Doesn't work with current version of PO
  * @type {Number}
  */
-// TODO: Size in kb or possibly mb instead.
-Config.ClearLogsAtSize = 36700160;
+// NOTE: Size is in MB now.
+Config.ClearLogsAtSize = 35;
 
 /**
  * Characters which can be used to "start" a command with.
@@ -177,8 +156,10 @@ Modules = [
  */
 
 // TODO: commands/user/fun.js once done
-// TODO: commands/init(Authname).js
 CommandCategories = [
+    /* Base for all commands - Required */
+    "commands/base.js",
+
     /* Commands - User */
     //"commands/user/fun.js",
     "commands/user/pokedex.js",
@@ -284,6 +265,26 @@ handlers.defaultHandler = function (category) {
 };
 
 /**
+ * Command list manager
+ * @constructor
+ */
+handlers.commandList = function () {
+    this.commands = [];
+
+    /**
+     * Adds a command to this command list manager (thingy)
+     * @param {String} name Command name
+     */
+    this.add = function (name) {
+        if (!this.commands.indexOf(name) === -1) {
+            this.commands.push(name);
+        }
+    };
+
+    return Commands.Lists;
+};
+
+/**
  * Adds a command
  * @param {String|Object} name Name of the command, or an object containing all of the parameters for this function
  * @param {Function} handler The actual command
@@ -306,17 +307,18 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
             handler = cmd.handler,
             category = cmd.category,
             permissionHandler = cmd.permissionHandler,
-            category = cmd.category, help = cmd.help,
+            category = cmd.category,
+            help = cmd.help,
             allowedWhenMuted = cmd.allowedWhenMuted;
     }
 
     if (!name) {
-        print("module.command.error: Could not add an unknown command. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
+        print("module.command.error: Could not add an unknown command. Submit a bug report along with this message if you are sure this is not a code modification.");
         return;
     }
 
     if (!handler) {
-        print("module.command.error: Could not add command " + name + " because the handler is missing. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
+        print("module.command.error: Could not add command " + name + " because the handler is missing. Submit a bug report along with this message if you are sure this is not a code modification.");
         return;
     }
 
@@ -646,7 +648,7 @@ callResult = function (hook_name, hook_args) {
      * @param {String} message Outputted message
      */
     afterNewMessage: function (message) {
-        // Possibly add hooks? Might lag the server
+        // NOTE: Possibly add hooks? Might lag the server
     },
     /**
      * When a player logs in (stoppable)

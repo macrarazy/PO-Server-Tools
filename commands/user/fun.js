@@ -25,7 +25,7 @@
                         shine = "",
                         shiny;
 
-                    // TODO: notEnabled hook for CommandsEnabled
+                    // NOTE: notEnabled hook for CommandsEnabled
                     if (call("notEnabled", command)) {
                         return;
                     }

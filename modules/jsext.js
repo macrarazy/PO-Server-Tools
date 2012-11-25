@@ -222,7 +222,6 @@ defineOn(Array.prototype, {
      * Makes a readable version of this Array.
      * @return {String}
      */
-    // TODO: Change "and" to language specific
     fancyJoin: function () {
         var array = this,
             x,

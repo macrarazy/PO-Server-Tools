@@ -672,9 +672,10 @@ JSESSION.refill();
             "commandInfoRequested": function (src, message, chan, commandInfo) {
                 var selfName = sys.name(src),
                     tar = commandInfo.target,
-                    tarName = sys.name(tar);
+                    tarName = sys.name(tar),
+                    chan = commandInfo.chan,
+                    chanName = sys.channel(chan);
 
-                // TODO: Channel components
                 return {
                     self: {
                         name: selfName,
@@ -693,6 +694,12 @@ JSESSION.refill();
                         ip: sys.ip(tar),
                         isHost: util.player.host(tar),
                         jsession: JSESSION.users(tar)
+                    },
+                    chan: {
+                        name: chanName,
+                        nameLower: chanName.toLowerCase(),
+                        players: sys.playersOfChannel(chan),
+                        jsession: JSESSION.channels(chan)
                     }
                 };
             }

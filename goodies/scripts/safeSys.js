@@ -437,11 +437,14 @@ safeSys = function () {
         makeDir: noop,
         removeDir: noop,
         getCurrentDir: function () {
-            return "C:\\Program Files\\Pokemon Online";
+            return "";
         },
         battlingIds: function () {
             return [];
         },
-        prepareItems: noop
+        prepareItems: noop,
+        playersOfChannel: function (chan) {
+            return [];
+        }
     };
 };

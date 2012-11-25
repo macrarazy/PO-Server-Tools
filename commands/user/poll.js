@@ -1,12 +1,5 @@
-/*
- Dependencies:
- - modules/jsext.js
- - modules/utilities.js
- - modules/datahash.js
- */
-
 /**
- * @fileOverview Commands for polls
+ * @fileOverview Poll commands
  * @author TheUnknownOne
  * @version 3.0.0 Devel
  */
@@ -39,19 +32,15 @@
      * @private
      * @return {Object}
      */
-    // TODO: Use new template stuff.
-        // TODO: Admin/Mod poll commands.
     Commands: function () {
-        if (Commands.Lists.user && !Commands.Lists.user.has("pollcommands")) {
-            Commands.Lists.user.push("pollcommands");
-        }
+        Commands.Lists.user.add("pollcommands");
 
         return [
             {
                 name: "vote",
-                category: "0",
                 help: [
-                    "{Template::PollOption Poll Option}", "To vote for {Template::PollOption Poll Option} on the poll."
+                    "Text::Any {Option}",
+                    "To vote for Text::Any {Option} on the poll."
                 ],
                 allowedWhenMuted: false,
                 handler: function (command) {
@@ -82,11 +71,9 @@
             },
             {
                 name: "pollinfo",
-                category: "0",
                 help: [
-                    "To view the running poll's information"
+                    "To view the running poll's information."
                 ],
-                allowedWhenMuted: true,
                 handler: function (command) {
                     var Poll = DataHash.poll,
                         x,
@@ -118,10 +105,26 @@
                         command.send(x + ". " + option.name + " - " + option.votes.length);
                     }
                 }
-            }//,
-            /*{
-                name: "pollcommands"
-            }*/
+            },
+            {
+                name: "pollcommands",
+                category: "0",
+                help: [
+                    "To view the <b>poll</b> commands."
+                ],
+                handler: function (command) {
+                    var commands = ["vote", "pollinfo"];
+
+                    if (command.self.auth >= 2) {
+                        // TODO: Admin/mod poll commands
+                        commands.push("");
+                    }
+
+                    new Templates.command("Poll Commands")
+                        .listCommands(commands)
+                        .render(command.src, command.chan);
+                }
+            }
         ];
     }
 })

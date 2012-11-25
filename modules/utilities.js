@@ -204,7 +204,6 @@ util.player = {
             authString = "O";
         }
 
-
         if (sys.away(id)) {
             status = 'Away';
         }
@@ -250,6 +249,115 @@ util.player = {
         }
 
         return icon + " " + player + " <small style='color: green;'>Online</small> <small>(<b style='color: blue;'>Player ID: " + id + "</b>)</small>";
+    },
+    // TODO: Fix this
+    /**
+     * Tests a player's name to see if it isn't bad
+     * @param {Number} src The player's id
+     * @param {Boolean} [nomessage=false] If no message will be sent to the player and watch
+     * @return {Boolean} If the player's name is bad
+     */
+    testName: function (src, nomessage) {
+        var name = sys.name(src),
+            ip = sys.ip(src),
+            dh = DataHash,
+            auth = sys.maxAuth(ip);
+
+        Prune.bans();
+        Prune.rangeBans();
+
+        if (auth <= 0) {
+            var rb = dh.rangebans,
+                i, i_l = 0,
+                xT, c_rb;
+            for (i in rb) {
+                i_l = i.length;
+                for (xT = 0; xT < i_l; xT++) {
+                    if (i == sys.ip(src).substring(0, xT)) {
+                        if (!nomessage) {
+                            c_rb = rb[i];
+                            var time;
+                            if (c_rb.time != 0) {
+                                time = 'Banned for ' + util.time.format(c_rb.time - sys.time() * 1);
+                            } else {
+                                time = "Banned forever";
+                            }
+
+                            var by = c_rb.by,
+                                why = c_rb.why,
+                                lastChar = why[why.length - 1],
+                                lastChars = [".", "?", "!"];
+
+                            if (lastChars.indexOf(lastChar) == -1) {
+                                why += ".";
+                            }
+
+                            util.message.failWhale(src, 0);
+                            bot.send(src, 'Your ip range ' + i + ' is banned by ' + by + '. Reason: ' + why + ' ' + time + '.', 0);
+                            bot.sendAll('Player ' + name + ' with range IP ' + i + ' has attempted to enter the server and failed. [Reason: Rangebanned]', watch);
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+
+        var tb = DataHash.tempbans[ip];
+        if (tb != undefined && auth < 1) {
+            if (!nomessage) {
+                var time;
+
+                if (tb.time != 0) {
+                    time = "for " + getTimeString(tb.time - sys.time() * 1);
+                } else {
+                    time = "forever";
+                }
+
+                var reason = tb.why,
+                    by = tb.by,
+                    lastChar = reason[reason.length - 1],
+                    lastChars = [".", "?", "!"];
+
+                if (lastChars.indexOf(lastChar) == -1) {
+                    reason += ".";
+                }
+
+                util.message.failWhale(src, 0);
+                bot.send(src, "You are banned! By " + by + ". Reason " + why + " " + time + "!", 0);
+                bot.sendAll("Player " + name + " (" + ip + ") has attempted to enter the server and failed. [Reason: Tempbanned]", watch);
+            }
+            return true;
+        }
+
+        var cyrillic = /\u0408|\u03a1|\u0430|\u0410|\u0412|\u0435|\u0415|\u041c|\u041d|\u043e|\u041e|\u0440|\u0420|\u0441|\u0421|\u0422|\u0443|\u0445|\u0425|\u0456|\u0406/,
+            space = /\u0009-\u000D|\u0085|\u00A0|\u1680|\u180E|\u2000-\u200A|\u2028|\u2029|\u2029|\u202F|\u205F|\u3000/,
+            dash = /\u058A|\u05BE|\u1400|\u1806|\u2010-\u2015|\u2053|\u207B|\u208B|\u2212|\u2E17|\u2E1A|\u301C|\u3030|\u30A0|\uFE31-\uFE32|\uFE58|\uFE63|\uFF0D/,
+            greek = /\u03F3|\u0391|\u0392|\u0395|\u0396|\u0397|\u0399|\u039A|\u039C|\u039D|\u039F|\u03A1|\u03A4|\u03A5|\u03A7/,
+            armenian = /\u0555|\u0585/,
+            creek = /[\u0370-\u03ff]/,
+            special = /[\ufff0-\uffff]/,
+            other = /\u3061|\u65532/,
+            zalgo = /[\u0300-\u036F]/,
+            thai = /[\u0E00-\u0E7F]/,
+            fakei = /\xA1/;
+
+        if (fakei.test(name) || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
+            if (!nomessage) {
+                util.message.failWhale(src, 0);
+                util.send(src, "You are using bad characters in your name.");
+                util.sendAll("Player " + name + " (" + ip + ") has failed to log in. [Reason: Unicode characters]", watch);
+            }
+            return true;
+        }
+
+        if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "T" && name[4] == "_") {
+            if (!nomessage) {
+                util.message.failWhale(src, 0);
+            }
+            return true;
+        }
+
+        return false;
     }
 };
 
@@ -328,6 +436,15 @@ util.channel = {
         }
 
         return this;
+    },
+    /**
+     * Returns all of the server's channels by name.
+     * @return {Array} All channel names
+     */
+    names: function () {
+        return sys.channelIds().map(function (value, index, array) {
+            return sys.channel(value);
+        });
     }
 };
 
@@ -786,13 +903,25 @@ util.message = {
 
         return this;
     },
+    /**
+     * Adds channel links to a message
+     * @param {String} str Input
+     * @return {String} Formatted message
+     */
+    addChannelLinks: function (str) {
+        var channelNames = util.channel.names();
 
-    /*
-     function clink($1) {
-     return ChannelLink(sys.channel($1));
-     }
+        channelNames.forEach(function (value, index, array) {
+            str = str.replace(new RegExp("#" + value, "gi"), "<a href='po:join/" + value + "'>" + value + "</a>");
+        });
 
-
+        return str;
+    },
+    /**
+     * Formats a string to have urls and bbcode.
+     * @param {String} str Message to format
+     * @param {Undefined|Number} authLvl Undefined for user-access, -1 for auth:3 and host (eval) access, or a player's id for their auth level.
+     * @return {String} Formatted message
      */
     format: function (str, authLvl) {
         var auth = authLvl,
@@ -805,16 +934,18 @@ util.message = {
 
         if (authLvl === -1) {
             auth = 3;
+        } else {
+            auth = 0;
         }
 
-        str = (str + "");
+        str = str + "";
 
-        if (typeof authLvl == 'number' && sys.loggedIn(authLvl)) {
+        if (typeof authLvl === 'number' && sys.loggedIn(authLvl)) {
             name = sys.name(authLvl).toLowerCase();
 
             isHost = util.player.host(authLvl);
 
-            if (DataHash && DataHash.evalops && DataHash.evalops.has(name)) {
+            if (DataHash && DataHash.evalOperators && DataHash.evalOperators.has(name)) {
                 isHost = true;
             }
 
@@ -834,7 +965,7 @@ util.message = {
                 toEval = $1.substr(6, $1.lastIndexOf("[") - 6);
 
                 try {
-                    ret = eval(toEval);
+                    ret = sys.eval(toEval);
                 }
                 catch (e) {
                     return util.error.format("", e);
@@ -848,7 +979,8 @@ util.message = {
             });
         }
 
-        str = str.replace(urlPattern, '<a target="_blank" href="$&">$&</a>')
+        str = str
+            .replace(urlPattern, '<a target="_blank" href="$&">$&</a>')
             .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
             .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>')
             .replace(poPattern, function ($) {
@@ -861,7 +993,8 @@ util.message = {
             });
 
         // NOTE: Reminder to remove [servername] as bbcode
-        str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
+        str = str
+            .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
             .replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>')
             .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
             .replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>')
@@ -876,16 +1009,16 @@ util.message = {
             .replace(/\[font=(.*?)\](.*?)\[\/font\]/gi, '<font face=$1>$2</font>');
 
         if (auth > 0) {
-            str = str.replace(/\[size=([0-9]{1,})\](.*?)\[\/size\]/gi, '<font size=$1>$2</font>')
+            str = str
+                .replace(/\[size=([0-9]{1,})\](.*?)\[\/size\]/gi, '<font size=$1>$2</font>')
                 .replace(/\[pre\](.*?)\[\/pre\]/gi, '<pre>$1</pre>')
                 .replace(/\[ping\]/gi, "<ping/>")
                 .replace(/\[br\]/gi, "<br/>")
                 .replace(/\[hr\]/gi, "<hr/>");
         }
 
-        // TODO: util.message.addChannelLinks
+        /* Do this last for other BBcodes to work properly */
         return util.message.addChannelLinks(str);
-        /* Do this last for other BBcodes to work */
     }
 };
 

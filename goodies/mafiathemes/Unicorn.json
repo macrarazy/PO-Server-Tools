@@ -3,7 +3,7 @@
     "author": [
         "TheUnknownOne"
     ],
-    "summary": "Unicorn returns (and now requires 6 players)! The village in this theme are the White Unicorns, who's PRs are: Intelligent (insp), Wizard (bg), Crying (pl), King (high hax), and Commander (nightkill). Don't claim if there is the Flying Unicorn (daykill w/ 20% reveal chance). Read the /roles, /sides, and the /priority list! That should be about it! Have fun! ~ TheUnknownOne.",
+    "summary": "Unicorn returns (and now requires 6 players)! The village in this theme are the White Unicorns, who's PRs are: Intelligent (insp), Wizard (bg), Crying (pl), King (high hax), and Commander (nightkill). Don't claim if there is the Flying Unicorn (daykill w/ 20% reveal chance). Have fun! ~ TheUnknownOne | Thread: http://goo.gl/pGkKv - Wiki: http://goo.gl/xuk02",
     "minplayers": 6,
     "sides": [
         {
@@ -694,6 +694,7 @@
                             "Miller-Hunter",
                             "Miller-Flying",
                             "Miller-Scientist",
+                            "Miller-Rainbow",
                             "Village-Rainbow",
                             "Mafia-1",
                             "Mafia-Leader",
@@ -706,7 +707,37 @@
                             "Rainbow",
                             "Colorless"
                         ],
-                        "newRole": "Mutated",
+                        "newRole": {
+                            "Mutated-Good": [
+                                "Villager",
+                                "Inspector-1",
+                                "Inspector-2",
+                                "Bodyguard-1",
+                                "Bodyguard-2",
+                                "Hooker-1",
+                                "Hooker-2",
+                                "Hooker-3",
+                                "Leader",
+                                "Commander",
+                                "Miller-Hunter",
+                                "Miller-Flying",
+                                "Miller-Scientist",
+                                "Miller-Rainbow",
+                                "Village-Rainbow",
+                                "Rainbow",
+                                "Colorless"
+                            ],
+                            "Mutated-Bad": [
+                                "Mafia-1",
+                                "Mafia-Leader",
+                                "Mafia-Inspector",
+                                "Mafia-2",
+                                "Mafia-Villager",
+                                "Mafia-Rainbow",
+                                "Flying",
+                                "Flying-Rainbow"
+                            ]
+                        },
                         "failChance": 0.05,
                         "command": "convert"
                     }
@@ -723,7 +754,8 @@
                 },
                 "onDeath": {
                     "killRoles": [
-                        "Mutated"
+                        "Mutated-Good",
+                        "Mutated-Bad"
                     ],
                     "killmsg": "~Player~ took all ~Role~s (~Target~) with him!"
                 },
@@ -736,7 +768,7 @@
             }
         },
         {
-            "role": "Mutated",
+            "role": "Mutated-Good",
             "translation": "Mutated Unicorn",
             "side": "Mutated",
             "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team, but you do win with anyone except the Humans. Anyone who kills you unprotected will suffer from a deadly poison! :D",
@@ -759,6 +791,46 @@
                     "mode": "poisonattacker",
                     "count": 2,
                     "poisonDeadMessage": "Mutated Unicorns do not like to die :|",
+                    "silent": true
+                }
+            }
+        },
+        {
+            "role": "Mutated-Bad",
+            "translation": "Mutated Unicorn",
+            "side": "Mutated",
+            "help": "You have been mutated! You have a vote of 0, and you will die in 2 nights. You are also no longer on your original team, but you do win with anyone except the Humans. Anyone who inspects, protects or distracts you will suffer from a deadly poison! :D",
+            "info": "Used for convert in code (by Mad Scientist). Vote counts as 0. Dies in 2 nights. Wins with White Unicorns, Black Unicorns, the Chromatic Unicorns, or the Flying Unicorn. Poisons inspectors, protectors, and distractors (2 nights) silently. Sided with Mutated Unicorns.",
+            "winningSides": [
+                "village",
+                "Black",
+                "Chromatic",
+                "Flying"
+            ],
+            "actions": {
+                "vote": 0,
+                "initialCondition": {
+                    "poison": {
+                        "count": 3,
+                        "poisonDeadMessage": "Your time is up. Mutation is deadly."
+                    }
+                },
+                "inspect": {
+                    "mode": "poisonattacker",
+                    "count": 2,
+                    "poisonDeadMessage": "Mutated Unicorns do not like to be inspected :|",
+                    "silent": true
+                },
+                "protect": {
+                    "mode": "poisonattacker",
+                    "count": 2,
+                    "poisonDeadMessage": "Mutated Unicorns do not like to be protect :|",
+                    "silent": true
+                },
+                "distract": {
+                    "mode": "poisonattacker",
+                    "count": 2,
+                    "poisonDeadMessage": "Mutated Unicorns do not like to be distracted :|",
                     "silent": true
                 }
             }
