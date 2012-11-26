@@ -32,7 +32,6 @@
                     .write("names")
                     .resolveLocation(src, ip, false);
 
-                // TODO: util.player.testName
                 if (util.player.testName(src)) {
                     util.sandbox.kickedPlayer = src;
                     return true;

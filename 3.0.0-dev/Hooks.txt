@@ -50,6 +50,7 @@ All Hooks:
     onMute(Number src)
     onChannelKick(Number src, Number chan)
     onKick(Number src)
+    testName(Number src)
 
     /* Command hooks */
     notEnabled(Object{CommandInfo} command)

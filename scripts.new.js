@@ -740,7 +740,7 @@ callResult = function (hook_name, hook_args) {
 
             commandName = fullCommand.toLowerCase();
 
-            if (!call("onCommand", src, message, chan, commandName, data)) {
+            if (call("onCommand", src, message, chan, commandName, data)) {
                 return;
             }
 
@@ -804,7 +804,7 @@ callResult = function (hook_name, hook_args) {
                 call("onCommandError", src, fullCommand, chan, "nopermission");
                 return;
             }
-            if (!cmd.allowedWhenMuted && !call("allowedWhenMuted", src, command, chan)) {
+            if (!cmd.allowedWhenMuted && call("allowedWhenMuted", src, command, chan)) {
                 call("onCommandError", src, fullCommand, chan, "muted");
                 return;
             }

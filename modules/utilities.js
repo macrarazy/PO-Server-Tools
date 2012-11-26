@@ -250,7 +250,6 @@ util.player = {
 
         return icon + " " + player + " <small style='color: green;'>Online</small> <small>(<b style='color: blue;'>Player ID: " + id + "</b>)</small>";
     },
-    // TODO: Fix this
     /**
      * Tests a player's name to see if it isn't bad
      * @param {Number} src The player's id
@@ -260,9 +259,23 @@ util.player = {
     testName: function (src, nomessage) {
         var name = sys.name(src),
             ip = sys.ip(src),
-            dh = DataHash,
-            auth = sys.maxAuth(ip);
+            auth = util.player.auth(src),
+            cyrillic = /\u0408|\u03a1|\u0430|\u0410|\u0412|\u0435|\u0415|\u041c|\u041d|\u043e|\u041e|\u0440|\u0420|\u0441|\u0421|\u0422|\u0443|\u0445|\u0425|\u0456|\u0406/,
+            space = /\u0009-\u000D|\u0085|\u00A0|\u1680|\u180E|\u2000-\u200A|\u2028|\u2029|\u2029|\u202F|\u205F|\u3000/,
+            dash = /\u058A|\u05BE|\u1400|\u1806|\u2010-\u2015|\u2053|\u207B|\u208B|\u2212|\u2E17|\u2E1A|\u301C|\u3030|\u30A0|\uFE31-\uFE32|\uFE58|\uFE63|\uFF0D/,
+            greek = /\u03F3|\u0391|\u0392|\u0395|\u0396|\u0397|\u0399|\u039A|\u039C|\u039D|\u039F|\u03A1|\u03A4|\u03A5|\u03A7/,
+            armenian = /\u0555|\u0585/,
+            creek = /[\u0370-\u03ff]/,
+            special = /[\ufff0-\uffff]/,
+            other = /\u3061|\u65532/,
+            zalgo = /[\u0300-\u036F]/,
+            thai = /[\u0E00-\u0E7F]/,
+            fakei = /\xA1/;;
 
+        if (call("testName", src)) {
+            return true;
+        }
+        /*
         Prune.bans();
         Prune.rangeBans();
 
@@ -327,19 +340,8 @@ util.player = {
                 bot.sendAll("Player " + name + " (" + ip + ") has attempted to enter the server and failed. [Reason: Tempbanned]", watch);
             }
             return true;
-        }
+        }*/
 
-        var cyrillic = /\u0408|\u03a1|\u0430|\u0410|\u0412|\u0435|\u0415|\u041c|\u041d|\u043e|\u041e|\u0440|\u0420|\u0441|\u0421|\u0422|\u0443|\u0445|\u0425|\u0456|\u0406/,
-            space = /\u0009-\u000D|\u0085|\u00A0|\u1680|\u180E|\u2000-\u200A|\u2028|\u2029|\u2029|\u202F|\u205F|\u3000/,
-            dash = /\u058A|\u05BE|\u1400|\u1806|\u2010-\u2015|\u2053|\u207B|\u208B|\u2212|\u2E17|\u2E1A|\u301C|\u3030|\u30A0|\uFE31-\uFE32|\uFE58|\uFE63|\uFF0D/,
-            greek = /\u03F3|\u0391|\u0392|\u0395|\u0396|\u0397|\u0399|\u039A|\u039C|\u039D|\u039F|\u03A1|\u03A4|\u03A5|\u03A7/,
-            armenian = /\u0555|\u0585/,
-            creek = /[\u0370-\u03ff]/,
-            special = /[\ufff0-\uffff]/,
-            other = /\u3061|\u65532/,
-            zalgo = /[\u0300-\u036F]/,
-            thai = /[\u0E00-\u0E7F]/,
-            fakei = /\xA1/;
 
         if (fakei.test(name) || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
             if (!nomessage) {
@@ -350,12 +352,12 @@ util.player = {
             return true;
         }
 
-        if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "T" && name[4] == "_") {
+        /*if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "T" && name[4] == "_") {
             if (!nomessage) {
                 util.message.failWhale(src, 0);
             }
             return true;
-        }
+        }*/
 
         return false;
     }
