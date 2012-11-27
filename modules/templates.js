@@ -142,6 +142,7 @@ Templates = {
                  Text::Choice (multiple options defined in (TEXT)) | cadetblue
                  Text::Time (time (number)) | mediumvioletred
                  Text::TimeUnit (time (unit)) | darkviolet
+                 Text::Options (options splitted by '/') | mediumorchid
                  Text::Any (any text) | silver
                  */
                 return str
@@ -155,6 +156,7 @@ Templates = {
                     .replace(/Text::Choice \{(.*?)\}/gi, "<b><font color='cadetblue'>$1</font></b>")
                     .replace(/Text::Time \{(.*?)\}/gi, "<b><font color='mediumvioletred'>$1</font></b>")
                     .replace(/Text::TimeUnit \{(.*?)\}/gi, "<b><font color='darkviolet'>$1</font></b>")
+                    .replace(/Text::Options \{(.*?)\}/gi, "<b><font color='mediumorchid'>$1</font></b>")
                     .replace(/Text::Any \{(.*?)\}/gi, "<b><font color='silver'>$1</font></b>");
             },
             register: function (name, args, desc) {
@@ -184,16 +186,24 @@ Templates = {
                 return this;
             },
             list: function (command) {
-                var cmd = Commands[command.toLowerCase()];
+                var cmd = Commands[command.toLowerCase()],
+                    help,
+                    help0;
 
                 if (!cmd) {
                     return this;
                 }
 
+                help = cmd.help,
+                    help0 = help[0];
+
                 if (help.length === 1) {
-                    this.register(cmd.name, cmd.help[0]);
+                    this.register(cmd.name, help0);
                 } else {
-                    this.register(cmd.name, cmd.help[0], cmd.help[1]);
+                    if (typeof help0 === "string") {
+                        help0 = [help0];
+                    }
+                    this.register(cmd.name, help0, help[1]);
                 }
 
                 return this;
