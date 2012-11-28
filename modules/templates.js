@@ -7,7 +7,7 @@
 /**
  * @fileOverview Message templates
  * @author TheUnknownOne
- * @version 3.0.0 Devel
+ * @version 3.0.0 Devel 1
  */
 
 // TODO: Find a way to not make this as hardcoded as it is with styles

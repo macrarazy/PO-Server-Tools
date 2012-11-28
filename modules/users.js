@@ -10,7 +10,7 @@
 /**
  * @fileOverview User Data Manager
  * @author TheUnknownOne
- * @version 3.0.0 Devel
+ * @version 3.0.0 Devel 1
  */
 
 ({
@@ -76,9 +76,10 @@
                 }
 
                 // TODO: Add Tours.notification
+                /*
                 if (Tours) {
                     Tours.notification(src, 0);
-                }
+                }*/
 
                 bot.line(src, 0);
 

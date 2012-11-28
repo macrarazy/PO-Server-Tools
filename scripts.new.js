@@ -37,7 +37,7 @@
 /**
  * @fileOverview Primary file of TheUnknownOne's Server Script
  * @author TheUnknownOne
- * @version 3.0.0 Devel
+ * @version 3.0.0 Devel 1
  */
 
 /**
@@ -126,7 +126,7 @@ Config.Mafia.max_name_length = 16;
  * Version of the script
  * @type {String}
  */
-SCRIPT_VERSION = "3.0.0 Devel";
+SCRIPT_VERSION = "3.0.0 Devel 1";
 
 /**
  * URL from where the modules will be downloaded from

@@ -9,7 +9,7 @@
 /**
  * @fileOverview Contains default channels and channelData
  * @author TheUnknownOne
- * @version 3.0.0 Devel
+ * @version 3.0.0 Devel 1
  */
 
 mafiachan = util.channel.create("Mafia Channel");
@@ -229,7 +229,7 @@ if (!cData) {
     /**
      * Returns the name of this module
      * @private
-     * @return {String} Channel Data Manager
+     * @return {String}
      */
     Name: function () {
         return "Channel Data Manager";
@@ -266,7 +266,7 @@ if (!cData) {
                         channels.push(staffchannel);
                     }
 
-                    if (auth > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(user.originalName.toLowerCase())) {
+                    if (auth > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalOperators.has(user.originalName.toLowerCase())) {
                         channels.push(scriptchannel);
                     }
                     if (auth > 1 || JSESSION.channels(trivreview).isChanMod(src)) {

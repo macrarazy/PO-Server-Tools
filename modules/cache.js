@@ -7,13 +7,13 @@
 /**
  * @fileOverview JSON cache
  * @author TheUnknownOne
- * @version 3.0.0 Devel
+ * @version 3.0.0 Devel 1
  */
 
 /**
  * A cache instance
- * @param {String} file File for this cache
  * @constructor
+ * @param {String} file File for this cache
  * @return {Object} this
  */
 Cache = function (file) {
@@ -184,7 +184,7 @@ if (!cache) {
     /**
      * Returns the name of this module
      * @private
-     * @return {String} Cache
+     * @return {String}
      */
     Name: function () {
         return "Cache";

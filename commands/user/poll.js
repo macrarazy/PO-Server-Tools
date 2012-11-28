@@ -1,7 +1,7 @@
 /**
  * @fileOverview Poll commands
  * @author TheUnknownOne
- * @version 3.0.0 Devel
+ * @version 3.0.0 Devel 1
  */
 
 ({

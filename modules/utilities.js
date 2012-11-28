@@ -8,7 +8,7 @@
 /**
  * @fileOverview Utilities file
  * @author TheUnknownOne
- * @version 3.0.0 Devel
+ * @version 3.0.0 Devel 1
  */
 
 if (!Bot) {
