@@ -144,6 +144,8 @@ Templates = {
                  Text::TimeUnit (time (unit)) | darkviolet
                  Text::Options (options splitted by '/') | mediumorchid
                  Text::Any (any text) | silver
+
+                 Pokemon::AttackingMove (must be an attacking move) | maroon
                  */
                 return str
                     .replace(/Player::Online \{(.*?)\}/gi, "<b><font color='slateblue'>$1</font></b>")
@@ -157,7 +159,9 @@ Templates = {
                     .replace(/Text::Time \{(.*?)\}/gi, "<b><font color='mediumvioletred'>$1</font></b>")
                     .replace(/Text::TimeUnit \{(.*?)\}/gi, "<b><font color='darkviolet'>$1</font></b>")
                     .replace(/Text::Options \{(.*?)\}/gi, "<b><font color='mediumorchid'>$1</font></b>")
-                    .replace(/Text::Any \{(.*?)\}/gi, "<b><font color='silver'>$1</font></b>");
+                    .replace(/Text::Any \{(.*?)\}/gi, "<b><font color='silver'>$1</font></b>")
+
+                    .replace(/Pokemon::AttackingMove \{(.*?)\}/gi, "<b><font color='maroon'>$1</font></b>");
             },
             register: function (name, args, desc) {
                 var aliases = this.aliases(name),

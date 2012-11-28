@@ -51,8 +51,8 @@ Properties for each command:
         + [help=["", ""]]: Command help for command lists
         + [allowedWhenMuted=true]: If the command can be used while muted.
 
-Files needed for commands: (excluding commands/base.js)
-    commands/base.js,
+Files needed for commands: (including commands/base.js)
+    commands/base.js (doesn't apply for commands/base.js, obviously),
     modules/jsext.js,
     modules/utilities.js,
     modules/jsession.js,

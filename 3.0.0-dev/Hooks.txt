@@ -51,6 +51,7 @@ All Hooks:
     onChannelKick(Number src, Number chan)
     onKick(Number src)
     testName(Number src)
+    messageAllowed(Number src, String message) (old = unicodeAbuse)
 
     /* Command hooks */
     notEnabled(Object{CommandInfo} command)

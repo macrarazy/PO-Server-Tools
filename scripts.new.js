@@ -349,7 +349,6 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
         "name": name,
         "handler": handler,
         "permissionHandler": permissionHandler,
-        "category": category,
         "help": help,
         "allowedWhenMuted": allowedWhenMuted
     };

@@ -565,7 +565,7 @@
     /**
      * Returns the name of this module
      * @private
-     * @return {String} Commands - Pokedex
+     * @return {String}
      */
     Name: function () {
         return "Commands - Pokedex";
@@ -576,6 +576,8 @@
      * @return {Object}
      */
     Commands: function () {
+        Commands.Lists.user.add("pokedex");
+
         return [
             {
                 name: "pokedex",

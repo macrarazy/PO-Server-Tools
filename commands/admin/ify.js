@@ -36,9 +36,7 @@
      * @return {Array}
      */
     Commands: function () {
-        if (Commands.Lists.admin && !Commands.Lists.admin.has("ifycommands")) {
-            Commands.Lists.admin.push("ifycommands");
-        }
+        Commands.Lists.admin.add("ifycommands");
 
         return [
             {
