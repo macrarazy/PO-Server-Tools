@@ -144,10 +144,10 @@ BRANCH = "devel";
  * Modules to load
  * @type {Array}
  */
-// TODO: Add templates.js once done
 Modules = [
     "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
-    "modules/jsession.js", "modules/users.js", "modules/channels.js", /*"modules/templates.js",*/ "modules/mafia.js"
+    "modules/jsession.js", "modules/users.js", "modules/channels.js", "modules/templates.js",
+    "modules/mafia.js"
 ];
 
 /**
