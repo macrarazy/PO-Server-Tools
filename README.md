@@ -5,7 +5,7 @@
 ***
 
 ## scripts.js
-### Version: 3.0.0 Devel 1
+### Version: 3.0.0 Alpha 1
 
 **Report bugs/post suggestions/ideas in Issues**
 

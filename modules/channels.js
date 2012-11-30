@@ -9,7 +9,7 @@
 /**
  * @fileOverview Contains default channels and channelData
  * @author TheUnknownOne
- * @version 3.0.0 Devel 1
+ * @version 3.0.0 Alpha 1
  */
 
 mafiachan = util.channel.create("Mafia Channel");

@@ -8,7 +8,7 @@
 /**
  * @fileOverview DataHash (Object containing data)
  * @author TheUnknownOne
- * @version 3.0.0 Devel 1
+ * @version 3.0.0 Alpha 1
  */
 
 /* Extends util with DataHash utilities */

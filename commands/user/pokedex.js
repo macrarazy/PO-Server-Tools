@@ -6,7 +6,7 @@
 /**
  * @fileOverview Server-side pokedex
  * @author TheUnknownOne
- * @version 3.0.0 Devel 1
+ * @version 3.0.0 Alpha 1
  */
 
 (function () {

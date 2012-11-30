@@ -1,7 +1,7 @@
 /**
  * @fileOverview Defines all command list managers/containers
  * @author TheUnknownOne
- * @version 3.0.0 Devel 1
+ * @version 3.0.0 Alpha 1
  */
 
 /* Generates/cleans all command lists */
