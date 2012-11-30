@@ -10,6 +10,22 @@
  * @version 3.0.0 Devel 1
  */
 
+/* Temporary fixes */
+style = {
+    "name": "default",
+    "author": "Lutra",
+    "header": "<font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
+    "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
+    "pre-command": "",
+    "command-icon": "\u2022 ",
+    "command-style": ["<b>", "</b>"],
+    "command-color": "green",
+    "help": "<b><font color='orangered'>The following commands need to be entered into a channel's main chat:</font></b>",
+    "span": "<br><font size=5><B>{{Name}}</b></font>"
+};
+PointerCommands = {"!!//Reverse//!!": []};
+ChatColorRandomizers = {};
+
 // TODO: Find a way to not make this as hardcoded as it is with styles
 // TODO: Find a way to not make this as hardcoded as it is with pointer commands
 // TODO: Find a way to not make this as hardcoded as it is with chat color randomizers

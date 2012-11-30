@@ -144,10 +144,10 @@ BRANCH = "devel";
  * Modules to load
  * @type {Array}
  */
-// TODO: Add channels.js, templates.js once done
+// TODO: Add templates.js once done
 Modules = [
     "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
-    "modules/jsession.js", "modules/users.js", /*"modules/templates.js",*/ "modules/mafia.js"
+    "modules/jsession.js", "modules/users.js", "modules/channels.js", /*"modules/templates.js",*/ "modules/mafia.js"
 ];
 
 /**
@@ -155,15 +155,14 @@ Modules = [
  * @type {Array}
  */
 
-// TODO: commands/user/fun.js once done
 CommandCategories = [
     /* Base for all commands - Required */
     "commands/base.js",
 
     /* Commands - User */
-    //"commands/user/fun.js",
-    "commands/user/pokedex.js",
+    "commands/user/fun.js",
     "commands/user/poll.js",
+    "commands/user/pokedex.js",
 
     /* Commands - Admin */
     "commands/admin/ify.js"

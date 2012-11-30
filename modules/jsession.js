@@ -388,7 +388,7 @@ POUser.prototype.capsMute = function (message, channel) {
     channel = util.channel.id(channel);
 
     // TODO: AutoMute command
-    if (!Settings.AutoMute) {
+    if (Settings.has("AutoMute") && !Settings.AutoMute) {
         return false;
     }
 
