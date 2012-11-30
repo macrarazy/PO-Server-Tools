@@ -1,5 +1,5 @@
 (function () {
-    if (!AttackingMoves) {
+    if (typeof AttackingMoves === "undefined") {
         AttackingMoves = [];
 
         sys.getFileContent("db/moves/5G/damage_class.txt").split("\n")

@@ -1,7 +1,7 @@
 /*
  Dependencies:
  * modules/jsext.js
- * modules/utilities.js
+ - modules/utilities.js
  - modules/jsession.js
  - modules/datahash.js
  */

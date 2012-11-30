@@ -12,7 +12,7 @@
  */
 
 /* Extends util with DataHash utilities */
-if (!util.datahash) {
+if (typeof util.datahash === "undefined") {
     /**
      * DataHash Utilities
      * @namespace

@@ -478,9 +478,10 @@ include.get = function (FileName, Method) {
  * @param {String} FilePath Online file path/name of the file
  * @param {Boolean} [ForceDownload=false] If the file will still get downloaded even when it already exists on disk
  * @param {Boolean} [Synchronously=false] If the file will be downloaded synchronously
+ * @param {Function} [CallBack] Function called when the async reply is finished (Synchronously has to be false)
  * @return {String} Content of URL + Branch + / + FilePath
  */
-download = function (FileName, FilePath, ForceDownload, Synchronously) {
+download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack) {
     var filePath = [].concat(FileName.split(/\/|\\/));
 
     if (sys.getFileContent(FileName) && !ForceDownload) {
@@ -500,6 +501,10 @@ download = function (FileName, FilePath, ForceDownload, Synchronously) {
     } else {
         sys.webCall(URL + BRANCH + "/" + FilePath, function (httpResponse) {
             sys.writeToFile(FileName, httpResponse);
+
+            if (CallBack) {
+                CallBack();
+            }
         })
     }
 };
@@ -587,25 +592,18 @@ callResult = function (hook_name, hook_args) {
     return res;
 };
 
-/* Downloads and loads all modules  and command categories in an anonymous function */
+/* Downloads and loads all modules and command categories in an anonymous function */
 (function () {
-    var module,
-        command,
-        current;
+    Modules.forEach(function (value, index, array) {
+        download(value, value, OverwriteModules, true);
+        include(value, null, OverwriteModules);
+    });
 
-    for (module in Modules) {
-        current = Modules[module];
-
-        download(current, current, OverwriteModules, true);
-        include(current, null, OverwriteModules);
-    }
-
-    for (command in CommandCategories) {
-        current = CommandCategories[command];
-
-        download(current, current, OverwriteCommands, false);
-        include(current, null, OverwriteCommands);
-    }
+    CommandCategories.forEach(function (value, index, array) {
+        download(value, value, OverwriteCommands, false, function () {
+            include(value, null, OverwriteCommands);
+        });
+    });
 }());
 
 ({

@@ -13,7 +13,7 @@
  * @version 3.0.0 Alpha 1
  */
 
-if (!JSESSION) {
+if (typeof JSESSION === "undefined") {
     /**
      * JSESSION
      * @class

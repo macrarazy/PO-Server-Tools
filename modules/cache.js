@@ -176,7 +176,7 @@ Cache.prototype.saveEnsured = function () {
     return this;
 };
 
-if (!cache) {
+if (typeof cache === "undefined") {
     cache = new Cache("Cache");
 }
 
