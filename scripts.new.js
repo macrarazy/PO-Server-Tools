@@ -389,27 +389,29 @@ include = function (FileName, GetMethod, NoCache) {
         return;
     }
 
-    if (source.Name) {
-        module.name = source.Name();
-    }
+    if (source) {
+        if (source.Name) {
+            module.name = source.Name();
+        }
 
-    if (module.name.indexOf("Commands - ") !== -1) {
-        commandModule = true;
-    }
+        if (module.name.indexOf("Commands - ") !== -1) {
+            commandModule = true;
+        }
 
-    if (source.Hooks) {
-        module.hooks = source.Hooks();
-    }
+        if (source.Hooks) {
+            module.hooks = source.Hooks();
+        }
 
-    if (source.Commands) {
-        module.commands = source.Commands();
+        if (source.Commands) {
+            module.commands = source.Commands();
 
-        for (x in module.commands) {
-            addCommand(module.commands[x]);
+            for (x in module.commands) {
+                addCommand(module.commands[x]);
+            }
         }
     }
 
-    module.source = source;
+    module.source = source || {};
     module.commandModule = commandModule;
 
     include.modules[FileName] = module;
@@ -479,7 +481,7 @@ include.get = function (FileName, Method) {
  * @return {String} Content of URL + Branch + / + FilePath
  */
 download = function (FileName, FilePath, ForceDownload, Synchronously) {
-    var filePath = FileName.split(/\/|\\/);
+    var filePath = [].concat(FileName.split(/\/|\\/));
 
     if (sys.getFileContent(FileName) && !ForceDownload) {
         return "";
@@ -487,7 +489,10 @@ download = function (FileName, FilePath, ForceDownload, Synchronously) {
 
     if (filePath.length !== 1) {
         /* Creates the directories if they do not yet exist */
-        sys.makeDir(filePath.splice(filePath.length - 1).join("/"));
+        delete filePath[filePath.length - 1];
+        sys.makeDir(filePath.filter(function (value, index, array) {
+            return !(value === "")
+        }).join("/"));
     }
 
     if (Synchronously) {
@@ -591,14 +596,14 @@ callResult = function (hook_name, hook_args) {
     for (module in Modules) {
         current = Modules[module];
 
-        download(current, "scripts/" + current, OverwriteModules, true);
+        download(current, current, OverwriteModules, true);
         include(current, null, OverwriteModules);
     }
 
     for (command in CommandCategories) {
         current = CommandCategories[command];
 
-        download(current, "scripts/" + current, OverwriteCommands, false);
+        download(current, current, OverwriteCommands, false);
         include(current, null, OverwriteCommands);
     }
 }());
