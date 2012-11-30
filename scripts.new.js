@@ -212,6 +212,12 @@ print = print || function (msg) {
 };
 
 /**
+ * Contains the global object
+ * @type {Object}
+ */
+GLOBAL = this;
+
+/**
  * Contains handlers
  * @namespace
  * @type {Object}
@@ -383,7 +389,7 @@ include = function (FileName, GetMethod, NoCache) {
     code = sys.getFileContent(FileName);
 
     try {
-        source = sys.eval(code);
+        source = sys.eval.call(GLOBAL, code);
     } catch (Exception) {
         sys.sendAll("Could not include module in file " + FileName + ": " + Exception + " on line " + Exception.lineNumber);
         return;
@@ -553,7 +559,7 @@ call = function (hook_name, hook_args) {
                 stop = true;
             }
         } catch (Exception) {
-            sys.sendAll('Error in module "' + current.name + '" when calling hook "' + event + '" with ' + args.length + ' arguments on line ' + Exception.lineNumber + ': ' + Exception);
+            sys.sendAll('Error in module "' + current.name + '" (' + current.file + ') when calling hook "' + event + '" with ' + args.length + ' arguments on line ' + Exception.lineNumber + ': ' + Exception);
         }
     }
 
@@ -585,7 +591,7 @@ callResult = function (hook_name, hook_args) {
                 res.push(currentRes);
             }
         } catch (Exception) {
-            sys.sendAll('Error in module "' + current.name + '" when calling hook "' + event + '" with ' + args.length + ' arguments on line ' + Exception.lineNumber + ': ' + Exception);
+            sys.sendAll('Error in module "' + current.name + '" (' + current.file + ') when calling hook "' + event + '" with ' + args.length + ' arguments on line ' + Exception.lineNumber + ': ' + Exception);
         }
     }
 
