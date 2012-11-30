@@ -488,7 +488,8 @@ include.get = function (FileName, Method) {
  * @return {String} Content of URL + Branch + / + FilePath
  */
 download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack) {
-    var filePath = [].concat(FileName.split(/\/|\\/));
+    // TODO: Scripts crash in this function. Fix.
+    var filePath = FileName.split(/\/|\\/);
 
     if (sys.getFileContent(FileName) && !ForceDownload) {
         return "";
@@ -508,7 +509,7 @@ download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack)
         sys.webCall(URL + BRANCH + "/" + FilePath, function (httpResponse) {
             sys.writeToFile(FileName, httpResponse);
 
-            if (CallBack) {
+            if (typeof CallBack === "function") {
                 CallBack();
             }
         })
