@@ -4356,7 +4356,11 @@ if(message == "Maximum Players Changed.") {
 
                     poUser.lastFuture = t + FutureLimit;
                     var Message = cut(mcmd, 1, ':');
-                    sys.callLater("script.beforeChatMessage(" + src + ", '" + Message + "', " + chan + ");", parseInt(mcmd[0]));
+                    
+                    sys.quickCall(function () {
+                        script.beforeChatMessage(src, Message, chan);
+                    }, parseInt(mcmd[0]);
+                    
                     botMessage(src, "Your message was sent " + getTimeString(mcmd[0]) + " into the future!", chan);
                 },
 
