@@ -80,7 +80,7 @@
  **/
 
 EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to count load speed! **/
-Version = "2.6.0";
+Version = "2.6.0s";
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
