@@ -145,9 +145,9 @@ BRANCH = "alpha";
  * @type {Array}
  */
 Modules = [
-    "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
-    "modules/jsession.js", "modules/users.js", "modules/channels.js", "modules/templates.js",
-    "modules/mafia.js"
+    "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js"//,
+    //"modules/jsession.js", "modules/users.js", "modules/channels.js", "modules/templates.js",
+    //"modules/mafia.js"
 ];
 
 /**
@@ -157,15 +157,15 @@ Modules = [
 
 CommandCategories = [
     /* Base for all commands - Required */
-    "commands/base.js",
+  //  "commands/base.js",
 
     /* Commands - User */
-    "commands/user/fun.js",
-    "commands/user/poll.js",
-    "commands/user/pokedex.js",
+    //"commands/user/fun.js",
+    //"commands/user/poll.js",
+    //"commands/user/pokedex.js",
 
     /* Commands - Admin */
-    "commands/admin/ify.js"
+    //"commands/admin/ify.js"
 ];
 
 /**
