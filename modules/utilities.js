@@ -11,9 +11,9 @@
  * @version 3.0.0 Alpha 1
  */
 
-if (!Bot) {
+if (typeof Bot === "undefined") {
     /**
-     * Bot configuration
+     * Bot default configuration
      * @type {Object}
      */
     Bot = {
@@ -1133,11 +1133,11 @@ util.time = {
 
 /**
  * Creates an enum
- * @param {util.enum|String|Array} [flags] Enum to copy flags from, a single flag, or an array of flags
+ * @param {util.Enum|String|Array} [flags] Enum to copy flags from, a single flag, or an array of flags
  * @constructor
  * @return {Object} this
  */
-util.enum = function (flags) {
+util.Enum = function (flags) {
     /**
      * To count flags
      * @private
@@ -1162,6 +1162,7 @@ util.enum = function (flags) {
     } else if (Array.isArray(flags)) {
         this.addFlags(flags);
     }
+    return this;
 };
 
 /**
@@ -1169,7 +1170,7 @@ util.enum = function (flags) {
  * @return {String} [class Enum]
  */
 
-util.enum.prototype.toString = function () {
+util.Enum.prototype.toString = function () {
     return "[class Enum]";
 };
 
@@ -1179,7 +1180,7 @@ util.enum.prototype.toString = function () {
  * @return {Object} this
  */
 
-util.enum.prototype.addFlag = function (flag) {
+util.Enum.prototype.addFlag = function (flag) {
     if (this.flags.has(flag)) {
         return this;
     }
@@ -1195,7 +1196,7 @@ util.enum.prototype.addFlag = function (flag) {
  * @param {Array} flags Flags to add
  * @return {Object} this
  */
-util.enum.prototype.addFlags = function (flags) {
+util.Enum.prototype.addFlags = function (flags) {
     flags.forEach(function (value, index, array) {
         this.addFlag(value);
     });
@@ -1208,16 +1209,16 @@ util.enum.prototype.addFlags = function (flags) {
  * @param {String} name The flag's name
  * @return {Number} Number of this flag to use with Mask
  */
-util.enum.prototype.flag = function (name) {
+util.Enum.prototype.flag = function (name) {
     return this.flags[name] || 0;
 };
 
 /**
  * Creates a Mask for flags
- * @param {util.mask|Number|Array|util.enum} [flags] Mask to copy flags from, a number, an array of flags, or an enum
+ * @param {util.Mask|Number|Array|util.Enum} [flags] Mask to copy flags from, a number, an array of flags, or an enum
  * @constructor
  */
-util.mask = function (flags) {
+util.Mask = function (flags) {
     this.flags = 0;
 
     if (!flags) {
@@ -1241,7 +1242,7 @@ util.mask = function (flags) {
  * toString implementation for Mask
  * @return {String} [class Mask]
  */
-util.mask.prototype.toString = function () {
+util.Mask.prototype.toString = function () {
     return "[class Mask]";
 };
 
@@ -1251,7 +1252,7 @@ util.mask.prototype.toString = function () {
  * @return {Object} this
  */
 
-util.mask.prototype.addFlag = function (flag) {
+util.Mask.prototype.addFlag = function (flag) {
     this.flags |= flag;
 
     return this;
@@ -1262,7 +1263,7 @@ util.mask.prototype.addFlag = function (flag) {
  * @param {Array|Object} flags Flags to add
  */
 
-util.mask.prototype.addFlags = function (flags) {
+util.Mask.prototype.addFlags = function (flags) {
     var x;
     for (x in flags) {
         this.flags |= flags[x];
@@ -1277,7 +1278,7 @@ util.mask.prototype.addFlags = function (flags) {
  * @return {Object} this
  */
 
-util.mask.prototype.removeFlag = function (flag) {
+util.Mask.prototype.removeFlag = function (flag) {
     this.flags &= ~flag;
 
     return this;
@@ -1288,7 +1289,7 @@ util.mask.prototype.removeFlag = function (flag) {
  * @param {Array|Object} flags Flags to add
  * @return {Object} this
  */
-util.mask.prototype.removeFlags = function (flags) {
+util.Mask.prototype.removeFlags = function (flags) {
     var x;
     for (x in flags) {
         this.flags &= ~flags[x];
@@ -1302,22 +1303,22 @@ util.mask.prototype.removeFlags = function (flags) {
  * @param {Number} flag Flag to check
  * @return {Boolean} If this mask has that flag
  */
-util.mask.prototype.hasFlag = function (flag) {
+util.Mask.prototype.hasFlag = function (flag) {
     return !!this.flags & flag;
 };
 
 /**
  * If this mask has those flags
- * @param {util.mask|Object|Number|util.enum} flags Flags to check (Object, Number, or Enum as flags will be passed to new Mask)
+ * @param {util.Mask|Object|Number|util.Enum} flags Flags to check (Object, Number, or Enum as flags will be passed to new Mask)
  * @return {Boolean} If this mask has those flags
  */
-util.mask.prototype.hasFlags = function (flags) {
+util.Mask.prototype.hasFlags = function (flags) {
     var compare_mask;
 
     if (flags.toString() === "[class Mask]") {
         compare_mask = flags.flags;
     } else {
-        compare_mask = new util.mask(flags).flags;
+        compare_mask = new util.Mask(flags).flags;
     }
 
     return !!this.flags & compare_mask;
@@ -1348,7 +1349,7 @@ util.cut = function (array, entry, join) {
  * @return {String} The variable's type
  */
 util.type = function (variable) {
-    if (variable instanceof Array) {
+    if (Array.isArray(variable)) {
         return "array";
     }
 

@@ -316,7 +316,7 @@ if (typeof JSESSION === "undefined") {
 
             this.ScriptID = undefined;
         }
-    }());
+    })();
 }
 
 /**
