@@ -29,6 +29,7 @@ if (!GLOBAL["cData"]) {
      * @type {Object}
      */
     cData = new (function () {
+        return;
         this.file = "ChannelData.json";
 
         /* Creates the file */
@@ -204,8 +205,6 @@ if (!GLOBAL["cData"]) {
 
 /* Creates old perm channels */
 (function () {
-    return;
-    
     var chanList = cData.channelData,
         x,
         c_chan,
