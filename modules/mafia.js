@@ -1,9 +1,3 @@
-/*
- Dependencies:
- * modules/utilities.js
- * modules/channels.js
- */
-
 /**
  * @fileOverview Mafia on PO
  * @author Various
@@ -12,12 +6,12 @@
 
 /* Load in an anonymous function so that it doesn't fill the global namespace */
 (function () {
-    var MAFIA_CHANNEL = sys.channel(mafiachan),
+    var MAFIA_CHANNEL = sys.channel(Channels.mafia),
         is_command = function (string) {
             return (string[0] == '/' || string[0] == '!') && string.length > 1;
         },
         sendChanAll = function (message, chan) {
-            bot.sendAll(message, chan || mafiachan);
+            Umbrella.get("util.bot").sendAll(message, chan || Channels.mafia);
         };
 
     function Mafia(mafiachan) {
@@ -42,9 +36,10 @@
         var border;
 
         /* CUSTOM */
-        util.file.create(MAFIA_SAVE_FILE, "{}");
-        util.file.create(MAFIA_LOG_FILE, "{}");
-        util.file.create(MAFIA_VILLIFIED_FILE, "{}");
+        var utilFile = Umbrella.get("util.file");
+        utilFile.create(MAFIA_SAVE_FILE, "{}");
+        utilFile.create(MAFIA_LOG_FILE, "{}");
+        utilFile.create(MAFIA_VILLIFIED_FILE, "{}");
 
         sys.makeDir("mafiathemes");
         /* END CUSTOM */
@@ -3914,7 +3909,7 @@
         };
     }
 
-    mafia = new Mafia(mafiachan);
+    mafia = new Mafia(Channels.mafia);
 })();
 
 ({
@@ -3956,43 +3951,39 @@
                 try {
                     this.tickDown();
                 } catch (err) {
-                    if (util.bot && util.error) {
-                        util.bot.sendAll("An exception has occured: " + util.error.format("", err), mafiachan);
-                    }
+                    Umbrella.get("util.bot").sendAll("An exception has occured: " + Umbrella.get("util.error").format("", err), mafiachan);
                 }
             },
             "init": function () {
-                if (util.bot) {
-                    util.bot.sendAll("Mafia was reloaded, please start a new game!", mafiachan);
-                }
+                Umbrella.get("util.bot").sendAll("Mafia was reloaded, please start a new game!", Channels.mafia);
             },
             "beforeChatMessage": function (src, message, chan, beforeCommandParsed) {
-                if (!beforeCommandParsed && chan !== 0 && chan === mafiachan && mafia.ticks > 0 && [
+                if (!beforeCommandParsed && chan !== 0 && chan === Channels.mafia && mafia.ticks > 0 && [
                     "blank", "voting", "entry"
                 ].indexOf(mafia.state) === -1 && !mafia.isInGame(sys.name(src)) && util.player && util.player.auth(src) < 1 && !mafia.isMafiaAdmin(src)) {
                     if (!((message[0] == '/' || message[0] == '!') && message.length > 1)) {
-                        sys.sendMessage(src, "±Game: The game is in progress. Please type /join to join the next mafia game.", mafiachan);
+                        sys.sendMessage(src, "±Game: The game is in progress. Please type /join to join the next mafia game.", Channels.mafia);
                         return true;
                     }
                 }
             },
             "onMessageCommand": function (command) {
                 var chan = command.chan;
-                if (chan !== 0 && chan === mafiachan && mafia.ticks > 0 && [
+                if (chan !== 0 && chan === Channels.mafia && mafia.ticks > 0 && [
                     "blank", "voting", "entry"
                 ].indexOf(mafia.state) === -1 && !mafia.isInGame(sys.name(src)) && !mafia.isMafiaAdmin(src)) {
-                    sys.sendMessage(command.src, "±Game: The game is in progress. Please type /join to join the next mafia game.", mafiachan);
+                    sys.sendMessage(command.src, "±Game: The game is in progress. Please type /join to join the next mafia game.", Channels.mafia);
                     return true;
                 }
             },
             "onCommand": function (src, message, chan, commandName, data) {
-                if (chan === mafiachan) {
+                if (chan === Channels.mafia) {
                     try {
                         mafia.handleCommand(src, message.substr(1));
                     }
                     catch (Exception) {
-                        if (Exception != "no valid command" && util && util.error && bot) {
-                            bot.sendAll(util.error.format("A mafia error has occured.", Exception), mafiachan);
+                        if (Exception != "no valid command") {
+                            Umbrella.get("util.bot").sendAll(Umbrella.get("util.error").format("A mafia error has occured.", Exception), Channels.mafia);
 
                             mafia.endGame(0);
                             if (mafia.theme.name != "default") {

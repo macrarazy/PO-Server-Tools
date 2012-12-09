@@ -7,9 +7,9 @@
  Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
  - Has no known errors
  Beta: https://github.com/TheUnknownOne/PO-Server-Tools/beta/
- - Has no obvious errors
+ - Has no obvious errors - shouldn't have any crashes
  Alpha: https://github.com/TheUnknownOne/PO-Server-Tools/alpha/
- - Has no fatal errors
+ - Has no fatal errors - can crash
  Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
  - Untested code/sandbox for all other versions
 
@@ -32,7 +32,6 @@
  - CIDArray: Array of CIDs
  - !{Type}Array: Array of with any type of variable except {Type}
  */
-
 
 /**
  * @fileOverview Primary file of TheUnknownOne's Server Script
@@ -142,7 +141,7 @@ BRANCH = "alpha";
  */
 Modules = [
     "modules/umbrella.js", "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
-    "modules/jsession.js", "modules/users.js"//, "modules/channels.js"//, "modules/templates.js",
+    "modules/jsession.js", "modules/users.js", "modules/channels.js"//, "modules/templates.js",
     //"modules/mafia.js"
 ];
 

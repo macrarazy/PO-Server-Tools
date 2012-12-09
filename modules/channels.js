@@ -40,6 +40,8 @@ if (!GLOBAL["cData"]) {
         Umbrella.get("util.file").create(this.file, "{}");
 
         this.channelData = Umbrella.get("util.json").read(this.file);
+        
+        return;
 
         /**
          * Imports a JSON property
@@ -262,21 +264,21 @@ if (!GLOBAL["cData"]) {
                     user = JSESSION.users(src);
 
                 if (Config.AutoChannelJoin) {
-                    channels = [mafiachan, trivia];
+                    channels = [Channels.mafia, Channels.trivia];
 
-                    if (auth > 0 || JSESSION.channels(watch).isChanMod(src)) {
-                        channels.push(watch);
+                    if (auth > 0 || JSESSION.channels(Channels.watch).isChanMod(src)) {
+                        channels.push(Channels.watch);
                     }
 
-                    if (user.megauser || auth > 0 || JSESSION.channels(staffchannel).isChanMod(src)) {
-                        channels.push(staffchannel);
+                    if (user.megauser || auth > 0 || JSESSION.channels(Channels.staff).isChanMod(src)) {
+                        channels.push(Channels.staff);
                     }
 
-                    if (auth > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalOperators.has(user.originalName.toLowerCase())) {
-                        channels.push(scriptchannel);
+                    if (auth > 1 || JSESSION.channels(Channels.script).isChanMod(src) || DataHash.evalOperators.has(user.originalName.toLowerCase())) {
+                        channels.push(Channels.script);
                     }
-                    if (auth > 1 || JSESSION.channels(trivreview).isChanMod(src)) {
-                        channels.push(trivreview);
+                    if (auth > 1 || JSESSION.channels(Channels.trivreview).isChanMod(src)) {
+                        channels.push(Channels.trivreview);
                     }
 
                     Umbrella.get("util.channel").putIn(src, channels);
