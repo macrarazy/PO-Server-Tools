@@ -13,13 +13,13 @@
  * @version 3.0.0 Alpha 1
  */
 
-if (typeof JSESSION === "undefined") {
+if (!GLOBAL["JSESSION"]) {
     /**
      * JSESSION
      * @class
      * @type {Function}
      */
-    JSESSION = function () {
+    JSESSION = (function () {
         /**
          * Contains data for users
          * @type {Object}
@@ -316,7 +316,7 @@ if (typeof JSESSION === "undefined") {
 
             this.ScriptID = undefined;
         }
-    }();
+    })();
 }
 
 /**
@@ -634,9 +634,6 @@ POChannel.prototype.isChanOwner = function (src) {
 POGlobal = function () {
     this.mafiaVersion = "";
 };
-
-print(typeof JSESSION);
-print(typeof JSESSION.identifyScriptAs);
 
 JSESSION.identifyScriptAs("TheUnknownOne's Server Script (version " + SCRIPT_VERSION + ")");
 JSESSION.registerUser(POUser);
