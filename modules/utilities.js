@@ -648,7 +648,9 @@ Umbrella.create("util.channel", {
      */
     create: function (name) {
         if (!sys.existChannel(name)) {
-            sys.createChannel(name);
+            sys.callQuickly(function () {
+                sys.createChannel(name);
+            }, 0);
         }
 
         return Umbrella.get("util.channel").id(name);
