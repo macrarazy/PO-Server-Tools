@@ -228,9 +228,9 @@ if (!GLOBAL["cData"]) {
         }
     }
 
-    for (x in Channels) {
-        cData.loadFor(Channels[x]);
-    }
+    //for (x in Channels) {
+      //  cData.loadFor(Channels[x]);
+    //}
 }());
 
 ({
