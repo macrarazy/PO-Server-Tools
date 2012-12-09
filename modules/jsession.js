@@ -19,7 +19,7 @@ if (!GLOBAL["JSESSION"]) {
      * @class
      * @type {Function}
      */
-    JSESSION = (function () {
+    JSESSION = new (function () {
         /**
          * Contains data for users
          * @type {Object}
@@ -316,10 +316,8 @@ if (!GLOBAL["JSESSION"]) {
 
             this.ScriptID = undefined;
         }
-    });
+    })();
 }
-
-JSESSION = new JSESSION();
 
 /**
  * Function used as user data initializer
