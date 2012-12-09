@@ -14,7 +14,6 @@
  */
 
 if (typeof JSESSION === "undefined") {
-    var JSESSION;
     /**
      * JSESSION
      * @class
@@ -635,6 +634,9 @@ POChannel.prototype.isChanOwner = function (src) {
 POGlobal = function () {
     this.mafiaVersion = "";
 };
+
+print(typeof JSESSION);
+print(typeof JSESSION.identifyScriptAs);
 
 JSESSION.identifyScriptAs("TheUnknownOne's Server Script (version " + SCRIPT_VERSION + ")");
 JSESSION.registerUser(POUser);
