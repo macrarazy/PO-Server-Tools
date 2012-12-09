@@ -19,6 +19,8 @@ Channels = {
     Channels.ids = [];
     
     for (x in Channels) {
+        Channels[x] = channel.id(Channels[x]);
+        
         Channels.ids.push(Channels[x]);
     }
 }());
@@ -259,7 +261,7 @@ if (!GLOBAL["cData"]) {
             "afterLogIn": function (src) {
                 var channels,
                     auth = Umbrella.get("util.player").auth(src),
-                    user = JSESSION.users(src);
+                    user = JSESSION.users(src) || {originalName: "", megauser: false};
 
                 if (Config.AutoChannelJoin) {
                     channels = [Channels.mafia, Channels.trivia];

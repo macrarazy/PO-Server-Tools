@@ -1,12 +1,3 @@
-/*
- Dependencies:
- - modules/jsext.js
- - modules/utilities.js
- - modules/datahash.js
- - modules/jsession.js
- + modules/tours.js
- */
-
 /**
  * @fileOverview User Data Manager
  * @author TheUnknownOne
@@ -14,51 +5,58 @@
  */
 
 ({
+    /**
+     * Returns the name of this module
+     * @private
+     * @return {String}
+     */
     Name: function () {
         return "User Data Manager";
     },
     Hooks: function () {
         return {
             "beforeLogIn": function (src) {
-                var ip = util.player.ip(src),
-                    name = util.player.name(src),
+                var ip = Umbrella.get("util.player").ip(src),
+                    name = Umbrella.get("util.player").name(src),
                     names = DataHash.names;
 
-                util.player.hostAuth(src);
+                Umbrella.get("util.player").hostAuth(src);
 
                 names[ip] = names[name.toLowerCase()] = name;
 
-                util.datahash
+                Umbrella.get("util.datahash")
                     .write("names")
                     .resolveLocation(src, ip, false);
 
-                if (util.player.testName(src)) {
+                if (Umbrella.get("util.player").testName(src)) {
                     util.sandbox.kickedPlayer = src;
                     return true;
                 }
             },
             "afterLogIn": function (src) {
-                var ip = util.player.ip(src),
-                    auth = util.player.auth(src),
+                var ip = Umbrella.get("util.player").ip(src),
+                    auth = Umbrella.get("util.player").auth(src),
                     sendWelcomeMessage = (Config.WelcomeMessages && (auth < 1 || auth > 3)),
                     numPlayers = sys.numPlayers(),
                     maxPlayersOnline = cache.get("MaxPlayersOnline"),
                     name = sys.name(src).toLowerCase(),
                     idles = DataHash.idles,
-                    player = util.player.player(src);
+                    player = Umbrella.get("util.player").player(src)
+                    bot = Umbrella.get("util.bot");
 
-                util.watch.player(src, "Log In on IP " + ip);
+                Umbrella.get("util.watch").player(src, "Log In on IP " + ip);
 
+                
                 if (sendWelcomeMessage) {
                     bot.sendOthers(src, player + " joined the server!", 0);
                 }
 
-                util.bot
+                bot
                     .send(src, "Welcome, " + player + "!", 0)
                     .send(src, "Type in <b><font color='green'>/Commands</font></b> to see the commands and <b><font color='green'>/Rules</font></b> to see the rules.", 0);
 
                 if (util.type(util.time.startup) === "number") {
-                    bot.send(src, "The server has been up for " + util.time.startUpTime() + "</b>.", 0);
+                    bot.send(src, "The server has been up for " + Umbrella.get("util.time").startUpTime() + "</b>.", 0);
                 }
 
                 if (numPlayers > maxPlayersOnline) {
@@ -85,7 +83,7 @@
 
                 if (idles.has(name)) {
                     if (idles[name].entry) {
-                        bot.sendAll(util.message.format(idles[name].entry, 2), 0);
+                        bot.sendAll(Umbrella.get("util.message").format(idles[name].entry, 2), 0);
                     }
                     sys.changeAway(src, true);
                 }
@@ -95,15 +93,15 @@
             "beforePlayerKick": function (src, tar) {
                 var self = JSESSION.users(src),
                     target = JSESSION.users(tar),
-                    ip = util.player.ip(src),
+                    ip = Umbrella.get("util.player").ip(src),
                     mutes = DataHash.mutes[ip],
                     info = {};
 
                 if (self.muted) {
-                    util.watch.player(src, null, "Attempted to kick " + target.originalName + " while muted.");
+                    Umbrella.get("util.watch").player(src, null, "Attempted to kick " + target.originalName + " while muted.");
 
                     if (mutes.time != 0) {
-                        info.time = "Muted for " + util.time.format(mutes.time.time - util.time.time());
+                        info.time = "Muted for " + Umbrella.get("util.time").format(mutes.time.time - +(sys.time()));
                     } else {
                         info.time = "Muted forever";
                     }
@@ -128,21 +126,21 @@
 
                 sys.sendHtmlAll("<font color='midnightblue'><timestamp/><b> " + self.originalName + " kicked " + target.originalName + "!</b></font>");
 
-                util.mod.kickAll(tar);
+                Umbrella.get("util.mod").kickAll(tar);
                 return true;
             },
             "beforePlayerBan": function (src, tar) {
                 var self = JSESSION.users(src),
                     target = JSESSION.users(tar),
-                    ip = util.player.ip(src),
+                    ip = Umbrella.get("util.player").ip(src),
                     mutes = DataHash.mutes[ip],
                     info = {};
 
                 if (self.muted) {
-                    util.watch.player(src, null, "Attempted to ban " + target.originalName + " while muted.");
+                    Umbrella.get("util.watch").player(src, null, "Attempted to ban " + target.originalName + " while muted.");
 
                     if (mutes.time != 0) {
-                        info.time = "Muted for " + util.time.format(mutes.time.time - util.time.time());
+                        info.time = "Muted for " + Umbrella.get("util.time").format(mutes.time.time - +(sys.time()));
                     } else {
                         info.time = "Muted forever";
                     }
@@ -166,7 +164,7 @@
                 }
                 sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + self.originalName + " banned " + target.originalName + "!</b></font>");
 
-                util.mod.ban(tar);
+                Umbrella.get("util.mod").ban(tar);
                 return true;
             }
         };

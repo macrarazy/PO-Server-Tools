@@ -642,18 +642,18 @@ Umbrella.create("util.channel", {
         return sys.channel(Umbrella.get("util.channel").id(id)) || "";
     },
     /**
-     * Creates a channel or returns its id
+     * Creates a channel
      * @param {String} name Channel name
-     * @return {Number} Id of the channel
+     * @return {Name} The channel's name
      */
     create: function (name) {
         if (!sys.existChannel(name)) {
-            sys.quickCall(function () {
+            sys.setTimer(function () {
                 sys.createChannel(name);
-            }, 1);
+            }, 0, false);
         }
 
-        return Umbrella.get("util.channel").id(name);
+        return name;
     },
     /**
      * Returns a click-able link in the client to join (channel)

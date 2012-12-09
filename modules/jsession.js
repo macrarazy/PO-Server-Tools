@@ -327,6 +327,7 @@ POUser = function (id) {
 
     this.ip = player.ip(id);
     this.name = name;
+    this.originalName = name;
 
     this.id = id;
     this.lastChallenge = 0;
@@ -341,16 +342,16 @@ POUser = function (id) {
 
     this.isAutoAFK = false;
     this.muted = DataHash.mutes.has(this.ip);
-    this.megauser = DataHash.megausers.has(nameToLower); // TODO: DataHash.megausers, .voices, .macros
-    this.voice = DataHash.voices.has(nameToLower);
+    this.megauser = false; //DataHash.megausers.has(nameToLower); // TODO: DataHash.megausers, .voices, .macros
+    this.voice = false;//DataHash.voices.has(nameToLower);
 
     if (DataHash.rankicons.has(nameToLower)) {
         this.icon = DataHash.rankicons[mn_lc]
     }
 
-    if (DataHash.macros.has(nameToLower)) {
-        this.macro = DataHash.macros[nameToLower];
-    }
+    //if (DataHash.macros.has(nameToLower)) {
+        //this.macro = DataHash.macros[nameToLower];
+    //}
 
     /*
      Unused: this.lastMsg = 0;
