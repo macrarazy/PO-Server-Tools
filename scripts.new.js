@@ -639,6 +639,10 @@ callResult = function (hook_name, hook_args) {
 
             sys.writeToFile("server.lck", "");
         }
+        
+        if (message.indexOf(">>") !== -1) {
+            print(eval(message.substring(2)));
+        }
     },
     /**
      * After a message is outputted in the console
