@@ -650,7 +650,7 @@ Umbrella.create("util.channel", {
         if (!sys.existChannel(name)) {
             sys.quickCall(function () {
                 sys.createChannel(name);
-            }, 0);
+            }, 1);
         }
 
         return Umbrella.get("util.channel").id(name);
