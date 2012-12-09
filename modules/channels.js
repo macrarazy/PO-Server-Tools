@@ -28,7 +28,7 @@ if (!GLOBAL["cData"]) {
      * @class
      * @type {Object}
      */
-    cData = (function () {
+    cData = new (function () {
         this.file = "ChannelData.json";
 
         /* Creates the file */
