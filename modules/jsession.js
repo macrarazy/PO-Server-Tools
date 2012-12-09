@@ -114,7 +114,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Undefined|Object} Undefined if no user function is registered or if the player doesn't exist, or their player object
          */
         this.users = function (id) {
-            id = util.player.id(id);
+            id = Umbrella.get("util.player").id(id);
 
             if (!this.UsesUser || !this.UserData.has(id)) {
                 return undefined;
@@ -129,7 +129,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Undefined|Object} Undefined if no channel function is registered or if the channel doesn't exist, or its channel object
          */
         this.channels = function (id) {
-            id = util.channel.id(id);
+            id = Umbrella.get("util.channel").id(id);
 
             if (!this.UsesChannel || !this.ChannelData.has(id)) {
                 return undefined;
@@ -209,7 +209,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.createUser = function (id) {
-            id = util.player.id(id);
+            id = Umbrella.get("util.player").id(id);
 
             if (!this.UsesUser || this.UserData.has(id) || !sys.loggedIn(id)) {
                 return false;
@@ -225,7 +225,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.removeUser = function (id) {
-            id = util.player.id(id);
+            id = Umbrella.get("util.player").id(id);
 
             if (!this.UsesUser || !this.UserData.has(id) || !sys.loggedIn(id)) {
                 return false;
@@ -241,7 +241,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.createChannel = function (id) {
-            id = util.channel.id(id);
+            id = Umbrella.get("util.channel").id(id);
 
             if (!this.UsesChannel || !this.ChannelData.has(id) || !sys.channel(id)) {
                 return false;
@@ -257,7 +257,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.removeChannel = function (id) {
-            id = util.channel.id(id);
+            id = Umbrella.get("util.channel").id(id);
 
             if (!this.UsesChannel || id === 0 || !this.ChannelData.has(id)) {
                 return false;
@@ -273,7 +273,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.hasUser = function (src) {
-            return this.UserData.has(util.player.id(src));
+            return this.UserData.has(Umbrella.get("util.player").id(src));
         };
 
         /**
@@ -282,7 +282,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.hasChannel = function (channel) {
-            return this.ChannelData.has(util.channel.id(channel));
+            return this.ChannelData.has(Umbrella.get("util.channel").id(channel));
         };
 
         /**
@@ -323,7 +323,7 @@ POUser = function (id) {
     
     id = player.id(id),
         name = player.name(id),
-        nameToLower = toLowerCase();
+        nameToLower = name.toLowerCase();
 
     this.ip = player.ip(id);
     this.name = name;
