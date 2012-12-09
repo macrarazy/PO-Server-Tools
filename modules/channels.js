@@ -21,7 +21,6 @@ scriptchannel = util.channel.create("Eval Area");
 
 Channels = [0, mafiachan, trivia, trivreview, watch, staffchannel, scriptchannel];
 
-
 if (!GLOBAL["cData"]) {
     /**
      * Channel Data Manager
@@ -29,7 +28,6 @@ if (!GLOBAL["cData"]) {
      * @type {Object}
      */
     cData = new (function () {
-        return;
         this.file = "ChannelData.json";
 
         /* Creates the file */
@@ -244,13 +242,13 @@ if (!GLOBAL["cData"]) {
     Hooks: function () {
         return {
             "afterChannelCreated": function (chan, name, src) {
-                cData.loadFor(chan);
+                //cData.loadFor(chan);
             },
             "beforeChannelDestroyed": function (chan) {
-                return Channels.has(chan) || JSESSION.channels(chan).perm;
+                //return Channels.has(chan) || JSESSION.channels(chan).perm;
             },
             "afterChannelDestroyed": function (chan) {
-                util.watch.channel(chan, "Destroyed");
+                //util.watch.channel(chan, "Destroyed");
             },
             "afterLogIn": function (src) {
                 var channels,
@@ -275,11 +273,11 @@ if (!GLOBAL["cData"]) {
                         channels.push(trivreview);
                     }
 
-                    util.channel.putIn(src, channels);
+                    //util.channel.putIn(src, channels);
                 }
             },
             "warning": function (from, warning) {
-                bot.sendAll("Script Warning (can safely be ignored) received from " + from + ": " + warning, watch);
+                //bot.sendAll("Script Warning (can safely be ignored) received from " + from + ": " + warning, watch);
             },
             "switchError": function (newScript) {
                 bot.sendAll("Automatically recovered from a fatal exception. Error: " + util.error.format(newScript), watch);
