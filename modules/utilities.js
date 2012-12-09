@@ -404,6 +404,8 @@ util.channel = {
      * @return {Number} Id of the channel
      */
     create: function (name) {
+        return;
+        
         if (!sys.existChannel(name)) {
             return sys.createChannel(name);
         }

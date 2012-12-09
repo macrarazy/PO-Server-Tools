@@ -11,7 +11,7 @@
  * @author TheUnknownOne
  * @version 3.0.0 Alpha 1
  */
-/*
+
 mafiachan = util.channel.create("Mafia Channel");
 trivia = util.channel.create("Trivia");
 trivreview = util.channel.create("Trivia Review");
@@ -20,9 +20,9 @@ staffchannel = util.channel.create("Staff Channel");
 scriptchannel = util.channel.create("Eval Area");
 
 Channels = [0, mafiachan, trivia, trivreview, watch, staffchannel, scriptchannel];
-*/
 
-if (!cData) {
+
+if (!GLOBAL["cData"]) {
     /**
      * Channel Data Manager
      * @class
