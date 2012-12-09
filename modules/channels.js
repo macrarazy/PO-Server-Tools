@@ -40,8 +40,6 @@ if (!GLOBAL["cData"]) {
         Umbrella.get("util.file").create(this.file, "{}");
 
         this.channelData = Umbrella.get("util.json").read(this.file);
-        
-        return;
 
         /**
          * Imports a JSON property
