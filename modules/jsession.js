@@ -13,7 +13,7 @@
  * @version 3.0.0 Alpha 1
  */
 
-if (!GLOBAL["JSESSION"]) {
+//if (!GLOBAL["JSESSION"]) {
     /**
      * JSESSION
      * @class
@@ -317,7 +317,7 @@ if (!GLOBAL["JSESSION"]) {
             this.ScriptID = undefined;
         }
     })();
-}
+//}
 
 /**
  * Function used as user data initializer
