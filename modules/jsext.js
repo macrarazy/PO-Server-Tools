@@ -1,8 +1,3 @@
-/*
- Dependencies:
- - modules/datahash.js
- */
-
 /**
  * @fileOverview Extends default JavaScript prototypes
  * @author TheUnknownOne
@@ -91,7 +86,7 @@ defineOn(String.prototype, {
     },
     /**
      * Returns the proper cased name of a string (player name). Requires datahash.js
-     * @return {String} The string if modules/datahash.js isn't loaded or the proper capitalized
+     * @return {String} The same string if modules/datahash.js isn't loaded or the proper capitalized version if it is and the player exists in it
      */
     name: function () {
         var str = this,

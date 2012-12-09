@@ -136,22 +136,25 @@ BRANCH = "alpha";
 
 /**
  * Modules to load
+ * All of the "default" modules depend on each other. Removing any of these isn't recommended as it might break the script.
+ * Changing the order isn't a smart thing to do either.
  * @type {Array}
  */
 Modules = [
-    "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
-    "modules/jsession.js", "modules/users.js"//, "modules/channels.js"//, "modules/templates.js",
+    "modules/umbrella.js", "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
+    "modules/jsession.js", "modules/users.js", "modules/channels.js"//, "modules/templates.js",
     //"modules/mafia.js"
 ];
 
 /**
  * Command categories to load
  * @type {Array}
+ * @note commands/base.js is required
  */
 
 CommandCategories = [
     /* Base for all commands - Required */
-  //  "commands/base.js",
+    //"commands/base.js",
 
     /* Commands - User */
     //"commands/user/fun.js",

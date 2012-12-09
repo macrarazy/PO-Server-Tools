@@ -1,12 +1,3 @@
-/*
- Dependencies:
- - modules/jsext.js
- - modules/utilities.js
- - modules/datahash.js
- + modules/channels.js
- + modules/tours.js
- */
-
 /**
  * @fileOverview SESSION for JavaScript.
  * @author TheUnknownOne
@@ -328,11 +319,13 @@ POUser = function (id) {
     var name,
         nameToLower;
 
-    id = util.player.id(id),
-        name = util.player.name(id),
-        nameToLower = name.toLowerCase();
+    Umbrella.get("util.player", "player");
+    
+    id = player.id(id),
+        name = player.name(id),
+        nameToLower = toLowerCase();
 
-    this.ip = util.player.ip(id);
+    this.ip = player.ip(id);
     this.name = name;
 
     this.id = id;
@@ -348,7 +341,7 @@ POUser = function (id) {
 
     this.isAutoAFK = false;
     this.muted = DataHash.mutes.has(this.ip);
-    this.megauser = DataHash.megausers.has(nameToLower);
+    this.megauser = DataHash.megausers.has(nameToLower); // TODO: DataHash.megausers, .voices, .macros
     this.voice = DataHash.voices.has(nameToLower);
 
     if (DataHash.rankicons.has(nameToLower)) {
@@ -363,13 +356,15 @@ POUser = function (id) {
      Unused: this.lastMsg = 0;
      Unused: this.loginTime = date;
      */
+    
+    Umbrella.unload();
 };
 
 /**
  * Adds +1 flood count to this player if they are not auth
  */
 POUser.prototype.addFlood = function () {
-    if (util.player.auth(this.id) < 0) {
+    if (Umbrella.get("util.player").auth(this.id) < 0) {
         this.floodCount++;
         sys.callLater('JSESSION.users(' + this.id + ').floodCount--', 6);
     }
@@ -383,17 +378,20 @@ POUser.prototype.addFlood = function () {
  */
 POUser.prototype.capsMute = function (message, channel) {
     var newCapsAmount = 0,
-        x, time = sys.time() * 1 + (60 * 5);
+        x, 
+        time = +(sys.time()) + (60 * 5);
 
-    channel = util.channel.id(channel);
+    channel = Umbrella.get("util.channel").id(channel);
 
     // TODO: AutoMute command
     if (Settings.has("AutoMute") && !Settings.AutoMute) {
         return false;
     }
 
+    Umbrella.load(["util.message", "util.watch", "util.bot"], ["utilMessage", "watch", "bot"]);
+    
     for (x in message) {
-        if (util.message.caps(message[x])) {
+        if (utilMessage.caps(message[x])) {
             newCapsAmount += 1;
         }
         else {
@@ -407,7 +405,7 @@ POUser.prototype.capsMute = function (message, channel) {
     this.caps = newCapsAmount;
 
     if (this.caps >= 70) {
-        util.watch.player(this.id, message, "CAPS Mute Message", channel);
+        watch.player(this.id, message, "CAPS Mute Message", channel);
         bot.sendAll(util.player.player(this.id) + " was muted for 5 minutes by " + Bot.bot + ".", channel);
         bot.sendAll("Reason: Spamming caps.", channel);
 
@@ -418,12 +416,14 @@ POUser.prototype.capsMute = function (message, channel) {
             time: time
         };
 
-        util.datahash.write("mutes");
+        Umbrella.get("util.datahash").write("mutes");
 
         this.caps = 0;
         this.muted = true;
         return true;
     }
+    
+    Umbrella.unload();
 
     return false;
 };
@@ -434,6 +434,8 @@ POUser.prototype.capsMute = function (message, channel) {
  * @constructor
  */
 POChannel = function (id) {
+    var x;
+    
     this.name = sys.channel(id);
     this.id = id;
 
@@ -443,8 +445,13 @@ POChannel = function (id) {
 
     this.perm = false;
 
-    if (Channels && Channels.has(id)) {
-        this.perm = true;
+    if (typeof Channels !== "undefined" && util.type(Channels) === "object") {
+        for (x in Channels) {
+            if (Channels[x] === id) {
+                this.perm = true;
+                break;
+            }
+        }
     }
 
     // TODO: Add tours
@@ -468,7 +475,7 @@ POChannel = function (id) {
  * @param {Boolean} [add=false] If tourAuth will be given, or taken
  */
 POChannel.prototype.manageTourAuth = function (name, add) {
-    var toLower = util.player.name(name).toLowerCase();
+    var toLower = Umbrella.get("util.player").name(name).toLowerCase();
 
     if (add) {
         if (this.tourAuth.has(toLower)) {
@@ -543,7 +550,7 @@ POChannel.prototype.manageTourAuth = function (name, add) {
  * @param {Number} auth The auth level to give
  */
 POChannel.prototype.changeAuth = function (name, auth) {
-    name = util.player.name(name);
+    name = Umbrella.get("util.player").name(name);
 
     if (auth.isNegative() && this.chanAuth.has(name.toLowerCase())) {
         delete this.chanAuth[name];
@@ -563,19 +570,21 @@ POChannel.prototype.changeAuth = function (name, auth) {
  * @return {Boolean} If (src) can channel ban/mute (tar)
  */
 POChannel.prototype.canIssue = function (src, tar) {
-    var self, target;
+    var self, 
+        target,
+        player = Umbrella.get("util.player");
 
-    src = util.player.id(src);
-    tar = util.player.id(tar);
+    src = player.id(src);
+    tar = player.id(tar);
 
-    if (util.player.ip(src) === undefined || util.player.ip(tar) === undefined) {
+    if (player.ip(src) === undefined || player.ip(tar) === undefined) {
         return false;
     }
 
-    self = util.player.name(src),
-        target = util.player.name(tar);
+    self = player.name(src),
+        target = player.name(tar);
 
-    if (util.player.auth(tar) >= util.player.auth(src) || this.chanAuth[target] >= this.chanAuth[self] && !this.isChanOwner(src)) {
+    if (player.auth(tar) >= player.auth(src) || this.chanAuth[target] >= this.chanAuth[self] && !this.isChanOwner(src)) {
         return false;
     }
 
@@ -606,7 +615,9 @@ POChannel.prototype.isMuted = function (ip) {
  * @return {Boolean}
  */
 POChannel.prototype.isChanMod = function (src) {
-    return this.chanAuth[util.player.name(src)] >= 1 || util.player.auth(src) >= 1;
+    var player = Umbrella.get("util.player");
+    
+    return this.chanAuth[player.name(src)] >= 1 || player.auth(src) >= 1;
 };
 
 /**
@@ -615,7 +626,9 @@ POChannel.prototype.isChanMod = function (src) {
  * @return {Boolean}
  */
 POChannel.prototype.isChanAdmin = function (src) {
-    return this.chanAuth[util.player.name(src)] >= 2 || util.player.auth(src) >= 2;
+    var player = Umbrella.get("util.player");
+
+    return this.chanAuth[player.name(src)] >= 2 || player.auth(src) >= 2;
 };
 
 /**
@@ -624,7 +637,9 @@ POChannel.prototype.isChanAdmin = function (src) {
  * @return {Boolean}
  */
 POChannel.prototype.isChanOwner = function (src) {
-    return this.chanAuth[util.player.name(src)] >= 3 || util.player.auth(src) >= 3;
+    var player = Umbrella.get("util.player");
+
+    return this.chanAuth[player.name(src)] >= 3 || player.auth(src) >= 3;
 };
 
 /**
@@ -674,25 +689,26 @@ JSESSION.refill();
                     tar = commandInfo.target,
                     tarName = sys.name(tar),
                     chan = commandInfo.chan,
-                    chanName = sys.channel(chan);
+                    chanName = sys.channel(chan).
+                    player = Umbrella.get("util.player");
 
                 return {
                     self: {
                         name: selfName,
                         nameLower: selfName.toLowerCase(),
-                        player: util.player.player(src),
-                        auth: util.player.auth(src),
+                        player: player.player(src),
+                        auth: player.auth(src),
                         ip: sys.ip(src),
-                        isHost: util.player.host(src),
+                        isHost: player.host(src),
                         jsession: JSESSION.users(src)
                     },
                     target: {
                         name: tarName,
                         nameLower: tarName.toLowerCase(),
-                        player: util.player.player(tar),
-                        auth: util.player.auth(tar),
+                        player: player.player(tar),
+                        auth: player.auth(tar),
                         ip: sys.ip(tar),
-                        isHost: util.player.host(tar),
+                        isHost: player.host(tar),
                         jsession: JSESSION.users(tar)
                     },
                     chan: {

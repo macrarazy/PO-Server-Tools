@@ -1,9 +1,3 @@
-/*
- Dependencies:
- - modules/jsext.js
- - modules/utilities.js
- */
-
 /**
  * @fileOverview JSON cache
  * @author TheUnknownOne
@@ -17,7 +11,9 @@
  * @return {Object} this
  */
 Cache = function (file) {
-    var cacheName;
+    var cacheName,
+        file = Umbrella.get("util.file"),
+        json = Umbrella.get("util.json");
 
     /**
      * File for this cache
@@ -32,12 +28,12 @@ Cache = function (file) {
      */
     this.ensures = 0;
 
-    util.file.create(this.file, "{}");
+    file.create(this.file, "{}");
 
     try {
-        this.hash = util.json.read(this.file);
+        this.hash = json.read(this.file);
     } catch (Exception) {
-        util.json.write(file + "-corrupted.json", this.hash);
+        json.write(file + "-corrupted.json", this.hash);
 
         this.hash = {};
         this.saveAll();
@@ -49,7 +45,7 @@ Cache = function (file) {
             cacheName = "cache";
         }
 
-        print(util.error.format("Could not load " + cacheName + " from file " + this.file + "!", Exception));
+        print(Umbrella.get("util.error").format("Could not load " + cacheName + " from file " + this.file + "!", Exception));
         print("Old cache available in " + file + "-corrupted.json. Cache and " + this.file + " have been cleared.");
     }
 
@@ -143,7 +139,7 @@ Cache.prototype.reset = function () {
  * @return {Object} this
  */
 Cache.prototype.saveAll = function () {
-    util.json.write(this.file, this.hash);
+    Umbrella.get("util.json").write(this.file, this.hash);
 
     return this;
 };

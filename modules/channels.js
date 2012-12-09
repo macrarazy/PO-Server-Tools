@@ -1,25 +1,31 @@
-/*
- Dependencies:
- * modules/jsext.js
- - modules/utilities.js
- - modules/jsession.js
- - modules/datahash.js
- */
-
 /**
  * @fileOverview Contains default channels and channelData
  * @author TheUnknownOne
  * @version 3.0.0 Alpha 1
  */
 
-mafiachan = util.channel.create("Mafia Channel");
-trivia = util.channel.create("Trivia");
-trivreview = util.channel.create("Trivia Review");
-watch = util.channel.create("Watch");
-staffchannel = util.channel.create("Staff Channel");
-scriptchannel = util.channel.create("Eval Area");
+Umbrella.load("util.channel", "channel");
+Channels = {
+    mafia: channel.create("Mafia Channel"),
+    trivia: channel.create("Trivia"),
+    trivreview: channel.create("Trivia Review"),
+    watch: channel.create("Watch"),
+    staff: channel.create("Staff Channel"),
+    script: channel.create("Eval 51")
+};
 
-Channels = [0, mafiachan, trivia, trivreview, watch, staffchannel, scriptchannel];
+(function () {
+    var x;
+    Channels.ids = [];
+    
+    for (x in Channels) {
+        Channels.ids.push(Channels[x]);
+    }
+}());
+
+Umbrella.unload();
+
+// TODO: NEW STUFF
 
 if (!GLOBAL["cData"]) {
     /**
@@ -31,9 +37,9 @@ if (!GLOBAL["cData"]) {
         this.file = "ChannelData.json";
 
         /* Creates the file */
-        util.file.create(this.file, "{}");
+        Umbrella.get("util.file").create(this.file, "{}");
 
-        this.channelData = util.json.read(this.file);
+        this.channelData = Umbrella.get("util.json").read(this.file);
 
         /**
          * Imports a JSON property
@@ -93,7 +99,7 @@ if (!GLOBAL["cData"]) {
                 return this;
             }
 
-            isPerm = Channels.has(chan.id),
+            isPerm = Channels.ids.has(chan.id),
                 properties = {
                     "creator": "~Unknown~",
                     "topic": "Welcome to " + chan.name + "!",
@@ -134,9 +140,9 @@ if (!GLOBAL["cData"]) {
          * @return {Object} this
          */
         this.importFromChannel = function (id, shouldOverwrite) {
-            var name = util.channel.name(id),
+            var name = Umbrella.get("util.channel").name(id),
                 data = this.channelData,
-                chan = JSESSION.channels(util.channel.id(id)),
+                chan = JSESSION.channels(Umbrella.get("util.channel").id(id)),
                 hash = {},
                 props = [
                     "creator", "topic", "topicsetter", "perm", "private", "defaultTopic", "silence", "banlist",
@@ -194,7 +200,7 @@ if (!GLOBAL["cData"]) {
          * @return {Object} this
          */
         this.save = function () {
-            util.json.write(this.file, this.channelData);
+            Umbrella.get("util.json").write(this.file, this.channelData);
 
             return this;
         };
@@ -216,7 +222,7 @@ if (!GLOBAL["cData"]) {
                 creator_id = 0;
             }
 
-            //script.beforeChannelCreated(util.channel.create(x), x, creator_id);
+            script.beforeChannelCreated(Umbrella.get("util.channel").create(x), x, creator_id);
         }
     }
 
@@ -245,14 +251,14 @@ if (!GLOBAL["cData"]) {
                 cData.loadFor(chan);
             },
             "beforeChannelDestroyed": function (chan) {
-                return Channels.has(chan) || JSESSION.channels(chan).perm;
+                return Channels.ids.contains(chan) || JSESSION.channels(chan).perm;
             },
             "afterChannelDestroyed": function (chan) {
                 util.watch.channel(chan, "Destroyed");
             },
             "afterLogIn": function (src) {
                 var channels,
-                    auth = util.player.auth(src),
+                    auth = Umbrella.get("util.player").auth(src),
                     user = JSESSION.users(src);
 
                 if (Config.AutoChannelJoin) {
@@ -273,14 +279,14 @@ if (!GLOBAL["cData"]) {
                         channels.push(trivreview);
                     }
 
-                    util.channel.putIn(src, channels);
+                    Umbrella.get("util.channel").putIn(src, channels);
                 }
             },
             "warning": function (from, warning) {
-                bot.sendAll("Script Warning (can safely be ignored) received from " + from + ": " + warning, watch);
+                Umbrella.get("util.bot").sendAll("Script Warning (can safely be ignored) received from " + from + ": " + warning, Channels.watch);
             },
             "switchError": function (newScript) {
-                bot.sendAll("Automatically recovered from a fatal exception. Error: " + util.error.format(newScript), watch);
+                Umbrella.get("util.bot").sendAll("Automatically recovered from a fatal exception. Error: " + util.error.format(newScript), Channels.watch);
             }
         };
     }
