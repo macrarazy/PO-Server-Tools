@@ -140,7 +140,7 @@ BRANCH = "alpha";
  */
 Modules = [
     "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
-    "modules/jsession.js", "modules/users.js", "modules/channels.js"//, "modules/templates.js",
+    "modules/jsession.js", "modules/users.js"//, "modules/channels.js"//, "modules/templates.js",
     //"modules/mafia.js"
 ];
 
