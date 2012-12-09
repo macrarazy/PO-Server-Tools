@@ -66,12 +66,6 @@ Config.AutoChannelJoin = true;
 Config.WelcomeMessages = false;
 
 /**
- * Fixes some crashes caused by PO v2 but changes/breaks some features
- * @type {Boolean}
- */
-Config.NoCrash = false;
-
-/**
  * If admins can give and take auth from users and to moderators.
  * @type {Boolean}
  */
@@ -145,8 +139,8 @@ BRANCH = "alpha";
  * @type {Array}
  */
 Modules = [
-    //"modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
-    //"modules/jsession.js", "modules/users.js", "modules/channels.js", "modules/templates.js",
+    "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
+    "modules/jsession.js"//, "modules/users.js", "modules/channels.js", "modules/templates.js"//,
     //"modules/mafia.js"
 ];
 
@@ -621,13 +615,6 @@ callResult = function (hook_name, hook_args) {
         call("serverStartUp");
         call("beforeNewMessage", "Script Check: OK");
         call("afterNewMessage", "Script Check: OK");
-
-        if (sys.getFileContent("server.lck") === "") {
-            Config.NoCrash = true;
-            sys.writeToFile("server.crashed", "Delete this file to turn automatic Config.NoCrash off.");
-        } else if (sys.getFileContent("server.crashed") !== undefined) {
-            Config.NoCrash = true;
-        }
 
         sys.updateDatabase();
     },

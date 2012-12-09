@@ -14,12 +14,13 @@
  */
 
 if (typeof JSESSION === "undefined") {
+    var JSESSION;
     /**
      * JSESSION
      * @class
      * @type {Function}
      */
-    JSESSION = (function () {
+    JSESSION = function () {
         /**
          * Contains data for users
          * @type {Object}
@@ -316,7 +317,7 @@ if (typeof JSESSION === "undefined") {
 
             this.ScriptID = undefined;
         }
-    })();
+    }();
 }
 
 /**
