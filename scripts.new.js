@@ -490,7 +490,7 @@ download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack)
     if (sys.getFileContent(FileName) && !ForceDownload) {
         return "";
     }
-/*
+
     if (filePath.length !== 1) {
         /* Creates the directories if they do not yet exist */
         delete filePath[filePath.length - 1];

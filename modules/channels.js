@@ -3,7 +3,7 @@
  * @author TheUnknownOne
  * @version 3.0.0 Alpha 1
  */
-/*
+
 Umbrella.load("util.channel", "channel");
 Channels = {
     mafia: channel.create("Mafia Channel"),
@@ -24,7 +24,7 @@ Channels = {
 }());
 
 Umbrella.unload();
-*/
+
 // TODO: NEW STUFF
 
 if (!GLOBAL["cData"]) {
@@ -226,9 +226,9 @@ if (!GLOBAL["cData"]) {
         }
     }
 
-    //for (x in Channels) {
-      //  cData.loadFor(Channels[x]);
-    //}
+    for (x in Channels) {
+        cData.loadFor(Channels[x]);
+    }
 }());
 
 ({
