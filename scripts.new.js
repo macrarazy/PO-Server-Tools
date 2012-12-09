@@ -493,11 +493,11 @@ download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack)
 /*
     if (filePath.length !== 1) {
         /* Creates the directories if they do not yet exist */
-        /*delete filePath[filePath.length - 1];
+        delete filePath[filePath.length - 1];
         sys.makeDir(filePath.filter(function (value, index, array) {
             return (value !== "");
         }).join("/"));
-    }*/
+    }
 
     if (Synchronously) {
         sys.writeToFile(FileName, sys.synchronousWebCall(URL + BRANCH + "/" + FilePath));
