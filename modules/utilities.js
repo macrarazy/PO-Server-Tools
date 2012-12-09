@@ -403,14 +403,7 @@ util.channel = {
      * @param {String} name Channel name
      * @return {Number} Id of the channel
      */
-    create: function (name) {var cid;
-        if (sys.existChannel(name)) {
-            cid = sys.channelId(name);
-        } else {
-            cid = sys.createChannel(name);
-        }
-        return cid;
-        
+    create: function (name) {
         if (!sys.existChannel(name)) {
             return sys.createChannel(name);
         }

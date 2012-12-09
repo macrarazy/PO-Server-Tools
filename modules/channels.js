@@ -204,6 +204,8 @@ if (!GLOBAL["cData"]) {
 
 /* Creates old perm channels */
 (function () {
+    return;
+    
     var chanList = cData.channelData,
         x,
         c_chan,
@@ -278,7 +280,7 @@ if (!GLOBAL["cData"]) {
                 }
             },
             "warning": function (from, warning) {
-                bot.sendAll("Script Warning received from " + from + ": " + warning, watch);
+                bot.sendAll("Script Warning (can safely be ignored) received from " + from + ": " + warning, watch);
             },
             "switchError": function (newScript) {
                 bot.sendAll("Automatically recovered from a fatal exception. Error: " + util.error.format(newScript), watch);
