@@ -4,14 +4,13 @@
  * @version 3.0.0 Alpha 1
  */
 
-Umbrella.load("util.channel", "channel");
 Channels = {
-    mafia: channel.create("Mafia Channel"),
-    trivia: channel.create("Trivia"),
-    trivreview: channel.create("Trivia Review"),
-    watch: channel.create("Watch"),
-    staff: channel.create("Staff Channel"),
-    script: channel.create("Eval 51")
+    mafia: util.channel.create("Mafia Channel"),
+    trivia: util.channel.create("Trivia"),
+    trivreview: util.channel.create("Trivia Review"),
+    watch: util.channel.create("Watch"),
+    staff: util.channel.create("Staff Channel"),
+    script: util.channel.create("Eval 51")
 };
 
 (function () {
@@ -19,13 +18,11 @@ Channels = {
     Channels.ids = [];
     
     for (x in Channels) {
-        Channels[x] = channel.id(Channels[x]);
+        Channels[x] = util.channel.id(Channels[x]);
         
         Channels.ids.push(Channels[x]);
     }
 }());
-
-Umbrella.unload();
 
 // TODO: NEW STUFF
 
@@ -39,9 +36,9 @@ if (!GLOBAL["cData"]) {
         this.file = "ChannelData.json";
 
         /* Creates the file */
-        Umbrella.get("util.file").create(this.file, "{}");
+        util.file.create(this.file, "{}");
 
-        this.channelData = Umbrella.get("util.json").read(this.file);
+        this.channelData = util.json.read(this.file);
 
         /**
          * Imports a JSON property
@@ -142,9 +139,9 @@ if (!GLOBAL["cData"]) {
          * @return {Object} this
          */
         this.importFromChannel = function (id, shouldOverwrite) {
-            var name = Umbrella.get("util.channel").name(id),
+            var name = util.channel.name(id),
                 data = this.channelData,
-                chan = JSESSION.channels(Umbrella.get("util.channel").id(id)),
+                chan = JSESSION.channels(util.channel.id(id)),
                 hash = {},
                 props = [
                     "creator", "topic", "topicsetter", "perm", "private", "defaultTopic", "silence", "banlist",
@@ -202,7 +199,7 @@ if (!GLOBAL["cData"]) {
          * @return {Object} this
          */
         this.save = function () {
-            Umbrella.get("util.json").write(this.file, this.channelData);
+            util.json.write(this.file, this.channelData);
 
             return this;
         };
@@ -224,7 +221,7 @@ if (!GLOBAL["cData"]) {
                 creator_id = 0;
             }
 
-            script.beforeChannelCreated(Umbrella.get("util.channel").create(x), x, creator_id);
+            script.beforeChannelCreated(util.channel.create(x), x, creator_id);
         }
     }
 
@@ -260,7 +257,7 @@ if (!GLOBAL["cData"]) {
             },
             "afterLogIn": function (src) {
                 var channels,
-                    auth = Umbrella.get("util.player").auth(src),
+                    auth = util.player.auth(src),
                     user = JSESSION.users(src) || {originalName: "", megauser: false};
 
                 if (Config.AutoChannelJoin) {
@@ -281,14 +278,14 @@ if (!GLOBAL["cData"]) {
                         channels.push(Channels.trivreview);
                     }
 
-                    Umbrella.get("util.channel").putIn(src, channels);
+                    util.channel.putIn(src, channels);
                 }
             },
             "warning": function (from, warning) {
-                Umbrella.get("util.bot").sendAll("Script Warning (can safely be ignored) received from " + from + ": " + warning, Channels.watch);
+                bot.sendAll("Script Warning (can safely be ignored) received from " + from + ": " + warning, Channels.watch);
             },
             "switchError": function (newScript) {
-                Umbrella.get("util.bot").sendAll("Automatically recovered from a fatal exception. Error: " + util.error.format(newScript), Channels.watch);
+                bot.sendAll("Automatically recovered from a fatal exception. Error: " + util.error.format(newScript), Channels.watch);
             }
         };
     }

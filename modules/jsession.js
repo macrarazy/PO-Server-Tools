@@ -114,7 +114,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Undefined|Object} Undefined if no user function is registered or if the player doesn't exist, or their player object
          */
         this.users = function (id) {
-            id = Umbrella.get("util.player").id(id);
+            id = util.player.id(id);
 
             if (!this.UsesUser || !this.UserData.has(id)) {
                 return undefined;
@@ -129,7 +129,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Undefined|Object} Undefined if no channel function is registered or if the channel doesn't exist, or its channel object
          */
         this.channels = function (id) {
-            id = Umbrella.get("util.channel").id(id);
+            id = util.channel.id(id);
 
             if (!this.UsesChannel || !this.ChannelData.has(id)) {
                 return undefined;
@@ -209,7 +209,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.createUser = function (id) {
-            id = Umbrella.get("util.player").id(id);
+            id = util.player.id(id);
 
             if (!this.UsesUser || this.UserData.has(id) || !sys.loggedIn(id)) {
                 return false;
@@ -225,7 +225,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.removeUser = function (id) {
-            id = Umbrella.get("util.player").id(id);
+            id = util.player.id(id);
 
             if (!this.UsesUser || !this.UserData.has(id) || !sys.loggedIn(id)) {
                 return false;
@@ -241,7 +241,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.createChannel = function (id) {
-            id = Umbrella.get("util.channel").id(id);
+            id = util.channel.id(id);
 
             if (!this.UsesChannel || !this.ChannelData.has(id) || !sys.channel(id)) {
                 return false;
@@ -257,7 +257,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.removeChannel = function (id) {
-            id = Umbrella.get("util.channel").id(id);
+            id = util.channel.id(id);
 
             if (!this.UsesChannel || id === 0 || !this.ChannelData.has(id)) {
                 return false;
@@ -273,7 +273,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.hasUser = function (src) {
-            return this.UserData.has(Umbrella.get("util.player").id(src));
+            return this.UserData.has(util.player.id(src));
         };
 
         /**
@@ -282,7 +282,7 @@ if (!GLOBAL["JSESSION"]) {
          * @return {Boolean}
          */
         this.hasChannel = function (channel) {
-            return this.ChannelData.has(Umbrella.get("util.channel").id(channel));
+            return this.ChannelData.has(util.channel.id(channel));
         };
 
         /**
@@ -318,14 +318,12 @@ if (!GLOBAL["JSESSION"]) {
 POUser = function (id) {
     var name,
         nameToLower;
-
-    Umbrella.get("util.player", "player");
     
-    id = player.id(id),
-        name = player.name(id),
-        nameToLower = name.toLowerCase();
+    id = util.player.id(id);
+    name = util.player.name(id);
+    nameToLower = name.toLowerCase();
 
-    this.ip = player.ip(id);
+    this.ip = util.player.ip(id);
     this.name = name;
     this.originalName = name;
 
@@ -346,7 +344,7 @@ POUser = function (id) {
     this.voice = false;//DataHash.voices.has(nameToLower);
 
     if (DataHash.rankicons.has(nameToLower)) {
-        this.icon = DataHash.rankicons[mn_lc]
+        this.icon = DataHash.rankicons[nameToLower];
     }
 
     //if (DataHash.macros.has(nameToLower)) {
@@ -357,15 +355,13 @@ POUser = function (id) {
      Unused: this.lastMsg = 0;
      Unused: this.loginTime = date;
      */
-    
-    Umbrella.unload();
 };
 
 /**
  * Adds +1 flood count to this player if they are not auth
  */
 POUser.prototype.addFlood = function () {
-    if (Umbrella.get("util.player").auth(this.id) < 0) {
+    if (util.player.auth(this.id) < 0) {
         this.floodCount++;
         sys.callLater('JSESSION.users(' + this.id + ').floodCount--', 6);
     }
@@ -382,17 +378,15 @@ POUser.prototype.capsMute = function (message, channel) {
         x, 
         time = +(sys.time()) + (60 * 5);
 
-    channel = Umbrella.get("util.channel").id(channel);
+    channel = util.channel.id(channel);
 
     // TODO: AutoMute command
     if (Settings.has("AutoMute") && !Settings.AutoMute) {
         return false;
     }
-
-    Umbrella.load(["util.message", "util.watch", "util.bot"], ["utilMessage", "watch", "bot"]);
     
     for (x in message) {
-        if (utilMessage.caps(message[x])) {
+        if (util.message.caps(message[x])) {
             newCapsAmount += 1;
         }
         else {
@@ -406,7 +400,7 @@ POUser.prototype.capsMute = function (message, channel) {
     this.caps = newCapsAmount;
 
     if (this.caps >= 70) {
-        watch.player(this.id, message, "CAPS Mute Message", channel);
+        util.watch.player(this.id, message, "CAPS Mute Message", channel);
         bot.sendAll(util.player.player(this.id) + " was muted for 5 minutes by " + Bot.bot + ".", channel);
         bot.sendAll("Reason: Spamming caps.", channel);
 
@@ -417,14 +411,12 @@ POUser.prototype.capsMute = function (message, channel) {
             time: time
         };
 
-        Umbrella.get("util.datahash").write("mutes");
+        util.datahash.write("mutes");
 
         this.caps = 0;
         this.muted = true;
         return true;
     }
-    
-    Umbrella.unload();
 
     return false;
 };
@@ -476,7 +468,7 @@ POChannel = function (id) {
  * @param {Boolean} [add=false] If tourAuth will be given, or taken
  */
 POChannel.prototype.manageTourAuth = function (name, add) {
-    var toLower = Umbrella.get("util.player").name(name).toLowerCase();
+    var toLower = util.player.name(name).toLowerCase();
 
     if (add) {
         if (this.tourAuth.has(toLower)) {
@@ -551,7 +543,7 @@ POChannel.prototype.manageTourAuth = function (name, add) {
  * @param {Number} auth The auth level to give
  */
 POChannel.prototype.changeAuth = function (name, auth) {
-    name = Umbrella.get("util.player").name(name);
+    name = util.player.name(name);
 
     if (auth.isNegative() && this.chanAuth.has(name.toLowerCase())) {
         delete this.chanAuth[name];
@@ -573,7 +565,7 @@ POChannel.prototype.changeAuth = function (name, auth) {
 POChannel.prototype.canIssue = function (src, tar) {
     var self, 
         target,
-        player = Umbrella.get("util.player");
+        player = util.player;
 
     src = player.id(src);
     tar = player.id(tar);
@@ -582,8 +574,8 @@ POChannel.prototype.canIssue = function (src, tar) {
         return false;
     }
 
-    self = player.name(src),
-        target = player.name(tar);
+    self = player.name(src);
+    target = player.name(tar);
 
     if (player.auth(tar) >= player.auth(src) || this.chanAuth[target] >= this.chanAuth[self] && !this.isChanOwner(src)) {
         return false;
@@ -616,9 +608,7 @@ POChannel.prototype.isMuted = function (ip) {
  * @return {Boolean}
  */
 POChannel.prototype.isChanMod = function (src) {
-    var player = Umbrella.get("util.player");
-    
-    return this.chanAuth[player.name(src)] >= 1 || player.auth(src) >= 1;
+    return this.chanAuth[util.player.name(src)] >= 1 || util.player.auth(src) >= 1;
 };
 
 /**
@@ -627,9 +617,7 @@ POChannel.prototype.isChanMod = function (src) {
  * @return {Boolean}
  */
 POChannel.prototype.isChanAdmin = function (src) {
-    var player = Umbrella.get("util.player");
-
-    return this.chanAuth[player.name(src)] >= 2 || player.auth(src) >= 2;
+    return this.chanAuth[util.player.name(src)] >= 2 || util.player.auth(src) >= 2;
 };
 
 /**
@@ -638,9 +626,7 @@ POChannel.prototype.isChanAdmin = function (src) {
  * @return {Boolean}
  */
 POChannel.prototype.isChanOwner = function (src) {
-    var player = Umbrella.get("util.player");
-
-    return this.chanAuth[player.name(src)] >= 3 || player.auth(src) >= 3;
+    return this.chanAuth[util.player.name(src)] >= 3 || util.player.auth(src) >= 3;
 };
 
 /**
@@ -689,34 +675,33 @@ JSESSION.refill();
                 var selfName = sys.name(src),
                     tar = commandInfo.target,
                     tarName = sys.name(tar),
-                    chan = commandInfo.chan,
-                    chanName = sys.channel(chan).
-                    player = Umbrella.get("util.player");
+                    channel = commandInfo.chan,
+                    chanName = sys.channel(channel);
 
                 return {
                     self: {
                         name: selfName,
                         nameLower: selfName.toLowerCase(),
-                        player: player.player(src),
-                        auth: player.auth(src),
-                        ip: sys.ip(src),
-                        isHost: player.host(src),
+                        player: util.player.player(src),
+                        auth: util.player.auth(src),
+                        ip: util.player.ip(src),
+                        isHost: util.player.host(src),
                         jsession: JSESSION.users(src)
                     },
                     target: {
                         name: tarName,
                         nameLower: tarName.toLowerCase(),
                         player: player.player(tar),
-                        auth: player.auth(tar),
-                        ip: sys.ip(tar),
-                        isHost: player.host(tar),
+                        auth: util.player.auth(tar),
+                        ip: util.player.ip(tar),
+                        isHost: util.player.host(tar),
                         jsession: JSESSION.users(tar)
                     },
                     chan: {
                         name: chanName,
                         nameLower: chanName.toLowerCase(),
-                        players: sys.playersOfChannel(chan),
-                        jsession: JSESSION.channels(chan)
+                        players: sys.playersOfChannel(channel),
+                        jsession: JSESSION.channels(channel)
                     }
                 };
             }

@@ -1,10 +1,7 @@
 /*
  Umbrella - by TheUnknownOne
-
- Information is in README.md
  */
 
-Umbrella_Global = GLOBAL;
 Umbrella = (function (global) {
     var // Private/Protected Variables
         $packages = {}, // Packages
@@ -84,8 +81,8 @@ Umbrella = (function (global) {
 
         if (!name || name === true) {
             for (x in $loadedPackages) {
-                if ($loadedPackages.hasOwnProperty(x) && Umbrella_Global.hasOwnProperty(x)) {
-                    delete Umbrella_Global[x];
+                if ($loadedPackages.hasOwnProperty(x) && global.hasOwnProperty(x)) {
+                    delete global[x];
                     delete $loadedPackages[x];
                 }
             }
@@ -121,7 +118,7 @@ Umbrella = (function (global) {
 
         if (typeof packages === "string") {
             if (packageIsntLoaded) {
-                Umbrella_Global[pack] = $loadedPackages[pack] = $packages[packages];
+                global[pack] = $loadedPackages[pack] = $packages[packages];
             }
         } else {
             packages.forEach(function (value, index, array) {
@@ -131,7 +128,7 @@ Umbrella = (function (global) {
                 }
 
                 if (!!$packages[value] && !$loadedPackages[_as]) {
-                    Umbrella_Global[_as] = $loadedPackages[_as] = $packages[value];
+                    global[_as] = $loadedPackages[_as] = $packages[value];
                 }
             });
         }
@@ -167,14 +164,14 @@ Umbrella = (function (global) {
                     code = $obj2str(lastObj);
                 }
 
-                global.eval.call(null, "if(!Umbrella_Global" + nest + ") { Umbrella_Global" + nest + " = " + code + "; }");
+                global.eval.call(null, "if(!Truthy.global()" + nest + ") { Truthy.global()" + nest + " = " + code + "; }");
             });
         } catch (ignore) {
             return {};
         }
 
         try {
-            ns = global.eval.call(null, "Umbrella_Global" + nest);
+            ns = global.eval.call(null, "Truthy.global()" + nest);
         } catch (ignore) {
             return {};
         }
@@ -198,4 +195,4 @@ Umbrella = (function (global) {
         namespace: ns,
         ns: ns
     };
-}(Umbrella_Global));
+}(Truthy.global()));

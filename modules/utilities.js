@@ -228,11 +228,11 @@ util.cut = function (array, entry, join) {
         join = ":";
     }
 
-    if (!Array.isArray(array)) {
+    if (!Truthy.isArray(array)) {
         return array;
     }
 
-    return [].concat(array).splice(entry).join(join);
+    return Truthy.cloneArray(array).splice(entry).join(join);
 };
 
 /**
@@ -241,11 +241,11 @@ util.cut = function (array, entry, join) {
  * @return {String} The variable's type
  */
 util.type = function (variable) {
-    if (Array.isArray(variable)) {
+    if (Truthy.isArray(variable)) {
         return "array";
     }
 
-    if (variable === null) {
+    if (Truthy.isNull(variable)) {
         return "null";
     }
 
@@ -276,7 +276,7 @@ util.sandbox = {};
  * Player utilities
  * @type {Object}
  */
-Umbrella.create("util.player", {
+util.player = {
     /**
      * To check if a player's ip is the same as the given target's
      * @param {PID} src Player identifier
@@ -285,7 +285,7 @@ Umbrella.create("util.player", {
      * @example util.player.self(src, sys.name(src)); // true
      */
     self: function (src, tar) {
-        return Umbrella.get("util.player").ip(src) === util.player(tar);
+        return util.player.ip(src) === util.player(tar);
     },
     /**
      * Gives the player auth 3 if they are the host, their auth is 0, and they are registered.
@@ -293,17 +293,17 @@ Umbrella.create("util.player", {
      * @return {Object} this
      */
     hostAuth: function (src) {
-        var auth = Umbrella.get("util.player").auth(src);
+        var auth = util.player.auth(src);
 
         if (auth > 0 && auth < 3 || auth > 3) {
             return this;
         }
 
-        if (!Umbrella.get("util.player").host(src)) {
+        if (!util.player.host(src)) {
             return this;
         }
 
-        if (!sys.dbRegistered(Umbrella.get("util.player").name(src))) {
+        if (!sys.dbRegistered(util.player.name(src))) {
             return this;
         }
 
@@ -317,7 +317,7 @@ Umbrella.create("util.player", {
      * @return {Boolean}
      */
     host: function (src) {
-        return Umbrella.get("util.player").ip(src) === "127.0.0.1";
+        return util.player.ip(src) === "127.0.0.1";
     },
     /**
      * Returns the players "true" auth (Config.PlayerPermissions and maxAuth on ip calculated)
@@ -330,16 +330,15 @@ Umbrella.create("util.player", {
             auth,
             maxAuth;
 
-        src = Umbrella.get("util.player").id(src);
-
-        name = sys.name(src),
-            auth = sys.auth(src),
-            maxAuth = sys.maxAuth(sys.ip(src));
+        src = util.player.id(src);
+        name = sys.name(src);
+        auth = sys.auth(src);
+        maxAuth = sys.maxAuth(util.player.ip(src));
 
         if (!sys.loggedIn(src)) {
-            name = src,
-                auth = sys.dbAuth(src),
-                maxAuth = sys.maxAuth(auth);
+            name = src;
+            auth = sys.dbAuth(src);
+            maxAuth = sys.maxAuth(auth);
         }
 
         perms = perms[name];
@@ -358,7 +357,7 @@ Umbrella.create("util.player", {
      * @return {Boolean} If the player has permission to do the action
      */
     hasPermission: function (src, minAuth) {
-        return Umbrella.get("util.player").auth(src) >= minAuth;
+        return util.player.auth(src) >= minAuth;
     },
     /**
      * Formatted player name
@@ -366,7 +365,7 @@ Umbrella.create("util.player", {
      * @return {String} Formatted name
      */
     player: function (user) {
-        return "<b><font color='" + Umbrella.get("util.player").color(user) + "'>" + Umbrella.get("util.player").name(user).escapeHtml() + "</font></b>";
+        return "<b><font color='" + util.player.color(user) + "'>" + util.player.name(user).escapeHtml() + "</font></b>";
     },
     /**
      * Properly capitalizes a name or makes a name out of an Id
@@ -389,12 +388,12 @@ Umbrella.create("util.player", {
      */
     id: function (user) {
         if (typeof user === "string") {
-            return sys.id(user) || user;
+            return sys.id(user) || -1;
         } else if (sys.loggedIn(user)) {
             return user;
         }
 
-        return user;
+        return -1;
     },
     /**
      * Returns the color of a player
@@ -402,7 +401,7 @@ Umbrella.create("util.player", {
      * @return {String} The player's color
      */
     color: function (user) {
-        var src = Umbrella.get("util.player").id(user),
+        var src = util.player.id(user),
             myColor = sys.getColor(src),
             colorlist = [
                 '#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f',
@@ -420,9 +419,7 @@ Umbrella.create("util.player", {
      * @return {String|Undefined} The player's ip or undefined if they don't exist
      */
     ip: function (player) {
-        var name = Umbrella.get("util.player").name(player);
-        
-        return sys.proxyIp(name) || sys.dbIp(name);
+        return sys.proxyIp(util.player.id(player)) || sys.dbIp(util.player.name(player));
     },
     /**
      * Returns the player's pokeball image thingy
@@ -430,10 +427,10 @@ Umbrella.create("util.player", {
      * @return {String} Player status/auth image
      */
     authImage: function (name) {
-        var auth = Umbrella.get("util.player").auth(name),
+        var auth = util.player.auth(name),
             authString = "U",
             status = 'Available',
-            id = Umbrella.get("util.player").id(name);
+            id = util.player.id(name);
 
         if (!util.player.ip(name)) {
             return "<img src='Themes/Classic/Client/" + authString + "Away.png'>";
@@ -462,7 +459,7 @@ Umbrella.create("util.player", {
      * @return {String} Formatted last online date
      */
     lastOnline: function (name) {
-        var lastOnline = sys.dbLastOn(Umbrella.get("util.player").name(name));
+        var lastOnline = sys.dbLastOn(util.player.name(name));
 
         if (!lastOnline) {
             lastOnline = "Unknown";
@@ -476,13 +473,12 @@ Umbrella.create("util.player", {
      * @return {String} Formatted player info
      */
     playerInfo: function (name) {
-        var utilPlayer = Umbrella.get("util.player"),
-            id = utilPlayer.id(name),
-            auth = utilPlayer.player.auth(name),
+        var id = util.player.id(name),
+            auth = util.player.auth(name),
             status,
-            icon = utilPlayer.player.authImage(name),
-            player = utilPlayer.player.player(name),
-            lastOn = utilPlayer.player.lastOnline(name);
+            icon = util.player.authImage(name),
+            player = util.player.player(name),
+            lastOn = util.player.lastOnline(name);
 
         if (!util.player.ip(name)) {
             return icon + player + " <small style='color: red;'>Offline</small> " + lastOn;
@@ -502,8 +498,8 @@ Umbrella.create("util.player", {
      */
     testName: function (src, nomessage) {
         var name = sys.name(src),
-            ip = sys.ip(src),
-            auth = Umbrella.get("util.player").auth(src),
+            ip = util.player.ip(src),
+            auth = util.player.auth(src),
             cyrillic = /\u0408|\u03a1|\u0430|\u0410|\u0412|\u0435|\u0415|\u041c|\u041d|\u043e|\u041e|\u0440|\u0420|\u0441|\u0421|\u0422|\u0443|\u0445|\u0425|\u0456|\u0406/,
             space = /\u0009-\u000D|\u0085|\u00A0|\u1680|\u180E|\u2000-\u200A|\u2028|\u2029|\u2029|\u202F|\u205F|\u3000/,
             dash = /\u058A|\u05BE|\u1400|\u1806|\u2010-\u2015|\u2053|\u207B|\u208B|\u2212|\u2E17|\u2E1A|\u301C|\u3030|\u30A0|\uFE31-\uFE32|\uFE58|\uFE63|\uFF0D/,
@@ -514,8 +510,7 @@ Umbrella.create("util.player", {
             other = /\u3061|\u65532/,
             zalgo = /[\u0300-\u036F]/,
             thai = /[\u0E00-\u0E7F]/,
-            fakei = /\xA1/,
-            bot = Umbrella.get("util.bot");
+            fakei = /\xA1/;
 
         if (call("testName", src)) {
             return true;
@@ -531,7 +526,7 @@ Umbrella.create("util.player", {
             for (i in rb) {
                 i_l = i.length;
                 for (xT = 0; xT < i_l; xT++) {
-                    if (i == sys.ip(src).substring(0, xT)) {
+                    if (i == util.player.ip(src).substring(0, xT)) {
                         if (!nomessage) {
                             c_rb = rb[i];
                             var time;
@@ -590,7 +585,7 @@ Umbrella.create("util.player", {
 
         if (fakei.test(name) || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
             if (!nomessage) {
-                Umbrella.get("util.message").failWhale(src, 0);
+                util.message.failWhale(src, 0);
                 bot.send(src, "You are using bad characters in your name.");
                 bot.sendAll("Player " + name + " (" + ip + ") has failed to log in. [Reason: Unicode characters]", Channels.watch);
             }
@@ -606,13 +601,13 @@ Umbrella.create("util.player", {
 
         return false;
     }
-});
+};
 
 /**
  * Channel utilities
  * @type {Object}
  */
-Umbrella.create("util.channel", {
+util.channel = {
     /**
      * Returns a channel's id
      * @param {CID} name Channel identifier
@@ -639,7 +634,7 @@ Umbrella.create("util.channel", {
      * @return {String} The channel's name, or an empty string
      */
     name: function (id) {
-        return sys.channel(Umbrella.get("util.channel").id(id)) || "";
+        return sys.channel(util.channel.id(id)) || "";
     },
     /**
      * Creates a channel
@@ -661,7 +656,7 @@ Umbrella.create("util.channel", {
      * @return {String} po:join link for the channel
      */
     link: function (channel) {
-        channel = Umbrella.get("util.channel").name(channel);
+        channel = util.channel.name(channel);
 
         return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
     },
@@ -672,14 +667,14 @@ Umbrella.create("util.channel", {
      * @return {Object} this
      */
     putIn: function (src, channel) {
-        src = Umbrella.get("util.player").id(src);
+        src = util.player.id(src);
 
-        if (channel instanceof Array) {
+        if (Truthy.isArray(channel)) {
             channel.forEach(function (value, index, array) {
-                sys.putInChannel(src, Umbrella.get("util.channel").id(value));
+                sys.putInChannel(src, util.channel.id(value));
             });
         } else {
-            sys.putInChannel(Umbrella.get("util.channel").id(channel));
+            sys.putInChannel(util.channel.id(channel));
         }
 
         return this;
@@ -693,13 +688,13 @@ Umbrella.create("util.channel", {
             return sys.channel(value);
         });
     }
-});
+};
 
 /**
  * Moderation utilities
  * @type {Object}
  */
-Umbrella.create("util.mod", {
+util.mod = {
     /**
      * Bans a player, and kicks them
      * @param {PID} name Player identifier to ban
@@ -708,15 +703,15 @@ Umbrella.create("util.mod", {
     ban: function (name) {
         var id;
 
-        name = Umbrella.get("util.player").name(name);
-        id = Umbrella.get("util.player").id(name);
+        name = util.player.name(name);
+        id = util.player.id(name);
 
         sys.ban(name);
 
         if (id !== undefined) {
-            Umbrella.get("util.mod").kick(id);
+            util.mod.kick(id);
         } else {
-            Umbrella.get("util.mod").kickAliases(sys.dbIp(name));
+            util.mod.kickAliases(sys.dbIp(name));
         }
 
         return this;
@@ -728,7 +723,7 @@ Umbrella.create("util.mod", {
      */
     disconnect: function (src) {
         sys.setTimer(function () {
-            sys.disconnect(Umbrella.get("util.player").id(src));
+            sys.disconnect(util.player.id(src));
         }, 20, false);
 
         return this;
@@ -739,11 +734,11 @@ Umbrella.create("util.mod", {
      * @return {Object} this
      */
     disconnectAll: function (src) {
-        var ip = Umbrella.get("util.player").ip(src);
+        var ip = util.player.ip(src);
 
         sys.playerIds().forEach(function (value, index, array) {
-            if (ip === sys.ip(value)) {
-                Umbrella.get("util.mod").disconnect(value);
+            if (ip === util.player.ip(value)) {
+                util.mod.disconnect(value);
             }
         });
 
@@ -756,7 +751,7 @@ Umbrella.create("util.mod", {
      */
     kick: function (src) {
         sys.setTimer(function () {
-            sys.kick(Umbrella.get("util.player").id(src));
+            sys.kick(util.player.id(src));
         }, 20, false);
 
         return this;
@@ -767,11 +762,11 @@ Umbrella.create("util.mod", {
      * @return {Object} this
      */
     kickAll: function (src) {
-        var ip = Umbrella.get("util.player").ip(src);
+        var ip = util.player.ip(src);
 
         sys.playerIds().forEach(function (value, index, array) {
-            if (ip === sys.ip(value)) {
-                Umbrella.get("util.mod").kick(value);
+            if (ip === util.player.ip(value)) {
+                util.mod.kick(value);
             }
         });
 
@@ -787,20 +782,20 @@ Umbrella.create("util.mod", {
 
         aliases.forEach(function (value, index, array) {
             var id = sys.id(value);
-            if (id !== undefined) {
-                Umbrella.get("util.mod").kick(id);
+            if (id !== -1) {
+                util.mod.kick(id);
             }
         });
 
         return this;
     }
-});
+};
 
 /**
  * Bot utilities
  * @type {Object}
  */
-Umbrella.create("util.bot", {
+bot = util.bot = {
     /**
      * Sends a message from the bot to src, in an optional channel
      * @param {PID} src Player identifier
@@ -812,8 +807,8 @@ Umbrella.create("util.bot", {
         var color = Bot.color,
             name = Bot.name;
 
-        src = Umbrella.get("util.player").id(src);
-        channel = Umbrella.get("util.channel").id(channel);
+        src = util.player.id(src);
+        channel = util.channel.id(channel);
 
         if (channel !== -1) {
             sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
@@ -824,14 +819,14 @@ Umbrella.create("util.bot", {
         return this;
     },
     /**
-     * HTML-escaped message using JSEXT send to src
+     * HTML-escaped message using JSExt send to src
      * @param {PID} src Player identifier
      * @param {String} message Message to send to src
      * @param {CID} [channel] Channel identifier
      * @return {Object} this
      */
     sendText: function (src, message, channel) {
-        Umbrella.get("util.bot").send(src, message.escapeHtml(), channel);
+        util.bot.send(src, message.escapeHtml(), channel);
 
         return this;
     },
@@ -845,7 +840,7 @@ Umbrella.create("util.bot", {
         var color = Bot.color,
             name = Bot.name;
 
-        channel = Umbrella.get("util.channel").id(channel);
+        channel = util.channel.id(channel);
 
         if (channel !== -1) {
             sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
@@ -862,7 +857,7 @@ Umbrella.create("util.bot", {
      * @return {Object} this
      */
     sendAllText: function (message, channel) {
-        Umbrella.get("util.bot").sendAll(message.escapeHtml(), channel);
+        bot.sendAll(message.escapeHtml(), channel);
 
         return this;
     },
@@ -878,10 +873,9 @@ Umbrella.create("util.bot", {
         var func,
             pID,
             pIDs = sys.playerIds(),
-            p,
-            bot = Umbrella.get("util.bot");
+            p;
 
-        src = Umbrella.get("util.player").id(src);
+        src = util.player.id(src);
 
         pIDs = pIDs.filter(function (id) {
             return id !== src;
@@ -906,7 +900,7 @@ Umbrella.create("util.bot", {
      * @return {Object} this
      */
     line: function (chan) {
-        chan = Umbrella.get("util.channel").id(chan);
+        chan = util.channel.id(chan);
 
         if (chan !== -1) {
             sys.sendAll("", chan);
@@ -923,8 +917,8 @@ Umbrella.create("util.bot", {
      * @return {Object} this
      */
     lineTo: function (src, chan) {
-        src = Umbrella.get("util.player").id(src);
-        chan = Umbrella.get("util.channel").id(chan);
+        src = util.player.id(src);
+        chan = util.channel.id(chan);
 
         if (chan !== -1) {
             sys.sendMessage(src, "", chan);
@@ -934,13 +928,13 @@ Umbrella.create("util.bot", {
 
         return this;
     }
-});
+};
 
 /**
  * JSON utilities
  * @type {Object}
  */
-Umbrella.create("util.json", {
+util.json = {
     /**
      * Reads a file, parses the content, and returns it
      * @param {String} file Path to the file
@@ -964,14 +958,14 @@ Umbrella.create("util.json", {
 
         return this;
     }
-});
+};
 
 /**
  * Grammar utilities
  * @namespace
  * @type {Object}
  */
-Umbrella.create("util.grammar", {
+util.grammar = {
     /**
      * To correct a/an
      * @param {String} word Word to correct
@@ -1016,13 +1010,13 @@ Umbrella.create("util.grammar", {
 
         return word;
     }
-});
+};
 
 /**
  * File utilities
  * @type {Object}
  */
-Umbrella.create("util.file", {
+util.file = {
     /**
      * Creates a file if it already doesn't exist (suppresses any errors)
      * @param {String} file Path to the file
@@ -1048,13 +1042,13 @@ Umbrella.create("util.file", {
 
         return this;
     }
-});
+};
 
 /**
  * Error utilities
  * @type {Object}
  */
-Umbrella.create("util.error", {
+util.error = {
     /**
      * Formats an error
      * @param {String} mess Message to prepend to the error
@@ -1077,9 +1071,9 @@ Umbrella.create("util.error", {
             mess = "";
         }
 
-        name = e.name,
-            msg = e.message,
-            lastChar = mess[mess.length - 1];
+        name = e.name;
+        msg = e.message;
+        lastChar = mess[mess.length - 1];
 
         if (mess !== "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
             mess += ".";
@@ -1093,8 +1087,8 @@ Umbrella.create("util.error", {
             lineData = " on line " + e.lineNumber;
         }
 
-        str = name + lineData + ": " + msg,
-            lastChar = msg[msg.length - 1];
+        str = name + lineData + ": " + msg;
+        lastChar = msg[msg.length - 1];
 
         if (lastChar !== "." && lastChar !== "?" && lastChar !== ":" && lastChar !== "!") {
             str += ".";
@@ -1102,13 +1096,13 @@ Umbrella.create("util.error", {
 
         return mess + " " + str;
     }
-});
+};
 
 /**
  * Message Utilities
  * @type {Object}
  */
-Umbrella.create("util.message", {
+util.message = {
     /**
      * If a string has caps in it
      * @param {String} chr String to check
@@ -1124,8 +1118,6 @@ Umbrella.create("util.message", {
      * @return {Object} this
      */
     stfuTruck: function (src, chan) {
-        var bot = Umbrella.get("util.bot");
-        
         bot.send(src, '|^^^^^^^^^^^\||____', chan);
         bot.send(src, '| The STFU Truck  |||""\'|""\__,_', chan);
         bot.send(src, '| _____________ l||__|__|__|)', chan);
@@ -1139,9 +1131,7 @@ Umbrella.create("util.message", {
      * @param {CID} [chan] Channel identifier
      * @return {Object} this
      */
-    failWhale: function (id, chan) {        
-        var bot = Umbrella.get("util.bot");
-
+    failWhale: function (id, chan) {
         bot.send(id, "▄██████████████▄▐█▄▄▄▄█▌", chan);
         bot.send(id, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
         bot.send(id, "████▄█▌▄▌▄▐▐▌▀███▄▄█▌", chan);
@@ -1155,9 +1145,7 @@ Umbrella.create("util.message", {
      * @return {String} Formatted message
      */
     addChannelLinks: function (str) {
-        var channelNames = Umbrella.get("util.channel").names();
-
-        channelNames.forEach(function (value, index, array) {
+        util.channel.names().forEach(function (value, index, array) {
             str = str.replace(new RegExp("#" + value, "gi"), "<a href='po:join/" + value + "'>" + value + "</a>");
         });
 
@@ -1176,9 +1164,8 @@ Umbrella.create("util.message", {
             urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
             pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
             emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
-            poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
-            player = Umbrella.get("util.player");
-
+            poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+        
         if (authLvl === -1) {
             auth = 3;
         } else {
@@ -1190,7 +1177,7 @@ Umbrella.create("util.message", {
         if (typeof authLvl === 'number' && sys.loggedIn(authLvl)) {
             name = sys.name(authLvl).toLowerCase();
 
-            isHost = player.host(authLvl);
+            isHost = util.player.host(authLvl);
 
             if (DataHash && DataHash.evalOperators && DataHash.evalOperators.has(name)) {
                 isHost = true;
@@ -1212,10 +1199,10 @@ Umbrella.create("util.message", {
                 toEval = $1.substr(6, $1.lastIndexOf("[") - 6);
 
                 try {
-                    ret = sys.eval(toEval);
+                    ret = Truthy.eval(toEval);
                 }
                 catch (e) {
-                    return Umbrella.get("util.error").format("", e);
+                    return util.error.format("", e);
                 }
 
                 if (ret === undefined) {
@@ -1265,15 +1252,15 @@ Umbrella.create("util.message", {
         }
 
         /* Do this last for other BBcodes to work properly */
-        return Umbrella.get("util.message").addChannelLinks(str);
+        return util.message.addChannelLinks(str);
     }
-});
+};
 
 /**
  * Logging Utilities
  * @type {Object}
  */
-Umbrella.create("util.watch", {
+util.watch = {
     /**
      * Logs a player's action to Watch (if it exists)
      * @param {PID} player Player identifier
@@ -1283,8 +1270,8 @@ Umbrella.create("util.watch", {
      * @return {Object} this
      */
     player: function (player, message, type, channel) {
-        var chan = Umbrella.get("util.channel").link(channel),
-            src = Umbrella.get("util.player").player(player);
+        var chan = util.channel.link(channel),
+            src = util.player.player(player);
 
         if (chan !== "") {
             chan = "[" + chan + "]";
@@ -1296,7 +1283,7 @@ Umbrella.create("util.watch", {
             message = "";
         }
 
-        if (util.type(watch) === "number") {
+        if (Truthy.isObject(Channels) && Truthy.isNumber(Channels.watch)) {
             sys.sendHtmlAll("<timestamp/><b>" + chan + "</b> <i>" + type + "</i> (" + src + ")" + message, Channels.watch);
         }
 
@@ -1309,25 +1296,25 @@ Umbrella.create("util.watch", {
      * @return {Object} this
      */
     channel: function (channel, message) {
-        if (util.type(watch) === "number") {
-            sys.sendHtmlAll("<timestamp/><b>" + Umbrella.get("util.chan").name(channel) + "</b>: " + message, Channels.watch);
+        if (Truthy.isObject(Channels) && Truthy.isNumber(Channels.watch)) {
+            sys.sendHtmlAll("<timestamp/><b>" + util.chan.name(channel) + "</b>: " + message, Channels.watch);
         }
 
         return this;
     }
-});
+};
 
 /**
  * Time Utilities
  * @type {Object}
  */
-Umbrella.create("util.time", {
+util.time = {
     /**
      * Returns the time since epoch in seconds
      * @return {Number}
      */
     time: function () {
-        return sys.time() * 1;
+        return +(sys.time());
     },
     /**
      * Formats a number (time) to a readable string
@@ -1335,8 +1322,7 @@ Umbrella.create("util.time", {
      * @return {String}
      */
     format: function (time) {
-        var util = {time: Umbrella.get("util.time")},
-            ret = [],
+        var ret = [],
             times = [
                 [2629744, "<b>Month</b>"],
                 [604800, "<b>Week</b>"],
@@ -1371,12 +1357,10 @@ Umbrella.create("util.time", {
      * Returns the time since the server started up
      * @return {String} Result of util.time.format
      */
-    startUpTime: function () {
-        var time = Umbrella.get("util.time");
-        
-        return time.format(time.startup || 0);
+    startUpTime: function () {        
+        return util.time.format(util.time.startup || 0);
     }
-});
+};
 
 ({
     /**
@@ -1395,19 +1379,14 @@ Umbrella.create("util.time", {
     Hooks: function () {
         return {
             "serverStartUp": function () {
-                var time = Umbrella.get("util.time");
-                time.startup = +(time.time());
-                
-                Umbrella.update("util.time", time);
+                util.time.startup = util.time.time();
             },
             "commandNameRequested": function (src, message, chan, commandName) {
                 if (commandName != "sendmail") { // HARDCODED
-                    Umbrella.get("util.watch").player(src, message, "Command", chan);
+                    util.watch.player(src, message, "Command", chan);
                 }
             },
             "commandInfoRequested": function (src, message, chan, commandInfo) {
-                var bot = Umbrella.get("util.bot");
-                
                 return {
                     /* Improve tar */
                     tar: util.player.id(commandInfo.mcmd[0]),
@@ -1446,8 +1425,6 @@ Umbrella.create("util.time", {
                 };
             },
             "onCommandError": function (src, fullCommand, chan, errorType, Exception) {
-                var bot = Umbrella.get("util.bot");
-                
                 if (errorType === "nopermission") {
                     bot.sendText(src, "You don't have the proper permissions to use the command \"" + fullCommand + "\".", chan);
                 } else if (errorType === "invalid") {

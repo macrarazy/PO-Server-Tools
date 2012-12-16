@@ -11,7 +11,7 @@
             return (string[0] == '/' || string[0] == '!') && string.length > 1;
         },
         sendChanAll = function (message, chan) {
-            Umbrella.get("util.bot").sendAll(message, chan || Channels.mafia);
+            bot.sendAll(message, chan || Channels.mafia);
         };
 
     function Mafia(mafiachan) {
@@ -36,10 +36,9 @@
         var border;
 
         /* CUSTOM */
-        var utilFile = Umbrella.get("util.file");
-        utilFile.create(MAFIA_SAVE_FILE, "{}");
-        utilFile.create(MAFIA_LOG_FILE, "{}");
-        utilFile.create(MAFIA_VILLIFIED_FILE, "{}");
+        util.file.create(MAFIA_SAVE_FILE, "{}");
+        util.file.create(MAFIA_LOG_FILE, "{}");
+        util.file.create(MAFIA_VILLIFIED_FILE, "{}");
 
         sys.makeDir("mafiathemes");
         /* END CUSTOM */
@@ -3951,11 +3950,11 @@
                 try {
                     this.tickDown();
                 } catch (err) {
-                    Umbrella.get("util.bot").sendAll("An exception has occured: " + Umbrella.get("util.error").format("", err), mafiachan);
+                    bot.sendAll("An exception has occured: " + util.error.format("", err), mafiachan);
                 }
             },
             "init": function () {
-                Umbrella.get("util.bot").sendAll("Mafia was reloaded, please start a new game!", Channels.mafia);
+                bot.sendAll("Mafia was reloaded, please start a new game!", Channels.mafia);
             },
             "beforeChatMessage": function (src, message, chan, beforeCommandParsed) {
                 if (!beforeCommandParsed && chan !== 0 && chan === Channels.mafia && mafia.ticks > 0 && [
@@ -3983,7 +3982,7 @@
                     }
                     catch (Exception) {
                         if (Exception != "no valid command") {
-                            Umbrella.get("util.bot").sendAll(Umbrella.get("util.error").format("A mafia error has occured.", Exception), Channels.mafia);
+                            bot.sendAll(util.error.format("A mafia error has occured.", Exception), Channels.mafia);
 
                             mafia.endGame(0);
                             if (mafia.theme.name != "default") {

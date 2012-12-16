@@ -1,16 +1,1 @@
 Umbrella Packages:
-    Defined in modules/utilities.js
-        util.player: Player utilities
-        util.channel: Channel utilities
-        util.mod: Moderation utilities
-        util.bot: Bot utilities
-        util.json: JSON utilities
-        util.file: File utilities
-        util.error: Error utilities
-        util.message: Message utilities
-        util.watch: Logging utilities
-        util.time: Time utilities
-        
-    Defined in modules/datahash.js
-        util.datahash: DataHash utilities
-        

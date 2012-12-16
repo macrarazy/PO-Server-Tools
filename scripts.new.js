@@ -13,18 +13,10 @@
  Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
  - Untested code/sandbox for all other versions
 
- JSDoc is available at:
- - Release: http://theunknownone.github.com/PO-Server-Tools/jsdoc/release/
-
- Beta, Alpha, and Development don't have a public JSDoc (make it yourself if you need it)
-
  - All modules are available in modules/ -
  - All command categories are available in commands/ -
 
- ==== NOTES ====
- - Dependencies with '*' in front of them are required at runtime -
- - Dependencies with '+' in front of them are optional -
-
+ ==== DEVELOPER NOTES ====
  - Custom types used in JSDoc: -
  - PID: Id or name of a player
  - CID: Id or name of a channel
@@ -135,14 +127,15 @@ BRANCH = "alpha";
 
 /**
  * Modules to load
- * All of the "default" modules depend on each other. Removing any of these isn't recommended as it might break the script.
- * Changing the order isn't a smart thing to do either.
+ * <i>All of the default modules depend on each other. Removing any of these isn't recommended as it might break the script.
+ * Changing the order isn't a smart thing to do either.</i>
  * @type {Array}
  */
 Modules = [
-    "modules/umbrella.js", "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
-    "modules/jsession.js", "modules/users.js", "modules/channels.js"//, "modules/templates.js",
-    //"modules/mafia.js"
+    "modules/truthy.js", "modules/umbrella.js", // Imported
+    "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
+    "modules/jsession.js", "modules/users.js", "modules/channels.js", "modules/templates.js",
+    "modules/mafia.js"
 ];
 
 /**
@@ -153,12 +146,12 @@ Modules = [
 
 CommandCategories = [
     /* Base for all commands - Required */
-    //"commands/base.js",
+    "commands/base.js",
 
     /* Commands - User */
-    //"commands/user/fun.js",
-    //"commands/user/poll.js",
-    //"commands/user/pokedex.js",
+    "commands/user/fun.js",
+    "commands/user/poll.js",
+    "commands/user/pokedex.js",
 
     /* Commands - Admin */
     //"commands/admin/ify.js"
@@ -709,7 +702,7 @@ callResult = function (hook_name, hook_args) {
             data = "",
             pos = message.indexOf(' '),
             queryRes,
-            auth = sys.maxAuth(sys.ip(src)),
+            auth = sys.maxAuth(util.player.ip(src)),
             cmd,
             commandInfo,
             maxAuth = {

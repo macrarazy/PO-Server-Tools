@@ -9,7 +9,7 @@
  * DataHash Utilities
  * @type {Object}
  */
-Umbrella.create("util.datahash", {
+util.datahash = {
     /**
      * Writes a DataHash property to the given (cacheInst)
      * @param {Cache} cacheInst An instance of Cache
@@ -33,12 +33,10 @@ Umbrella.create("util.datahash", {
             code,
             json_code;
 
-        Umbrella.load(["util.player", "util.bot"], ["player", "bot"]);
-        
-        src = player.id(src);
+        src = util.player.id(src);
 
         if (!ip && src) {
-            ip = player.ip(src);
+            ip = util.player.ip(src);
         }
 
         if (!loc.has(ip)) {
@@ -59,14 +57,14 @@ Umbrella.create("util.datahash", {
                     code = JSON.parse(json_code);
 
                     loc[ip] = code;
-                    Umbrella.get("util.datahash").write(cache, "locations");
+                    util.datahash.write(cache, "locations");
 
                     if (sys.loggedIn(src)) {
                         if (code.country_name === "Anonymous Proxy") {
-                            Umbrella.get("util.message").failWhale(src, 0);
+                            util.message.failWhale(src, 0);
                             bot.send(src, "Remove the proxy to enter the server.");
                             bot.sendAll(player.player(src) + " tried to use a proxy.", Channels.watch);
-                            Umbrella.get("util.mod").kickAll(src);
+                            util.mod.kickAll(src);
                         }
                     }
                 });
@@ -80,26 +78,22 @@ Umbrella.create("util.datahash", {
                 code = JSON.parse(json_code);
 
                 loc[ip] = code;
-                Umbrella.get("util.datahash").write(cache, "locations");
+                util.datahash.write(cache, "locations");
 
                 if (sys.loggedIn(src) && util.player.auth(src) < 1) {
                     if (code.country_name === "Anonymous Proxy") {
-                        Umbrella.get("util.message").failWhale(src, 0);
+                        util.message.failWhale(src, 0);
                         bot.send(src, "Remove your proxy to enter the server.");
-                        Umbrella.get("util.watch").player(src, "", "kicked for using a proxy");
-                        Umbrella.get("util.mod").kickAll(src);
+                        util.watch.player(src, "", "kicked for using a proxy");
+                        util.mod.kickAll(src);
                     }
                 }
             }
         }
         
-        Umbrella.unload();
-
         return this;
     }
-});
-
-Umbrella.load("util.json", "json");
+};
 
 /**
  * Hash in which all kinds of data can be stored
@@ -115,7 +109,7 @@ DataHash = {};
 DataHash.file = "DataHash.json";
 
 /* Reads DataHash from file */
-util.sandbox.DataHash = json.read(DataHash.file);
+util.sandbox.DataHash = util.json.read(DataHash.file);
 
 if (util.sandbox.DataHash.isEmpty()) {
     /**
@@ -155,13 +149,11 @@ if (util.sandbox.DataHash.isEmpty()) {
     DataHash.evalOperators = {}; // NOTE: evalops -> evalOperators
 
     /* Write to file */
-    json.write(DataHash.file, DataHash);
+    util.json.write(DataHash.file, DataHash);
 } else {
     /* Extends DataHash */
     DataHash.extend(util.sandbox.DataHash);
 }
-
-Umbrella.unload();
 
 ({
     /**

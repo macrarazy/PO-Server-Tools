@@ -11,9 +11,7 @@
  * @return {Object} this
  */
 Cache = function (file) {
-    var cacheName,
-        file = Umbrella.get("util.file"),
-        json = Umbrella.get("util.json");
+    var cacheName;
 
     /**
      * File for this cache
@@ -28,12 +26,12 @@ Cache = function (file) {
      */
     this.ensures = 0;
 
-    file.create(this.file, "{}");
+    util.file.create(this.file, "{}");
 
     try {
-        this.hash = json.read(this.file);
+        this.hash = util.json.read(this.file);
     } catch (Exception) {
-        json.write(file + "-corrupted.json", this.hash);
+        util.json.write(file + "-corrupted.json", this.hash);
 
         this.hash = {};
         this.saveAll();
@@ -45,7 +43,7 @@ Cache = function (file) {
             cacheName = "cache";
         }
 
-        print(Umbrella.get("util.error").format("Could not load " + cacheName + " from file " + this.file + "!", Exception));
+        print(util.error.format("Could not load " + cacheName + " from file " + this.file + "!", Exception));
         print("Old cache available in " + file + "-corrupted.json. Cache and " + this.file + " have been cleared.");
     }
 
@@ -139,7 +137,7 @@ Cache.prototype.reset = function () {
  * @return {Object} this
  */
 Cache.prototype.saveAll = function () {
-    Umbrella.get("util.json").write(this.file, this.hash);
+    util.json.write(this.file, this.hash);
 
     return this;
 };

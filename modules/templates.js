@@ -214,8 +214,8 @@ Templates = {
                     return this;
                 }
 
-                help = cmd.help,
-                    help0 = help[0];
+                help = cmd.help;
+                help0 = help[0];
 
                 if (help.length === 1) {
                     this.register(cmd.name, help0);
@@ -231,7 +231,7 @@ Templates = {
             listCommands: function (commands) {
                 commands.forEach(function (value, index, array) {
                     this.list(value);
-                });
+                }, this);
 
                 return this;
             },

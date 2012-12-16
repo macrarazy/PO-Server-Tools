@@ -16,35 +16,34 @@
     Hooks: function () {
         return {
             "beforeLogIn": function (src) {
-                var ip = Umbrella.get("util.player").ip(src),
-                    name = Umbrella.get("util.player").name(src),
+                var ip = util.player.ip(src),
+                    name = util.player.name(src),
                     names = DataHash.names;
 
-                Umbrella.get("util.player").hostAuth(src);
+                util.player.hostAuth(src);
 
                 names[ip] = names[name.toLowerCase()] = name;
 
-                Umbrella.get("util.datahash")
+                util.datahash
                     .write("names")
                     .resolveLocation(src, ip, false);
 
-                if (Umbrella.get("util.player").testName(src)) {
+                if (util.player.testName(src)) {
                     util.sandbox.kickedPlayer = src;
                     return true;
                 }
             },
             "afterLogIn": function (src) {
-                var ip = Umbrella.get("util.player").ip(src),
-                    auth = Umbrella.get("util.player").auth(src),
+                var ip = util.player.ip(src),
+                    auth = "util.player".auth(src),
                     sendWelcomeMessage = (Config.WelcomeMessages && (auth < 1 || auth > 3)),
                     numPlayers = sys.numPlayers(),
                     maxPlayersOnline = cache.get("MaxPlayersOnline"),
                     name = sys.name(src).toLowerCase(),
                     idles = DataHash.idles,
-                    player = Umbrella.get("util.player").player(src)
-                    bot = Umbrella.get("util.bot");
+                    player = util.player.player(src);
 
-                Umbrella.get("util.watch").player(src, "Log In on IP " + ip);
+                util.watch.player(src, "Log In on IP " + ip);
 
                 
                 if (sendWelcomeMessage) {
@@ -55,8 +54,8 @@
                     .send(src, "Welcome, " + player + "!", 0)
                     .send(src, "Type in <b><font color='green'>/Commands</font></b> to see the commands and <b><font color='green'>/Rules</font></b> to see the rules.", 0);
 
-                if (util.type(util.time.startup) === "number") {
-                    bot.send(src, "The server has been up for " + Umbrella.get("util.time").startUpTime() + "</b>.", 0);
+                if (Truthy.isNumber(util.time.startup)) {
+                    bot.send(src, "The server has been up for " + util.time.startUpTime() + "</b>.", 0);
                 }
 
                 if (numPlayers > maxPlayersOnline) {
@@ -83,7 +82,7 @@
 
                 if (idles.has(name)) {
                     if (idles[name].entry) {
-                        bot.sendAll(Umbrella.get("util.message").format(idles[name].entry, 2), 0);
+                        bot.sendAll(util.message.format(idles[name].entry, 2), 0);
                     }
                     sys.changeAway(src, true);
                 }
@@ -93,22 +92,22 @@
             "beforePlayerKick": function (src, tar) {
                 var self = JSESSION.users(src),
                     target = JSESSION.users(tar),
-                    ip = Umbrella.get("util.player").ip(src),
+                    ip = util.player.ip(src),
                     mutes = DataHash.mutes[ip],
                     info = {};
 
                 if (self.muted) {
-                    Umbrella.get("util.watch").player(src, null, "Attempted to kick " + target.originalName + " while muted.");
+                    til.watch.player(src, null, "Attempted to kick " + target.originalName + " while muted.");
 
                     if (mutes.time != 0) {
-                        info.time = "Muted for " + Umbrella.get("util.time").format(mutes.time.time - +(sys.time()));
+                        info.time = "Muted for " + util.time.format(mutes.time.time - util.time.time());
                     } else {
                         info.time = "Muted forever";
                     }
 
                     // NOTE: Mute & ban why -> reason
-                    info.by = mutes.by,
-                        info.reason = mutes.reason;
+                    info.by = mutes.by;
+                    info.reason = mutes.reason;
 
                     // TODO: Move this to the actual command
                     /*
@@ -126,28 +125,28 @@
 
                 sys.sendHtmlAll("<font color='midnightblue'><timestamp/><b> " + self.originalName + " kicked " + target.originalName + "!</b></font>");
 
-                Umbrella.get("util.mod").kickAll(tar);
+                util.mod.kickAll(tar);
                 return true;
             },
             "beforePlayerBan": function (src, tar) {
                 var self = JSESSION.users(src),
                     target = JSESSION.users(tar),
-                    ip = Umbrella.get("util.player").ip(src),
+                    ip = util.player.ip(src),
                     mutes = DataHash.mutes[ip],
                     info = {};
 
                 if (self.muted) {
-                    Umbrella.get("util.watch").player(src, null, "Attempted to ban " + target.originalName + " while muted.");
+                    util.watch.player(src, null, "Attempted to ban " + target.originalName + " while muted.");
 
                     if (mutes.time != 0) {
-                        info.time = "Muted for " + Umbrella.get("util.time").format(mutes.time.time - +(sys.time()));
+                        info.time = "Muted for " + util.time.format(mutes.time.time - util.time.time());
                     } else {
                         info.time = "Muted forever";
                     }
 
                     // NOTE: Mute & ban why -> reason
-                    info.by = mutes.by,
-                        info.reason = mutes.reason;
+                    info.by = mutes.by;
+                    info.reason = mutes.reason;
 
                     // TODO: Move this to the actual command
                     /*
@@ -164,7 +163,7 @@
                 }
                 sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + self.originalName + " banned " + target.originalName + "!</b></font>");
 
-                Umbrella.get("util.mod").ban(tar);
+                util.mod.ban(tar);
                 return true;
             }
         };
