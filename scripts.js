@@ -4359,7 +4359,7 @@ if(message == "Maximum Players Changed.") {
                     
                     sys.delayedCall(function () {
                         script.beforeChatMessage(src, Message, chan);
-                    }, parseInt(mcmd[0]);
+                    }, parseInt(mcmd[0]));
                     
                     botMessage(src, "Your message was sent " + getTimeString(mcmd[0]) + " into the future!", chan);
                 },
