@@ -6,11 +6,11 @@
 
 /* Generates/cleans all command lists */
 Commands.Lists
-    .user = new handlers.commandList()
-    .mod = new handlers.commandList()
-    .admin = new handlers.commandList()
-    .owner = new handlers.commandList()
-    .host = new handlers.commandList();
+    .user = new handlers.CommandList()
+    .mod = new handlers.CommandList()
+    .admin = new handlers.CommandList()
+    .owner = new handlers.CommandList()
+    .host = new handlers.CommandList();
 
 /**
  * Handles permissions for special auth level: Host
@@ -18,7 +18,7 @@ Commands.Lists
  */
 handlers.permissionHost = function (src) {
     return util.player.host(src);
-}
+};
 
     ({
         /**

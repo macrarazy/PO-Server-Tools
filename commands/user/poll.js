@@ -45,29 +45,29 @@
                 ],
                 allowedWhenMuted: false,
                 handler: function (command) {
-                    var num = command.data * 1,
+                    var num = +(command.data),
                         ip = command.self.ip,
-                        Poll = DataHash.poll,
-                        options;
+                        option;
 
-                    if (!Poll.mode) {
+                    if (!DataHash.poll.mode) {
                         command.send("There is no poll.");
                         return;
                     }
-                    if (!Poll.options.has(num)) {
+                    if (!DataHash.poll.options.has(num)) {
                         command.send("Invalid option '" + num + "'.");
                         return;
                     }
-                    options = Poll.options[num].votes;
-                    if (options.has(ip)) {
+                    
+                    option = DataHash.poll.options[num];
+                    if (option.votes.has(ip)) {
                         command.send("You already voted!");
                         return;
                     }
 
-                    options.push(ip);
+                    option.votes.push(ip);
                     Poll.votes++;
 
-                    command.send("You voted for option " + num + " (" + Poll.options[num].name + ") on the poll!");
+                    command.send("You voted for option " + num + " (" + option.name + ") on the poll!");
                     command.sendMain(command.self.player + " voted!");
                 }
             },
@@ -77,33 +77,33 @@
                     "To view the running poll's information."
                 ],
                 handler: function (command) {
-                    var Poll = DataHash.poll,
-                        x,
-                        option;
+                    var options = DataHash.poll.options,
+                        option,
+                        x;
 
-                    if (!Poll.mode) {
+                    if (!DataHash.poll.mode) {
                         command.send("There is no poll running at the time.");
                         return;
                     }
 
-                    command.send("Poll started by " + Poll.starter.bold() + "!");
+                    command.send("Poll started by <b>" + DataHash.poll.starter + "</b>!");
 
-                    for (x in Poll.options) {
-                        option = Poll.options[x].name;
+                    for (x in options) {
+                        option = options.name;
                         command.send(x + ". " + option);
                     }
 
                     command.line();
 
-                    if (Poll.votes === 0) {
+                    if (DataHash.poll.votes === 0) {
                         command.send("No one has voted yet.");
                         return;
                     }
 
-                    command.send(Poll.subject + " - Results so far:");
+                    command.send(DataHash.poll.subject + " - Results so far:");
 
-                    for (x in Poll.options) {
-                        option = Poll.options[x];
+                    for (x in options) {
+                        option = options[x];
                         command.send(x + ". " + option.name + " - " + option.votes.length);
                     }
                 }
@@ -120,8 +120,7 @@
                 category: "1",
                 allowedWhenMuted: false,
                 handler: function (command) {
-                    var Poll = DataHash.poll,
-                        mcmd = command.mcmd,
+                    var mcmd = command.mcmd,
                         options,
                         x;
 
@@ -129,12 +128,12 @@
                         mcmd[1] = "";
                     }
 
-                    if (Poll.mode) {
+                    if (DataHash.poll.mode) {
                         command.send("A poll already exists.");
                         return;
                     }
 
-                    mcmd[1] = cut(mcmd, 1, ':');
+                    mcmd[1] = util.cut(mcmd, 1, ':');
 
                     options = mcmd[1].split("/");
 
@@ -143,10 +142,10 @@
                         return;
                     }
 
-                    Poll.mode = 1;
-                    Poll.votes = 0;
-                    Poll.subject = mcmd[0];
-                    Poll.starter = command.self.name;
+                    DataHash.poll.mode = 1;
+                    DataHash.poll.votes = 0;
+                    DataHash.poll.subject = mcmd[0];
+                    DataHash.poll.starter = command.self.name;
 
                     command.sendMain("A poll was started by " + command.self.name.bold() + "!");
                     command.sendMain("Subject: " + mcmd[0]);
@@ -158,7 +157,7 @@
                             votes: []
                         };
 
-                        command.sendMain((i + 1) + ". " + value);
+                        command.sendMain((index + 1) + ". " + value);
                     });
                 }
             },
@@ -170,39 +169,35 @@
                 category: "1",
                 allowedWhenMuted: false,
                 handler: function (command) {
-                    var Poll = DataHash.poll,
-                        starter,
-                        subject,
-                        options,
+                    var starter = DataHash.poll.starter + "",
+                        subject = DataHash.poll.subject + "",
+                        options = DataHash.poll.options,
                         option,
                         x;
 
-                    if (!Poll.mode) {
+                    if (!DataHash.poll.mode) {
                         command.send("No poll is going on.");
                         return;
                     }
 
-                    starter = Poll.starter + "";
-                    subject = Poll.subject + "";
-                    options = Poll.options;
 
-                    Poll.mode = 0;
-                    Poll.starter = "";
-                    Poll.subject = "";
+                    DataHash.poll.mode = 0;
+                    DataHash.poll.starter = "";
+                    DataHash.poll.subject = "";
 
-                    command.sendMain(command.self.player + " closed the poll started by " + starter.bold() + "!");
+                    command.sendMain(command.self.player + " closed the poll started by <b>" + starter + "</b>!");
 
-                    if (Poll.votes === 0) {
+                    if (DataHash.poll.votes === 0) {
                         command.sendMain("No one voted on the " + subject + " poll!");
-                        Poll.options = {};
-                        Poll.votes = 0;
+                        DataHash.poll.options = {};
+                        DataHash.poll.votes = 0;
                         return;
                     }
 
                     command.sendMain(subject + " - Results:", 0);
 
                     for (x in options) {
-                        option = Poll.options[x];
+                        option = options[x];
                         command.sendMain(x + ". " + option.name + " - " + option.votes.length);
                     }
 

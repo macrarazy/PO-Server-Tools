@@ -44,8 +44,7 @@
         importMoves,
         fEgg2Pokes = {},
         hasFegg1,
-        evos,
-        statsLoopStopped = false;
+        evos;
 
     try {
         if (!Pokedex) {
@@ -96,21 +95,14 @@
                 fevom = fmoves.evo,
                 ftms = fmoves.tms,
                 ftutor = fmoves.tutor,
-                dwMoves = {},
-                eggMoves = {},
-                eventMoves = {},
-                levelMoves = {},
-                evoMoves = {},
-                tmMoves = {},
-                tutorMoves = {},
                 importMoves = function (moveArray, Obj) {
-                    moveArray.forEach(function (value, index, array) {
+                    Truthy.foreach(moveArray, function (value, index, array) {
                         var moveSplit = value.split(":"),
                             moveSpace = value.split(" "),
                             poke = +(moveSplit[0]);
 
                         if (value.isEmpty() || moveSplit[1].charAt(0) !== "0") { // Empty line, forme
-                            return;
+                            return "continue";
                         }
 
                         moveSpace.splice(0, 1);
@@ -150,11 +142,11 @@
                 var movesDone = [],
                     move2Array = value.split(" ");
 
-                move2Array.forEach(function (value, index, array) {
+                Truthy.foreach(move2Array, function (value, index, array) {
                     var moveId = sys.move(+(value));
                     if (movesDone.has(moveId)) {
                         array.splice(i, 3);
-                        return;
+                        return "continue";
                     }
 
                     movesDone.push(moveId);
@@ -165,41 +157,36 @@
 
             /* We check CC later, as it's a little messy.
                We also will check evolutions later as some pokes don't have one. */
-            fegg2.forEach(function (value, index, array) {
+            Truthy.foreach(fegg2, function (value, index, array) {
                 var current = value.split(" ");
                 if (current === "0") {
-                    return;
+                    return "continue";
                 }
 
                 fEgg2Pokes[current[0]] = current[1];
             });
 
-            stats.forEach(function (value, index, array) {
+            Truthy.foreach(stats, function (value, index, array) {
                 var currentStats,
                     statsTemp,
                     split,
                     poke;
 
-                if (statsLoopStopped) {
-                    return;
-                }
-
                 pokeId++;
 
                 /* Put stuff into an array here. */
-                currentStats = [value.split(" ")],
-                    statsTemp = currentStats[0],
-                    split = value.split(":");
+                currentStats = [value.split(" ")];
+                statsTemp = currentStats[0];
+                split = value.split(":");
 
                 if (!split[1]) {
-                    statsLoopStopped = true;
-                    return;
+                    return "break";
                 }
 
                 /* First is for formes. Second is missingno check. */
                 if (split[1].charAt(0) !== "0" || split[0] === "0") {
                     pokeId--;
-                    return;
+                    return "continue";
                 }
 
                 currentStats = [
@@ -230,10 +217,10 @@
 
                 /* Egg Groups */
                 if (hasFegg1) {
-                    currentStats[5][1] = util.message.cut(currentStats[5], 1, ' ');
+                    currentStats[5][1] = util.cut(currentStats[5], 1, ' ');
                 }
                 if (hasFegg2) {
-                    currentStats[6][1] = util.message.cut(currentStats[6], 1, ' ');
+                    currentStats[6][1] = util.cut(currentStats[6], 1, ' ');
                 }
 
                 Pokedex.data[poke] = {
@@ -275,13 +262,13 @@
             }); /* Done! */
 
             /* Checking CC levels */
-            fcc.forEach(function (value, index, array) {
+            Truthy.foreach(fcc, function (value, index, array) {
                 var split = value.split(":"),
                     ccSpace = value.split(" "),
                     poke = sys.pokemon(+(split[0]));
 
-                if (!poke || poke === "Missingno" || split[1].charAt(0) !== "0") { // Formes. Missingno.
-                    return;
+                if (!poke || poke === "Missingno" || split[1].charAt(0) !== "0") { // Formes, Missingno.
+                    return "continue";
                 }
 
                 Pokedex.data[poke].cc = +(ccSpace[1]);
@@ -317,14 +304,13 @@
                 ranges = [30, 50, 60, 70, 80, 90, 100, 200, 300],
                 colors = [
                     "#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"
-                ],
-                loopDone = false;
+                ];
 
 
-            ranges.forEach(function (value, index, array) {
-                if (!loopDone && stat <= value) {
+            Truthy.foreach(ranges, function (value, index, array) {
+                if (stat <= value) {
                     string = string.fontcolor(colors[index]);
-                    loopDone = true;
+                    return "break";
                 }
             });
 
@@ -406,13 +392,12 @@
                 ranges = [180, 300, 360, 420, 480, 540, 600, 1200, 1800],
                 colors = [
                     "#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"
-                ],
-                loopDone = false;
+                ];
 
-            ranges.forEach(function (value, index, array) {
-                if (!loopDone && stat <= value) {
+            Truthy.foreach(ranges, function (value, index, array) {
+                if (stat <= value) {
                     string = string.fontcolor(colors[index]);
-                    loopDone = true;
+                    return "break";
                 }
             });
 
@@ -453,11 +438,11 @@
         };
 
         Pokedex.pokeAbilities = function (poke) {
-            var ret,
+            var ret = "",
                 abil;
 
-            poke = sys.pokeNum(poke),
-                abil = [sys.pokeAbility(poke, 0), sys.pokeAbility(poke, 1), sys.pokeAbility(poke, 2)];
+            poke = sys.pokeNum(poke);
+            abil = [sys.pokeAbility(poke, 0), sys.pokeAbility(poke, 1), sys.pokeAbility(poke, 2)];
 
             ret += sys.ability(abil[0]).bold();
 
@@ -488,13 +473,21 @@
             var t = new Templates.list("Pokedex - " + pokemon.fontcolor(Pokedex.moveColours[sys.pokeType1(sys.pokeNum(pokemon))])),
                 n = sys.pokeNum(pokemon),
                 PD = Pokedex.data[pokemon],
-                s = sys.pokeType2(n) == 17 ? "" : "s",
-                s2 = sys.pokeAbility(n, 1) == 0 && sys.pokeAbility(n, 2) == 0 ? "y" : "ies",
+                s = "",
+                s2 = "y",
                 gender = Pokedex.pokeGender(pokemon),
                 eggs = PD.egg,
                 eggstr = "",
                 evoS = "";
 
+            if (sys.pokeType2(n) !== 17) {
+                s = "s";
+            }
+            
+            if (sys.pokeAbility(n, 1) !== 0 && sys.pokeAbility(n, 2) !== 0) {
+                s2 = "ies";
+            }
+            
             t.register("<img src='pokemon:num=" + n + "'> <img src='pokemon:num=" + n + "&back=true'> <img src='pokemon:num=" + n + "&shiny=true'> <img src='pokemon:num=" + n + "&shiny=true&back=true'><br/>");
             t.register("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + gender);
             t.register("National Dex Number: " + String(n).bold() + ".");
@@ -584,8 +577,7 @@
                 handler: function (command) {
                     var data = command.data,
                         formeIndex = data.indexOf("-"),
-                        rand,
-                        rands;
+                        rand;
 
                     if (formeIndex != -1) {
                         data = data.substr(0, formeIndex);
@@ -602,12 +594,10 @@
                     }
 
                     try {
-                        Pokedex.run(src, data, chan);
+                        Pokedex.run(command.src, data, command.chan);
                     } catch (ignore) {
                         rand = sys.pokemon(sys.rand(1, 650));
-                        rands = util.grammar.es(rand);
-
-                        command.send("Since the Pokémon " + data + " doesn't exist, the Pokédex displayed " + rands + " data instead.".escapeHtml());
+                        command.send("Since the Pokémon " + data + " doesn't exist, the Pokédex displayed " + util.grammar.es(rand) + " data instead.".escapeHtml());
                         try {
                             Pokedex.run(command.src, rand, command.chan);
                         } catch (PokedexException) {

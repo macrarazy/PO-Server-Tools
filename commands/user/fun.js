@@ -2,14 +2,14 @@
     if (typeof AttackingMoves === "undefined") {
         AttackingMoves = [];
 
-        sys.getFileContent("db/moves/5G/damage_class.txt").split("\n")
-            .forEach(function (value, index, array) {
+        Truthy.foreach(sys.getFileContent("db/moves/5G/damage_class.txt").split("\n"), 
+            function (value, index, array) {
                 if (value === "0 0") {
-                    return;
+                    return "continue";
                 }
 
                 AttackingMoves.push(+(value.split(" ")[0]));
-            });
+        });
     }
 }());
 

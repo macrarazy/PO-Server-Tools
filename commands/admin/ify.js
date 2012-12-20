@@ -48,8 +48,7 @@
                 ],
                 allowedWhenMuted: false,
                 handler: function (command) {
-                    var ids = sys.playerIds(),
-                        data = command.data;
+                    var data = command.data;
 
                     if (!!Settings.IfyName) {
                         command.send("Ify is already on!");
@@ -64,7 +63,7 @@
 
                     command.sendMain(command.self.player + " changed the name of everyone on the server to " + data + "!");
 
-                    ids.forEach(function (value, index, array) {
+                    sys.playerIds().forEach(function (value, index, array) {
                         sys.changeName(value, data);
                         bot.send(value, "Your name was changed to " + data + "!");
                     });
@@ -76,8 +75,6 @@
                 help: ["Turns global server name-ify off and restores the name of everyone."],
                 allowedWhenMuted: false,
                 handler: function (command) {
-                    var ids = sys.playerIds();
-
                     if (!Settings.IfyName) {
                         command.send("Ify isn't on!");
                         return;
@@ -87,7 +84,7 @@
 
                     command.sendMain(command.self.jsession.originalName + " changed all names back!");
 
-                    ids.forEach(function (value, index, array) {
+                    sys.playerIds().forEach(function (value, index, array) {
                         sys.changeName(value, JSESSION.users(value).originalName);
                     });
                 }

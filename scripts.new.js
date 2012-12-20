@@ -7,7 +7,7 @@
  Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
  - Has no known errors
  Beta: https://github.com/TheUnknownOne/PO-Server-Tools/beta/
- - Has no obvious errors - shouldn't have any crashes
+ - Has no obvious errors - shouldn't crash
  Alpha: https://github.com/TheUnknownOne/PO-Server-Tools/alpha/
  - Has no fatal errors - can crash
  Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
@@ -132,7 +132,7 @@ BRANCH = "alpha";
  * @type {Array}
  */
 Modules = [
-    "modules/truthy.js", "modules/umbrella.js", // Imported
+    "modules/truthy.js", // Imported
     "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
     "modules/jsession.js", "modules/users.js", "modules/channels.js", "modules/templates.js",
     "modules/mafia.js"
@@ -154,7 +154,7 @@ CommandCategories = [
     "commands/user/pokedex.js",
 
     /* Commands - Admin */
-    //"commands/admin/ify.js"
+    "commands/admin/ify.js"
 ];
 
 /**
@@ -262,7 +262,7 @@ handlers.defaultHandler = function (category) {
  * Command list manager
  * @constructor
  */
-handlers.commandList = function () {
+handlers.CommandList = function () {
     this.commands = [];
 
     /**
