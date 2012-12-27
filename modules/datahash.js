@@ -17,6 +17,12 @@ util.datahash = {
      * @return {Object} this
      */
     write: function (cacheInst, name) {
+        if (!name) {
+            if (cache) {
+                name = cacheInst;
+                cacheInst = cache;
+            }
+        }
         cacheInst.writeJSON(name, DataHash[name]);
 
         return this;
@@ -147,6 +153,12 @@ if (util.sandbox.DataHash.isEmpty()) {
      * @type {Object}
      */
     DataHash.evalOperators = {}; // NOTE: evalops -> evalOperators
+
+    /**
+     * Contains all auto idles
+     * @type {Object}
+     */
+    DataHash.idles = {};
 
     /* Write to file */
     util.json.write(DataHash.file, DataHash);

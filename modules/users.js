@@ -39,7 +39,6 @@
                     numPlayers = sys.numPlayers(),
                     maxPlayersOnline = cache.get("MaxPlayersOnline"),
                     name = sys.name(src).toLowerCase(),
-                    idles = DataHash.idles,
                     player = util.player.player(src);
 
                 util.watch.player(src, "Log In on IP " + ip);
@@ -79,9 +78,9 @@
 
                 bot.line(src, 0);
 
-                if (idles.has(name)) {
-                    if (idles[name].entry) {
-                        bot.sendAll(util.message.format(idles[name].entry, 2), 0);
+                if (DataHash.idles.has(name)) {
+                    if (DataHash.idles[name].entry) {
+                        bot.sendAll(util.message.format(DataHash.idles[name].entry, 0), 0);
                     }
                     sys.changeAway(src, true);
                 }
