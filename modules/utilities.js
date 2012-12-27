@@ -614,8 +614,11 @@ util.channel = {
      * @return {Number} The channel's id, or -1 if the channel doesn't exist
      */
     id: function (name) {
-        print("id: " + name);
         var id;
+        if (id === -1) {
+            return 0;
+        }
+        
         if (typeof name === "string") {
             id = sys.channelId(name);
             if (id === undefined) {
