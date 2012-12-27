@@ -106,7 +106,7 @@ DataHash = {};
  * File which all content is stored in
  * @type {String}
  */
-DataHash.file = "DataHash.json";
+DataHash.file = "DataHash-v3.json";
 
 /* Reads DataHash from file */
 util.sandbox.DataHash = util.json.read(DataHash.file);
