@@ -3950,7 +3950,7 @@
             },
             "step": function () {
                 try {
-                    this.tickDown();
+                    mafia.tickDown();
                 } catch (err) {
                     bot.sendAll("An exception has occured: " + util.error.format("", err), Channels.mafia);
                 }
