@@ -1024,6 +1024,10 @@ util.file = {
      * @return {Object} this
      */
     create: function (file, replacement) {
+        if (!file || typeof file !== "string" || file.isEmpty()) {
+            return this;
+        }
+        
         sys.appendToFile(file, "");
         if (sys.getFileContent(file) === "") {
             sys.writeToFile(file, replacement);

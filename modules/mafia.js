@@ -15,14 +15,6 @@
         };
 
     function Mafia(mafiachan) {
-        /*** CUSTOM ***/
-        util.file.create(MAFIA_SAVE_FILE, "{}");
-        util.file.create(MAFIA_LOG_FILE, "{}");
-        util.file.create(MAFIA_VILLIFIED_FILE, "{}");
-
-        sys.makeDir("mafiathemes");
-        var mafiachan = Channels.mafia;
-        /*** END CUSTOM ***/
         
         
         // Remember to update this if you are updating mafia
@@ -45,6 +37,15 @@
         var DEFAULT_BORDER = "***************************************************************************************";
         var border;
 
+        /*** CUSTOM ***/
+        util.file.create(MAFIA_SAVE_FILE, "{}");
+        util.file.create(MAFIA_LOG_FILE, "{}");
+        util.file.create(MAFIA_VILLIFIED_FILE, "{}");
+
+        sys.makeDir("mafiathemes");
+        var mafiachan = Channels.mafia;
+        /*** END CUSTOM ***/
+            
         var saveVillifiedPlayers = function () {
             sys.writeToFile(MAFIA_VILLIFIED_FILE, JSON.stringify(villifiedPlayers));
         };
