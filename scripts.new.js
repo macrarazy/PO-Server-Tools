@@ -481,6 +481,9 @@ download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack)
     var filePath = FileName.split(/\/|\\/);
 
     if (sys.getFileContent(FileName) && !ForceDownload) {
+        if (typeof CallBack === "function") {
+            CallBack();
+        }
         return "";
     }
 
@@ -590,14 +593,28 @@ callResult = function (hook_name, hook_args) {
 
 /* Downloads and loads all modules and command categories in an anonymous function */
 (function () {
+    var modulesLength = Modules.length,
+        downloadedModules = [];
+    
     Modules.forEach(function (value, index, array) {
-        download(value, value, OverwriteModules, true);
-        include(value, null, OverwriteModules);
-    });
-
-    CommandCategories.forEach(function (value, index, array) {
-        download(value, value, OverwriteCommands, false, function () {
-            include(value, null, OverwriteCommands);
+        download(value, value, OverwriteModules, false, function () {
+            if (modulesLength === index + 1) {
+                Modules.forEach(function (value, index, array) {
+                    include(value, null, OverwriteModules);
+                });
+                
+                modulesLength = CommandCategories.length;
+                
+                CommandCategories.forEach(function (value, index, array) {
+                    download(value, value, OverwriteCommands, false, function () {                        
+                        if (modulesLength === index + 1) {
+                            CommandCategories.forEach(function (value, index, array) {
+                                include(value, null, OverwriteCommands);
+                            });
+                        }
+                    });
+                });
+            }
         });
     });
 }());

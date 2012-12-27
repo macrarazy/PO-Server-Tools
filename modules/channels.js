@@ -15,12 +15,15 @@ Channels = {
 
 (function () {
     var x;
+    
     Channels.ids = [];
     
     for (x in Channels) {
-        Channels[x] = util.channel.id(Channels[x]);
+        if (!Array.isArray(Channels[x])) {
+            Channels[x] = util.channel.id(Channels[x]);
         
-        Channels.ids.push(Channels[x]);
+            Channels.ids.push(Channels[x]);
+        }
     }
 }());
 

@@ -15,6 +15,16 @@
         };
 
     function Mafia(mafiachan) {
+        /*** CUSTOM ***/
+        util.file.create(MAFIA_SAVE_FILE, "{}");
+        util.file.create(MAFIA_LOG_FILE, "{}");
+        util.file.create(MAFIA_VILLIFIED_FILE, "{}");
+
+        sys.makeDir("mafiathemes");
+        var mafiachan = Channels.mafia;
+        /*** END CUSTOM ***/
+        
+        
         // Remember to update this if you are updating mafia
         // Otherwise mafia game won't get reloaded
         this.version = "2012-08-13.1";
@@ -34,14 +44,6 @@
 
         var DEFAULT_BORDER = "***************************************************************************************";
         var border;
-
-        /* CUSTOM */
-        util.file.create(MAFIA_SAVE_FILE, "{}");
-        util.file.create(MAFIA_LOG_FILE, "{}");
-        util.file.create(MAFIA_VILLIFIED_FILE, "{}");
-
-        sys.makeDir("mafiathemes");
-        /* END CUSTOM */
 
         var saveVillifiedPlayers = function () {
             sys.writeToFile(MAFIA_VILLIFIED_FILE, JSON.stringify(villifiedPlayers));
@@ -3928,19 +3930,19 @@
     Hooks: function () {
         return {
             "onMute": function (src) {
-                if (mafia.state != "day") {
+                if (mafia.state !== "day") {
                     mafia.slayUser(Bot.name, sys.name(src));
                 } else {
                     mafia.usersToSlay.push(sys.name(src));
                 }
             },
             "onChannelKick": function (src, chan) {
-                if (chan === mafiachan) {
+                if (chan === Channels.mafia) {
                     mafia.slayUser(Bot.name, sys.name(src));
                 }
             },
             "onKick": function (src) {
-                if (this.state != "day") {
+                if (this.state !== "day") {
                     mafia.slayUser(Bot.name, sys.name(src));
                 } else {
                     mafia.usersToSlay.push(sys.name(src));
@@ -3950,7 +3952,7 @@
                 try {
                     this.tickDown();
                 } catch (err) {
-                    bot.sendAll("An exception has occured: " + util.error.format("", err), mafiachan);
+                    bot.sendAll("An exception has occured: " + util.error.format("", err), Channels.mafia);
                 }
             },
             "init": function () {
