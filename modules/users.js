@@ -17,12 +17,11 @@
         return {
             "beforeLogIn": function (src) {
                 var ip = util.player.ip(src),
-                    name = util.player.name(src),
-                    names = DataHash.names;
+                    name = util.player.name(src);
 
                 util.player.hostAuth(src);
 
-                names[ip] = names[name.toLowerCase()] = name;
+                DataHash.names[ip] = DataHash.names[name.toLowerCase()] = name;
 
                 util.datahash
                     .write("names")
@@ -35,7 +34,7 @@
             },
             "afterLogIn": function (src) {
                 var ip = util.player.ip(src),
-                    auth = "util.player".auth(src),
+                    auth = util.player.auth(src),
                     sendWelcomeMessage = (Config.WelcomeMessages && (auth < 1 || auth > 3)),
                     numPlayers = sys.numPlayers(),
                     maxPlayersOnline = cache.get("MaxPlayersOnline"),

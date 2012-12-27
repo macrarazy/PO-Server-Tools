@@ -761,14 +761,16 @@ callResult = function (hook_name, hook_args) {
                 commandName = queryRes;
             }
 
-            queryRes = callResult("commandPlayerAuthRequested", src, message, chan, commandName).forEach(function (auth, index, array) {
+            queryRes = callResult("commandPlayerAuthRequested", src, message, chan, commandName);
+            queryRes.forEach(function (auth, index, array) {
                 if (auth > maxAuth.auth) {
                     maxAuth = {
                         index: index,
                         auth: auth
                     };
                 }
-            })[maxAuth.index];
+            });
+            queryRes = queryRes[maxAuth.index];
 
             if (queryRes) {
                 auth = queryRes;
