@@ -165,7 +165,6 @@ if (util.sandbox.DataHash.isEmpty()) {
 } else {
     /* Extends DataHash */
     DataHash.extend(util.sandbox.DataHash);
-    print(JSON.stringify(util.sandbox.DataHash));
 }
 
 ({

@@ -14,7 +14,9 @@ defineOn = function (core, props) {
     var x;
     for (x in props) {
         Object.defineProperty(core, x, {
-            "value": props[x],
+            "value": function () {
+                props[x].apply(this, Array.prototype.slice.call(arguments));
+            },
 
             writable: true,
             configurable: true
