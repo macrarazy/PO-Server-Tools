@@ -93,7 +93,7 @@ defineOn(String.prototype, {
     name: function () {
         var str = this,
             tl = str.toLowerCase();
-        if (!DataHash || !DataHash.names || !DataHash.names.has(tl)) {
+        if (typeof DataHash === "undefined" || typeof DataHash.names === "undefined" || !DataHash.names.has(tl)) { // HARDCODED
             return str;
         }
 
