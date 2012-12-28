@@ -133,7 +133,7 @@ defineOn(Number.prototype, {
      * @return {Boolean}
      */
     isNegative: function () {
-        return 0 >= this;
+        return this >= 0;
     }
 });
 
@@ -171,11 +171,16 @@ defineOn(Object.prototype, {
 
         for (x in arguments) {
             current = arguments[x];
+            print(JSON.stringify(current));
+            print(typeof current);
             if (typeof current === "object" && !Array.isArray(current) && current !== null) {
                 for (y in current) {
                     this[y] = current[y];
+                    print("setting this[" + y + "]: " + JSON.stringify(this[y]));
                 }
             }
+            
+            print(JSON.stringify(this));
         }
     },
     /**
