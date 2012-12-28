@@ -169,6 +169,8 @@ defineOn(Object.prototype, {
             y,
             current;
 
+        print (JSON.stringify(arguments));
+        
         for (x in arguments) {
             current = arguments[x];
             print(JSON.stringify(current));
@@ -179,9 +181,9 @@ defineOn(Object.prototype, {
                     print("setting this[" + y + "]: " + JSON.stringify(this[y]));
                 }
             }
-            
-            print(JSON.stringify(this));
         }
+
+        print(JSON.stringify(this));
     },
     /**
      * Returns the amount of keys in this Object
