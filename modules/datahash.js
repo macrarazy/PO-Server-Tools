@@ -163,8 +163,10 @@ if (util.sandbox.DataHash.isEmpty()) {
     /* Write to file */
     util.json.write(DataHash.file, DataHash);
 } else {
+    print("calling datahash.extend");
     /* Extends DataHash */
     DataHash.extend(util.sandbox.DataHash);
+    print(JSON.stringify(DataHash));
 }
 
 ({
