@@ -593,21 +593,24 @@ callResult = function (hook_name, hook_args) {
 
 /* Downloads and loads all modules and command categories in an anonymous function */
 (function () {
-    var modulesLength = Modules.length,
-        downloadedModules = [];
+    var downloadedModules = 0,
+        modulesLength = Modules.length;
     
     Modules.forEach(function (value, index, array) {
         download(value, value, OverwriteModules, false, function () {
-            if (modulesLength === index + 1) {
+            downloadedModules++;
+            if (downloadedModules === modulesLength) {
                 Modules.forEach(function (value, index, array) {
                     include(value, null, OverwriteModules);
                 });
                 
                 modulesLength = CommandCategories.length;
+                downloadedModules = 0;
                 
                 CommandCategories.forEach(function (value, index, array) {
-                    download(value, value, OverwriteCommands, false, function () {                        
-                        if (modulesLength === index + 1) {
+                    download(value, value, OverwriteCommands, false, function () {     
+                        downloadedModules = 0;
+                        if (downloadedModules === modulesLength) {
                             CommandCategories.forEach(function (value, index, array) {
                                 include(value, null, OverwriteCommands);
                             });
