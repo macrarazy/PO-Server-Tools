@@ -135,7 +135,8 @@ Modules = [
     "modules/truthy.js", // Imported
     "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
     "modules/jsession.js", "modules/users.js", "modules/channels.js", "modules/templates.js",
-    "modules/mafia.js"
+    "modules/mafia.js",
+    "commands/base.js" // Base for all commands
 ];
 
 /**
@@ -145,9 +146,6 @@ Modules = [
  */
 
 CommandCategories = [
-    /* Base for all commands - Required */
-    "commands/base.js",
-
     /* Commands - User */
     "commands/user/fun.js",
     "commands/user/poll.js",
@@ -604,17 +602,9 @@ callResult = function (hook_name, hook_args) {
                     include(value, null, OverwriteModules);
                 });
                 
-                modulesLength = CommandCategories.length;
-                downloadedModules = 0;
-                
                 CommandCategories.forEach(function (value, index, array) {
                     download(value, value, OverwriteCommands, false, function () {     
-                        downloadedModules = 0;
-                        if (downloadedModules === modulesLength) {
-                            CommandCategories.forEach(function (value, index, array) {
-                                include(value, null, OverwriteCommands);
-                            });
-                        }
+                        include(value, null, OverwriteCommands);
                     });
                 });
             }
@@ -879,7 +869,7 @@ callResult = function (hook_name, hook_args) {
      * After a channel is created
      * @param {Number} chan The id of the channel
      * @param {String} name The name of the channel
-     * @param {Number} src The id of the player who created the channel (0 if it was created by the app/script)
+     * @param {Number} src The id of the player who created the channel (0 if it was created by the server itself or the script)
      */
     afterChannelCreated: function (chan, name, src) {
         call("afterChannelCreated", chan, name, src);
