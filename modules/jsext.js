@@ -11,11 +11,15 @@
  */
 
 defineOn = function (core, props) {
-    var x;
+    var x,
+        prop;
     for (x in props) {
+        prop = props[x];
         Object.defineProperty(core, x, {
             "value": function () {
-                props[x].apply(this, Array.prototype.slice.call(arguments));
+                print("calling " + x + " with scope:");
+                print(JSON.stringify(this));
+                prop.apply(this, Array.prototype.slice.call(arguments));
             },
 
             writable: true,
@@ -173,17 +177,12 @@ defineOn(Object.prototype, {
         
         for (x in arguments) {
             current = arguments[x];
-            print(JSON.stringify(current));
-            print(typeof current);
             if (typeof current === "object" && !Array.isArray(current) && current !== null) {
                 for (y in current) {
                     this[y] = current[y];
-                    print("setting this[" + y + "]: " + JSON.stringify(this[y]));
                 }
             }
         }
-
-        print(JSON.stringify(this));
     },
     /**
      * Returns the amount of keys in this Object
