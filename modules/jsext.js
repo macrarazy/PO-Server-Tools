@@ -15,6 +15,7 @@ defineOn = function (core, props) {
         prop;
     for (x in props) {
         prop = props[x];
+        print("defineOn: adding" + x);
         Object.defineProperty(core, x, {
             "value": function () {
                 print("calling " + x + " with scope:");
