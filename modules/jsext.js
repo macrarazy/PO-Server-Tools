@@ -169,11 +169,9 @@ defineOn(Object.prototype, {
      */
     extend: function (obj) {
         var y;
-        
-        if (typeof obj === "object" && !Array.isArray(obj) && obj !== null) {
-            for (y in obj) {
-                this[y] = obj[y];
-            }
+    
+        for (y in obj) {
+            this[y] = obj[y];
         }
     },
     /**
@@ -219,26 +217,21 @@ defineOn(Array.prototype, {
      */
     fancyJoin: function () {
         var array = this,
-            x,
             retstr = "",
-            arrlen = array.length;
+            arrlen = array.length - 1;
 
-        if (arrlen < 2) {
+        if (arrlen + 1 < 2) {
             return array.join("");
         }
 
-        arrlen--;
-
-        for (x in array) {
-            if (arrlen === x * 1) {
-                retstr = retstr.substr(0, retstr.lastIndexOf(","));
-                retstr += " and " + array[x];
-
-                return retstr;
+        array.forEach(function (index, value, _array) {
+            if (index === arrlen) {
+                retstr = retstr.substr(0, retstr.lastIndexOf(",")) + " and " + array[index];
+                return;
             }
 
-            retstr += array[x] + ", ";
-        }
+            retstr += array[index] + ", ";
+        });
 
         return retstr;
     }
