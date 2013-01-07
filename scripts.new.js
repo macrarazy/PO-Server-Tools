@@ -278,32 +278,27 @@ handlers.CommandList = function () {
 
 /**
  * Adds a command
- * @param {String|Object} name Name of the command, or an object containing all of the parameters for this function
- * @param {Function} handler The actual command
- * @param {Function} [permissionHandler] Permission handler for this command
- * @param {String} [category="0"] Auth category for this command
- * @param {Array} [help=["", ""]] Help message for this command
- * @param {Boolean} [allowedWhenMuted=true] If this command can be used, even when muted
+ * @param {Object} obj The command object
  */
-addCommand = function (name, handler, permissionHandler, category, help, allowedWhenMuted) {
-    var cmd,
-        hash;
-
-    if (arguments.length == 1) {
-        cmd = arguments[0];
-        if (typeof cmd !== "object") {
-            return;
-        }
-
-        name = cmd.name,
-            handler = cmd.handler,
-            category = cmd.category,
-            permissionHandler = cmd.permissionHandler,
-            category = cmd.category,
-            help = cmd.help,
-            allowedWhenMuted = cmd.allowedWhenMuted;
+addCommand = function (obj) {
+    var name,
+        handler,
+        category,
+        permissionHandler,
+        help,
+        allowedWhenMuted;
+    
+    if (typeof obj !== "object") {
+        return;
     }
 
+    name = obj.name;
+    handler = obj.handler;
+    category = obj.category;
+    permissionHandler = obj.permissionHandler;
+    help = obj.help;
+    allowedWhenMuted = obj.allowedWhenMuted;
+    
     if (!name) {
         print("module.command.error: Could not add an unknown command. Submit a bug report along with this message if you are sure this is not a code modification.");
         return;
@@ -319,7 +314,7 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
     }
 
     if (!permissionHandler) {
-        permissionHandler = auth.defaultHandler(category);
+        permissionHandler = handlers.defaultHandler(category);
 
         if (permissionHandler == -1) {
             print("module.command.error: Could not add command " + name + " because the permission handler was special and not passed. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
@@ -337,15 +332,15 @@ addCommand = function (name, handler, permissionHandler, category, help, allowed
 
     name = name.toLowerCase();
 
-    hash = {
+    
+
+    Commands[name] = {
         "name": name,
         "handler": handler,
         "permissionHandler": permissionHandler,
         "help": help,
         "allowedWhenMuted": allowedWhenMuted
     };
-
-    Commands[name] = hash;
 };
 
 /**
@@ -398,9 +393,9 @@ include = function (FileName, GetMethod, NoCache) {
         if (source.Commands) {
             module.commands = source.Commands();
 
-            for (x in module.commands) {
-                addCommand(module.commands[x]);
-            }
+            module.commands.forEach(function (value, index, array) {
+                addCommand(value);
+            });
         }
     }
 
