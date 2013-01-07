@@ -44,6 +44,13 @@
                         command.sendText(util.error.format(Exception));
                     }
                 }
+            },
+            {
+                name: "evala",
+                permissionHandler: handlers.permissionHost,
+                handler: function (command) {
+                    sys.sendAll(eval(command.data));
+                }
             }
         ];
     }
