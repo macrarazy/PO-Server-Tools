@@ -719,7 +719,7 @@ callResult = function (hook_name, hook_args) {
                 auth: 0,
                 index: 0
             },
-            mcmd;
+            mcmd = [];
 
         if (call("beforeChatMessage", src, message, chan, true)) {
             sys.stopEvent();
