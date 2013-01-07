@@ -1,5 +1,5 @@
 /**
- * @fileOverview Name-ify module
+ * @fileOverview Name-ify commands for Administrators
  * @author TheUnknownOne
  * @version 3.0.0 Alpha 1
  */

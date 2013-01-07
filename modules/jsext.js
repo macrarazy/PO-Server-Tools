@@ -11,8 +11,8 @@
  */
 
 defineOn = function (core, props) {
-    var x,
-        prop;
+    var x;
+    
     for (x in props) {
         Object.defineProperty(core, x, {
             "value": props[x],

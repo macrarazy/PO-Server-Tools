@@ -13,6 +13,7 @@ Standard for commandInfo passed in all commands.
     Defined in "modules/utilities.js": Enhanced Components
         * tar (Number): Result of util.player.id(commandInfo.mcmd[0]);, allows ID to be the player's actual ID.
         + send (Function): Short for bot.send(commandInfo.src, Arg: message, commandInfo.chan);
+        + sendText (Function): Short for bot.sendText(commandInfo.src, Arg: message, commandInfo.chan);
         + sendAll (Function): Short for bot.sendAll(Arg: message, commandInfo.chan);
         + sendOthers (Function): Short for bot.sendOthers(commandInfo.src, Arg: message, commandInfo.chan, Arg OPTIONAL: escapeHtml);
         + line (Function): Short for bot.line(commandInfo.src, commandInfo.chan);

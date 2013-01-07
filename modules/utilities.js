@@ -1325,6 +1325,13 @@ util.time = {
         return +(sys.time());
     },
     /**
+     * Returns the time since epoch in milliseconds
+     * @return {Number}
+     */
+    milli: function () {
+        return new Date().getTime();
+    },
+    /**
      * Formats a number (time) to a readable string
      * @param {Number} time Time to format
      * @return {String}
@@ -1402,32 +1409,30 @@ util.time = {
                     /* Message utility functions */
                     send: function (message) {
                         bot.send(src, message, chan);
-
+                        return this;
+                    },
+                    sendText: function (message) {
+                        bot.sendText(src, message, chan);
                         return this;
                     },
                     sendAll: function (message) {
                         bot.sendAll(message, chan);
-
                         return this;
                     },
                     sendOthers: function (message, escapeHtml) {
                         bot.sendOthers(src, message, chan, escapeHtml);
-
                         return this;
                     },
                     line: function () {
                         bot.line(src, chan);
-
                         return this;
                     },
                     lineAll: function () {
                         bot.lineAll(chan);
-
                         return this;
                     },
                     sendMain: function () {
                         bot.sendAll(message, 0);
-
                         return this;
                     }
                 };
