@@ -15,11 +15,8 @@ defineOn = function (core, props) {
         prop;
     for (x in props) {
         prop = props[x];
-        print("defineOn: adding" + x);
         Object.defineProperty(core, x, {
             "value": function () {
-                print("calling " + x + " with scope:");
-                print(JSON.stringify(this));
                 prop.apply(this, Array.prototype.slice.call(arguments));
             },
 
@@ -168,20 +165,14 @@ defineOn(Object.prototype, {
     },
     /**
      * Extends this Object (adding all properties from arguments to this array)
+     * @param {Object} obj Object to extend
      */
-    extend: function () {
-        var x,
-            y,
-            current;
-
-        print (JSON.stringify(arguments));
+    extend: function (obj) {
+        var y;
         
-        for (x in arguments) {
-            current = arguments[x];
-            if (typeof current === "object" && !Array.isArray(current) && current !== null) {
-                for (y in current) {
-                    this[y] = current[y];
-                }
+        if (typeof obj === "object" && !Array.isArray(obj) && obj !== null) {
+            for (y in obj) {
+                this[y] = obj[y];
             }
         }
     },
@@ -257,9 +248,9 @@ defineOn(Array.prototype, {
     /**
      * Returns the name of this module
      * @private
-     * @return {String} JavaScript Extend Core
+     * @return {String}
      */
     Name: function () {
-        return "JavaScript Extend Core"
+        return "JSExt"
     }
 })
