@@ -3953,7 +3953,7 @@
                 try {
                     mafia.tickDown();
                 } catch (err) {
-                    bot.sendAll("An exception has occured: " + util.error.format("", err), Channels.mafia);
+                    util.error.trace(err, "MafiaTickException", "modules/mafia.js");
                 }
             },
             "init": function () {
@@ -3985,6 +3985,7 @@
                     }
                     catch (Exception) {
                         if (Exception != "no valid command") {
+                            util.error.trace(Exception, "MafiaCommandException", "modules/mafia.js");
                             bot.sendAll(util.error.format("A mafia error has occured.", Exception), Channels.mafia);
 
                             mafia.endGame(0);

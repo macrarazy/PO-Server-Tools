@@ -43,8 +43,8 @@ Cache = function (file) {
             cacheName = "cache";
         }
 
-        print(util.error.format("Could not load " + cacheName + " from file " + this.file + "!", Exception));
-        print("Old cache available in " + file + "-corrupted.json. Cache and " + this.file + " have been cleared.");
+        util.error.trace(Exception, "Couldn't load " + cacheName + " from file " + file, "modules/cache.js");
+        print("Old cache available in " + file + "-corrupted.json. Cache and " + file + " have been cleared.");
     }
 
     return this;

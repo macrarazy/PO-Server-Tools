@@ -1103,6 +1103,59 @@ util.error = {
         }
 
         return mess + " " + str;
+    },
+    /**
+     * Prints an error backtrace on the server window
+     * @param {Error} e Exception
+     * @param {String} [mess] Optional message indicating the backtrace
+     * @param {String} [fname] Optional filename of the current file (can make debugging a ton easier)
+     */
+    trace: function (e, mess, fname) {
+        var lastChar,
+            lineData = "",
+            name,
+            msg,
+            str,
+            error,
+            file = "";
+
+        if (typeof mess === "string" && arguments.length !== 1) {
+            mess = "[" + mess + "]: ";
+        } else {
+            mess = "";
+        }
+        
+        if (typeof fname === "string") {
+            file = "in file " + fname;
+        }
+
+        name = e.name;
+        msg = e.message;
+        lastChar = mess[mess.length - 1];
+
+        if (mess !== "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
+            mess += ".";
+        }
+
+        if (typeof e.toLowerCase !== 'undefined') { /** when throw is used **/
+            error = mess + " Custom Error " + file + ": " + e.toString();
+        } else {
+            if (e.lineNumber !== 1) {
+                lineData = " on line " + e.lineNumber;
+            }
+            
+            
+            error = mess + " " + name + " " + file + lineData + ": " + e.toString();
+
+            lastChar = error[error.length - 1];
+
+            if (lastChar !== "." && lastChar !== "?" && lastChar !== ":" && lastChar !== "!") {
+                error += ".";
+            }
+        }
+        
+        print(error);
+        // print("[{help}]: {exceptionName} in file {fileName} on line {lineName}: {error}");
     }
 };
 
@@ -1209,8 +1262,8 @@ util.message = {
                 try {
                     ret = Truthy.eval(toEval);
                 }
-                catch (e) {
-                    return util.error.format("", e);
+                catch (Exception) {
+                    return util.error.format(Exception);
                 }
 
                 if (ret === undefined) {
@@ -1446,11 +1499,11 @@ util.time = {
                     bot.sendText(src, "You can't use the \"" + fullCommand + "\" command because you are muted", chan);
                 } else {
                     bot.sendText(src, "An exception occurred when you tried to use the \"" + fullCommand + "\" command.", chan);
-                    print("CommandError: " + util.error.format(Exception || {
+                    util.error.trace(Exception || {
                         name: "UnknownError",
                         message: "An unknown exception has occurred",
                         lineNumber: 1
-                    }) + "\".");
+                    }, "CommandException", "scripts.js, from modules/utilities.js");
                 }
             }
         };

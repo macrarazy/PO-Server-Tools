@@ -47,10 +47,10 @@
         evos;
 
     try {
-        if (!Pokedex) {
+        if (typeof Pokedex === "undefined") {
             Pokedex = {};
         }
-        if (!Pokedex.data) { /* Only do this once! Takes too much time! */
+        if (typeof Pokedex.data === "undefined") { /* Only do this once! Takes too much time! */
             parseFile = function (file) {
                     return (sys.getFileContent("db/pokes/" + file + ".txt") || "").split("\n");
                 },
@@ -550,7 +550,7 @@
             t.render(src, chan);
         }
     } catch (Exception) {
-        print(util.error.format(Exception));
+        util.error.trace(Exception, "PokedexLoadException", "commands/user/pokedex.js");
     }
 }());
 
@@ -600,9 +600,9 @@
                         command.send("Since the Pokémon " + data + " doesn't exist, the Pokédex displayed " + util.grammar.es(rand) + " data instead.".escapeHtml());
                         try {
                             Pokedex.run(command.src, rand, command.chan);
-                        } catch (PokedexException) {
+                        } catch (Exception) {
                             command.send("The Pokédex isn't functional at the moment.");
-                            print("PokedexException: " + util.error.format(PokedexException));
+                            util.error.trace(Exception, "PokedexException", "commands/user/pokedex.js");
                         }
                     }
                 }

@@ -289,6 +289,7 @@ if (!GLOBAL["cData"]) {
             },
             "switchError": function (newScript) {
                 bot.sendAll("Automatically recovered from a fatal exception. Error: " + util.error.format(newScript), Channels.watch);
+                util.error.trace(newScript, "Recovered from fatal exception", "scripts.js");
             }
         };
     }

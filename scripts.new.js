@@ -313,7 +313,7 @@ addCommand = function (obj) {
         category = "0"; // Default
     }
 
-    if (!permissionHandler) {
+    if (typeof permissionHandler !== "function") {
         permissionHandler = handlers.defaultHandler(category);
 
         if (permissionHandler == -1) {
@@ -470,7 +470,6 @@ include.get = function (FileName, Method) {
  * @return {String} Content of URL + Branch + / + FilePath
  */
 download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack) {
-    // TODO: Scripts crash in this function. Fix.
     var filePath = FileName.split(/\/|\\/);
 
     if (sys.getFileContent(FileName) && !ForceDownload) {
@@ -783,7 +782,7 @@ callResult = function (hook_name, hook_args) {
 
                 chan: chan,
 
-                command: command,
+                command: commandName,
                 fullCommand: fullCommand
             };
 
