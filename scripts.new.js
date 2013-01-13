@@ -806,7 +806,7 @@ callResult = function (hook_name, hook_args) {
             }
 
             try {
-                cmd(commandInfo);
+                cmd.handler(commandInfo);
             } catch (Exception) {
                 call("onCommandError", src, fullCommand, chan, "exception", Exception);
             }

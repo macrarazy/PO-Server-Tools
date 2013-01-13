@@ -44,7 +44,10 @@
         importMoves,
         fEgg2Pokes = {},
         hasFegg1,
-        evos;
+        evos,
+        currMoveObj,
+        movesDone = [],
+        move2Array;
 
     try {
         if (typeof Pokedex === "undefined") {
@@ -138,9 +141,8 @@
             }
 
             /* Checks for duplicate moves */
-            moveObj.forEach(function (value, index, array) {
-                var movesDone = [],
-                    move2Array = value.split(" ");
+            for (currMoveObj in moveObj) {
+                move2Array = moveObj[currMoveObj].split(" ");
 
                 Truthy.foreach(move2Array, function (value, index, array) {
                     var moveId = sys.move(+(value));
@@ -152,8 +154,8 @@
                     movesDone.push(moveId);
                 });
 
-                array[index] = move2Array.join(" ");
-            });
+                moveObj[currMoveObj] = move2Array.join(" ");
+            }
 
             /* We check CC later, as it's a little messy.
                We also will check evolutions later as some pokes don't have one. */

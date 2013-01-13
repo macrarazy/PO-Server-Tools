@@ -391,9 +391,7 @@ util.player = {
      * @return {Number|*} Id of the player, or (user) if the player isn't online
      */
     id: function (user) {
-        print("debug, util.player.id: " + user + "," + typeof user);
         if (typeof user === "string") {
-            print("special_res = " + sys.id(user) || -1);
             return sys.id(user) || -1;
         } else if (sys.loggedIn(user)) {
             return user;
@@ -1115,13 +1113,11 @@ util.error = {
      * @param {Error} e Exception
      * @param {String} [mess] Optional message indicating the backtrace
      * @param {String} [fname] Optional filename of the current file (can make debugging a ton easier)
+     * @return {String} The error trace (same as the one printed on the server console)
      */
     trace: function (e, mess, fname) {
         var lastChar,
             lineData = "",
-            name,
-            msg,
-            str,
             error,
             file = "";
 
@@ -1132,15 +1128,7 @@ util.error = {
         }
         
         if (typeof fname === "string") {
-            file = "in file " + fname;
-        }
-
-        name = e.name;
-        msg = e.message;
-        lastChar = mess[mess.length - 1];
-
-        if (mess !== "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
-            mess += ".";
+            file = "in file \"" + fname + "\"";
         }
 
         if (typeof e.toLowerCase !== 'undefined') { /** when throw is used **/
@@ -1151,7 +1139,7 @@ util.error = {
             }
             
             
-            error = mess + " " + name + " " + file + lineData + ": " + e.toString();
+            error = mess + " " + e.name + " " + file + lineData + ": " + e.toString();
 
             lastChar = error[error.length - 1];
 
@@ -1161,7 +1149,9 @@ util.error = {
         }
         
         print(error);
-        // print("[{help}]: {exceptionName} in file {fileName} on line {lineName}: {error}");
+        // print("[{help}]: {exceptionName} in file "{fileName}" on line {lineName}: {error}");
+        
+        return error;
     }
 };
 
