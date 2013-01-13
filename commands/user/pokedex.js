@@ -127,7 +127,7 @@
             importMoves(ftms, tmMoves);
             importMoves(ftutor, tutorMoves);
 
-            while (i !== 650) {
+            while (i < 650) {
                 current_move = levelMoves[i];
 
                 [dwMoves, eggMoves, eventMoves, evoMoves, tutorMoves, tmMoves].forEach(function (value, index, array) {
@@ -137,12 +137,13 @@
                 });
 
                 moveObj[sys.pokemon(i)] = current_move;
-                i++;
+                ++i;
             }
 
             /* Checks for duplicate moves */
             for (currMoveObj in moveObj) {
-                move2Array = moveObj[currMoveObj].split(" ");
+                move2Array = moveObj[currMoveObj];
+                print(move2Arr); //.split(" ");
 
                 Truthy.foreach(move2Array, function (value, index, array) {
                     var moveId = sys.move(+(value));
