@@ -342,10 +342,6 @@ POUser = function (id) {
     this.megauser = false; //DataHash.megausers.has(nameToLower); // TODO: DataHash.megausers, .voices, .macros
     this.voice = false;//DataHash.voices.has(nameToLower);
 
-    if (DataHash.rankicons.has(nameToLower)) {
-        this.icon = DataHash.rankicons[nameToLower];
-    }
-
     //if (DataHash.macros.has(nameToLower)) {
         //this.macro = DataHash.macros[nameToLower];
     //}
