@@ -148,20 +148,20 @@ Templates = {
                 // TODO: Improve this - update /help
                 // New syntax: (Category)::(Type) {(TEXT)}, ex. Player::Online {Player} (Old: {(Category)::Type (TEXT)} ex. {Player::Online Player}
                 /* New colors:
-                 Player::Online (online only) | slateblue
-                 Player::Offline (offline only) | red
-                 Player::Database (online or offline) | mediumpurple
-                 Player::Tournament (must be in channel's tournament) | seagreen
-                 Player::Auth (must be auth) | orange
-
-                 Text::Number (must be a number) | darksalmon
-                 Text::Choice (multiple options defined in (TEXT)) | cadetblue
-                 Text::Time (time (number)) | mediumvioletred
-                 Text::TimeUnit (time (unit)) | darkviolet
-                 Text::Options (options splitted by '/') | mediumorchid
-                 Text::Any (any text) | silver
-
-                 Pokemon::AttackingMove (must be an attacking move) | maroon
+                     Player::Online (online only) | slateblue
+                     Player::Offline (offline only) | red
+                     Player::Database (online or offline) | mediumpurple
+                     Player::Tournament (must be in channel's tournament) | seagreen
+                     Player::Auth (must be auth) | orange
+    
+                     Text::Number (must be a number) | darksalmon
+                     Text::Choice (multiple options defined in (TEXT)) | cadetblue
+                     Text::Time (time (number)) | mediumvioletred
+                     Text::TimeUnit (time (unit)) | darkviolet
+                     Text::Options (options splitted by '/') | mediumorchid
+                     Text::Any (any text) | silver
+    
+                     Pokemon::AttackingMove (must be an attacking move) | maroon
                  */
                 return str
                     .replace(/Player::Online \{(.*?)\}/gi, "<b><font color='slateblue'>$1</font></b>")

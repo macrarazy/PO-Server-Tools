@@ -124,3 +124,14 @@ Truthy = (function (global) {
         eval: eval
     };
 })(GLOBAL);
+
+({
+    /**
+     * Returns the name of this module
+     * @private
+     * @return {String}
+     */
+    Name: function () {
+        return "Truthy.js";
+    }
+})
