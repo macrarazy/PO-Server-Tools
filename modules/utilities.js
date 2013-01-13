@@ -618,19 +618,9 @@ util.channel = {
      * @return {Number} The channel's id, or -1 if the channel doesn't exist
      */
     id: function (name) {
-        var id;
-        if (id === -1) {
-            return 0;
-        }
-        
         if (typeof name === "string") {
-            id = sys.channelId(name);
-            if (id === undefined) {
-                return -1;
-            }
-
-            return id;
-        } else if (typeof name === "number") {
+            return sys.channelId(name) || 0;
+        } else if (typeof name === "number" && sys.existChannel(name)) {
             return name;
         }
 

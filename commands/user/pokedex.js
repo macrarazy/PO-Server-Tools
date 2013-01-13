@@ -142,8 +142,11 @@
 
             /* Checks for duplicate moves */
             for (currMoveObj in moveObj) {
-                move2Array = moveObj[currMoveObj];
-                print(move2Array); //.split(" ");
+                if (!Truthy.isString(moveObj[currMoveObj])) {
+                    continue;
+                }
+                
+                move2Array = moveObj[currMoveObj].split(" ");
 
                 Truthy.foreach(move2Array, function (value, index, array) {
                     var moveId = sys.move(+(value));
