@@ -379,6 +379,10 @@ util.player = {
             return sys.name(user);
         }
 
+        if (sys.id(name) !== undefined) {
+            name = sys.name(sys.id(name));
+        }
+        
         return user;
     },
     /**
@@ -387,7 +391,9 @@ util.player = {
      * @return {Number|*} Id of the player, or (user) if the player isn't online
      */
     id: function (user) {
+        print("debug, util.player.id: " + user + "," + typeof user);
         if (typeof user === "string") {
+            print("special_res = " + sys.id(user) || -1);
             return sys.id(user) || -1;
         } else if (sys.loggedIn(user)) {
             return user;
