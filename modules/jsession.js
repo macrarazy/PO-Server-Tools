@@ -691,7 +691,7 @@ JSESSION.refill();
                     target: {
                         name: tarName,
                         nameLower: tarName.toLowerCase(),
-                        player: player.player(tar),
+                        player: util.player.player(tar),
                         auth: util.player.auth(tar),
                         ip: util.player.ip(tar),
                         isHost: util.player.host(tar),
