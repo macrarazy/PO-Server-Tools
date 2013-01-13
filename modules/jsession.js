@@ -324,8 +324,7 @@ POUser = function (id) {
     nameToLower = name.toLowerCase();
 
     this.ip = util.player.ip(id);
-    this.name = name;
-    this.originalName = name;
+    this.name = this.originalName = name;
 
     this.id = id;
     this.lastChallenge = 0;
