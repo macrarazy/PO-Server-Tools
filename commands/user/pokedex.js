@@ -257,7 +257,7 @@
 
                 
                 poke = sys.pokemon(value[0]);
-                data = Pokedex.data[poke];
+                data = Pokedex.data[+(value[0])];
 
                 if (!data) {
                     return;
