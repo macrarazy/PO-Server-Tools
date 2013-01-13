@@ -228,8 +228,6 @@
                 if (hasFegg2) {
                     currentStats[6][1] = util.cut(currentStats[6], 1, ' ');
                 }
-
-                print(typeof statsTemp[4][1].split("/"));
                 
                 Pokedex.data[poke] = {
                     "stats": {
@@ -243,7 +241,7 @@
 
                     "weight": statsTemp[1][1],
                     "height": statsTemp[2][1],
-                    "minlvl": +(statsTemp[4][1].split("/").charAt(0)),
+                    "minlvl": +(statsTemp[4][1].split("/")[0]),
                     "genders": statsTemp[3][1],
                     "egg": [statsTemp[5][1], statsTemp[6][1]],
                     "moves": moveObj[poke]
