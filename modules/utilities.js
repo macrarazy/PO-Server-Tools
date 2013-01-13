@@ -1122,7 +1122,7 @@ util.error = {
             file = "";
 
         if (typeof mess === "string" && arguments.length !== 1) {
-            mess = "[" + mess + "]: ";
+            mess = "[" + mess + "]:";
         } else {
             mess = "";
         }

@@ -674,7 +674,7 @@ JSESSION.refill();
             "commandInfoRequested": function (src, message, chan, commandInfo) {
                 var selfName = sys.name(src),
                     tar = commandInfo.target,
-                    tarName = sys.name(tar),
+                    tarName = sys.name(tar) || "",
                     channel = commandInfo.chan,
                     chanName = sys.channel(channel);
 

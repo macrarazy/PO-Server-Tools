@@ -59,7 +59,7 @@ util.datahash = {
                         .replace("hostname", '"hostname"')
                         .replace("country_code", '"country_code"')
                         .replace("country_name", '"country_name"');
-                    
+
                     code = JSON.parse(json_code);
 
                     loc[ip] = code;
@@ -80,7 +80,7 @@ util.datahash = {
                     .replace("hostname", '"hostname"')
                     .replace("country_code", '"country_code"')
                     .replace("country_name", '"country_name"');
-                
+
                 code = JSON.parse(json_code);
 
                 loc[ip] = code;
@@ -96,7 +96,7 @@ util.datahash = {
                 }
             }
         }
-        
+
         return this;
     }
 };
@@ -117,55 +117,71 @@ DataHash.file = "DataHash-v3.json";
 /* Reads DataHash from file */
 util.sandbox.DataHash = util.json.read(DataHash.file);
 
-if (util.sandbox.DataHash.isEmpty()) {
+util.sandbox.DataHashNeeds = {
     /**
      * Stores proper cased names as (name.lowercase=>name.correctcase) and player last names by ip (ip=>lastname in correctcase)
      * @type {Object}
      */
-    DataHash.names = {};
+    names: {},
 
     /**
      * Contains all mutes by ip
      * @type {Object}
      */
-    DataHash.mutes = {};
+    mutes: {},
 
     /**
      * Contains all player locations by ip (country only)
      * @type {Object}
      */
-    DataHash.locations = {};
+    locations: {},
 
     /**
      * The currently running poll
      * @type {Object}
      */
-    DataHash.poll = {
+    poll: {
         mode: 0,
         subject: "",
         starter: "",
         options: {},
         votes: 0
-    };
+    },
 
     /**
      * Contains all of the evaluation operators
      * @type {Object}
      */
-    DataHash.evalOperators = {}; // NOTE: evalops -> evalOperators
+    evalOperators: {}, // NOTE: evalops -> evalOperators
 
     /**
      * Contains all auto idles
      * @type {Object}
      */
-    DataHash.idles = {};
+    idles: {}
+};
 
+util.sandbox.datahashx = null;
+
+for (util.sandbox.datahashx in util.sandbox.DataHashNeeds) {
+    util.sandbox.dhcurrval = util.sandbox.DataHashNeeds[util.sandbox.datahashx];
+    
+    if (!util.sandbox.DataHash.has(util.sandbox.datahashx)) {
+        util.sandbox.DataHash[util.sandbox.datahashx] = util.sandbox.dhcurrval;
+    }
+    
+    util.sandbox.dhNeedsWrite = true;
+}
+
+if (util.sandbox.dhNeedsWrite) {
     /* Write to file */
     util.json.write(DataHash.file, DataHash);
-} else {
-    /* Extends DataHash */
-    DataHash.extend(util.sandbox.DataHash);
+    
+    delete util.sandbox.dbNeedsWrite;
 }
+
+/* Extends DataHash */
+DataHash.extend(util.sandbox.DataHash);
 
 ({
     /**
