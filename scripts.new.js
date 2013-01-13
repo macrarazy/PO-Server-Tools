@@ -221,15 +221,19 @@ handlers.permissionHandler = function (level) {
         level = 4;
     }
 
-    return function (src) {
+    return function (src, lev) {
+        if (typeof lev === "undefined") {
+            lev = level;
+        }
+        
         if (!sys) {
             return true;
         }
         if (!util || !util.player || !util.player.auth) { // HARDCODED
-            return sys.auth(src) >= level;
+            return sys.auth(src) >= lev;
         }
 
-        return util.player.auth(src) >= level;
+        return util.player.auth(src) >= lev;
     }
 };
 
@@ -796,7 +800,7 @@ callResult = function (hook_name, hook_args) {
                 call("onCommandError", src, fullCommand, chan, "invalid");
                 return;
             }
-            if (!cmd.permissionHandler(src)) {
+            if (!cmd.permissionHandler(src, auth)) {
                 call("onCommandError", src, fullCommand, chan, "nopermission");
                 return;
             }

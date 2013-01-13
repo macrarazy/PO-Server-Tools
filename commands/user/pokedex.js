@@ -229,7 +229,7 @@
                     currentStats[6][1] = util.cut(currentStats[6], 1, ' ');
                 }
 
-                print(statsTemp[4][1].split("/"));
+                print(typeof statsTemp[4][1].split("/"));
                 
                 Pokedex.data[poke] = {
                     "stats": {
