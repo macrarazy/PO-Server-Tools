@@ -251,10 +251,18 @@
             /* Parsing evolutions */
             evos.forEach(function (value, index, array) {
                 var nextEntry = array[index + 1],
-                    poke = sys.pokemon(value[0]),
-                    data = Pokedex.data[poke],
-                    length = value.length;
+                    length = value.length,
+                    poke,
+                    data;
 
+                
+                poke = sys.pokemon(value[0]);
+                data = Pokedex.data[poke];
+
+                if (!data) {
+                    return;
+                }
+                
                 if (!!nextEntry && +(value[1]) === +(nextEntry[0])) {
                     data.evos = [value[1], nextEntry[1]];
                 } else if (length === 3 && value[1] === value[2]) { /* Feebas evo bug. */
