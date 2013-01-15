@@ -97,12 +97,14 @@ OverwriteModules = true;
 OverwriteCommands = true;
 
 /* Contains all commands. */
-CommandHandlers = {
-    /**
-     * Object for command lists. Can't be changed by addCommand (because the l is capitalized).
-     */
-    Lists: {}
-};
+if (typeof CommandHandlers === "undefined") {
+    CommandHandlers = {
+        /**
+         * Object for command lists. Can't be changed by addCommand (because the l is capitalized).
+         */
+        Lists: {}
+    };
+}
 
 /* Contains command/script-defined settings */
 Settings = {};
@@ -270,9 +272,9 @@ include = function (FileName, GetMethod, NoCache) {
         x,
         commandModule = false;
 
-    if (include.modules[FileName] && !NoCache) {
-        return include.get(FileName, GetMethod);
-    }
+    //if (include.modules[FileName] && !NoCache) {
+      //  return include.get(FileName, GetMethod);
+    //}
 
     /* Default Values */
     module.file = FileName;

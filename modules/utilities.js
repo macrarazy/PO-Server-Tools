@@ -1379,6 +1379,7 @@ util.time = {
                 if (errorType === "nopermission") {
                     bot.sendText(src, "You don't have the proper permissions to use the command \"" + fullCommand + "\".", chan);
                 } else if (errorType === "invalid") {
+                    print(typeof CommandHandlers);
                     print(JSON.stringify(CommandHandlers));
                     bot.sendText(src, "The command \"" + fullCommand + "\" doesn't exist.", chan);
                 } else if (errorType === "muted") {
