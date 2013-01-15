@@ -368,8 +368,8 @@ util.player = {
             return sys.name(user);
         }
 
-        if (sys.id(name) !== undefined) {
-            name = sys.name(sys.id(name));
+        if (sys.id(user) !== undefined) {
+            user = sys.name(sys.id(user));
         }
         
         return user;

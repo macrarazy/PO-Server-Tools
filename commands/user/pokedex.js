@@ -246,7 +246,6 @@
                     poke,
                     data;
 
-                
                 poke = sys.pokemon(value[0]);
                 data = Pokedex.data[+(value[0])];
 
@@ -270,9 +269,9 @@
             Truthy.foreach(fcc, function (value, index, array) {
                 var split = value.split(":"),
                     ccSpace = value.split(" "),
-                    poke = sys.pokemon(+(split[0]));
+                    poke = +(split[0]);
 
-                if (!poke || poke === "Missingno" || split[1].charAt(0) !== "0") { // Formes, Missingno.
+                if (!poke || poke === "Missingno" || split[1].charAt(0) !== "0") { /* Formes, Missingno. */
                     return "continue";
                 }
 
@@ -477,7 +476,7 @@
         Pokedex.run = function (src, pokemon, chan, showSource) {
             var t = new Templates.list("Pokedex - " + pokemon.fontcolor(Pokedex.moveColours[sys.pokeType1(sys.pokeNum(pokemon))])),
                 n = sys.pokeNum(pokemon),
-                PD = Pokedex.data[pokemon],
+                PD = Pokedex.data[n],
                 s = "",
                 s2 = "y",
                 gender = Pokedex.pokeGender(pokemon),
