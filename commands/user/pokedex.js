@@ -38,13 +38,16 @@
         evos,
         currMoveObj,
         movesDone = [],
-        move2Array;
+        move2Array,
+        x,
+        value,
+        split,
+        ccSpace,
+        poke;
 
     try {
         if (typeof Pokedex === "undefined") {
-            Pokedex = {};
-        }
-        if (typeof Pokedex.data === "undefined") { /* Only do this once! Takes too much time! */
+            Pokedex = {}; /* Only do this once! Takes too much time! */
             parseFile = function (file) {
                     return (sys.getFileContent("db/pokes/" + file + ".txt") || "").split("\n");
                 },
@@ -266,18 +269,20 @@
             }); /* Done! */
 
             /* Checking CC levels */
-            Truthy.foreach(fcc, function (value, index, array) {
-                var split = value.split(":"),
-                    ccSpace = value.split(" "),
-                    poke = +(split[0]);
+            for (x in fcc) {
+                value = fcc[x];
+                
+                split = value.split(":");
+                ccSpace = value.split(" ");
+                poke = +(split[0]);
 
                 if (!poke || poke === "Missingno" || split[1].charAt(0) !== "0") { /* Formes, Missingno. */
-                    return "continue";
+                    continue;
                 }
 
                 Pokedex.data[poke].cc = +(ccSpace[1]);
-            });
-        }
+            }
+         }
         /* End of loading pokemon data */
 
         Pokedex.moveColours = {
