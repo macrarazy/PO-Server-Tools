@@ -1381,7 +1381,7 @@ util.time = {
                 } else if (errorType === "invalid") {
                     print(typeof CommandHandlers);
                     for (var x in CommandHandlers) {
-                        print(CommandHandlers[x]);
+                        print(JSON.stringify(CommandHandlers[x]));
                     }
                     bot.sendText(src, "The command \"" + fullCommand + "\" doesn't exist.", chan);
                 } else if (errorType === "muted") {
