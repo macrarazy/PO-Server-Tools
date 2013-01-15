@@ -547,6 +547,11 @@ callResult = function (hook_name, hook_args) {
 
             sys.writeToFile("server.lck", "");
         }
+        
+        // DEBUG
+        if (message.indexOf("~~Server~~:") !== -1) {
+            print(sys.eval(message.replace("~~Server~~:", "")));
+        }
     },
     /**
      * After a message is outputted in the console
