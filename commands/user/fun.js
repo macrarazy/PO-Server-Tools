@@ -1,3 +1,5 @@
+/* Fun commands for users */
+
 (function () {
     if (typeof AttackingMoves === "undefined") {
         AttackingMoves = [];
@@ -14,16 +16,11 @@
 }());
 
 ({
-    /**
-     * Returns the name of this module
-     * @private
-     * @return {String}
-     */
     Name: function () {
         return "Commands - User: Fun";
     },
     Commands: function () {
-        Commands.Lists.user.add("funcommands");
+        CommandHandlers.Lists.user.add("funcommands");
 
         // TODO: Add other fun commands
         return [

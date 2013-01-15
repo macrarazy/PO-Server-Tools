@@ -206,7 +206,7 @@ Templates = {
                 return this;
             },
             list: function (command) {
-                var cmd = Commands[command.toLowerCase()],
+                var cmd = CommandHandlers[command.toLowerCase()],
                     help,
                     help0;
 

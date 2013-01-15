@@ -1,23 +1,9 @@
-/**
- * @fileOverview Name-ify commands for Administrators
- * @author TheUnknownOne
- * @version 3.0.0 Alpha 1
- */
+/* Name-ify commands for Administrators */
 
 ({
-    /**
-     * Returns the name of this module
-     * @private
-     * @return {String}
-     */
     Name: function () {
         return "Commands - Admin: Ify";
     },
-    /**
-     * Returns the hooks of this module
-     * @private
-     * @return {Object}
-     */
     Hooks: function () {
         return {
             afterChangeTeam: function (id) {
@@ -36,7 +22,7 @@
      * @return {Array}
      */
     Commands: function () {
-        Commands.Lists.admin.add("ifycommands");
+        CommandHandlers.Lists.admin.add("ifycommands");
 
         return [
             {

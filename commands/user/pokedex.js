@@ -1,13 +1,4 @@
-/* Dependencies:
- - modules/jsext.js
- - modules/utilities.js
- */
-
-/**
- * @fileOverview Server-side pokedex
- * @author TheUnknownOne
- * @version 3.0.0 Alpha 1
- */
+/* Server-side pokedex command for users */
 
 (function () {
     var parseFile,
@@ -569,21 +560,11 @@
 }());
 
 ({
-    /**
-     * Returns the name of this module
-     * @private
-     * @return {String}
-     */
     Name: function () {
         return "Commands - Pokedex";
     },
-    /**
-     * Returns the commands of this module
-     * @private
-     * @return {Object}
-     */
     Commands: function () {
-        Commands.Lists.user.add("pokedex");
+        CommandHandlers.Lists.user.add("pokedex");
 
         return [
             {

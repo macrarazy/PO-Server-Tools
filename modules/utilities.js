@@ -1,8 +1,4 @@
-/**
- * @fileOverview Utilities file
- * @author TheUnknownOne
- * @version 3.0.0 Alpha 1
- */
+/* Utilities used in almost every .js file */
 
 if (typeof Bot === "undefined") {
     /**
@@ -260,22 +256,13 @@ util.noop = function () {
 
 };
 
-/**
- * Object for timers
- * @type {Object}
- */
+/* Contains timers */
 util.timers = {"sys": []};
 
-/**
- * Sandbox
- * @type {Object}
- */
+/* Simple Sandbox */
 util.sandbox = {};
 
-/**
- * Player utilities
- * @type {Object}
- */
+/* Player Utilities*/
 util.player = {
     /**
      * To check if a player's ip is the same as the given target's
@@ -478,8 +465,6 @@ util.player = {
      */
     playerInfo: function (name) {
         var id = util.player.id(name),
-            auth = util.player.auth(name),
-            status,
             icon = util.player.authImage(name),
             player = util.player.player(name),
             lastOn = util.player.lastOnline(name);
@@ -607,10 +592,7 @@ util.player = {
     }
 };
 
-/**
- * Channel utilities
- * @type {Object}
- */
+/* Channel Utilities*/
 util.channel = {
     /**
      * Returns a channel's id
@@ -692,10 +674,7 @@ util.channel = {
     }
 };
 
-/**
- * Moderation utilities
- * @type {Object}
- */
+/* Player Moderation Utilities */
 util.mod = {
     /**
      * Bans a player, and kicks them
@@ -780,9 +759,7 @@ util.mod = {
      * @return {Object} this
      */
     kickAliases: function (ip) {
-        var aliases = sys.aliases(ip);
-
-        aliases.forEach(function (value, index, array) {
+        sys.aliases(ip).forEach(function (value, index, array) {
             var id = sys.id(value);
             if (id !== -1) {
                 util.mod.kick(id);
@@ -873,9 +850,7 @@ bot = util.bot = {
      */
     sendOthers: function (src, message, channel, type) {
         var func,
-            pID,
-            pIDs = sys.playerIds(),
-            p;
+            pIDs = sys.playerIds();
 
         src = util.player.id(src);
 
@@ -889,10 +864,9 @@ bot = util.bot = {
             func = bot.sendAll;
         }
 
-        for (pID in pIDs) {
-            p = pIDs[pID];
-            func(p, message, channel);
-        }
+        pIDs.forEach(function (value, index, array) {
+            func(value, message, channel);
+        });
 
         return this;
     },
@@ -932,10 +906,7 @@ bot = util.bot = {
     }
 };
 
-/**
- * JSON utilities
- * @type {Object}
- */
+/* JSON Utilities */
 util.json = {
     /**
      * Reads a file, parses the content, and returns it
@@ -962,62 +933,7 @@ util.json = {
     }
 };
 
-/**
- * Grammar utilities
- * @namespace
- * @type {Object}
- */
-util.grammar = {
-    /**
-     * To correct a/an
-     * @param {String} word Word to correct
-     * @param {Boolean} [cap=false] If an/a should be An or A
-     * @return {String} Corrected word
-     */
-    an: function (word, cap) {
-        var ret = "a ";
-
-        if (/[aeiouAEIOU]/.test(word[0])) {
-            ret = "an ";
-        }
-
-        if (cap) {
-            ret = ret.cap();
-        }
-
-        return ret + word;
-    },
-    /**
-     * To correct -s or -es
-     * @param {String} word Word to correct
-     * @return {String} Corrected word
-     */
-    es: function (word) {
-        if (/[sS]/.test(word[word.length - 1])) {
-            return word + "es";
-        }
-
-        return word + "s";
-    },
-    /**
-     * Adds "s" to word if number isn't 1
-     * @param {String} word Word to correct
-     * @param {Number} number Number to check
-     * @return {String} Corrected word
-     */
-    s: function (word, number) {
-        if (number !== 1) {
-            word += "s";
-        }
-
-        return word;
-    }
-};
-
-/**
- * File utilities
- * @type {Object}
- */
+/* File Utilities */
 util.file = {
     /**
      * Creates a file if it already doesn't exist (suppresses any errors)
@@ -1050,10 +966,7 @@ util.file = {
     }
 };
 
-/**
- * Error utilities
- * @type {Object}
- */
+/* Error Utilities */
 util.error = {
     /**
      * Formats an error
@@ -1142,17 +1055,13 @@ util.error = {
             }
         }
         
-        print(error);
-        // print("[{help}]: {exceptionName} in file "{fileName}" on line {lineName}: {error}");
+        print(error); // "[{help}]: {exceptionName} in file "{fileName}" on line {lineName}: {error}"
         
         return error;
     }
 };
 
-/**
- * Message Utilities
- * @type {Object}
- */
+/* Message Utilities */
 util.message = {
     /**
      * If a string has caps in it
@@ -1163,7 +1072,7 @@ util.message = {
         return /[QWERTYUIOPASDFGHJKLZXCVBNM]/.test(chr);
     },
     /**
-     * Sends the stfu truck to (src)
+     * Sends the STFU truck to the given player
      * @param {PID} src Player identifier
      * @param {CID} [chan] Channel identifier
      * @return {Object} this
@@ -1177,7 +1086,7 @@ util.message = {
         return this;
     },
     /**
-     * Sends the fail whale to (id)
+     * Sends the fail whale to the given player
      * @param {PID} id Player identifier
      * @param {CID} [chan] Channel identifier
      * @return {Object} this
@@ -1307,10 +1216,7 @@ util.message = {
     }
 };
 
-/**
- * Logging Utilities
- * @type {Object}
- */
+/* Logging Utilities */
 util.watch = {
     /**
      * Logs a player's action to Watch (if it exists)
@@ -1355,10 +1261,7 @@ util.watch = {
     }
 };
 
-/**
- * Time Utilities
- * @type {Object}
- */
+/* Time Utilities */
 util.time = {
     /**
      * Returns the time since epoch in seconds
@@ -1421,19 +1324,9 @@ util.time = {
 };
 
 ({
-    /**
-     * Returns the name of this module
-     * @private
-     * @return {String} Utilities
-     */
     Name: function () {
         return "Utilities";
     },
-    /**
-     * Returns the hooks of this module
-     * @private
-     * @return {Object}
-     */
     Hooks: function () {
         return {
             "serverStartUp": function () {

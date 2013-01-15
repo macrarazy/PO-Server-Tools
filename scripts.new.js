@@ -14,138 +14,73 @@
  - Untested code/sandbox for all other versions
 
  - All modules are available in modules/ -
- - All command categories are available in commands/ -
+ - All commands are available in commands/ -
+*/
 
- ==== DEVELOPER NOTES ====
- - Custom types used in JSDoc: -
- - PID: Id or name of a player
- - CID: Id or name of a channel
- - PIDArray: Array of PIDs
- - CIDArray: Array of CIDs
- - !{Type}Array: Array of with any type of variable except {Type}
- */
-
-/**
- * @fileOverview Primary file of TheUnknownOne's Server Script
- * @author TheUnknownOne
- * @version 3.0.0 Alpha 1
- */
-
-/**
- * Script configuration
- * @namespace
- * @type {Object}
- */
+/* Script Configuration */
 Config = {};
 
-/**
- * If Dream World abilities will be checked
- * @type {Boolean}
- */
+/* If teams should be checked for Dream World abilities */
 Config.DWAbilityCheck = true;
 
-/**
- * If the default channels are automatically joined when a player goes on the server
- * @type {Boolean}
- */
+/* If the default channels are automatically joined when a player goes on the server */
 Config.AutoChannelJoin = true;
 
-/**
- * If global welcome messages are displayed
- * @type {Boolean}
- */
+/* If welcome messages should be displayed globally */
 Config.WelcomeMessages = false;
 
-/**
- * If admins can give and take auth from users and to moderators.
- * @type {Boolean}
- */
+/* If admins can give and take auth from users and to moderators. */
 Config.AdminsCanAuth = true;
 
-/**
- * Clears logs when logs.txt has the given size in MB or more. NOTE: Doesn't work with current version of PO
- * @type {Number}
- */
-// NOTE: Size is in MB now.
-Config.ClearLogsAtSize = 35;
-
-/**
- * Characters which can be used to "start" a command with.
- * @type {Array}
- */
+/* Characters which indicate the usage of a command. */
 Config.CommandStarts = ["/", "!"];
 
-/**
- * Changes that players authority to that level at auth calculations (so an auth with auth level 2 has permissions of auth level 3, but that would not be visible)
- * @type {Object}
- */
+/* Changes that players authority to that level at auth calculations (so an administrator with a PlayerPermission of 3 can use owner commands, 
+ however, they still appear as an administrator) */
 Config.PlayerPermissions = {
     "Example player with Config.PlayerPermissions": 3
 };
 
-/**
- * Configuration for Mafia
- * @type {Object}
- */
+/* Mafia Configuration */
 Config.Mafia = {};
 
-/**
- * Amount of different themes that have to be started before one that has been played (norepeat) games ago
- * @type {Number}
- */
+/* Amount of different themes that have to be started before one that has been played (norepeat) games ago */
 Config.Mafia.norepeat = 3;
 
-/**
- * Path to the file where mafia stats will be written to
- * @type {String}
- */
+/* Path to the file where mafia stats will be written to. */
 Config.Mafia.stats_file = "Mafia_Stats.json";
 
-/**
- * Maximum length for a player who wants to join mafia
- * @type {Number}
- */
+/* Maximum length for a player's name who wants to join a mafia game. */
 Config.Mafia.max_name_length = 16;
 
-/**
- * Version of the script
- * @type {String}
- */
+/* Version of the script. */
 SCRIPT_VERSION = "3.0.0 Alpha 1";
 
-/**
- * URL from where the modules will be downloaded from
- * @type {String}
- */
+/* Data location for modules/commands/languages */
 URL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/";
 
-/**
- * Branch to download modules from
- * @type {String}
- */
+/* Branch to download modules from. */
 BRANCH = "alpha";
 
-/**
- * Modules to load
- * <i>All of the default modules depend on each other. Removing any of these isn't recommended as it might break the script.
- * Changing the order isn't a smart thing to do either.</i>
- * @type {Array}
- */
+/* Modules to load
+   All of the default modules depend on each other. Removing any of these isn't recommended as it might break the script.
+   Changing the order isn't a smart thing to do either. */
 Modules = [
-    "modules/truthy.js", "modules/tlite.js", // Imported
+    /* Imported */
+    "modules/truthy.js", "modules/tlite.js",
+    
     "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
     "modules/jsession.js", "modules/users.js", "modules/channels.js", "modules/templates.js",
     "modules/mafia.js",
-    "commands/base.js" // Base for all commands
+    
+    /* Base for all commands */
+    "commands/base.js"
 ];
 
-/**
- * Command categories to load
- * @type {Array}
- * @note commands/base.js is required
- */
+/* Commands to load
+   NOTE: commands/base.js is required */
 
-CommandCategories = [
+Commands = [
     /* Commands - User */
     "commands/user/fun.js",
     "commands/user/poll.js",
@@ -155,60 +90,35 @@ CommandCategories = [
     "commands/admin/ify.js"
 ];
 
-/**
- * If modules will get overwritten and re-downloaded every time the script reloads (useful for development)
- * @type {Boolean}
- */
+/* If modules will get overwritten and re-downloaded every time the script reloads (useful for development). */
 OverwriteModules = true;
 
-/**
- * If commands will get overwritten and re-downloaded every time the script reloads (useful for development)
- * @type {Boolean}
- */
+/* If commands will get overwritten and re-downloaded every time the script reloads (useful for development). */
 OverwriteCommands = true;
 
-/**
- * Contains commands
- * @type {Object}
- */
-Commands = {
+/* Contains all commands. */
+CommandHandlers = {
     /**
-     * Object for command lists. Can't be changed by addCommand.
+     * Object for command lists. Can't be changed by addCommand (because the l is capitalized).
      */
     Lists: {}
 };
 
-/**
- * Contains command-defined settings
- * @type {Object}
- */
+/* Contains command/script-defined settings */
 Settings = {};
 
-/**
- * PO sys object
- * @type {Object}
- */
+/* PO sys object*/
 sys = sys || {};
 
-/**
- * Prints to the server console
- * @type {Function}
- */
+/* Prints to the server console */
 print = print || function (msg) {
     sys.sendAll(msg, 0);
 };
 
-/**
- * Contains the global object
- * @type {Object}
- */
+/* The global object */
 GLOBAL = this;
 
-/**
- * Contains handlers
- * @namespace
- * @type {Object}
- */
+/* Contains handlers */
 handlers = {};
 
 /**
@@ -260,15 +170,13 @@ handlers.defaultHandler = function (category) {
     return -1;
 };
 
-/**
- * Command list manager
- * @constructor
- */
+/* Command list manager 
+  * #constructor */
 handlers.CommandList = function () {
     this.commands = [];
 
     /**
-     * Adds a command to this command list manager (thingy)
+     * Adds a command to this command list manager
      * @param {String} name Command name
      */
     this.add = function (name) {
@@ -277,12 +185,12 @@ handlers.CommandList = function () {
         }
     };
 
-    return Commands.Lists;
+    return CommandHandlers.Lists;
 };
 
 /**
  * Adds a command
- * @param {Object} obj The command object
+ * @param {Object} obj A command object
  */
 addCommand = function (obj) {
     var name,
@@ -338,7 +246,7 @@ addCommand = function (obj) {
 
     
 
-    Commands[name] = {
+    CommandHandlers[name] = {
         "name": name,
         "handler": handler,
         "permissionHandler": permissionHandler,
@@ -419,10 +327,7 @@ if (!include.modules) {
     include.modules = {};
 }
 
-/**
- * GetMethods for include.get
- * @type {Object}
- */
+/* GetMethods for include.get */
 include.GetMethod = {
     "Full": 0,
     "Source": 1,
@@ -600,7 +505,7 @@ callResult = function (hook_name, hook_args) {
                     include(value, null, OverwriteModules);
                 });
                 
-                CommandCategories.forEach(function (value, index, array) {
+                Commands.forEach(function (value, index, array) {
                     download(value, value, OverwriteCommands, false, function () {     
                         include(value, null, OverwriteCommands);
                     });
@@ -795,7 +700,7 @@ callResult = function (hook_name, hook_args) {
                 commandInfo.extend(info);
             });
 
-            cmd = Commands[commandName];
+            cmd = CommandHandlers[commandName];
             if (typeof cmd === "undefined") {
                 call("onCommandError", src, fullCommand, chan, "invalid");
                 return;
@@ -899,7 +804,7 @@ callResult = function (hook_name, hook_args) {
      * Initialization function for hooks and core globals
      */
     init: function () {
-        ServerName = sys.getFileContent("config").split("\n")[30].substring(5).replace(/\\xe9/i, "é").trim();
+        //ServerName = sys.getFileContent("config").split("\n")[30].substring(5).replace(/\\xe9/i, "é").trim();
 
         call("init");
     }

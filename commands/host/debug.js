@@ -1,23 +1,9 @@
-/**
- * @fileOverview Debug commands for the server host
- * @author TheUnknownOne
- * @version 3.0.0 Alpha 1
- */
+/* Debug commands for the server host  */
 
 ({
-    /**
-     * Returns the name of this module
-     * @private
-     * @return {String}
-     */
     Name: function () { 
         return "Commands - Host: Debugging";
     },
-    /**
-     * Returns the commands of this module
-     * @private
-     * @return {Array}
-     */
     Commands: function () {
         return [
             {
