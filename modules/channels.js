@@ -14,27 +14,25 @@ Channels = {
 };
 
 (function () {
-    var x;
-    
-    Channels.ids = [];
-    
-    for (x in Channels) {
-        if (!Array.isArray(Channels[x])) {
-            Channels[x] = util.channel.id(Channels[x]);
+    sys.setTimer(function () {
+        var x;
         
-            Channels.ids.push(Channels[x]);
+        Channels.ids = [];
+        
+        for (x in Channels) {
+            if (!Array.isArray(Channels[x])) {
+                Channels[x] = util.channel.id(Channels[x]);
+            
+                Channels.ids.push(Channels[x]);
+            }
         }
-    }
+    }, 1, false);
 }());
 
 // TODO: NEW STUFF
 
-if (!GLOBAL["cData"]) {
-    /**
-     * Channel Data Manager
-     * @class
-     * @type {Object}
-     */
+if (typeof cData === "undefined") {
+    /* Channel Data Manager */
     cData = new (function () {
         this.file = "ChannelData.json";
 

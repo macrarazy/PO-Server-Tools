@@ -360,6 +360,8 @@ util.player = {
      * @return {String|*} Name of the player, or (user) if the player doesn't exist
      */
     name: function (user) {
+        user = user || "";
+        
         if (typeof user === "string" && (DataHash && DataHash.names && DataHash.names.has(user.toLowerCase()))) {
             return user.name();
         } else if (typeof user === "number") {
@@ -1231,7 +1233,7 @@ util.watch = {
             src = util.player.player(player);
 
         if (chan !== "") {
-            chan = "[" + chan + "]";
+            chan = "<b>[" + chan + "]</b>";
         }
 
         if (message) {
@@ -1241,7 +1243,7 @@ util.watch = {
         }
 
         if (Truthy.isObject(Channels) && Truthy.isNumber(Channels.watch)) {
-            sys.sendHtmlAll("<timestamp/><b>" + chan + "</b> <i>" + type + "</i> (" + src + ")" + message, Channels.watch);
+            sys.sendHtmlAll("<timestamp/>" + chan + " " + type + " (" + src + ")" + message, Channels.watch);
         }
 
         return this;
