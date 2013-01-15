@@ -230,7 +230,7 @@ addCommand = function (obj) {
     if (typeof permissionHandler !== "function") {
         permissionHandler = handlers.defaultHandler(category);
 
-        if (permissionHandler == -1) {
+        if (permissionHandler === -1) {
             print("module.command.error: Could not add command " + name + " because the permission handler was special and not passed. Submit a bug report along with this message if you are (almost) sure this is not a code modification.");
             return;
         }
@@ -246,7 +246,7 @@ addCommand = function (obj) {
 
     name = name.toLowerCase();
 
-    
+    print(JSON.stringify(CommandHandlers));
 
     CommandHandlers[name] = {
         "name": name,
@@ -259,7 +259,6 @@ addCommand = function (obj) {
 
 /**
  * Includes a file
- * @namespace
  * @param {String} FileName Name of the file to load
  * @param {Number} [GetMethod] GetMethod to be passed to include.get
  * @param {Boolean} [NoCache=false] If the lazy module cache should be bypassed
@@ -308,6 +307,7 @@ include = function (FileName, GetMethod, NoCache) {
             module.commands = source.Commands();
 
             module.commands.forEach(function (value, index, array) {
+                print("adding command " + value.name);
                 addCommand(value);
             });
         }
