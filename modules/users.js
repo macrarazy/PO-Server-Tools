@@ -41,7 +41,7 @@
                     name = sys.name(src).toLowerCase(),
                     player = util.player.player(src);
 
-                util.watch.player(src, "Log In on IP " + ip);
+                util.watch.player(src, "Logged In", "Using IP " + ip);
 
                 
                 if (sendWelcomeMessage) {
@@ -95,7 +95,7 @@
                     info = {};
 
                 if (self.muted) {
-                    til.watch.player(src, null, "Attempted to kick " + target.originalName + " while muted.");
+                    util.watch.player(src, null, "Attempted to kick " + target.originalName + " while muted.");
 
                     if (mutes.time != 0) {
                         info.time = "Muted for " + util.time.format(mutes.time.time - util.time.time());
