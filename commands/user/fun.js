@@ -125,7 +125,7 @@
                         return;
                     }
                     // TODO: JSESSIONUser.prototype.capsMute
-                    if (command.self.jsession.capsMute(command.data, chan)) { // Combine both.
+                    if (command.self.jsession.capsMute(command.data, command.chan)) { // Combine both.
                         return;
                     }
 
@@ -139,7 +139,7 @@
                     }
 
                     // TODO: call("messageAllowed") hook
-                    if (call("messageAllowed", src, commandData)) {
+                    if (call("messageAllowed", command.src, command.data)) {
                         return;
                     }
 
