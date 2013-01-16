@@ -290,7 +290,7 @@ util.channel = {
        NOTE: Returns [name] back, and not the channel's id, due to a bug in PO. */
     create: function (name) {
         if (!sys.existChannel(name)) {
-            return sys.createChannel(name);
+            //return sys.createChannel(name);
         }
 
         return name;
