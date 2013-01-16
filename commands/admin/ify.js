@@ -22,7 +22,7 @@
      * @return {Array}
      */
     Commands: function () {
-        CommandHandlers.Lists.admin.add("ifycommands");
+        CommandHandlers._lists.admin.add("ifycommands");
 
         return [
             {

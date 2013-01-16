@@ -1,296 +1,35 @@
 /* Utilities used in almost every .js file */
 
 if (typeof Bot === "undefined") {
-    /**
-     * Bot default configuration
-     * @type {Object}
-     */
+    /* Default Bot Configuration */
     Bot = {
         "name": "~Server~",
         "color": "red"
     };
 }
 
-/**
- * Utilities namespace
- * @namespace
- * @type {Object}
- */
-
+/* Script Utilities */
 util = {};
-
-/**
- * Creates an enum
- * @param {util.Enum|String|Array} [flags] Enum to copy flags from, a single flag, or an array of flags
- * @constructor
- * @return {Object} this
- */
-util.Enum = function (flags) {
-    /**
-     * To count flags
-     * @private
-     * @type {Number}
-     */
-    this.cFlagNum = 0;
-
-    /**
-     * Contains flags for this enum
-     * @type {Object}
-     */
-    this.flags = {};
-
-    if (!flags) {
-        return this;
-    }
-
-    if (flags.toString() === "[class Enum]") {
-        this.flags = flags.flags;
-    } else if (typeof flags === "string") {
-        this.addFlag(flags);
-    } else if (Array.isArray(flags)) {
-        this.addFlags(flags);
-    }
-    return this;
-};
-
-/**
- * toString implementation of Enum
- * @return {String} [class Enum]
- */
-
-util.Enum.prototype.toString = function () {
-    return "[class Enum]";
-};
-
-/**
- * Adds a flag to this enum
- * @param {String} flag Name of the flag
- * @return {Object} this
- */
-
-util.Enum.prototype.addFlag = function (flag) {
-    if (this.flags.has(flag)) {
-        return this;
-    }
-
-    this.flags[flag] = this.cFlagNum;
-    this.cFlagNum *= 2;
-
-    return this;
-};
-
-/**
- * Adds an array of flags to this enum
- * @param {Array} flags Flags to add
- * @return {Object} this
- */
-util.Enum.prototype.addFlags = function (flags) {
-    flags.forEach(function (value, index, array) {
-        this.addFlag(value);
-    });
-
-    return this;
-};
-
-/**
- * Returns a flag by name
- * @param {String} name The flag's name
- * @return {Number} Number of this flag to use with Mask
- */
-util.Enum.prototype.flag = function (name) {
-    return this.flags[name] || 0;
-};
-
-/**
- * Creates a Mask for flags
- * @param {util.Mask|Number|Array|util.Enum} [flags] Mask to copy flags from, a number, an array of flags, or an enum
- * @constructor
- */
-util.Mask = function (flags) {
-    this.flags = 0;
-
-    if (!flags) {
-        return this;
-    }
-
-    if (flags.toString() === "[class Mask]") {
-        this.flags = flags.flags;
-    } else if (typeof flags === "number") {
-        this.addFlag(flags);
-    } else if (Array.isArray(flags)) {
-        this.addFlags(flags);
-    } else if (flags.toString() === "[class Enum]") {
-        this.addFlags(flags.flags);
-    }
-
-    return this;
-};
-
-/**
- * toString implementation for Mask
- * @return {String} [class Mask]
- */
-util.Mask.prototype.toString = function () {
-    return "[class Mask]";
-};
-
-/**
- * Adds a flag to this mask
- * @param {Number} flag Flag to add
- * @return {Object} this
- */
-
-util.Mask.prototype.addFlag = function (flag) {
-    this.flags |= flag;
-
-    return this;
-};
-
-/**
- * Adds an array or object (must be name=>flag) of flags
- * @param {Array|Object} flags Flags to add
- */
-
-util.Mask.prototype.addFlags = function (flags) {
-    var x;
-    for (x in flags) {
-        this.flags |= flags[x];
-    }
-
-    return this;
-};
-
-/**
- * Removes a flag from this mask
- * @param {Number} flag Flag to remove
- * @return {Object} this
- */
-
-util.Mask.prototype.removeFlag = function (flag) {
-    this.flags &= ~flag;
-
-    return this;
-};
-
-/**
- * Removes an array or object (must be name=>flag) of flags
- * @param {Array|Object} flags Flags to add
- * @return {Object} this
- */
-util.Mask.prototype.removeFlags = function (flags) {
-    var x;
-    for (x in flags) {
-        this.flags &= ~flags[x];
-    }
-
-    return this;
-};
-
-/**
- * If this mask has that flag
- * @param {Number} flag Flag to check
- * @return {Boolean} If this mask has that flag
- */
-util.Mask.prototype.hasFlag = function (flag) {
-    return !!this.flags & flag;
-};
-
-/**
- * If this mask has those flags
- * @param {util.Mask|Object|Number|util.Enum} flags Flags to check (Object, Number, or Enum as flags will be passed to new Mask)
- * @return {Boolean} If this mask has those flags
- */
-util.Mask.prototype.hasFlags = function (flags) {
-    var compare_mask;
-
-    if (flags.toString() === "[class Mask]") {
-        compare_mask = flags.flags;
-    } else {
-        compare_mask = new util.Mask(flags).flags;
-    }
-
-    return !!this.flags & compare_mask;
-};
-
-/**
- * Cuts an array from (entry) and joins it
- * @param {Array} array Array to cut
- * @param {Number} entry Index of the value to cut from
- * @param {String} [join=":"] String to use to join the array
- * @return {String} Joined array starting from (entry)
- */
-util.cut = function (array, entry, join) {
-    if (!join) {
-        join = ":";
-    }
-
-    if (!Truthy.isArray(array)) {
-        return array;
-    }
-
-    return Truthy.cloneArray(array).splice(entry).join(join);
-};
-
-/**
- * Returns the proper type of a variable
- * @param {*} variable Variable to check
- * @return {String} The variable's type
- */
-util.type = function (variable) {
-    if (Truthy.isArray(variable)) {
-        return "array";
-    }
-
-    if (Truthy.isNull(variable)) {
-        return "null";
-    }
-
-    return typeof variable;
-};
-
-/**
- * An empty function
- * @example (util.mod.kick || util.noop)(id);
- */
-util.noop = function () {
-
-};
-
-/* Contains timers */
-util.timers = {"sys": []};
-
-/* Simple Sandbox */
-util.sandbox = {};
 
 /* Player Utilities*/
 util.player = {
-    /**
-     * To check if a player's ip is the same as the given target's
-     * @param {PID} src Player identifier
-     * @param {PID} tar Player identifier of player to check against
-     * @return {Boolean} If the ip of src is the same of tarName
-     * @example util.player.self(src, sys.name(src)); // true
-     */
+    /* Checks if a player's ip is the same as the given target's. */
     self: function (src, tar) {
-        return util.player.ip(src) === util.player(tar);
+        return this.ip(src) === this.ip(tar);
     },
-    /**
-     * Gives the player auth 3 if they are the host, their auth is 0, and they are registered.
-     * @param {PID} src Player identifier
-     * @return {Object} this
-     */
+    /* Gives the player auth 3 if they are the host, their auth is 0, and they are registered. */
     hostAuth: function (src) {
-        var auth = util.player.auth(src);
+        var auth = this.auth(src);
 
         if (auth > 0 && auth < 3 || auth > 3) {
             return this;
         }
 
-        if (!util.player.host(src)) {
+        if (!this.host(src)) {
             return this;
         }
 
-        if (!sys.dbRegistered(util.player.name(src))) {
+        if (!sys.dbRegistered(this.name(src))) {
             return this;
         }
 
@@ -298,29 +37,21 @@ util.player = {
 
         return this;
     },
-    /**
-     * If (src) is the server host
-     * @param {PID} src Player identifier
-     * @return {Boolean}
-     */
+    /* Checks if [src] is the server host. */
     host: function (src) {
-        return util.player.ip(src) === "127.0.0.1";
+        return this.ip(src) === "127.0.0.1";
     },
-    /**
-     * Returns the players "true" auth (Config.PlayerPermissions and maxAuth on ip calculated)
-     * @param {PID} src Player identifier
-     * @return {Number} Auth level
-     */
+    /* Returns the player's "true" auth (Config.PlayerPermissions and sys.maxAuth checked). */
     auth: function (src) {
         var perms = Config.PlayerPermissions,
             name,
             auth,
             maxAuth;
 
-        src = util.player.id(src);
+        src = this.id(src);
         name = sys.name(src);
         auth = sys.auth(src);
-        maxAuth = sys.maxAuth(util.player.ip(src));
+        maxAuth = sys.maxAuth(this.ip(src));
 
         if (!sys.loggedIn(src)) {
             name = src;
@@ -328,59 +59,41 @@ util.player = {
             maxAuth = sys.maxAuth(auth);
         }
 
-        perms = perms[name];
+        perms = perms[name] || 0;
 
-        if (perms !== undefined && perms > maxAuth) {
+        if (perms > maxAuth) {
             maxAuth = perms;
-
         }
 
         return maxAuth;
     },
-    /**
-     * Checks if a player has permission to perform a specific action
-     * @param {PID} src Player identifier
-     * @param {Number} minAuth Minimum auth required to perform the action
-     * @return {Boolean} If the player has permission to do the action
-     */
+    /* Checks if a player has permission to perform a specific action. */
     hasPermission: function (src, minAuth) {
-        return util.player.auth(src) >= minAuth;
+        return this.auth(src) >= minAuth;
     },
-    /**
-     * Formatted player name
-     * @param {PID} user Player identifier
-     * @return {String} Formatted name
-     */
+    /* Returns [user]'s "formatted" name (using html). */
     player: function (user) {
-        return "<b><font color='" + util.player.color(user) + "'>" + util.player.name(user).escapeHtml() + "</font></b>";
+        return "<b><font color='" + this.color(user) + "'>" + this.name(user).escapeHtml() + "</font></b>";
     },
-    /**
-     * Properly capitalizes a name or makes a name out of an Id
-     * @param {PID} user Player identifier
-     * @return {String|*} Name of the player, or (user) if the player doesn't exist
-     */
+    /* Capitalizes a name or turns a playerid into a name. */
     name: function (user) {
         user = user || "";
-        
-        if (typeof user === "string" && (DataHash && DataHash.names && DataHash.names.has(user.toLowerCase()))) {
+
+        if (Truthy.isString(user)) {
             return user.name();
-        } else if (typeof user === "number") {
+        } else if (Truthy.isNumber(user)) {
             return sys.name(user);
         }
 
-        if (sys.id(user) !== undefined) {
+        if (!Truthy.isUndefined(sys.id(user))) {
             user = sys.name(sys.id(user));
         }
-        
+
         return user;
     },
-    /**
-     * Gets the id of a player. Throws the id back if the given number (id) is online, or -1 neither worked
-     * @param {PID} user Player identifier
-     * @return {Number|*} Id of the player, or (user) if the player isn't online
-     */
+    /* Gets the id of a player. Throws the id back if the given number (id) is online, or -1 neither worked. */
     id: function (user) {
-        if (typeof user === "string") {
+        if (Truthy.isString(user)) {
             return sys.id(user) || -1;
         } else if (sys.loggedIn(user)) {
             return user;
@@ -388,44 +101,32 @@ util.player = {
 
         return -1;
     },
-    /**
-     * Returns the color of a player
-     * @param {PID} user Player Identifier
-     * @return {String} The player's color
-     */
+    /* Returns the color of a player. */
     color: function (user) {
-        var src = util.player.id(user),
-            myColor = sys.getColor(src),
-            colorlist = [
+        var src = this.id(user),
+            color = sys.getColor(src),
+            colors = [
                 '#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f',
                 '#1b1390', '#028678', '#0324b1'
             ];
 
-        if (myColor == '#000000') {
-            return colorlist[src % colorlist.length];
+        if (color === '#000000') {
+            return colors[src % colors.length];
         }
-        return myColor;
+        return color;
     },
-    /**
-     * Returns the IP of a player
-     * @param {PID} player Player identifier
-     * @return {String|Undefined} The player's ip or undefined if they don't exist
-     */
+    /* Returns the IP of a player. */
     ip: function (player) {
-        return sys.proxyIp(util.player.id(player)) || sys.dbIp(util.player.name(player));
+        return sys.proxyIp(this.id(player)) || sys.dbIp(this.name(player));
     },
-    /**
-     * Returns the player's pokeball image thingy
-     * @param {PID} name Player identifier
-     * @return {String} Player status/auth image
-     */
+    /* Returns the player's playerlist authority icon. */
     authImage: function (name) {
-        var auth = util.player.auth(name),
+        var auth = this.auth(name),
             authString = "U",
-            status = 'Available',
-            id = util.player.id(name);
+            status = "Available",
+            id = this.id(name);
 
-        if (!util.player.ip(name)) {
+        if (Truthy.isUndefined(this.ip(name))) {
             return "<img src='Themes/Classic/Client/" + authString + "Away.png'>";
         }
 
@@ -437,22 +138,17 @@ util.player = {
             authString = "O";
         }
 
-        if (sys.away(id)) {
-            status = 'Away';
-        }
-        else if (sys.battling(id)) {
-            status = 'Battle';
+        if (sys.battling(id)) {
+            status = "Battle";
+        } else if (sys.away(id)) {
+            status = "Away";
         }
 
         return '<img src="Themes/Classic/Client/' + authString + status + '.png">';
     },
-    /**
-     * Returns the date the player was last on as a html-formatted string
-     * @param {PID} name Player identifier
-     * @return {String} Formatted last online date
-     */
+    /* Returns the date the player was last on as an HTML-formatted string. */
     lastOnline: function (name) {
-        var lastOnline = sys.dbLastOn(util.player.name(name));
+        var lastOnline = sys.dbLastOn(this.name(name));
 
         if (!lastOnline) {
             lastOnline = "Unknown";
@@ -460,37 +156,24 @@ util.player = {
 
         return "<b><font color='blue' size='2'>Last Online:</font></b> <i>" + lastOnline + "</i>";
     },
-    /**
-     * Returns a player's info as a html-formatted string
-     * @param {PID} name Player identifier
-     * @return {String} Formatted player info
-     */
+    /* Returns a player's info as an HTML-formatted string. */
     playerInfo: function (name) {
-        var id = util.player.id(name),
-            icon = util.player.authImage(name),
-            player = util.player.player(name),
-            lastOn = util.player.lastOnline(name);
+        var id = this.id(name),
+            icon = this.authImage(name),
+            player = this.player(name),
+            lastOn = this.lastOnline(name);
 
-        if (!util.player.ip(name)) {
-            return icon + player + " <small style='color: red;'>Offline</small> " + lastOn;
-        }
-
-        if (id == undefined) {
+        if (Truthy.isUndefined(id) || Truthy.isUndefined(this.ip(name))) {
             return icon + " " + player + " <small style='color: red;'>Offline</small> " + lastOn;
         }
 
-        return icon + " " + player + " <small style='color: green;'>Online</small> <small>(<b style='color: blue;'>Player ID: " + id + "</b>)</small>";
+        return icon + " " + player + " <small style='color: green;'>Online</small> <small>(<b style='color: blue;'>ID: " + id + "</b>)</small>";
     },
-    /**
-     * Tests a player's name to see if it isn't bad
-     * @param {Number} src The player's id
-     * @param {Boolean} [nomessage=false] If no message will be sent to the player and watch
-     * @return {Boolean} If the player's name is bad
-     */
+    /* Tests a player's name to see if it isn't bad. Bad names are bad, you see. */
     testName: function (src, nomessage) {
         var name = sys.name(src),
-            ip = util.player.ip(src),
-            auth = util.player.auth(src),
+            ip = this.ip(src),
+            auth = this.auth(src),
             cyrillic = /\u0408|\u03a1|\u0430|\u0410|\u0412|\u0435|\u0415|\u041c|\u041d|\u043e|\u041e|\u0440|\u0420|\u0441|\u0421|\u0422|\u0443|\u0445|\u0425|\u0456|\u0406/,
             space = /\u0009-\u000D|\u0085|\u00A0|\u1680|\u180E|\u2000-\u200A|\u2028|\u2029|\u2029|\u202F|\u205F|\u3000/,
             dash = /\u058A|\u05BE|\u1400|\u1806|\u2010-\u2015|\u2053|\u207B|\u208B|\u2212|\u2E17|\u2E1A|\u301C|\u3030|\u30A0|\uFE31-\uFE32|\uFE58|\uFE63|\uFF0D/,
@@ -501,94 +184,86 @@ util.player = {
             other = /\u3061|\u65532/,
             zalgo = /[\u0300-\u036F]/,
             thai = /[\u0E00-\u0E7F]/,
-            fakei = /\xA1/;
+            fakeI = /\xA1/;
 
         if (call("testName", src)) {
             return true;
         }
         /*
-        Prune.bans();
-        Prune.rangeBans();
+         Prune.bans();
+         Prune.rangeBans();
 
-        if (auth <= 0) {
-            var rb = dh.rangebans,
-                i, i_l = 0,
-                xT, c_rb;
-            for (i in rb) {
-                i_l = i.length;
-                for (xT = 0; xT < i_l; xT++) {
-                    if (i == util.player.ip(src).substring(0, xT)) {
-                        if (!nomessage) {
-                            c_rb = rb[i];
-                            var time;
-                            if (c_rb.time != 0) {
-                                time = 'Banned for ' + util.time.format(c_rb.time - sys.time() * 1);
-                            } else {
-                                time = "Banned forever";
-                            }
+         if (auth <= 0) {
+         var rb = dh.rangebans,
+         i, i_l = 0,
+         xT, c_rb;
+         for (i in rb) {
+         i_l = i.length;
+         for (xT = 0; xT < i_l; xT++) {
+         if (i == util.player.ip(src).substring(0, xT)) {
+         if (!nomessage) {
+         c_rb = rb[i];
+         var time;
+         if (c_rb.time != 0) {
+         time = 'Banned for ' + util.time.format(c_rb.time - sys.time() * 1);
+         } else {
+         time = "Banned forever";
+         }
 
-                            var by = c_rb.by,
-                                why = c_rb.why,
-                                lastChar = why[why.length - 1],
-                                lastChars = [".", "?", "!"];
+         var by = c_rb.by,
+         why = c_rb.why,
+         lastChar = why[why.length - 1],
+         lastChars = [".", "?", "!"];
 
-                            if (lastChars.indexOf(lastChar) == -1) {
-                                why += ".";
-                            }
+         if (lastChars.indexOf(lastChar) == -1) {
+         why += ".";
+         }
 
-                            util.message.failWhale(src, 0);
-                            bot.send(src, 'Your ip range ' + i + ' is banned by ' + by + '. Reason: ' + why + ' ' + time + '.', 0);
-                            bot.sendAll('Player ' + name + ' with range IP ' + i + ' has attempted to enter the server and failed. [Reason: Rangebanned]', watch);
-                        }
-                        return true;
-                    }
-                }
-            }
-        }
+         util.message.failWhale(src, 0);
+         bot.send(src, 'Your ip range ' + i + ' is banned by ' + by + '. Reason: ' + why + ' ' + time + '.', 0);
+         bot.sendAll('Player ' + name + ' with range IP ' + i + ' has attempted to enter the server and failed. [Reason: Rangebanned]', watch);
+         }
+         return true;
+         }
+         }
+         }
+         }
 
-        var tb = DataHash.tempbans[ip];
-        if (tb != undefined && auth < 1) {
-            if (!nomessage) {
-                var time;
+         var tb = DataHash.tempbans[ip];
+         if (tb != undefined && auth < 1) {
+         if (!nomessage) {
+         var time;
 
-                if (tb.time != 0) {
-                    time = "for " + getTimeString(tb.time - sys.time() * 1);
-                } else {
-                    time = "forever";
-                }
+         if (tb.time != 0) {
+         time = "for " + getTimeString(tb.time - sys.time() * 1);
+         } else {
+         time = "forever";
+         }
 
-                var reason = tb.why,
-                    by = tb.by,
-                    lastChar = reason[reason.length - 1],
-                    lastChars = [".", "?", "!"];
+         var reason = tb.why,
+         by = tb.by,
+         lastChar = reason[reason.length - 1],
+         lastChars = [".", "?", "!"];
 
-                if (lastChars.indexOf(lastChar) == -1) {
-                    reason += ".";
-                }
+         if (lastChars.indexOf(lastChar) == -1) {
+         reason += ".";
+         }
 
-                util.message.failWhale(src, 0);
-                bot.send(src, "You are banned! By " + by + ". Reason " + why + " " + time + "!", 0);
-                bot.sendAll("Player " + name + " (" + ip + ") has attempted to enter the server and failed. [Reason: Tempbanned]", watch);
-            }
-            return true;
-        }*/
+         util.message.failWhale(src, 0);
+         bot.send(src, "You are banned! By " + by + ". Reason " + why + " " + time + "!", 0);
+         bot.sendAll("Player " + name + " (" + ip + ") has attempted to enter the server and failed. [Reason: Tempbanned]", watch);
+         }
+         return true;
+         }*/
 
-
-        if (fakei.test(name) || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
+        if (fakeI.test(name) || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
             if (!nomessage) {
                 util.message.failWhale(src, 0);
                 bot.send(src, "You are using bad characters in your name.");
-                bot.sendAll("Player " + name + " (" + ip + ") has failed to log in. [Reason: Unicode characters]", Channels.watch);
+                bot.sendAll("Kicked player " + name + " (" + ip + ") for using illegal unicode characters.", Channels.watch);
             }
             return true;
         }
-
-        /*if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "T" && name[4] == "_") {
-            if (!nomessage) {
-                util.message.failWhale(src, 0);
-            }
-            return true;
-        }*/
 
         return false;
     }
@@ -596,37 +271,23 @@ util.player = {
 
 /* Channel Utilities*/
 util.channel = {
-    /**
-     * Returns a channel's id
-     * @param {CID} name Channel identifier
-     * @return {Number} The channel's id, or -1 if the channel doesn't exist
-     */
+    /* Returns a channel's id if [name] is a string, otherwise return [name] if it's a number and it exists (as channel). 
+       Returns -1 if neither of those conditions are true. */
     id: function (name) {
-        if (name === 0) {
-            return 0;
-        }
-        
-        if (typeof name === "string") {
+        if (Truthy.isString(name)) {
             return sys.channelId(name) || 0;
-        } else if (typeof name === "number" && sys.existChannel(name)) {
+        } else if (sys.existChannel(name)) {
             return name;
         }
-        
+
         return -1;
     },
-    /**
-     * Returns a channel's name
-     * @param {CID} id Channel identifier
-     * @return {String} The channel's name, or an empty string
-     */
+    /* Returns a channel's name. */
     name: function (id) {
-        return sys.channel(util.channel.id(id)) || "";
+        return sys.channel(this.id(id)) || "";
     },
-    /**
-     * Creates a channel
-     * @param {String} name Channel name
-     * @return {Name} The channel's name
-     */
+    /* Creates a channel. 
+       NOTE: Returns [name] back, and not the channel's id, due to a bug in PO. */
     create: function (name) {
         if (!sys.existChannel(name)) {
             sys.setTimer(function () {
@@ -636,39 +297,27 @@ util.channel = {
 
         return name;
     },
-    /**
-     * Returns a click-able link in the client to join (channel)
-     * @param {CID} channel Channel identifier
-     * @return {String} po:join link for the channel
-     */
+    /* Returns a click-able link (parsed in the client) which allows users to easly join [channel). */
     link: function (channel) {
-        channel = util.channel.name(channel);
+        channel = this.name(channel);
 
         return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
     },
-    /**
-     * Puts (src) in one or more channel(s)
-     * @param {PID} src Player identifier
-     * @param {CID|CIDArray} channel Channel identifier or an array of channel identifiers
-     * @return {Object} this
-     */
+    /* Puts [src] in one or more channel(s). */
     putIn: function (src, channel) {
         src = util.player.id(src);
 
         if (Truthy.isArray(channel)) {
             channel.forEach(function (value, index, array) {
-                sys.putInChannel(src, util.channel.id(value));
+                sys.putInChannel(src, this.id(value));
             });
         } else {
-            sys.putInChannel(util.channel.id(channel));
+            sys.putInChannel(this.id(channel));
         }
 
         return this;
     },
-    /**
-     * Returns all of the server's channels by name.
-     * @return {Array} All channel names
-     */
+    /* Returns all of the server's channels by name.*/
     names: function () {
         return sys.channelIds().map(function (value, index, array) {
             return sys.channel(value);
@@ -678,11 +327,7 @@ util.channel = {
 
 /* Player Moderation Utilities */
 util.mod = {
-    /**
-     * Bans a player, and kicks them
-     * @param {PID} name Player identifier to ban
-     * @return {Object} this
-     */
+    /* Bans a player, then kicks them. */
     ban: function (name) {
         var id;
 
@@ -691,19 +336,15 @@ util.mod = {
 
         sys.ban(name);
 
-        if (id !== undefined) {
-            util.mod.kick(id);
+        if (!Truthy.isUndefined(id)) {
+            this.kick(id);
         } else {
-            util.mod.kickAliases(sys.dbIp(name));
+            this.kickAliases(sys.dbIp(name));
         }
 
         return this;
     },
-    /**
-     * Disconnects a player in 20 milliseconds
-     * @param {PID} src Player identifier to disconnect
-     * @return {Object} this
-     */
+    /* Disconnects [src] (meaning they can reconnect) in 20 milliseconds after this function is called. */
     disconnect: function (src) {
         sys.setTimer(function () {
             sys.disconnect(util.player.id(src));
@@ -711,27 +352,19 @@ util.mod = {
 
         return this;
     },
-    /**
-     * Disconnects a player and their online alts in 20 milliseconds
-     * @param {PID} src Player identifier to disconnect
-     * @return {Object} this
-     */
+    /* Disconnects [src] (meaning they can reconnect) and their online alts in 20 milliseconds after this function is called. */
     disconnectAll: function (src) {
         var ip = util.player.ip(src);
 
         sys.playerIds().forEach(function (value, index, array) {
             if (ip === util.player.ip(value)) {
-                util.mod.disconnect(value);
+                this.disconnect(value);
             }
         });
 
         return this;
     },
-    /**
-     * Kicks a player in 20 milliseconds
-     * @param {PID} src Player identifier to kick
-     * @return {Object} this
-     */
+    /* Kicks [src] in 20 milliseconds after this function is called. */
     kick: function (src) {
         sys.setTimer(function () {
             sys.kick(util.player.id(src));
@@ -739,32 +372,24 @@ util.mod = {
 
         return this;
     },
-    /**
-     * Kicks a player and their online alts in 20 milliseconds
-     * @param {PID} src Player identifier to kick
-     * @return {Object} this
-     */
+    /* Kicks [src] and their online alts in 20 milliseconds after this function is called. */
     kickAll: function (src) {
         var ip = util.player.ip(src);
 
         sys.playerIds().forEach(function (value, index, array) {
             if (ip === util.player.ip(value)) {
-                util.mod.kick(value);
+                this.kick(value);
             }
         });
 
         return this;
     },
-    /**
-     * Kicks an ip's alts (when the target is offline)
-     * @param {String} ip IP used to check for alts to kick them
-     * @return {Object} this
-     */
+    /* Kicks all players on IP [ip] */
     kickAliases: function (ip) {
         sys.aliases(ip).forEach(function (value, index, array) {
             var id = sys.id(value);
-            if (id !== -1) {
-                util.mod.kick(id);
+            if (!Truthy.isUndefined(id)) {
+                this.kick(id);
             }
         });
 
@@ -772,18 +397,9 @@ util.mod = {
     }
 };
 
-/**
- * Bot utilities
- * @type {Object}
- */
+/* Bot Utilities */
 bot = util.bot = {
-    /**
-     * Sends a message from the bot to src, in an optional channel
-     * @param {PID} src Player identifier
-     * @param {String} message Message to send to src
-     * @param {CID} [channel] Channel identifier
-     * @return {Object} this
-     */
+    /* Sends a bot message to [src] */
     send: function (src, message, channel) {
         var color = Bot.color,
             name = Bot.name;
@@ -799,24 +415,11 @@ bot = util.bot = {
 
         return this;
     },
-    /**
-     * HTML-escaped message using JSExt send to src
-     * @param {PID} src Player identifier
-     * @param {String} message Message to send to src
-     * @param {CID} [channel] Channel identifier
-     * @return {Object} this
-     */
+    /* Sends an HTML-escaped message to [src] */
     sendText: function (src, message, channel) {
-        util.bot.send(src, message.escapeHtml(), channel);
-
-        return this;
+        return this.send(src, message.escapeHtml(), channel);
     },
-    /**
-     * Sends a message to everyone on the server
-     * @param {String} message Message to send
-     * @param {CID} [channel] Channel identifier
-     * @return {Object} this
-     */
+    /* Sends a message to everyone on the server. */
     sendAll: function (message, channel) {
         var color = Bot.color,
             name = Bot.name;
@@ -831,52 +434,34 @@ bot = util.bot = {
 
         return this;
     },
-    /**
-     * HTML-escaped message using JSExt send to everyone
-     * @param {String} message Message to send
-     * @param {CID} [channel] Channel identifier
-     * @return {Object} this
-     */
+    /* Sends an HTML-escaped message to everyone */
     sendAllText: function (message, channel) {
-        bot.sendAll(message.escapeHtml(), channel);
-
-        return this;
+        return this.sendAll(message.escapeHtml(), channel);
     },
-    /**
-     * Sends a message to everyone except (src)
-     * @param {PID} src Player identifier
-     * @param {String} message Message to send
-     * @param {CID} [channel] Channel identifier
-     * @param {Number} [type=0] If the message will me html-escaped. 1 = true, anything else = false
-     * @return {Object} this
-     */
+    /* Sends a message to everyone except [src] */
     sendOthers: function (src, message, channel, type) {
         var func,
-            pIDs = sys.playerIds();
+            ids = sys.playerIds();
+
+        if (type === this.sendOthersModes.normal) { // escapeHtml
+            func = this.sendAll;
+        } else {
+            func = this.sendAllText;
+        }
 
         src = util.player.id(src);
 
-        pIDs = pIDs.filter(function (id) {
+        ids = ids.filter(function (id) {
             return id !== src;
         });
 
-        if (type === 1) { // escapeHtml
-            func = bot.sendAllText;
-        } else {
-            func = bot.sendAll;
-        }
-
-        pIDs.forEach(function (value, index, array) {
+        ids.forEach(function (value, index, array) {
             func(value, message, channel);
         });
 
         return this;
     },
-    /**
-     * Sends an empty line (whitespace) to everyone
-     * @param {CID} [chan] Channel identifier
-     * @return {Object} this
-     */
+    /* Sends an empty line (whitespace) to everyone */
     line: function (chan) {
         chan = util.channel.id(chan);
 
@@ -888,12 +473,7 @@ bot = util.bot = {
 
         return this;
     },
-    /**
-     * Sends an empty line (whitespace) to src
-     * @param {PID} src Player identifier
-     * @param {CID} [chan=all] Channel identifier
-     * @return {Object} this
-     */
+    /* Sends an empty line (whitespace) to [src] */
     lineTo: function (src, chan) {
         src = util.player.id(src);
         chan = util.channel.id(chan);
@@ -905,29 +485,27 @@ bot = util.bot = {
         }
 
         return this;
+    },
+    /* Modes for sendOthers */
+    sendOthersModes: {
+        normal: 0,
+        escapeHtml: 1
     }
 };
 
 /* JSON Utilities */
 util.json = {
-    /**
-     * Reads a file, parses the content, and returns it
-     * @param {String} file Path to the file
-     * @return {Object} Parsed JSON code or an empty object
-     */
-    read: function (file) {
-        var code = sys.getFileContent(file);
-        if (!code) {
-            return {};
+    /* Reads a file, runs JSON.parse on the content, and returns it. */
+    read: function (file, ensureFile) {
+        var code;
+
+        if (ensureFile) {
+            this.create(file, "{}");
         }
-        return JSON.parse(code) || {};
+
+        return JSON.parse(sys.getFileContent(file) || "") || {};
     },
-    /**
-     * Stringifies an object, then writes it to file
-     * @param {String} file Path to the file
-     * @param {Object} code Object to stringify
-     * @return {Object} this
-     */
+    /* Runs JSON.stringify an object, then writes it to file. */
     write: function (file, code) {
         sys.writeToFile(file, JSON.stringify(code));
 
@@ -937,17 +515,12 @@ util.json = {
 
 /* File Utilities */
 util.file = {
-    /**
-     * Creates a file if it already doesn't exist (suppresses any errors)
-     * @param {String} file Path to the file
-     * @param {String} replacement Data to write to the file if it doesn't exist
-     * @return {Object} this
-     */
+    /* Creates a file if it already doesn't exist (suppresses any errors). */
     create: function (file, replacement) {
-        if (!file || typeof file !== "string" || file.isEmpty()) {
+        if (!Truthy.isString(file) || file.isEmpty()) {
             return this;
         }
-        
+
         sys.appendToFile(file, "");
         if (sys.getFileContent(file) === "") {
             sys.writeToFile(file, replacement);
@@ -955,12 +528,7 @@ util.file = {
 
         return this;
     },
-    /**
-     * Prepends data to a file
-     * @param {String} file Path to the file
-     * @param {String} data Data to prepend to the file
-     * @return {Object} this
-     */
+    /* Prepends data to a file. */
     prepend: function (file, data) {
         sys.writeToFile(file, data + sys.getFileContent(file));
 
@@ -970,12 +538,7 @@ util.file = {
 
 /* Error Utilities */
 util.error = {
-    /**
-     * Formats an error
-     * @param {String} mess Message to prepend to the error
-     * @param {Error} e Error object
-     * @return {String} Error message
-     */
+    /* Formats an error. */
     format: function (mess, e) {
         var lastChar,
             lineData = "",
@@ -1017,13 +580,7 @@ util.error = {
 
         return mess + " " + str;
     },
-    /**
-     * Prints an error backtrace on the server window
-     * @param {Error} e Exception
-     * @param {String} [mess] Optional message indicating the backtrace
-     * @param {String} [fname] Optional filename of the current file (can make debugging a ton easier)
-     * @return {String} The error trace (same as the one printed on the server console)
-     */
+    /* Prints an error backtrace on the server window (and returns that same message). */
     trace: function (e, mess, fname) {
         var lastChar,
             lineData = "",
@@ -1035,19 +592,19 @@ util.error = {
         } else {
             mess = "";
         }
-        
+
         if (typeof fname === "string") {
             file = "in file \"" + fname + "\"";
         }
 
-        if (typeof e.toLowerCase !== 'undefined') { /** when throw is used **/
+        if (typeof e.toLowerCase !== 'undefined') {
+            /** when throw is used **/
             error = mess + " Custom Error " + file + ": " + e.toString();
         } else {
             if (e.lineNumber !== 1) {
                 lineData = " on line " + e.lineNumber;
             }
-            
-            
+
             error = mess + " " + e.name + " " + file + lineData + ": " + e.toString();
 
             lastChar = error[error.length - 1];
@@ -1056,29 +613,20 @@ util.error = {
                 error += ".";
             }
         }
-        
+
         print(error); // "[{help}]: {exceptionName} in file "{fileName}" on line {lineName}: {error}"
-        
+
         return error;
     }
 };
 
 /* Message Utilities */
 util.message = {
-    /**
-     * If a string has caps in it
-     * @param {String} chr String to check
-     * @return {Boolean}
-     */
+    /* Checks if a string has caps in it. */
     caps: function (chr) {
         return /[QWERTYUIOPASDFGHJKLZXCVBNM]/.test(chr);
     },
-    /**
-     * Sends the STFU truck to the given player
-     * @param {PID} src Player identifier
-     * @param {CID} [chan] Channel identifier
-     * @return {Object} this
-     */
+    /* Sends a STFU Truck to the given player. */
     stfuTruck: function (src, chan) {
         bot.send(src, '|^^^^^^^^^^^\||____', chan);
         bot.send(src, '| The STFU Truck  |||""\'|""\__,_', chan);
@@ -1087,12 +635,7 @@ util.message = {
 
         return this;
     },
-    /**
-     * Sends the fail whale to the given player
-     * @param {PID} id Player identifier
-     * @param {CID} [chan] Channel identifier
-     * @return {Object} this
-     */
+    /* Sends a Fail Whale to the given player. */
     failWhale: function (id, chan) {
         bot.send(id, "▄██████████████▄▐█▄▄▄▄█▌", chan);
         bot.send(id, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
@@ -1101,11 +644,7 @@ util.message = {
 
         return this;
     },
-    /**
-     * Adds channel links to a message
-     * @param {String} str Input
-     * @return {String} Formatted message
-     */
+    /* Adds channel links to a message. */
     addChannelLinks: function (str) {
         util.channel.names().forEach(function (value, index, array) {
             str = str.replace(new RegExp("#" + value, "gi"), "<a href='po:join/" + value + "'>" + value + "</a>");
@@ -1113,12 +652,7 @@ util.message = {
 
         return str;
     },
-    /**
-     * Formats a string to have urls and BBCode.
-     * @param {String} str Message to format
-     * @param {Undefined|Number} authLvl Undefined for user-access, -1 for auth:3 and host (eval) access, or a player's id for their auth level.
-     * @return {String} Formatted message
-     */
+    /* Formats a string to have urls and BBCode. */
     format: function (str, authLvl) {
         var auth = authLvl,
             isHost = authLvl === -1,
@@ -1127,7 +661,7 @@ util.message = {
             pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
             emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
             poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-        
+
         if (authLvl === -1) {
             auth = 3;
         } else {
@@ -1220,14 +754,7 @@ util.message = {
 
 /* Logging Utilities */
 util.watch = {
-    /**
-     * Logs a player's action to Watch (if it exists)
-     * @param {PID} player Player identifier
-     * @param {String} [message=""] Message to log
-     * @param {String} type Type of event
-     * @param {CID} [channel] Channel identifier
-     * @return {Object} this
-     */
+    /* Logs a player's action to Watch (if it exists). */
     player: function (player, message, type, channel) {
         var chan = util.channel.link(channel),
             src = util.player.player(player);
@@ -1248,12 +775,7 @@ util.watch = {
 
         return this;
     },
-    /**
-     * Logs a channel's action to Watch (if it exists)
-     * @param {CID} channel Channel identifier
-     * @param {String} message Event to log
-     * @return {Object} this
-     */
+    /* Logs a channel's action to Watch (if it exists). */
     channel: function (channel, message) {
         if (Truthy.isObject(Channels) && Truthy.isNumber(Channels.watch)) {
             sys.sendHtmlAll("<timestamp/><b>" + util.chan.name(channel) + "</b>: " + message, Channels.watch);
@@ -1265,25 +787,15 @@ util.watch = {
 
 /* Time Utilities */
 util.time = {
-    /**
-     * Returns the time since epoch in seconds
-     * @return {Number}
-     */
+    /* Returns the time since epoch in seconds. */
     time: function () {
         return +(sys.time());
     },
-    /**
-     * Returns the time since epoch in milliseconds
-     * @return {Number}
-     */
+    /* Returns the time since epoch in milliseconds. */
     milli: function () {
         return new Date().getTime();
     },
-    /**
-     * Formats a number (time) to a readable string
-     * @param {Number} time Time to format
-     * @return {String}
-     */
+    /* Formats a number (time) to a readable string. */
     format: function (time) {
         var ret = [],
             times = [
@@ -1316,14 +828,46 @@ util.time = {
 
         return ret.fancyJoin() + "</b>";
     },
-    /**
-     * Returns the time since the server started up
-     * @return {String} Result of util.time.format
-     */
-    startUpTime: function () {        
+    /* Returns the time since the server started up */
+    startUpTime: function () {
         return util.time.format(util.time.startup || 0);
     }
 };
+
+/* Cuts an array from (entry), joins it with (separator), and then returns it. */
+util.cut = function (array, entry, separator) {
+    if (!separator) {
+        separator = ":";
+    }
+
+    if (!Truthy.isArray(array)) {
+        return array;
+    }
+
+    return Truthy.cloneArray(array).splice(entry).join(separator);
+};
+
+/* Returns the proper type of a variable */
+util.type = function (variable) {
+    if (Truthy.isArray(variable)) {
+        return "array";
+    }
+
+    if (Truthy.isNull(variable)) {
+        return "null";
+    }
+
+    return typeof variable;
+};
+
+/* "Sandbox" for timers (sys.setTimer) */
+util.timers = {"sys": []};
+
+/* Simple Sandbox */
+util.sandbox = {};
+
+/* The server's name */
+util.servername = sys.getFileContent("config").split("\n")[30].substring(5).replace(/\\xe9/i, "é").trim();
 
 ({
     Name: function () {

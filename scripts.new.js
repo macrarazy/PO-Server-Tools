@@ -15,7 +15,7 @@
 
  - All modules are available in modules/ -
  - All commands are available in commands/ -
-*/
+ */
 
 /* Script Configuration */
 Config = {};
@@ -62,24 +62,35 @@ URL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/";
 /* Branch to download modules from. */
 BRANCH = "alpha";
 
-/* Modules to load
-   All of the default modules depend on each other. Removing any of these isn't recommended as it might break the script.
-   Changing the order isn't a smart thing to do either. */
-Modules = [
+/* Mandatory modules. These are required for module runtime 
+ NOTE: Will be loaded synchronously */
+MandatoryModules = [
     /* Imported */
-    "modules/truthy.js", "modules/tlite.js",
-    
-    "modules/jsext.js", "modules/utilities.js", "modules/cache.js", "modules/datahash.js",
-    "modules/jsession.js", "modules/users.js", "modules/channels.js", "modules/templates.js",
-    "modules/mafia.js",
-    
-    /* Base for all commands */
+    "modules/truthy.js",
+
+    "modules/jsext.js",
+    "modules/utilities.js",
+    "modules/cache.js",
+    "modules/datahash.js",
+    "modules/jsession.js",
+    "modules/users.js",
+    "modules/channel.js",
+
     "commands/base.js"
 ];
 
-/* Commands to load
-   NOTE: commands/base.js is required */
+/* Modules to load
+ NOTE: Removing any of these isn't recommended as it might break the script. */
+Modules = [
+    /* Imported */
+    "modules/tlite.js",
 
+    "modules/templates.js", 
+    "modules/mafia.js"
+];
+
+/* Commands to load
+ NOTE: commands/base.js is required */
 Commands = [
     /* Commands - User */
     "commands/user/fun.js",
@@ -99,10 +110,8 @@ OverwriteCommands = true;
 /* Contains all commands. */
 if (typeof CommandHandlers === "undefined") {
     CommandHandlers = {
-        /**
-         * Object for command lists. Can't be changed by addCommand (because the l is capitalized).
-         */
-        Lists: {}
+        /* Object for command lists. */
+        _lists: {}
     };
 }
 
@@ -120,14 +129,10 @@ print = print || function (msg) {
 /* The global object */
 GLOBAL = this;
 
-/* Contains handlers */
+/* Contains handler functions */
 handlers = {};
 
-/**
- * Returns a simple permission handler
- * @param {String} level Auth level for this handler
- * @return {Function} The handler
- */
+/* Returns a simple permission handler */
 handlers.permissionHandler = function (level) {
     if (level > 4) {
         level = 4;
@@ -137,7 +142,7 @@ handlers.permissionHandler = function (level) {
         if (typeof lev === "undefined") {
             lev = level;
         }
-        
+
         if (!sys) {
             return true;
         }
@@ -149,11 +154,7 @@ handlers.permissionHandler = function (level) {
     }
 };
 
-/**
- * Returns a default handler
- * @param {String} category Auth level for this handler, as string
- * @return {Function|Number} A default handler, or -1 if the category doesn't have a default handler
- */
+/* Returns a default permission handler */
 handlers.defaultHandler = function (category) {
     if (category === "0") {
         return function () {
@@ -172,8 +173,7 @@ handlers.defaultHandler = function (category) {
     return -1;
 };
 
-/* Command list manager 
-  * #constructor */
+/* Command List Manager */
 handlers.CommandList = function () {
     this.commands = [];
 
@@ -187,13 +187,10 @@ handlers.CommandList = function () {
         }
     };
 
-    return CommandHandlers.Lists;
+    return CommandHandlers._lists;
 };
 
-/**
- * Adds a command
- * @param {Object} obj A command object
- */
+/* Adds a command */
 addCommand = function (obj) {
     var name,
         handler,
@@ -201,8 +198,9 @@ addCommand = function (obj) {
         permissionHandler,
         help,
         allowedWhenMuted;
-    
+
     if (typeof obj !== "object") {
+        print("module.command.error: Could not add an unknown command.");
         return;
     }
 
@@ -212,7 +210,7 @@ addCommand = function (obj) {
     permissionHandler = obj.permissionHandler;
     help = obj.help;
     allowedWhenMuted = obj.allowedWhenMuted;
-    
+
     if (!name) {
         print("module.command.error: Could not add an unknown command. Submit a bug report along with this message if you are sure this is not a code modification.");
         return;
@@ -246,8 +244,6 @@ addCommand = function (obj) {
 
     name = name.toLowerCase();
 
-    print(JSON.stringify(CommandHandlers));
-
     CommandHandlers[name] = {
         "name": name,
         "handler": handler,
@@ -257,13 +253,7 @@ addCommand = function (obj) {
     };
 };
 
-/**
- * Includes a file
- * @param {String} FileName Name of the file to load
- * @param {Number} [GetMethod] GetMethod to be passed to include.get
- * @param {Boolean} [NoCache=false] If the lazy module cache should be bypassed
- * @return {*} Result of include.get
- */
+/* Includes a file */
 include = function (FileName, GetMethod, NoCache) {
     var source = {},
         code,
@@ -271,9 +261,9 @@ include = function (FileName, GetMethod, NoCache) {
         x,
         commandModule = false;
 
-    //if (include.modules[FileName] && !NoCache) {
-      //  return include.get(FileName, GetMethod);
-    //}
+    if (include.modules[FileName] && !NoCache) {
+      return include.get(FileName, GetMethod);
+    }
 
     /* Default Values */
     module.file = FileName;
@@ -321,11 +311,8 @@ include = function (FileName, GetMethod, NoCache) {
     return include.get(FileName, GetMethod);
 };
 
+/* Contains all loaded modules */
 if (!include.modules) {
-    /**
-     * Contains all loaded modules
-     * @type {Object}
-     */
     include.modules = {};
 }
 
@@ -339,12 +326,7 @@ include.GetMethod = {
     "CommandModule": 5
 };
 
-/**
- * Extended getter for include.modules. Includes the file when it isn't loaded.
- * @param {String} FileName Name of the file
- * @param {Number} Method A GetMethod. Default is include.GetMethod.Full
- * @return {*} Full module, source, hooks, name, or commands.
- */
+/* Extended getter for include.modules. Includes the file when it isn't loaded. */
 include.get = function (FileName, Method) {
     var query = include.modules[FileName],
         methods = include.GetMethod;
@@ -371,15 +353,7 @@ include.get = function (FileName, Method) {
     return query;
 };
 
-/**
- * Downloads and writes a file to the disk
- * @param {String} FileName Name for the file when it will be written on the disk
- * @param {String} FilePath Online file path/name of the file
- * @param {Boolean} [ForceDownload=false] If the file will still get downloaded even when it already exists on disk
- * @param {Boolean} [Synchronously=false] If the file will be downloaded synchronously
- * @param {Function} [CallBack] Function called when the async reply is finished (Synchronously has to be false)
- * @return {String} Content of URL + Branch + / + FilePath
- */
+/* Downloads and writes a file to the disk */
 download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack) {
     var filePath = FileName.split(/\/|\\/);
 
@@ -411,19 +385,14 @@ download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack)
     }
 };
 
-/**
- * Gets a list of hooks for an event
- * @param {String} event Name of the event
- * @return {Array} Array of hooks with this name
- */
+/* Gets a list of hooks for an event */
 getHooks = function (event) {
     var ret = [],
         x,
-        current_mod,
-        Modules = include.modules;
+        current_mod;
 
-    for (x in Modules) {
-        current_mod = Modules[x];
+    for (x in include.modules) {
+        current_mod = include.modules[x];
         if (typeof current_mod.hooks[event] !== "undefined") {
             ret.push(current_mod);
         }
@@ -432,13 +401,7 @@ getHooks = function (event) {
     return ret;
 };
 
-/**
- * To call all hooks which have the name hook_name
- * @param {String} hook_name Name of the hook
- * @param {*} hook_args Arguments for the hook (everything after the 1st argument)
- * @return {Boolean} If any of the called hooks want to stop the event
- * @example if (call("Example")) { sys.stopEvent(); }
- */
+/* Calls all hooks which have the given name */
 call = function (hook_name, hook_args) {
     var args = [].slice.call(arguments),
         event = args.splice(0, 1)[0],
@@ -462,12 +425,7 @@ call = function (hook_name, hook_args) {
     return stop;
 };
 
-/**
- * To call all hooks which have the name hook_name, and returns their result
- * @param {String} hook_name Name of the hook
- * @param {*} hook_args Arguments for the hook (everything after the 1st argument)
- * @return {!BooleanArray} Result returned from the hooks
- */
+/* Call all hooks which have the given name, and returns their result */
 callResult = function (hook_name, hook_args) {
     var args = [].slice.call(arguments),
         event = args.splice(0, 1)[0],
@@ -496,31 +454,26 @@ callResult = function (hook_name, hook_args) {
 
 /* Downloads and loads all modules and command categories in an anonymous function */
 (function () {
-    var downloadedModules = 0,
-        modulesLength = Modules.length;
+    MandatoryModules.forEach(function (value, index, array) {
+       download(value, value, OverwriteModules, true);
+       include(value, null, OverwriteModules);
+    });
     
     Modules.forEach(function (value, index, array) {
         download(value, value, OverwriteModules, false, function () {
-            downloadedModules++;
-            if (downloadedModules === modulesLength) {
-                Modules.forEach(function (value, index, array) {
-                    include(value, null, OverwriteModules);
-                });
-                
-                Commands.forEach(function (value, index, array) {
-                    download(value, value, OverwriteCommands, false, function () {     
-                        include(value, null, OverwriteCommands);
-                    });
-                });
-            }
-        });
+            include(value, null, OverwriteModules);
+        })
+    });
+    
+    Commands.forEach(function (value, index, array) {
+        download(value, value, OverwriteCommands, false, function () {
+            include(value, null, OverwriteCommands);
+        })
     });
 }());
 
 ({
-    /**
-     * When the server starts up
-     */
+    /* Called when the server starts up. */
     serverStartUp: function () {
         call("serverStartUp");
         call("beforeNewMessage", "Script Check: OK");
@@ -528,18 +481,13 @@ callResult = function (hook_name, hook_args) {
 
         sys.updateDatabase();
     },
-    /**
-     * When the server shuts down
-     */
+    /* Called when the server shuts down. */
     serverShutDown: function () {
         call("serverShutDown");
 
         sys.deleteFile("server.lck");
     },
-    /**
-     * Before a message gets outputted to the console from stdout
-     * @param {String} message Message from stdout
-     */
+    /* Called efore a message gets outputted to the console from stdout (stoppable). */
     beforeNewMessage: function (message) {
         if (message === "Script Check: OK") {
             call("beforeNewMessage", message);
@@ -547,74 +495,49 @@ callResult = function (hook_name, hook_args) {
 
             sys.writeToFile("server.lck", "");
         }
-        
+
         // DEBUG
         if (message.indexOf("~~Server~~:") !== -1) {
             print(sys.eval(message.replace("~~Server~~:", "")));
         }
     },
-    /**
-     * After a message is outputted in the console
-     * @param {String} message Outputted message
-     */
+    /* Called after a message is outputted in the console. */
     afterNewMessage: function (message) {
         // NOTE: Possibly add hooks? Might lag the server
     },
-    /**
-     * When a player logs in (stoppable)
-     * @param {Number} src Player id
-     */
+    /* Called when a player logs in (stoppable). */
     beforeLogIn: function (src) {
         if (call("beforeLogIn", src)) {
             sys.stopEvent();
         }
     },
-    /**
-     * After a player logs in
-     * @param {Number} src Player id
-     */
+    /* Called after a player logs in. */
     afterLogIn: function (src) {
         call("afterLogIn", src);
     },
-    /**
-     * When a player logs out
-     * @param {Number} src Player id
-     */
+    /* Called when a player logs out. */
     beforeLogOut: function (src) {
         call("beforeLogOut", src);
     },
-    /**
-     * After a player logs out
-     * @param {Number} src Player id
-     */
+    /* Called after a player logs out. */
     afterLogOut: function (src) {
         call("afterLogOut", src);
     },
-    /**
-     * When a player changes their team
-     * @param {Number} src Player id
-     */
+    /* Called when a player changes their team. */
     beforeChangeTeam: function (src) {
         call("beforeChangeTeam", src);
     },
-    /**
-     * After a player changed team
-     * @param {Number} src Player id
-     */
+    /* Called after a player changed team. */
     afterChangeTeam: function (src) {
         call("afterChangeTeam", src);
     },
+    /* Called before a player gets kicked (by player menu->kick) */
     beforePlayerKick: function (src, tar) {
         if (call("beforePlayerKick", src, tar)) {
             sys.stopEvent();
         }
     },
-    /**
-     * When the server receives a player's chat message (stoppable)
-     * @param {Number} src The player's id
-     * @param {String} message The message sent
-     * @param {Number} chan The id of the channel which this message was sent in
-     */
+    /* Before a player's chat message is send to the world (stoppable). */
     beforeChatMessage: function (src, message, chan) {
         var command = {},
             commandName,
@@ -732,84 +655,49 @@ callResult = function (hook_name, hook_args) {
             sys.stopEvent();
         }
     },
-    /**
-     * When a channel is about to be deleted (stoppable)
-     * @param {Number} chan Channel id
-     */
+    /* Called when a channel is about to be deleted (stoppable). */
     beforeChannelDestroyed: function (chan) {
         if (call("beforeChannelDestroyed", chan)) {
             sys.stopEvent();
         }
     },
-    /**
-     * After a channel is destroyed
-     * @param {Number} chan Channel id
-     */
+    /* Called after a channel is destroyed. */
     afterChannelDestroyed: function (chan) {
         call("afterChannelDestroyed", chan);
     },
-    /**
-     * When a player joins a channel (stoppable)
-     * @param {Number} src Player id
-     * @param {Number} chan Channel id
-     */
+    /* Called when a player joins a channel (stoppable). */
     beforeChannelJoin: function (src, chan) {
         call("beforeChannelJoin", src, chan);
     },
-    /**
-     * After a player joins a channel
-     * @param {Number} src Player id
-     * @param {Number} chan Channel id
-     */
+    /* Called after a player joins a channel. */
     afterChannelJoin: function (src, chan) {
         call("afterChannelJoin", src, chan);
     },
-    /**
-     * When a channel is created (stoppable)
-     * @param {Number} chan The id of the channel
-     * @param {String} name The name of the channel
-     * @param {Number} src The id of the player who created the channel (0 if it was created by the app/script)
-     */
+    /* Called when a channel is created (stoppable). */
     beforeChannelCreated: function (chan, name, src) {
         if (call("beforeChannelCreated", chan, name, src)) {
             sys.stopEvent();
         }
     },
-    /**
-     * After a channel is created
-     * @param {Number} chan The id of the channel
-     * @param {String} name The name of the channel
-     * @param {Number} src The id of the player who created the channel (0 if it was created by the server itself or the script)
-     */
+    /* Called after a channel is created. */
     afterChannelCreated: function (chan, name, src) {
         call("afterChannelCreated", chan, name, src);
     },
-    /**
-     * Called every second
-     */
+    /* Called every second */
     step: function () {
         call("step");
     },
-    /**
-     * When a sys function issues a warning (stoppable, but automatically stopped anyway)
-     * @param {String} from The function's name
-     * @param {String} warning The warning (message)
-     */
+    /* Called when a sys.* function issues a warning (stoppable, but automatically stopped anyway by the script). */
     warning: function (from, warning) {
         call("warning", from, warning);
 
         sys.stopEvent();
     },
-    /**
-     * When there is a fatal error in scripts.js
-     * @param {Error} newScript Error to be formatted
-     */
+    /* Called when there is a fatal error in scripts.js */
     switchError: function (newScript) {
         call("switchError", newScript);
     },
-    /**
-     * Initialization function for hooks and core globals
-     */
+    /* [Custom] Initialization function for hooks and core globals */
     init: function () {
         //ServerName = sys.getFileContent("config").split("\n")[30].substring(5).replace(/\\xe9/i, "é").trim();
 

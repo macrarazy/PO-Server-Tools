@@ -20,7 +20,7 @@
         return "Commands - User: Fun";
     },
     Commands: function () {
-        CommandHandlers.Lists.user.add("funcommands");
+        CommandHandlers._lists.user.add("funcommands");
 
         // TODO: Add other fun commands
         return [

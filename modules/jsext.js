@@ -12,7 +12,7 @@
 
 defineOn = function (core, props) {
     var x;
-    
+
     for (x in props) {
         Object.defineProperty(core, x, {
             "value": props[x],
@@ -62,7 +62,9 @@ defineOn(String.prototype, {
      * @return {String}
      */
     escapeHtml: function () {
-        return this.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+        return (sys.escapeHtml || function (str) {
+            return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+        })(this);
     },
     /**
      * Returns the html-stripped version of this string
@@ -90,13 +92,11 @@ defineOn(String.prototype, {
      * @return {String} The same string if modules/datahash.js isn't loaded or the proper capitalized version if it is and the player exists in it
      */
     name: function () {
-        var str = this,
-            tl = str.toLowerCase();
-        if (typeof DataHash === "undefined" || typeof DataHash.names === "undefined" || !DataHash.names.has(tl)) { // HARDCODED
-            return str;
+        if (typeof DataHash === "undefined" || typeof DataHash.names === "undefined" || !DataHash.names.has(this.toLowerCase())) { // HARDCODED
+            return this;
         }
 
-        return DataHash.names[tl];
+        return DataHash.names[this.toLowerCase()];
     }
 });
 
@@ -166,7 +166,7 @@ defineOn(Object.prototype, {
      */
     extend: function (obj) {
         var y;
-    
+
         for (y in obj) {
             this[y] = obj[y];
         }

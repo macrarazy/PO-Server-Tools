@@ -34,7 +34,7 @@
      */
     Commands: function () {
         // TODO: Current voting status function.
-        CommandHandlers.Lists.user.add("pollcommands");
+        CommandHandlers._lists.user.add("pollcommands");
 
         return [
             {

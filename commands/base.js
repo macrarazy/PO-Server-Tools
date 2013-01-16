@@ -1,7 +1,7 @@
 /* Defines all command list managers/containers */
 
 /* Generates/cleans all command lists */
-CommandHandlers.Lists
+CommandHandlers._lists
     .user = new handlers.CommandList()
     .mod = new handlers.CommandList()
     .admin = new handlers.CommandList()
@@ -52,7 +52,7 @@ handlers.permissionHost = function (src) {
                 help: ["To view the <b>user</b> commands"],
                 handler: function (command) {
                     new Templates.command("User Commands")
-                        .listCommands(CommandHandlers.Lists.user.commands)
+                        .listCommands(CommandHandlers._lists.user.commands)
                         .render(command.src, command.chan);
                 }
             },
@@ -62,7 +62,7 @@ handlers.permissionHost = function (src) {
                 category: "1",
                 handler: function (command) {
                     new Templates.command("Moderator Commands")
-                        .listCommands(CommandHandlers.Lists.mod.commands)
+                        .listCommands(CommandHandlers._lists.mod.commands)
                         .render(command.src, command.chan);
                 }
             },
@@ -72,7 +72,7 @@ handlers.permissionHost = function (src) {
                 category: "2",
                 handler: function (command) {
                     new Templates.command("Administrator Commands")
-                        .listCommands(CommandHandlers.Lists.admin.commands)
+                        .listCommands(CommandHandlers._lists.admin.commands)
                         .render(command.src, command.chan);
                 }
             },
@@ -82,7 +82,7 @@ handlers.permissionHost = function (src) {
                 category: "3",
                 handler: function (command) {
                     new Templates.command("Owner Commands")
-                        .listCommands(CommandHandlers.Lists.owner.commands)
+                        .listCommands(CommandHandlers._lists.owner.commands)
                         .render(command.src, command.chan);
                 }
             },
@@ -92,7 +92,7 @@ handlers.permissionHost = function (src) {
                 permissionHandler: handlers.permissionHost,
                 handler: function (command) {
                     new Templates.command("Host Commands")
-                        .listCommands(CommandHandlers.Lists.host.commands)
+                        .listCommands(CommandHandlers._lists.host.commands)
                         .render(command.src, command.chan);
                 }
             }

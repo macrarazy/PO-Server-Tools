@@ -568,7 +568,7 @@
         return "Commands - Pokedex";
     },
     Commands: function () {
-        CommandHandlers.Lists.user.add("pokedex");
+        CommandHandlers._lists.user.add("pokedex");
 
         return [
             {
