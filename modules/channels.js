@@ -1,33 +1,13 @@
-/**
- * @fileOverview Contains default channels and channelData
- * @author TheUnknownOne
- * @version 3.0.0 Alpha 1
- */
+/* Default channels and channel data storage */
 
 Channels = {
-    mafia: util.channel.create("Mafia Channel"),
-    trivia: util.channel.create("Trivia"),
-    trivreview: util.channel.create("Trivia Review"),
-    watch: util.channel.create("Watch"),
-    staff: util.channel.create("Staff Channel"),
-    script: util.channel.create("Eval 51")
+    mafia: sys.createChannel("Mafia Channel"),
+    trivia: sys.createChannel("Trivia"),
+    trivreview: sys.createChannel("Trivia Review"),
+    watch: sys.createChannel("Watch"),
+    staff: sys.createChannel("Staff Channel"),
+    script: sys.createChannel("Eval 51")
 };
-
-(function () {
-    sys.setTimer(function () {
-        var x;
-        
-        Channels.ids = [];
-        
-        for (x in Channels) {
-            if (!Array.isArray(Channels[x])) {
-                Channels[x] = util.channel.id(Channels[x]);
-            
-                Channels.ids.push(Channels[x]);
-            }
-        }
-    }, 1, false);
-}());
 
 // TODO: NEW STUFF
 
