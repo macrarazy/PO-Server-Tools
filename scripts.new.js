@@ -69,12 +69,14 @@ MandatoryModules = [
     "modules/truthy.js",
 
     "modules/jsext.js",
+    
     "modules/utilities.js",
     "modules/cache.js",
     "modules/datahash.js",
+    
     "modules/jsession.js",
     "modules/users.js",
-    "modules/channel.js",
+    "modules/channels.js",
 
     "commands/base.js"
 ];
