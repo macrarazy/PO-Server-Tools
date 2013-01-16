@@ -179,17 +179,14 @@ handlers.defaultHandler = function (category) {
 handlers.CommandList = function () {
     this.commands = [];
 
-    /**
-     * Adds a command to this command list manager
-     * @param {String} name Command name
-     */
+    /* Adds a command to this command list manager */
     this.add = function (name) {
         if (!this.commands.indexOf(name) === -1) {
             this.commands.push(name);
         }
     };
 
-    return CommandHandlers._lists;
+    return this;
 };
 
 /* Adds a command */
@@ -256,6 +253,8 @@ addCommand = function (obj, file) {
         "allowedWhenMuted": allowedWhenMuted,
         "file": file
     };
+    
+    return this;
 };
 
 /* Includes a file */
@@ -361,17 +360,20 @@ include.get = function (FileName, Method) {
 /* Downloads and writes a file to the disk */
 download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack) {
     var filePath = FileName.split(/\/|\\/);
-
-    if (sys.getFileContent(FileName) && !ForceDownload) {
-        if (typeof CallBack === "function") {
-            CallBack();
-        }
-        return "";
+    
+    if (typeof CallBack !== "function") {
+        CallBack = function () {};
     }
 
+    if (sys.getFileContent(FileName) && !ForceDownload) {
+        CallBack();
+        return this;
+    }
+
+    /* Creates the directories if they do not yet exist */
     if (filePath.length !== 1) {
-        /* Creates the directories if they do not yet exist */
         delete filePath[filePath.length - 1];
+        
         sys.makeDir(filePath.filter(function (value, index, array) {
             return (value !== "");
         }).join("/"));
@@ -382,12 +384,11 @@ download = function (FileName, FilePath, ForceDownload, Synchronously, CallBack)
     } else {
         sys.webCall(URL + BRANCH + "/" + FilePath, function (httpResponse) {
             sys.writeToFile(FileName, httpResponse);
-
-            if (typeof CallBack === "function") {
-                CallBack();
-            }
-        })
+            CallBack();
+        });
     }
+    
+    return this;
 };
 
 /* Gets a list of hooks for an event */

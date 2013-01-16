@@ -1,12 +1,11 @@
 /* Defines all command list managers/containers */
 
 /* Generates/cleans all command lists */
-CommandHandlers._lists
-    .user = new handlers.CommandList()
-    .mod = new handlers.CommandList()
-    .admin = new handlers.CommandList()
-    .owner = new handlers.CommandList()
-    .host = new handlers.CommandList();
+CommandHandlers._lists.user = new handlers.CommandList();
+CommandHandlers._lists.mod = new handlers.CommandList();
+CommandHandlers._lists.admin = new handlers.CommandList();
+CommandHandlers._lists.owner = new handlers.CommandList();
+CommandHandlers._lists.host = new handlers.CommandList();
 
 /**
  * Handles permissions for special auth level: Host
@@ -29,13 +28,13 @@ handlers.permissionHost = function (src) {
                     var commands = ["usercommands"],
                         auth = command.self.auth;
 
-                    if (auth === 1) {
+                    if (auth >= 1) {
                         commands.push("modcommands");
                     }
-                    if (auth === 2) {
+                    if (auth >= 2) {
                         commands.push("admincommands");
                     }
-                    if (auth === 3) {
+                    if (auth >= 3) {
                         commands.push("ownercommands");
                     }
                     if (command.self.host) {

@@ -184,7 +184,7 @@
                 }
 
                 /* First is for formes. Second is missingno check. */
-                if (split[1].charAt(0) !== "0" || split[0] === "0") {
+                if (split[1].charAt(0) !== "0" || split[0].charAt(0) === "0") {
                     pokeId--;
                     return "continue";
                 }
@@ -213,7 +213,7 @@
                     currentStats.push(" ");
                 }
 
-                poke = +(split[0]);
+                poke = split[0];
 
                 /* Egg Groups */
                 if (hasFegg1) {

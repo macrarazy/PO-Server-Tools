@@ -1,17 +1,8 @@
-/**
- * @fileOverview User Data Manager
- * @author TheUnknownOne
- * @version 3.0.0 Alpha 1
- */
+/* User Manager */
 
 ({
-    /**
-     * Returns the name of this module
-     * @private
-     * @return {String}
-     */
     Name: function () {
-        return "User Data Manager";
+        return "User Manager";
     },
     Hooks: function () {
         return {
@@ -41,7 +32,7 @@
                     name = sys.name(src).toLowerCase(),
                     player = util.player.player(src);
 
-                util.watch.player(src, "Logged In", "Using IP " + ip);
+                util.watch.player(src, "Using IP " + ip, "Logged In");
 
                 
                 if (sendWelcomeMessage) {
