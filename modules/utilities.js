@@ -289,16 +289,10 @@ util.channel = {
     /* Creates a channel. 
        NOTE: Returns [name] back, and not the channel's id, due to a bug in PO. */
     create: function (name) {
-        if (!this._createTimer) {
-            this._createTimer = 1;
-        }
-        
         if (!sys.existChannel(name)) {
             sys.setTimer(function () {
                 sys.createChannel(name);
-            }, this._createTimer, true);
-            
-            this._createTimer++;
+            }, 200, false);
         }
 
         return name;

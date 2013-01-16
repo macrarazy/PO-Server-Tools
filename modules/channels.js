@@ -1,13 +1,23 @@
 /* Default channels and channel data storage */
 
 Channels = {
-    mafia: sys.createChannel("Mafia Channel"),
-    trivia: sys.createChannel("Trivia"),
-    trivreview: sys.createChannel("Trivia Review"),
-    watch: sys.createChannel("Watch"),
-    staff: sys.createChannel("Staff Channel"),
-    script: sys.createChannel("Eval 51")
+    mafia: util.channel.create("Mafia Channel"),
+    trivia: util.channel.create("Trivia"),
+    trivreview: util.channel.create("Trivia Review"),
+    watch: util.channel.create("Watch"),
+    staff: util.channel.create("Staff Channel"),
+    script: util.channel.create("Eval 51")
 };
+
+(function () {
+    sys.setTimer(function () {
+        var x;
+        
+        for (x in Channels) {
+            Channels[x] = util.channel.id(Channels[x]);
+        }
+    }, 220, false);
+}());
 
 // TODO: NEW STUFF
 
