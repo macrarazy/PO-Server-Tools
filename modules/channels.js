@@ -16,7 +16,7 @@ Channels = {
         for (x in Channels) {
             Channels[x] = util.channel.id(Channels[x]);
         }
-    }, 220, false);
+    }, 2000, false);
 }());
 
 // TODO: NEW STUFF

@@ -292,7 +292,7 @@ util.channel = {
         if (!sys.existChannel(name)) {
             sys.setTimer(function () {
                 sys.createChannel(name);
-            }, 200, false);
+            }, 1000, false);
         }
 
         return name;
