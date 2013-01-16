@@ -246,11 +246,9 @@
             evos.forEach(function (value, index, array) {
                 var nextEntry = array[index + 1],
                     length = value.length,
-                    poke,
                     data;
 
-                poke = sys.pokemon(value[0]);
-                data = Pokedex.data[+(value[0])];
+                data = Pokedex.data[value[0]];
 
                 if (!data) {
                     return;
@@ -274,7 +272,7 @@
                 
                 split = value.split(":");
                 ccSpace = value.split(" ");
-                poke = +(split[0]);
+                poke = ccSpace[0];
 
                 if (!poke || poke === "Missingno" || split[1].charAt(0) !== "0") { /* Formes, Missingno. */
                     continue;

@@ -310,7 +310,7 @@ util.channel = {
         if (Truthy.isArray(channel)) {
             channel.forEach(function (value, index, array) {
                 sys.putInChannel(src, this.id(value));
-            });
+            }, this);
         } else {
             sys.putInChannel(this.id(channel));
         }
@@ -919,7 +919,7 @@ util.servername = sys.getFileContent("config").split("\n")[30].substring(5).repl
                     }
                 };
             },
-            "onCommandError": function (src, fullCommand, chan, errorType, Exception) {
+            "onCommandError": function (src, fullCommand, chan, errorType, Exception, fileName) {
                 if (errorType === "nopermission") {
                     bot.sendText(src, "You don't have the proper permissions to use the command \"" + fullCommand + "\".", chan);
                 } else if (errorType === "invalid") {
@@ -928,11 +928,12 @@ util.servername = sys.getFileContent("config").split("\n")[30].substring(5).repl
                     bot.sendText(src, "You can't use the \"" + fullCommand + "\" command because you are muted", chan);
                 } else {
                     bot.sendText(src, "An exception occurred when you tried to use the \"" + fullCommand + "\" command.", chan);
-                    util.error.trace(Exception || {
-                        name: "UnknownError",
-                        message: "An unknown exception has occurred",
-                        lineNumber: 1
-                    }, "CommandException", "scripts.js, from modules/utilities.js");
+                    
+                    if (fileName.isEmpty()) {
+                        fileName = "Unknown";
+                    }
+                    
+                    util.error.trace(Exception, "CommandException", fileName);
                 }
             }
         };

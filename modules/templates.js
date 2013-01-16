@@ -1,14 +1,4 @@
-/*
- Dependencies:
- - modules/jsext.js
- - modules/utilities.js
- */
-
-/**
- * @fileOverview Message templates
- * @author TheUnknownOne
- * @version 3.0.0 Alpha 1
- */
+/* Command templates - basic, list, commandlist, and table templates */
 
 /* Temporary fixes */
 style = {
@@ -23,21 +13,15 @@ style = {
     "help": "<b><font color='orangered'>The following commands need to be entered into a channel's main chat:</font></b>",
     "span": "<br><font size=5><B>{{Name}}</b></font>"
 };
-PointerCommands = {"!!//Reverse//!!": []};
+PointerCommands = {"!!/Reverse/!!": {}};
 ChatColorRandomizers = {};
 
 // TODO: Find a way to not make this as hardcoded as it is with styles
 // TODO: Find a way to not make this as hardcoded as it is with pointer commands
 // TODO: Find a way to not make this as hardcoded as it is with chat color randomizers
-// TODO: JSDOC
 
-/* Define Templates - all should be called with "new" */
-
-/**
- * Contains the message templates
- * @namespace
- * @type {Object}
- */
+/* Contains all templates 
+   NOTE: All templates should be called with "new" */
 Templates = {
     /* Basic template - very default */
     basic: function () {
@@ -124,7 +108,7 @@ Templates = {
 
                 // TODO: "fix" this with a hook
                 if (ChatColorRandomizers.has(chan)) { // Tables reset fix
-                    index = ChatColorRandomizers[chan],
+                    index = ChatColorRandomizers[chan];
                         code = '<div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
 
                     sys.sendHtmlMessage(src, code, chan);
@@ -261,11 +245,6 @@ Templates = {
 };
 
 ({
-    /**
-     * Returns the name of this module
-     * @private
-     * @return {String} Templates
-     */
     Name: function () {
         return "Templates";
     }

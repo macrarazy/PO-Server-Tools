@@ -193,7 +193,7 @@ handlers.CommandList = function () {
 };
 
 /* Adds a command */
-addCommand = function (obj) {
+addCommand = function (obj, file) {
     var name,
         handler,
         category,
@@ -201,6 +201,8 @@ addCommand = function (obj) {
         help,
         allowedWhenMuted;
 
+    file = file || "";
+    
     if (typeof obj !== "object") {
         print("module.command.error: Could not add an unknown command.");
         return;
@@ -251,7 +253,8 @@ addCommand = function (obj) {
         "handler": handler,
         "permissionHandler": permissionHandler,
         "help": help,
-        "allowedWhenMuted": allowedWhenMuted
+        "allowedWhenMuted": allowedWhenMuted,
+        "file": file
     };
 };
 
@@ -299,8 +302,8 @@ include = function (FileName, GetMethod, NoCache) {
             module.commands = source.Commands();
 
             module.commands.forEach(function (value, index, array) {
-                print("adding command " + value.name);
-                addCommand(value);
+                print("[DEBUG] adding command " + value.name);
+                addCommand(value, FileName);
             });
         }
     }
@@ -649,7 +652,7 @@ callResult = function (hook_name, hook_args) {
             try {
                 cmd.handler(commandInfo);
             } catch (Exception) {
-                call("onCommandError", src, fullCommand, chan, "exception", Exception);
+                call("onCommandError", src, fullCommand, chan, "exception", Exception, cmd.file);
             }
         }
 
