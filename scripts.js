@@ -7668,6 +7668,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("public", "To make the server public.");
                     ct.register("private", "To make the server private.");
                     ct.register("allowchannels", "To toggle the allowance of creation of non-script channels.");
+                    ct.register("battles", "To toggle the allowance of battles.");
 
                     ct.render(src, chan);
                 },
@@ -8262,6 +8263,12 @@ if(message == "Maximum Players Changed.") {
                     ChannelsAllowed = !ChannelsAllowed;
                     cache.write("ChannelsAllowed", ChannelsAllowed);
                     botAll("Channels were turned " + toOn(ChannelsAllowed) + " by " + player(src) + "!", 0);
+                },
+
+                battles: function () {
+                    BattlesAllowed = !BattlesAllowed;
+                    cache.write("BattlesAllowed", BattlesAllowed);
+                    botAll("Battles were turned " + toOn(BattlesAllowed) + " by " + player(src) + "!", 0);
                 },
 
                 deleteplayer: function () {
@@ -9252,9 +9259,21 @@ if(message == "Maximum Players Changed.") {
         }
     },
 
+    beforeBattleMatchup: function (src) {
+        if (!BattlesAllowed) {
+            botMessage(src, "Battles are currently disabled.");
+            return sys.stopEvent();
+        }
+    },
+    
     beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier) {
         if (Config.FixChallenges) {
-            return;
+            return sys.stopEvent();
+        }
+        
+        if (!BattlesAllowed) {
+            botMessage(src, "Battles are currently disabled.");
+            return sys.stopEvent();
         }
 
         var poUser = JSESSION.users(src);
@@ -9266,8 +9285,7 @@ if(message == "Maximum Players Changed.") {
         var time = sys.time() * 1;
         if (poUser.lastChallenge + 15 - time > 0 && sys.auth(src) < 2 && poUser.lastChallenge != 0) {
             botMessage(src, "Please wait " + getTimeString(poUser.lastChallenge + 15 - time) + " before challenging.");
-            sys.stopEvent();
-            return;
+            return sys.stopEvent();
         }
 
         poUser.lastChallenge = time;
@@ -13297,6 +13315,7 @@ if(message == "Maximum Players Changed.") {
         cache.ensure("AutoKick", true);
         cache.ensure("AutoMute", true);
         cache.ensure("ChannelsAllowed", true);
+        cache.ensure("BattlesAllowed", true);
 
         cache.ensure("mutes", "{}");
         cache.ensure("tempbans", "{}");
@@ -13357,6 +13376,7 @@ if(message == "Maximum Players Changed.") {
         AutoKick = cache.get("AutoKick");
         AutoMute = cache.get("AutoMute");
         ChannelsAllowed = cache.get("ChannelsAllowed");
+        BattlesAllowed = cache.get("BattlesAllowed")
 
         MaxMessageLength = cache.get("MaxMessageLength");
         maxPlayersOnline = cache.get("MaxPlayersOnline");
