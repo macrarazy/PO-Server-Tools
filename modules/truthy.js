@@ -126,11 +126,6 @@ Truthy = (function (global) {
 })(GLOBAL);
 
 ({
-    /**
-     * Returns the name of this module
-     * @private
-     * @return {String}
-     */
     Name: function () {
         return "Truthy.js";
     }

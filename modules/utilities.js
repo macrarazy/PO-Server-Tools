@@ -307,7 +307,7 @@ util.channel = {
     putIn: function (src, channel) {
         src = util.player.id(src);
 
-        if (Truthy.isArray(channel)) {
+        if (Array.isArray(channel)) {
             channel.forEach(function (value, index, array) {
                 sys.putInChannel(src, this.id(value));
             }, this);

@@ -1,21 +1,8 @@
-/**
- * @fileOverview DataHash (Object containing data)
- * @author TheUnknownOne
- * @version 3.0.0 Alpha 1
- */
+var DataHash;
 
 /* Extends util with DataHash utilities */
-/**
- * DataHash Utilities
- * @type {Object}
- */
 util.datahash = {
-    /**
-     * Writes a DataHash property to the given (cacheInst)
-     * @param {Cache} cacheInst An instance of Cache
-     * @param {String} name Name of the DataHash property
-     * @return {Object} this
-     */
+    /* Writes a DataHash property to the given (cacheInst) */
     write: function (cacheInst, name) {
         if (!name) {
             if (cache) {
@@ -27,12 +14,7 @@ util.datahash = {
 
         return this;
     },
-    /**
-     * Resolves a player's hostname and country
-     * @param {PID} [src] Player identifier
-     * @param {String} [ip] Player IP. Required if (src) isn't passed/doesn't exist/isn't online
-     * @param {Boolean} [sync=false] If the webCall is synchronous
-     */
+    /* Resolves a player's hostname and country. */
     resolveLocation: function (src, ip, sync) {
         var loc = DataHash.locations,
             url = "http://ip2country.sourceforge.net/ip2c.php?ip=" + ip,
@@ -101,102 +83,87 @@ util.datahash = {
     }
 };
 
-/**
- * Hash in which all kinds of data can be stored
- * @namespace
- * @type {Object}
- */
-DataHash = {};
+(function () {
+    var x;
 
-/**
- * File which all content is stored in
- * @type {String}
- */
-DataHash.file = "DataHash-v3.json";
+    /* Hash in which all kinds of data can be stored. */
+    DataHash = {};
 
-/* Reads DataHash from file */
-util.sandbox.DataHash = util.json.read(DataHash.file);
-
-util.sandbox.DataHashNeeds = {
-    /**
-     * Stores proper cased names as (name.lowercase=>name.correctcase) and player last names by ip (ip=>lastname in correctcase)
-     * @type {Object}
-     */
-    names: {},
-
-    /**
-     * Contains all mutes by ip
-     * @type {Object}
-     */
-    mutes: {},
-
-    /**
-     * Contains all player locations by ip (country only)
-     * @type {Object}
-     */
-    locations: {},
-
-    /**
-     * The currently running poll
-     * @type {Object}
-     */
-    poll: {
-        mode: 0,
-        subject: "",
-        starter: "",
-        options: {},
-        votes: 0
-    },
-
-    /**
-     * Contains all of the evaluation operators
-     * @type {Object}
-     */
-    evalOperators: {}, // NOTE: evalops -> evalOperators
-
-    /**
-     * Contains all auto idles
-     * @type {Object}
-     */
-    idles: {}
-};
-
-util.sandbox.datahashx = null;
-
-for (util.sandbox.datahashx in util.sandbox.DataHashNeeds) {
-    util.sandbox.dhcurrval = util.sandbox.DataHashNeeds[util.sandbox.datahashx];
+    /* File which all data is stored in. */
+    DataHash.file = "DataHash.json";
     
-    if (!util.sandbox.DataHash.has(util.sandbox.datahashx)) {
-        util.sandbox.DataHash[util.sandbox.datahashx] = util.sandbox.dhcurrval;
+    /* Reads DataHash from file */
+    util.sandbox.DataHash = util.json.read(DataHash.file);
+
+    util.sandbox.DataHashNeeds = {
+        /**
+         * Stores proper cased names as (name.lowercase=>name.correctcase) and player last names by ip (ip=>lastname in correctcase)
+         * @type {Object}
+         */
+        names: {},
+
+        /**
+         * Contains all mutes by ip
+         * @type {Object}
+         */
+        mutes: {},
+
+        /**
+         * Contains all player locations by ip (country only)
+         * @type {Object}
+         */
+        locations: {},
+
+        /**
+         * The currently running poll
+         * @type {Object}
+         */
+        poll: {
+            mode: 0,
+            subject: "",
+            starter: "",
+            options: {},
+            votes: 0
+        },
+
+        /**
+         * Contains all of the evaluation operators
+         * @type {Object}
+         */
+        evalOperators: {}, // NOTE: evalops -> evalOperators
+
+        /**
+         * Contains all auto idles
+         * @type {Object}
+         */
+        idles: {}
+    };
+    
+    for (x in util.sandbox.DataHashNeeds) {
+        util.sandbox.dhcurrval = util.sandbox.DataHashNeeds[x];
+
+        if (!util.sandbox.DataHash.has(x)) {
+            util.sandbox.DataHash[x] = util.sandbox.dhcurrval;
+        }
+
+        util.sandbox.dhNeedsWrite = true;
     }
-    
-    util.sandbox.dhNeedsWrite = true;
-}
 
-if (util.sandbox.dhNeedsWrite) {
-    /* Write to file */
-    util.json.write(DataHash.file, DataHash);
-    
-    delete util.sandbox.dbNeedsWrite;
-}
+    if (util.sandbox.dhNeedsWrite) {
+        /* Write to file */
+        util.json.write(DataHash.file, DataHash);
 
-/* Extends DataHash */
-DataHash.extend(util.sandbox.DataHash);
+        delete util.sandbox.dbNeedsWrite;
+    }
+
+    /* Extends DataHash */
+    DataHash.extend(util.sandbox.DataHash);
+});
 
 ({
-    /**
-     * Returns the name of this module
-     * @private
-     * @return {String} DataHash
-     */
     Name: function () {
         return "DataHash";
     },
-    /**
-     * Returns the hooks of this module
-     * @private
-     * @return {Object}
-     */
     Hooks: function () {
         return {
             "commandPlayerAuthRequested": function (src, message, chan, commandName) {
