@@ -79,7 +79,7 @@
  Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
  **/
 
-EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to count load speed! **/
+EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to calculate load speed! **/
 Version = "2.6.0s";
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
@@ -99,8 +99,7 @@ Config = {
     NoCrash: false,
     AdminsCanAuth: true,
 
-    ClearLogsAt: 36700160,
-    /** NO LONGER WORKING ON v2 **/
+    ClearLogsAt: 36700160, /** NO LONGER WORKING ON v2 **/
     HighPermission: {
         "This gives Administrator Auth to a Moderator.": [1, 2],
         "Don't forget the commas and collons.": [1, 2]
@@ -3017,7 +3016,7 @@ if(message == "Maximum Players Changed.") {
 
         poUser.addFlood();
 
-        if (poUser.floodCount >= 8) {
+        if ((AutoMute || AutoKick) && poUser.floodCount >= 8) {
             sys.stopEvent();
             poUser.floodCount = 'kicked';
 
