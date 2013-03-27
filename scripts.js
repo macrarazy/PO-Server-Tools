@@ -1,4 +1,4 @@
-﻿/*===========================================================*\
+/*===========================================================*\
 || #               -Script Information-                    # ||
 || ######################################################### ||
 || #                                                       # ||
@@ -7261,6 +7261,11 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, "That person seems to be offline or does not exist.", chan);
                         return;
                     }
+                    
+                    if (typeof mcmd[1] === "string") {
+                        return script.importable(src, tar, chan, true);
+                    }
+                }
                     script.importable(src, tar, chan);
                 },
 
@@ -7494,7 +7499,7 @@ if(message == "Maximum Players Changed.") {
                 ct.register("authcommands", "Displays the Authority commands.");
                 ct.register("masskick", "Kicks all users from the server.");
                 ct.register("clearchat", "Clears the chat.");
-                ct.register("showteam", ["{Player::Online Player}"], "Displays {Player::Online Player}'s team.");
+                ct.register("showteam", ["{Player::Online Player}", "{Text::Any <u>\"simple\"</u>}"], "Displays {Player::Online Player}'s team. If {Text::Any <u>\"simple"\"</u>} is specified (can be anything), then displays an importable instead (no images).");
                 ct.register("forcebattle", ["{Player::Online Player1}", "{Player::Online Player2}", "{Text::Any <u>Tier</u>}", "{Text::Any <u>Mode</u>}", "{Text::Any <u>Rated</u>}"], "Forces a battle between {Player::Online Player1} and {Player::Online Player2}, using {Text::Any Tier}'s clauses, {Text::Any Mode} as battle mode, and {Text::Any Rated} deciding if the battle is rated. Tier must be a valid tier for clauses (teams of this are also prioritized if any). Mode can be Doubles or Triples. Rated must be one of the following: true, rated, yes, on. If not, the battle won't be rated.");
                 ct.register("bot", ["{Text::Any Name}"], "Changes the bot's name to {Text::Any Name}.");
                 ct.register("botcolor", ["{Text::Any Color}"], "Changes the bot's color to {Text::Any Color}.");
@@ -9816,7 +9821,7 @@ if(message == "Maximum Players Changed.") {
         cache.write("tempauth", JSON.stringify(DataHash.tempauth));
     },
 
-    importable: function (src, tar, chan) {
+    importable: function (src, tar, chan, simple) {
         var natureNames = {
             24: "Quirky</font></b> Nature",
             23: "Careful</font></b> Nature (+SDef, -SAtk)",
@@ -9906,7 +9911,9 @@ if(message == "Maximum Players Changed.") {
 
                 gender = genderNames[sys.teamPokeGender(tar, n, i)];
                 shinyPoke = false; // sys.teamPokeShine(tar, n, i); = bugged in v2
-                t.register("<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=false&shiny=" + shinyPoke + "&gender=" + gender + "'><img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=true&shiny=" + shinyPoke + "&gender=" + gender + "'>");
+                if (!simple) {
+                    t.register("<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=false&shiny=" + shinyPoke + "&gender=" + gender + "'><img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=true&shiny=" + shinyPoke + "&gender=" + gender + "'>");
+                }
 
                 nick = sys.teamPokeNick(tar, n, i) + "</b></font> (<b><font color=" + color + ">" + sys.pokemon(sys.teamPoke(tar, n, i)) + "</b></font>)"
                 if (sys.teamPokeNick(tar, n, i) == sys.pokemon(sys.teamPoke(tar, n, i))) {
@@ -9918,7 +9925,11 @@ if(message == "Maximum Players Changed.") {
                     item = "";
                 }
 
-                t.register("<font color=" + color + "><b> " + nick + " " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "<img src='Themes/Classic/genders/gender2.png'> (F)").replace(/male/g, "<img src='Themes/Classic/genders/gender1.png'> (M)").replace(/genderless/g, "<img src='Themes/Classic/genders/gender0.png'>") + " @ " + item + " " + sys.item(sys.teamPokeItem(tar, n, i)));
+                if (!simple) {
+                    t.register("<font color=" + color + "><b> " + nick + " " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "<img src='Themes/Classic/genders/gender2.png'> (F)").replace(/male/g, "<img src='Themes/Classic/genders/gender1.png'> (M)").replace(/genderless/g, "<img src='Themes/Classic/genders/gender0.png'>") + " @ " + item + " " + sys.item(sys.teamPokeItem(tar, n, i)));
+                } else {
+                    t.register("<font color=" + color + "><b> " + nick + " " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "(F)").replace(/male/g, "(M)").replace(/genderless/g, "") + " @ " + sys.item(sys.teamPokeItem(tar, n, i)));                
+                }
 
                 if (gen > 2) {
                     t.register("<font color=" + color + "><b>Trait:</b></font> " + sys.ability(sys.teamPokeAbility(tar, n, i)));
