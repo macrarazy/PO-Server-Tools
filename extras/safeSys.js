@@ -62,34 +62,25 @@ safeSys = function () {
         resetLadder: noop,
         synchronizeTierWithSQL: noop,
         clearChat: noop,
-        callLater: function (str, sec) {
+        callLater: function () {
             return -1;
         },
-        callQuickly: function (str, msec) {
+        callQuickly: function () {
             return -1;
         },
-        quickCall: function (func, msec) {
+        quickCall: function () {
             return -1;
         },
-        delayedCall: function (func, sec) {
+        delayedCall: function () {
             return -1;
         },
-        intervalTimer: function (str, msec) {
+        intervalTimer: function () {
             return -1;
         },
-        intervalCall: function (func, msec) {
+        intervalCall: function () {
             return -1;
         },
-        stopTimer: function (id) {
-            return false;
-        },
-        setTimer: function (timer, msec, repeat) {
-            return false;
-        },
-        unsetTimer: function (id) {
-            return false;
-        },
-        unsetAllTimers: function () {
+        stopTimer: function () {
             return false;
         },
         "eval": function (str) {
@@ -324,7 +315,7 @@ safeSys = function () {
             return Math.floor(Math.random() * (max - min) + min);
         },
         time: function () {
-            return (new Date().getTime() / 1000) + "";
+            return String(new Date().getTime() / 1000);
         },
         getTierList: function () {
             return [];
@@ -391,19 +382,24 @@ safeSys = function () {
             return false;
         },
         sendNetworkCommand: noop,
-        sha1: function (str) {
-            return str;
+        sha1: function () {
+            // TODO: Get code to generate sha1 strings.
+            return "";
         },
-        md4: function (str) {
-            return str;
+        md4: function () {
+            // TODO: Get code to generate md4 strings.
+            return "";
         },
-        md5: function (str) {
-            return str;
+        md5: function () {
+            // TODO: Get code to generate md5 strings.
+            return "";
         },
         validColor: function () {
+            // TODO: Possibly get code to validate this?
             return false;
         },
         hexColor: function () {
+            // TODO: Get code to generate hex colors.
             return "#000000";
         },
         saveVal: noop,
@@ -431,20 +427,6 @@ safeSys = function () {
             return "";
         },
         system: noop,
-        safeSys: true,
-        zip: noop,
-        extractZip: noop,
-        makeDir: noop,
-        removeDir: noop,
-        getCurrentDir: function () {
-            return "";
-        },
-        battlingIds: function () {
-            return [];
-        },
-        prepareItems: noop,
-        playersOfChannel: function (chan) {
-            return [];
-        }
+        safeSys: true
     };
 };
