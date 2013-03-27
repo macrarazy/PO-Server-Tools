@@ -79,8 +79,8 @@
  Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
  **/
 
-EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to count load speed! **/
-Version = "2.6.0";
+EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to calculate load speed! **/
+Version = "2.6.0s";
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
@@ -99,8 +99,7 @@ Config = {
     NoCrash: false,
     AdminsCanAuth: true,
 
-    ClearLogsAt: 36700160,
-    /** NO LONGER WORKING ON v2 **/
+    ClearLogsAt: 36700160, /** NO LONGER WORKING ON v2 **/
     HighPermission: {
         "This gives Administrator Auth to a Moderator.": [1, 2],
         "Don't forget the commas and collons.": [1, 2]
@@ -1714,6 +1713,11 @@ Tours.prototype.roundPairing = function () {
                         money[name] = 0;
                     }
                     var randNum = sys.rand(320, 751);
+
+                    if (randNum < 350) {
+                        randNum = sys.rand(330, 380); // Give some more points (most of the time)
+                    }
+
                     money[name] += randNum;
                     cache.write("money", JSON.stringify(DataHash.money));
 
@@ -3012,7 +3016,7 @@ if(message == "Maximum Players Changed.") {
 
         poUser.addFlood();
 
-        if (poUser.floodCount >= 8) {
+        if ((AutoMute || AutoKick) && poUser.floodCount >= 8) {
             sys.stopEvent();
             poUser.floodCount = 'kicked';
 
@@ -3596,6 +3600,38 @@ if(message == "Maximum Players Changed.") {
                     }
 
                     t.render(src, chan);
+                },
+
+                pokedex: function () {
+                    var formeIndex = commandData.indexOf("-");
+                    if (formeIndex != -1) {
+                        commandData = commandData.substr(0, formeIndex);
+                    }
+
+                    if (sys.pokeNum(commandData) == undefined) {
+                        commandData = parseInt(commandData);
+                        if (sys.pokemon(commandData) != undefined) {
+                            commandData = sys.pokemon(commandData);
+                        }
+                    }
+
+                    else {
+                        commandData = sys.pokemon(sys.pokeNum(commandData)); // Correcting case.
+                    }
+
+                    try {
+                        pokedex(src, chan, commandData);
+                    }
+                    catch (e) {
+                        var rand = sys.pokemon(sys.rand(1, 650));
+                        rands = rand + "'s";
+                        if (rand[rand.length - 1] == "s") {
+                            rands = rand + "'";
+                        }
+
+                        botEscapeMessage(src, "Since the Pokémon " + commandData + " doesn't exist, the Pokédex displayed " + rands + " data instead.", chan);
+                        pokedex(src, chan, rand);
+                    }
                 },
 
                 channels: function () {
@@ -4319,7 +4355,11 @@ if(message == "Maximum Players Changed.") {
 
                     poUser.lastFuture = t + FutureLimit;
                     var Message = cut(mcmd, 1, ':');
-                    sys.callLater("script.beforeChatMessage(" + src + ", '" + Message + "', " + chan + ");", parseInt(mcmd[0]));
+                    
+                    sys.delayedCall(function () {
+                        script.beforeChatMessage(src, Message, chan);
+                    }, parseInt(mcmd[0]));
+                    
                     botMessage(src, "Your message was sent " + getTimeString(mcmd[0]) + " into the future!", chan);
                 },
 
@@ -7627,6 +7667,7 @@ if(message == "Maximum Players Changed.") {
                     ct.register("public", "To make the server public.");
                     ct.register("private", "To make the server private.");
                     ct.register("allowchannels", "To toggle the allowance of creation of non-script channels.");
+                    ct.register("battles", "To toggle the allowance of battles.");
 
                     ct.render(src, chan);
                 },
@@ -8221,6 +8262,12 @@ if(message == "Maximum Players Changed.") {
                     ChannelsAllowed = !ChannelsAllowed;
                     cache.write("ChannelsAllowed", ChannelsAllowed);
                     botAll("Channels were turned " + toOn(ChannelsAllowed) + " by " + player(src) + "!", 0);
+                },
+
+                battles: function () {
+                    BattlesAllowed = !BattlesAllowed;
+                    cache.write("BattlesAllowed", BattlesAllowed);
+                    botAll("Battles were turned " + toOn(BattlesAllowed) + " by " + player(src) + "!", 0);
                 },
 
                 deleteplayer: function () {
@@ -9166,18 +9213,16 @@ if(message == "Maximum Players Changed.") {
 
     afterBattleEnded: function (winner, loser, result, battle_id) {
         if (result != "tie" && sys.ip(winner) != sys.ip(loser)) {
-            var winMoney = sys.rand(10, 101),
-                loseMoney = sys.rand(1, 101),
+            var winMoney = sys.rand(50, 81),
+                loseMoney = sys.rand(13, 36),
                 winnerName = sys.name(winner).toLowerCase(),
                 loserName = sys.name(loser).toLowerCase(),
                 money = DataHash.money;
 
             if (typeof money[loserName] === "undefined") {
-                botMessage(loser, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you will!", 0);
                 money[loserName] = 0;
             }
             if (typeof money[winnerName] === "undefined") {
-                botMessage(winner, "You are getting 'battle points'. Currently, you can't do anything with these, but in the future, you will!", 0);
                 money[winnerName] = 0;
             }
 
@@ -9213,9 +9258,21 @@ if(message == "Maximum Players Changed.") {
         }
     },
 
+    beforeBattleMatchup: function (src) {
+        if (!BattlesAllowed) {
+            botMessage(src, "Battles are currently disabled.");
+            return sys.stopEvent();
+        }
+    },
+    
     beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier) {
         if (Config.FixChallenges) {
-            return;
+            return sys.stopEvent();
+        }
+        
+        if (!BattlesAllowed) {
+            botMessage(src, "Battles are currently disabled.");
+            return sys.stopEvent();
         }
 
         var poUser = JSESSION.users(src);
@@ -9227,8 +9284,7 @@ if(message == "Maximum Players Changed.") {
         var time = sys.time() * 1;
         if (poUser.lastChallenge + 15 - time > 0 && sys.auth(src) < 2 && poUser.lastChallenge != 0) {
             botMessage(src, "Please wait " + getTimeString(poUser.lastChallenge + 15 - time) + " before challenging.");
-            sys.stopEvent();
-            return;
+            return sys.stopEvent();
         }
 
         poUser.lastChallenge = time;
@@ -10854,69 +10910,69 @@ if(message == "Maximum Players Changed.") {
             return ret;
         }
 
-            format = function (src, str) {
-                if (typeof str != "string") {
-                    str = String(str);
-                }
+        format = function (src, str) {
+            if (typeof str != "string") {
+                str = String(str);
+            }
 
-                var auth = hpAuth(src);
-                GlobalHostVar = isHost(src);
+            var auth = hpAuth(src);
+            GlobalHostVar = isHost(src);
 
-                if (src == "lvl0") {
-                    auth = 0;
-                    GlobalHostVar = false;
-                }
+            if (src == "lvl0") {
+                auth = 0;
+                GlobalHostVar = false;
+            }
 
-                if (src == "lvl2") {
-                    auth = 2;
-                    GlobalHostVar = false;
-                }
+            if (src == "lvl2") {
+                auth = 2;
+                GlobalHostVar = false;
+            }
 
-                if (src == 0) {
-                    auth = 3;
+            if (src == 0) {
+                auth = 3;
+                GlobalHostVar = true;
+            }
+
+            if (typeof src == 'number' && sys.loggedIn(src)) {
+                var srcName = sys.name(src).toLowerCase();
+                if (DataHash.evalops.has(srcName)) {
                     GlobalHostVar = true;
                 }
+            }
 
-                if (typeof src == 'number' && sys.loggedIn(src)) {
-                    var srcName = sys.name(src).toLowerCase();
-                    if (DataHash.evalops.has(srcName)) {
-                        GlobalHostVar = true;
-                    }
-                }
+            if (auth > 2 || GlobalHostVar) { // Format this first for other bbcodes.
+                str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
+            }
 
-                if (auth > 2 || GlobalHostVar) { // Format this first for other bbcodes.
-                    str = str.replace(/\[eval\](.*?)\[\/eval\]/gi, evalBBCode);
-                }
+            str.linkify();
 
-                str.linkify();
+            str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
+            str = str.replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>');
+            str = str.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
+            str = str.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
+            str = str.replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>');
+            str = str.replace(/\[sup\](.*?)\[\/sup\]/gi, '<sup>$1</sup>');
+            str = str.replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>');
+            str = str.replace(/\[code\](.*?)\[\/code\]/gi, '<code>$1</code>');
+            str = str.replace(/\[servername\]/gi, servername.bold());
+            str = str.replace(/\[spoiler\](.*?)\[\/spoiler\]/gi, '<a style="color: black; background-color:black;">$1</a>');
+            str = str.replace(/\[time\]/gi, "<timestamp/>");
+            str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, '<font color=$1>$2</font>')
+            str = str.replace(/\[face=(.*?)\](.*?)\[\/face\]/gi, '<font face=$1>$2</font>');
+            str = str.replace(/\[font=(.*?)\](.*?)\[\/font\]/gi, '<font face=$1>$2</font>');
 
-                str = str.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
-                str = str.replace(/\[s\](.*?)\[\/s\]/gi, '<s>$1</s>');
-                str = str.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
-                str = str.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
-                str = str.replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>');
-                str = str.replace(/\[sup\](.*?)\[\/sup\]/gi, '<sup>$1</sup>');
-                str = str.replace(/\[sub\](.*?)\[\/sub\]/gi, '<sub>$1</sub>');
-                str = str.replace(/\[code\](.*?)\[\/code\]/gi, '<code>$1</code>');
-                str = str.replace(/\[servername\]/gi, servername.bold());
-                str = str.replace(/\[spoiler\](.*?)\[\/spoiler\]/gi, '<a style="color: black; background-color:black;">$1</a>');
-                str = str.replace(/\[time\]/gi, "<timestamp/>");
-                str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, '<font color=$1>$2</font>')
-                str = str.replace(/\[face=(.*?)\](.*?)\[\/face\]/gi, '<font face=$1>$2</font>');
-                str = str.replace(/\[font=(.*?)\](.*?)\[\/font\]/gi, '<font face=$1>$2</font>');
+            if (auth > 0) {
+                str = str.replace(/\[size=([0-9]{1,})\](.*?)\[\/size\]/gi, '<font size=$1>$2</font>');
+                str = str.replace(/\[pre\](.*?)\[\/pre\]/gi, '<pre>$1</pre>');
+                str = str.replace(/\[ping\]/gi, "<ping/>");
+                str = str.replace(/\[br\]/gi, "<br/>");
+                str = str.replace(/\[hr\]/gi, "<hr/>");
+            }
 
-                if (auth > 0) {
-                    str = str.replace(/\[size=([0-9]{1,})\](.*?)\[\/size\]/gi, '<font size=$1>$2</font>');
-                    str = str.replace(/\[pre\](.*?)\[\/pre\]/gi, '<pre>$1</pre>');
-                    str = str.replace(/\[ping\]/gi, "<ping/>");
-                    str = str.replace(/\[br\]/gi, "<br/>");
-                    str = str.replace(/\[hr\]/gi, "<hr/>");
-                }
+            str = addChannelLinks(str); // do this late for other bbcodes to work properly
+            delete GlobalHostVar;
 
-                str = addChannelLinks(str); // do this late for other bbcodes to work properly
-                delete GlobalHostVar;
-
-                return str;
+            return str;
         }
 
         hpAuth = function (src) {
@@ -11514,7 +11570,7 @@ if(message == "Maximum Players Changed.") {
             }
 
             this.loadDataForAll = function () {
-                var cd = JSESSION.ChannelData,
+                var cd = sys.channelIds(),
                     x;
 
                 for (x in cd) {
@@ -11535,7 +11591,7 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 var cData = this.channelData[cChan.name],
-                    isPerm = DefaultChannels.has(cChan.id) || cData.perm,
+                    isPerm = DefaultChannels.has(cChan.id),
                     properties = {
                         "creator": "~Unknown~",
                         "topic": "Welcome to " + cChan.name + "!",
@@ -11544,7 +11600,7 @@ if(message == "Maximum Players Changed.") {
                         "private": false,
                         "defaultTopic": true,
                         "silence": 0,
-                        "toursEnabled": cData.toursEnabled,
+                        "toursEnabled": DefaultChannels.has(cChan.id)
                     },
                     json_properties = ["chanAuth", "banlist", "mutelist", "tourAuth"],
                     tour_properties = {
@@ -13258,6 +13314,7 @@ if(message == "Maximum Players Changed.") {
         cache.ensure("AutoKick", true);
         cache.ensure("AutoMute", true);
         cache.ensure("ChannelsAllowed", true);
+        cache.ensure("BattlesAllowed", true);
 
         cache.ensure("mutes", "{}");
         cache.ensure("tempbans", "{}");
@@ -13318,6 +13375,7 @@ if(message == "Maximum Players Changed.") {
         AutoKick = cache.get("AutoKick");
         AutoMute = cache.get("AutoMute");
         ChannelsAllowed = cache.get("ChannelsAllowed");
+        BattlesAllowed = cache.get("BattlesAllowed")
 
         MaxMessageLength = cache.get("MaxMessageLength");
         maxPlayersOnline = cache.get("MaxPlayersOnline");
