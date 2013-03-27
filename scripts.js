@@ -18,54 +18,58 @@
  */
 
 /* Script Configuration */
-Config = {};
+var Config = {
+    /* If teams should be checked for Dream World abilities */
+    DWAbilityCheck: true,
 
-/* If teams should be checked for Dream World abilities */
-Config.DWAbilityCheck = true;
+    /* If the default channels are automatically joined when a player goes on the server */
+    AutoChannelJoin: true,
 
-/* If the default channels are automatically joined when a player goes on the server */
-Config.AutoChannelJoin = true;
+    /* If welcome messages should be displayed globally */
+    WelcomeMessages: false,
 
-/* If welcome messages should be displayed globally */
-Config.WelcomeMessages = false;
+    /* If admins can give and take auth from users and to moderators. */
+    AdminsCanAuth: true,
 
-/* If admins can give and take auth from users and to moderators. */
-Config.AdminsCanAuth = true;
+    /* Characters which indicate the usage of a command. */
+    CommandStarts: ["/", "!"],
 
-/* Characters which indicate the usage of a command. */
-Config.CommandStarts = ["/", "!"];
+    /* Changes that players authority to that level when performing an auth lookup (so an administrator with a PlayerPermission of 3 can use owner commands, 
+        however, they still appear as an administrator) */
+    PlayerPermissions: {
+        "Example player with Config.PlayerPermissions": 3
+    },
 
-/* Changes that players authority to that level at auth calculations (so an administrator with a PlayerPermission of 3 can use owner commands, 
- however, they still appear as an administrator) */
-Config.PlayerPermissions = {
-    "Example player with Config.PlayerPermissions": 3
+    /* Mafia Configuration */
+    Mafia: {
+        /* Amount of different themes that have to be started before one that has been played (norepeat) games ago */
+        norepeat: 3,
+
+        /* Path to the file where mafia stats will be written to. */
+        stats_file: "mafia-stats.json",
+
+        /* Maximum length for a player's name who wants to join a mafia game. */
+        max_name_length: 16
+    }
 };
 
-/* Mafia Configuration */
-Config.Mafia = {};
+/* Don't modify anything beyond this point if you don't know what you're doing. */
+var Script = {
+    /* Version of the script. */
+    SCRIPT_VERSION: "3.0.0 Devel",
 
-/* Amount of different themes that have to be started before one that has been played (norepeat) games ago */
-Config.Mafia.norepeat = 3;
+    /* URL of modules/commands/languages */
+    URL: "https://raw.github.com/TheUnknownOne/PO-Server-Tools/",
 
-/* Path to the file where mafia stats will be written to. */
-Config.Mafia.stats_file = "Mafia_Stats.json";
-
-/* Maximum length for a player's name who wants to join a mafia game. */
-Config.Mafia.max_name_length = 16;
-
-/* Version of the script. */
-SCRIPT_VERSION = "3.0.0 Alpha 1";
-
-/* Data location for modules/commands/languages */
-URL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/";
-
-/* Branch to download modules from. */
-BRANCH = "alpha";
+    /* Branch to download modules (and other data) from. */
+    BRANCH: "alpha"
+};
 
 /* Mandatory modules. These are required for module runtime 
  NOTE: Will be loaded synchronously */
 MandatoryModules = [
     /* Imported */
+    "modules/__base__.js",
     "modules/truthy.js",
 
     "modules/jsext.js",
@@ -87,7 +91,7 @@ Modules = [
     /* Imported */
     "modules/tlite.js",
 
-    "modules/templates.js", 
+    "modules/templates.js",
     "modules/mafia.js"
 ];
 
@@ -119,9 +123,6 @@ if (typeof CommandHandlers === "undefined") {
 
 /* Contains command/script-defined settings */
 Settings = {};
-
-/* PO sys object*/
-sys = sys || {};
 
 /* Prints to the server console */
 print = print || function (msg) {
