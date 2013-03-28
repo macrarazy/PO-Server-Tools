@@ -7498,7 +7498,7 @@ if(message == "Maximum Players Changed.") {
                 ct.register("authcommands", "Displays the Authority commands.");
                 ct.register("masskick", "Kicks all users from the server.");
                 ct.register("clearchat", "Clears the chat.");
-                ct.register("showteam", ["{Player::Online Player}", "{Text::Any <u>\"simple\"</u>}"], "Displays {Player::Online Player}'s team. If {Text::Any <u>\"simple"\"</u>} is specified (can be anything), then displays an importable instead (no images).");
+                ct.register("showteam", ["{Player::Online Player}", "{Text::Any <u>\"simple\"</u>}"], "Displays {Player::Online Player}'s team. If {Text::Any <u>\"simple\"</u>} is specified (can be anything), then displays an importable instead (no images).");
                 ct.register("forcebattle", ["{Player::Online Player1}", "{Player::Online Player2}", "{Text::Any <u>Tier</u>}", "{Text::Any <u>Mode</u>}", "{Text::Any <u>Rated</u>}"], "Forces a battle between {Player::Online Player1} and {Player::Online Player2}, using {Text::Any Tier}'s clauses, {Text::Any Mode} as battle mode, and {Text::Any Rated} deciding if the battle is rated. Tier must be a valid tier for clauses (teams of this are also prioritized if any). Mode can be Doubles or Triples. Rated must be one of the following: true, rated, yes, on. If not, the battle won't be rated.");
                 ct.register("bot", ["{Text::Any Name}"], "Changes the bot's name to {Text::Any Name}.");
                 ct.register("botcolor", ["{Text::Any Color}"], "Changes the bot's color to {Text::Any Color}.");
