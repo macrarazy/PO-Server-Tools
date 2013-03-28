@@ -7265,7 +7265,6 @@ if(message == "Maximum Players Changed.") {
                     if (typeof mcmd[1] === "string") {
                         return script.importable(src, tar, chan, true);
                     }
-                }
                     script.importable(src, tar, chan);
                 },
 
