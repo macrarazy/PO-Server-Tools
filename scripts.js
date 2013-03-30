@@ -9993,8 +9993,10 @@ if(message == "Maximum Players Changed.") {
                         moveStr = "<font color=" + colorNames[hp] + "><b>Hidden Power</b></font> [" + hptype + "]";
                     }
 
-                    t.register(moveStr);
+                    t.register("-" + moveStr);
                 }
+                
+                t.register("");
 
                 if (teamno != numteams) {
                     t.register("<hr/>");
