@@ -1,3 +1,5 @@
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
+/*global sys*/
 var require;
 
 if (typeof require === 'undefined') {
@@ -10,15 +12,15 @@ if (typeof require === 'undefined') {
         // nocache: if the cache for the file should be deleted
         require = function (path, nocache) {
             var content,
-                identifier = path.split('.js').pop();
+                identifier = path.split('.js').pop(),
+                module = {exports: {}, path: path},
+                exports = module.exports;
                 
             identifier.join('.js');
             
             // delete the cache or quickly get the module
-            if (nocache) {
-                delete modules[identifier];
-            } else if (modules[identifier]) {
-                return modules[identifier];
+            if (require.modules[identifier]) {
+                return require.modules[identifier];
             }
             
             content = sys.getFileContent(path);
@@ -27,12 +29,18 @@ if (typeof require === 'undefined') {
                 return {};
             }
             
-            // hurr, JSLint.
-            require.modules[identifier] = modules[identifier] = eval('(function (exports, identifier) { ' + content + ';return exports; }(({}), "' + identifier + '"))');
-            return modules[identifier];
+            with (module) {
+                try {
+                    eval(content);
+                } catch (e) {
+                    print("Couldn't load module " + identifier + " (" + path + "): " + e.toString() + " on line " + e.lineNumber);
+                }
+            }
+            
+            return require.modules[identifier];
         };
         
-        require.modules = modules;
+        require.modules = require.modules || {};
         return require;
     }());
 }
