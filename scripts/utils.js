@@ -119,29 +119,4 @@
     
         return [].concat(array).splice(entry).join(join);
     };
-
-    firstTeamForTier = function (id, tier) {
-        if (Config.NoCrash) {
-            return 0;
-        }
-    
-        var ttl = tier.toLowerCase(),
-            x;
-    
-        for (x = 0; x < sys.teamCount(id); x++) {
-            if (sys.tier(id, x).toLowerCase() == ttl) {
-                return x;
-            }
-        }
-    
-        return -1;
-    };
-    
-    hasTeam = function (id, tier) {
-        if (!tier) {
-            return sys.teamCount(id) != 0;
-        }
-    
-        return sys.hasTier(id, tier);
-    };
 }());
