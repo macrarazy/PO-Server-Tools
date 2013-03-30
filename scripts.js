@@ -46,6 +46,10 @@ var Config = {
     /* After how many seconds a player's message should be 'forgiven', causing it to not be counted by
         the floodbot. */
     AutoFloodTime: 6,
+    
+    /* Attempts to fix crashes. Some features might not be available (so if you don't have any problems
+        with crashes, don't enable this). */
+    NoCrash: false,
 
     /* Mafia Configuration */
     Mafia: {
@@ -132,257 +136,19 @@ var POChannel = require('channel').Channel;
 // TODO: Remove this and merge it with options.js
 var POGlobal = require('global').Global;
 
-JSESSIONInst = function () {
-    this.UserData = {};
-    this.ChannelData = {};
-    this.GlobalData = {};
-
-    this.UserFunc = function () {}
-    this.ChannelFunc = function () {}
-    this.GlobalFunc = function () {}
-
-    this.UsesUser = false;
-    this.UsesChannel = false;
-    this.UsesGlobal = false;
-
-    this.ScriptID = undefined;
+var JSESSION_Constructor = require('JSESSION').JSESSION;
+    
+// Otherwise will reset user/channel data every script load.
+if (typeof JSESSION === "undefined") {
+    JSESSION = new JSESSION_Constructor();
 }
 
-JSESSIONInst.prototype.refill = function () {
-    var x, users = sys.playerIds(),
-        channels = sys.channelIds();
+// TODO: Utils.updatePrototype
+// Attempts to add new features to JSESSION
+Utils.updatePrototype(JSESSION, JSESSION_Constructor);
 
-    if (this.UsesUser) {
-        for (x in users) {
-            if (this.users(users[x]) == undefined) {
-                this.createUser(users[x]);
-            }
-        }
-    }
-
-    if (this.UsesChannel) {
-        for (x in channels) {
-            if (this.channels(channels[x]) == undefined) {
-                this.createChannel(channels[x]);
-            }
-        }
-    }
-
-    if (this.UsesGlobal) {
-        if (this.global() == undefined) {
-            this.GlobalData = new this.GlobalFunc();
-        }
-    }
-}
-
-JSESSIONInst.prototype.users = function (id) {
-    if (!this.UsesUser) {
-        return;
-    }
-
-    if (typeof this.UserData[id] == 'undefined') {
-        return;
-    }
-
-    return this.UserData[id];
-}
-
-JSESSIONInst.prototype.channels = function (id) {
-    if (!this.UsesChannel) {
-        return;
-    }
-
-    if (typeof this.ChannelData[id] == 'undefined') {
-        return;
-    }
-
-    return this.ChannelData[id];
-}
-
-JSESSIONInst.prototype.global = function () {
-    if (!this.UsesGlobal) {
-        return;
-    }
-
-    if (typeof this.GlobalData == 'undefined') {
-        return;
-    }
-
-    return this.GlobalData;
-}
-
-JSESSIONInst.prototype.identifyScriptAs = function (script) {
-    if (this.ScriptID == undefined || this.ScriptID != script) {
-        this.clearAll();
-    }
-
-    this.ScriptID = script;
-    this.refill();
-}
-
-JSESSIONInst.prototype.registerUser = function (func) {
-    if (typeof func != "function") {
-        return;
-    }
-
-    this.UserFunc = func;
-    this.UsesUser = true;
-}
-
-JSESSIONInst.prototype.registerChannel = function (func) {
-    if (typeof func != "function") {
-        return;
-    }
-
-    this.ChannelFunc = func;
-    this.UsesChannel = true;
-}
-
-JSESSIONInst.prototype.registerGlobal = function (func) {
-    if (typeof func != "function") {
-        return;
-    }
-
-    this.GlobalFunc = func;
-    this.UsesGlobal = true;
-    this.GlobalData = new func();
-}
-
-JSESSIONInst.prototype.createChannel = function (id) {
-    if (!this.UsesChannel) {
-        return false;
-    }
-
-    if (typeof this.ChannelData[id] != "undefined") {
-        return false;
-    }
-
-    if (sys.channel(id) == undefined) {
-        return false;
-    }
-
-    this.ChannelData[id] = new this.ChannelFunc(id);
-    return true;
-}
-
-JSESSIONInst.prototype.destroyChannel = function (id) {
-    if (!this.UsesChannel) {
-        return false;
-    }
-    if (id == 0) {
-        return false;
-    }
-
-    if (typeof this.ChannelData[id] == "undefined") {
-        return false;
-    }
-
-    delete this.ChannelData[id];
-    return true;
-}
-
-JSESSIONInst.prototype.createUser = function (id) {
-    if (!this.UsesUser) {
-        return false;
-    }
-
-    if (typeof this.UserData[id] != "undefined") {
-        return false;
-    }
-
-    if (sys.name(id) == undefined) {
-        return false;
-    }
-
-    this.UserData[id] = new this.UserFunc(id);
-    return true;
-}
-
-JSESSIONInst.prototype.destroyUser = function (id) {
-    if (!this.UsesUser) {
-        return false;
-    }
-    if (typeof this.UserData[id] == "undefined") {
-        return false;
-    }
-    if (sys.name(id) == undefined) {
-        return false;
-    }
-
-    delete this.UserData[id];
-    return true;
-}
-
-JSESSIONInst.prototype.hasUser = function (src) {
-    return this.UserData.has(src);
-}
-
-JSESSIONInst.prototype.hasChannel = function (channel) {
-    return this.ChannelData.has(channel);
-}
-
-JSESSIONInst.prototype.clearAll = function () {
-    this.UserData = {};
-    this.ChannelData = {};
-    this.GlobalData = {};
-
-    this.UserFunc = function () {}
-    this.ChannelFunc = function () {}
-    this.GlobalFunc = function () {}
-
-    this.UsesUser = false;
-    this.UsesChannel = false;
-    this.UsesGlobal = false;
-
-    this.ScriptID = undefined;
-}
-
-if (typeof JSESSION == "undefined") {
-    // Otherwise will reset user/channel data every script load.
-    JSESSION = new JSESSIONInst();
-}
-
-if (typeof updateProto !== "undefined") {
-    updateProto(JSESSION, JSESSIONInst);
-}
-
-cut = function (array, entry, join) {
-    if (!join) {
-        join = "";
-    }
-
-    if (!Array.isArray(array)) {
-        return array;
-    }
-
-    return array.splice(entry).join(join);
-}
-
-firstTeamForTier = function (id, tier) {
-    if (Config.NoCrash) {
-        return 0;
-    }
-
-    var ttl = tier.toLowerCase(),
-        x;
-
-    for (x = 0; x < sys.teamCount(id); x++) {
-        if (sys.tier(id, x).toLowerCase() == ttl) {
-            return x;
-        }
-    }
-
-    return -1;
-}
-
-hasTeam = function (id, tier) {
-    if (!tier) {
-        return sys.teamCount(id) != 0;
-    }
-
-    return sys.hasTier(id, tier);
-}
-
+// NOTE: hasTeam -> PlayerUtils.hasTeamForTier
+// NOTE: firstTeamForTier -> PlayerUtils.firstTeamForTier
 TourBox = function (message, chan) {
     sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
 }

@@ -104,4 +104,44 @@
     exports.fileLength = function (file) {
         return (sys.getFileContent(file) || "").length;
     };
+    
+    // Cuts an array starting from [entry], turning it into an array.
+    // Then .join is called using [join] as argument. The result is returned (an array).
+    // If the [array] isn't an array, then simply returns it back.
+    exports.cut = function (array, entry, join) {
+        if (!join) {
+            join = "";
+        }
+    
+        if (!Array.isArray(array)) {
+            return array;
+        }
+    
+        return [].concat(array).splice(entry).join(join);
+    };
+
+    firstTeamForTier = function (id, tier) {
+        if (Config.NoCrash) {
+            return 0;
+        }
+    
+        var ttl = tier.toLowerCase(),
+            x;
+    
+        for (x = 0; x < sys.teamCount(id); x++) {
+            if (sys.tier(id, x).toLowerCase() == ttl) {
+                return x;
+            }
+        }
+    
+        return -1;
+    };
+    
+    hasTeam = function (id, tier) {
+        if (!tier) {
+            return sys.teamCount(id) != 0;
+        }
+    
+        return sys.hasTier(id, tier);
+    };
 }());
