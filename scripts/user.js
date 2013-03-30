@@ -7,7 +7,10 @@
         JSESSION = require('jsession'),
         
         Utils = require('utils'),
+        // TODO: PlayerUtils: PlayerUtils.trueAuth(name | ip | id) (hpAuth w/ improvements)
+        // TODO: PlayerUtils: PlayerUtils.mute(opts) see below
         PlayerUtils = require('player-utils'),
+        // TODO: WatchUtils: WatchUtils.logPlayer() (WatchPlayer)
         WatchUtils = require('watch-utils');
     
     // JSESSION user constructor

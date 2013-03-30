@@ -2,6 +2,19 @@
 /*global sys, exports, module*/
 
 (function () {
+    // TODO: ChannelData: Add cData (ChannelData.xxx)
+    var ChannelData = require('channel-data'),
+        ChannelUtils = require('channel-utils'),
+        // TODO: PlayerUtils: PlayerUtils.name(id | name) (like old String#name (as in modules/jsext.js))
+        // TODO: PlayerUtils: PlayerUtils.formatName(id | name) (same as player())
+        // TODO: PlayerUtils: PlayerUtils.name(id | name) (like modules/utilities.js' util.player.name)
+        // TODO: PlayerUtils: PlayerUtils.ip(id | name | ip) (that checks sys.ip, dbIp, and proxyIp (because of the webclient))
+        PlayerUtils = require('player-utils'),
+        // TODO: Utils.isEmpty
+        Utils = require('utils'),
+        Bot = require('bot'),
+        Options = require('options');
+    
     // JSESSION channel constructor
     function Channel(id) {
         this.name = sys.channel(id);
@@ -11,179 +24,165 @@
         this.tourAuth = {};
         this.creator = '';
         this.topic = 'Welcome to ' + this.name + '!';
-        this.topicsetter = '';
+        // TODO: Rename topicsetter -> topicSetter
+        this.topicSetter = '';
+        
+        // TODO: REMOVE ALL THIS TOURS STUFF
         this.toursEnabled = false;
+        
+        this.perm = false;
     
-        if (typeof DefaultChannels != "undefined" && DefaultChannels.indexOf(id) != -1 || typeof DefaultChannels == "undefined") {
+        // it only contains names..
+        if (Options.indexOf(this.name) !== -1) {
             this.perm = true;
+            
+            // TODO: REMOVE ALL THIS TOURS STUFF
             this.tour = new Tours(this.id);
             this.toursEnabled = true;
-        }
-        else {
-            this.perm = false;
         }
     
         this.private = false;
         this.defaultTopic = true;
         this.silence = 0;
     
-        this.banlist = {};
-        this.mutelist = {};
+        // TODO: Rename banlist -> banList; mutelist -> muteList
+        this.banList = {};
+        this.muteList = {};
     
     }
     
-    POChannel.prototype.giveTourAuth = function (name) {
-        var toLower = name.toLowerCase();
+    // gives/takes tour auth to a player
+    // TODO: Remove this, merge with new tours.js (or something)
+    Channel.prototype.doTourAuth = function (name, mode) {
+        var toLower = String(name).toLowerCase();
     
-        if (this.tourAuth.has(toLower)) {
-            return;
+        if (mode === 'give') {
+            this.tourAuth[toLower] = {
+                'name': PlayerUtils.name(name)
+            };
+        } else if (mode === 'take') {
+            delete this.tourAuth[toLower];
+        } else {
+            throw new TypeError("Channel#doTourAuth (defined in scripts/channel.js): Mode is not 'give' or 'take'.");
         }
     
-        this.tourAuth[toLower] = {
-            'name': name.name()
-        };
+        ChannelData.changeTourAuth(this.id, this.tourAuth);
+    };
     
-        if (typeof cData == 'undefined') {
-            return;
-        }
-    
-        cData.changeTourAuth(this.id, this.tourAuth);
-    }
-    
-    POChannel.prototype.takeTourAuth = function (name) {
-        var toLower = name.toLowerCase();
-    
-        if (!this.tourAuth.has(toLower)) {
-            return;
-        }
-    
-        delete this.tourAuth[toLower];
-    
-        if (typeof cData == 'undefined') {
-            return;
-        }
-    
-        cData.changeTourAuth(this.id, this.tourAuth);
-    }
-    
-    POChannel.prototype.changeTopic = function (src, topic, fullCommand) {
-        if (isEmpty(topic)) {
-            if (this.topic == '') {
-                botMessage(src, "There is no topic.", this.id);
+    // Changes the channel topic
+    // TODO: Remove this, put this in /topic instead.
+    Channel.prototype.changeTopic = function (src, topic, fullCommand) {
+        var me = sys.name(src),
+            mePlayer = PlayerUtils.formatName(me);
+        
+        // no topic specified? let them see it.
+        if (Utils.isEmpty(topic)) {
+            if (this.topic === '') {
+                Bot.sendMessage(src, "There is no topic.", this.id);
                 return;
             }
     
-            botEscapeMessage(src, "Topic: " + this.topic, this.id);
+            Bot.escapeMessage(src, "Topic: " + this.topic, this.id);
     
-            if (this.topicsetter != '') {
-                botEscapeMessage(src, "Set by: " + this.topicsetter, this.id)
+            if (this.topicSetter !== '') {
+                Bot.escapeMessage(src, "Set by: " + this.topicSetter, this.id);
             }
-    
             if (this.defaultTopic) {
-                botMessage(src, "This is a default topic.", this.id);
+                Bot.sendMessage(src, "This is a default topic.", this.id);
             }
-    
             return;
         }
     
         if (!this.isChanMod(src)) {
-            noPermissionMessage(src, fullCommand, this.id);
+            // TODO: Possibly move .noPermissionMessage somewhere else
+            // Like ux.js
+            Utils.noPermissionMessage(src, fullCommand, this.id);
             return;
         }
     
-        var me = sys.name(src),
-            mePlayer = player(me);
-    
-        if (topic.toLowerCase() == "default") {
+        // set the topic.
+        // magic word "default" sets it back to normal
+        if (topic.toLowerCase() === "default") {
             this.topic = "Welcome to " + this.name + "!";
-            this.defaultTopic = true;
             this.topicsetter = '';
+            this.defaultTopic = true;
         } else {
             this.topic = topic;
             this.topicsetter = me;
             this.defaultTopic = false;
         }
     
-        botAll("The topic was changed by " + mePlayer + " to: " + this.topic, this.id);
+        Bot.sendAll("The topic was changed by " + mePlayer + " to: " + this.topic, this.id);
         return;
-    }
+    };
     
-    POChannel.prototype.changeAuth = function (name, newauth) {
-        var nh;
-        if (typeof name == "number") {
-            nh = sys.name(name).toLowerCase();
-        } else {
-            nh = name.toLowerCase();
+    // changes a player's auth level
+    Channel.prototype.changeAuth = function (name, auth) {
+        var trueName = PlayerUtils.name(name).toLowerCase();
+    
+        if (auth <= 0 && this.chanAuth.has(trueName)) {
+            return (delete this.chanAuth[trueName]);
         }
     
-        if (newauth == 0 && this.chanAuth.has(name)) {
-            delete this.chanAuth[nh];
-            return;
-        }
-    
-        this.chanAuth[nh] = newauth;
-    }
-    
-    POChannel.prototype.canIssue = function (src, tar) {
-        if (typeof hpAuth == 'undefined') {
-            return false;
-        }
-    
-        var selfName = sys.name(src),
-            targetName = sys.name(tar),
-            srcID = src;
-    
-        if (typeof src == 'string') {
-            selfName = src.toLowerCase();
-            srcID = sys.id(src);
-        }
-        else {
-            selfName = selfName.toLowerCase();
-        }
-    
-        if (typeof tar == 'string') {
-            targetName = tar.toLowerCase();
-        }
-        else {
-            targetName = targetName.toLowerCase();
-        }
-    
-        if (sys.dbIp(targetName) == undefined || sys.dbIp(selfName) == undefined) {
-            return false;
-        }
-    
-        if (hpAuth(src) <= hpAuth(tar) || srcID == undefined || this.chanAuth[selfName] <= this.chanAuth[targetName] && !this.isChanOwner(src)) {
-            return false;
-        }
-    
+        this.chanAuth[trueName] = auth;
         return true;
-    }
+    };
     
-    POChannel.prototype.isBannedInChannel = function (ip) {
-        return this.banlist.has(ip);
-    }
+    // if a player can issue channel punishment on another player
+    Channel.prototype.canIssue = function (src, tar) {
+        var selfName = PlayerUtils.name(src).toLowerCase(),
+            targetName = PlayerUtils.name(tar).toLowerCase(),
+            selfId = sys.id(selfName);
     
-    POChannel.prototype.isMutedInChannel = function (ip) {
-        return this.mutelist.has(ip);
-    }
+        // the player trying to issue doesn't exist? wat.
+        if (selfId === undefined) {
+            return false;
+        }
+        
+        // test if they don't exist
+        if (!PlayerUtils.ip(selfName) || !PlayerUtils.ip(targetName)) {
+            return false;
+        }
     
-    POChannel.prototype.isChanMod = function (src) {
-        var toLower = sys.name(src).toLowerCase();
+        // test if the target has more/equal auth than the issuer
+        if (PlayerUtils.trueAuth(src) <= PlayerUtils.trueAuth(tar)) { 
+            return false;
+        }
+        
+        // test if the target has more/equal auth than the issuer. allow it anyway if the issuer is channel owner.
+        if ((this.chanAuth[selfName] <= this.chanAuth[targetName]) && !this.isChanOwner(src)) {
+            return false;
+        }
     
-        return this.chanAuth[toLower] >= 1 || hpAuth(src) >= 1;
-    }
+        // alright. player can issue punishment.
+        return true;
+    };
     
-    POChannel.prototype.isChanAdmin = function (src) {
-        var toLower = sys.name(src).toLowerCase();
+    // if the player is banned in this channel
+    Channel.prototype.isBanned = function (ip) {
+        return this.banList.hasOwnProperty(PlayerUtils.ip(ip));
+    };
     
-        return this.chanAuth[toLower] >= 2 || hpAuth(src) >= 2;
-    }
+    // if the player is muted in this channel
+    Channel.prototype.isMutedInChannel = function (ip) {
+        return this.muteList.hasOwnProperty(PlayerUtils.ip(ip));
+    };
     
-    POChannel.prototype.isChanOwner = function (src) {
-        var toLower = sys.name(src).toLowerCase();
+    // if the player is a channel moderator (auth >= 1)
+    Channel.prototype.isChanMod = function (src) {
+        return PlayerUtils.trueAuth(src) >= 1 || (this.chanAuth[PlayerUtils.name(src).toLowerCase()] || 0) >= 1;
+    };
     
-        return this.chanAuth[toLower] >= 3 || hpAuth(src) >= 3;
-    }
+    // if the player is a channel administrator (auth >= 2)
+    Channel.prototype.isChanAdmin = function (src) {
+        return PlayerUtils.trueAuth(src) >= 2 || (this.chanAuth[PlayerUtils.name(src).toLowerCase()] || 0) >= 2;
+    };
     
+    // if the player is a channel owner (auth >= 3)
+    Channel.prototype.isChanOwner = function (src) {
+        return PlayerUtils.trueAuth(src) >= 3 || (this.chanAuth[PlayerUtils.name(src).toLowerCase()] || 0) >= 3;
+    };
+    
+    // export Channel
     exports.Channel = Channel;
 }());

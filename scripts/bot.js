@@ -10,6 +10,8 @@
     
     // Sends a bot message to a player
     exports.sendMessage = function (src, message, channel) {
+        // we have to do this manually.
+        // PO APIs are silly.
         if (typeof channel === "undefined") {
             sys.sendHtmlMessage(
                 src,
@@ -32,6 +34,8 @@
     
     // Sends a bot message to everyone
     exports.sendAll = function (message, channel) {
+        // we have to do this manually.
+        // PO APIs are silly.
         if (typeof channel === "undefined") {
             sys.sendHtmlAll(
                 "<font color='" + Script.Bot.color + "'><timestamp/><b>" + Script.Bot.name + ":</b></font> " + message
