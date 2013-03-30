@@ -12,6 +12,8 @@
         PlayerUtils = require('player-utils'),
         // TODO: Utils.isEmpty
         Utils = require('utils'),
+        // TODO: This is being improved.
+        Tours = require('tours'),
         Bot = require('bot'),
         Options = require('options');
     
