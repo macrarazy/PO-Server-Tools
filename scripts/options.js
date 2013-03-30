@@ -10,7 +10,7 @@
         "Mafia", // mafiachan
         "Trivia", // trivchan
         "Trivia Review", // trivrevchan
-        "=", // staffchan
+        "Ever Grande City", // staffchan
         "Guardtower", // watchchan
         // TODO: Remove evalchan/scriptchannel, merge to watch/watchchan
         "Area 51" // evalchan
