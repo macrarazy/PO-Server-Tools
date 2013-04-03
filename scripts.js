@@ -135,17 +135,12 @@ var POUser = require('user').User;
 var POChannel = require('channel').Channel;
 // TODO: Remove this and merge it with options.js
 var POGlobal = require('global').Global;
-
-var JSESSION_Constructor = require('JSESSION').JSESSION;
     
-// Otherwise will reset user/channel data every script load.
-if (typeof JSESSION === "undefined") {
-    JSESSION = new JSESSION_Constructor();
-}
+var JSESSION = require('jsession').JSESSION;
 
 // TODO: Utils.updatePrototype
 // Attempts to add new features to JSESSION
-Utils.updatePrototype(JSESSION, JSESSION_Constructor);
+Utils.updatePrototype(JSESSION, require('jsession').jsession_constructor);
 
 // NOTE: hasTeam -> PlayerUtils.hasTeamForTier
 // NOTE: firstTeamForTier -> PlayerUtils.firstTeamForTier
@@ -158,9 +153,10 @@ function Mail(sender, text, title) {
     this.text = text;
     this.read = false;
     this.sendtime = String(date);
-    this.sendAgo = sys.time() * 1;
+    this.sendAgo = +(sys.time());
 }
 
+/*
 defineCoreProperty = function (core, prop, func) {
     Object.defineProperty(core, prop, {
         "value": func,
@@ -302,7 +298,7 @@ defineCoreProperty(Object.prototype, "remove", function (name) {
 defineCoreProperty(Object.prototype, "first", function () {
     var x;
     for (x in this) {
-        return this[x]; /* Grab the first property */
+        return this[x];
     }
 });
 
@@ -328,8 +324,9 @@ defineCoreProperty(Array.prototype, "isEmpty", function () {
 defineCoreProperty(Array.prototype, "contains", function (prop) {
     return this.has(prop);
 });
+*/
 
-JSESSION.identifyScriptAs("TheUnknownOne's Server Script");
+JSESSION.identifyScriptAs("TheUnknownOne's Server Script v3.0.0 Devel");
 JSESSION.registerUser(POUser);
 JSESSION.registerChannel(POChannel);
 JSESSION.registerGlobal(POGlobal);
@@ -337,18 +334,17 @@ JSESSION.refill();
 
 ({
     serverStartUp: function () {
-        startupTime = sys.time() * 1;
+        startupTime = +(sys.time());
         StartUp = true;
 
         if (sys.getFileContent(".scriptsession") === "") {
             Config.NoCrash = true;
             sys.writeToFile("nocrash.txt", "Delete this file to turn NoCrash off (in case of a system crash or something similar).");
-        } else if (sys.getFileContent("nocrash.txt") != undefined) {
+        } else if (sys.getFileContent("nocrash.txt") !== undefined) {
             Config.NoCrash = true;
         }
 
         script.beforeNewMessage("Script Check: OK");
-
         sys.updateDatabase();
 
     },
@@ -362,8 +358,7 @@ JSESSION.refill();
             run = function (f) {
                 try {
                     script[f]();
-                }
-                catch (e) {
+                } catch (e) {
                     print(FormatError("Runtime Error: Could not call script." + f + "!", e));
                 }
             }
@@ -9050,6 +9045,7 @@ if(message == "Maximum Players Changed.") {
 
 
         BORDER = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
+        // NOTE: THIS HAS ALREADY BEEN MOVED TO tours.js
         TOUR_BORDER = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
 
         Grammar = {
@@ -9459,6 +9455,7 @@ if(message == "Maximum Players Changed.") {
             return false;
         }
 
+        // NOTE: ALREADY HAS BEEN IMPORTED
         objLength = function (obj) {
             return Object.keys(obj).length;
         }

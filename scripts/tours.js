@@ -2,203 +2,268 @@
 /*global sys, exports, module*/
 
 (function () {
-    TourBox = function (message, chan) {
-        sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
-    };
+    // TODO: PlayerUtils: PlayerUtils.formatName(id | name) (same as player())
+    var PlayerUtils = require('player-utils'),
+    // TODO: Utils.timeToString(): getTimeString
+        // TODO: Utils: Utils.isEqual(): cmp
+        Utils = require('utils'),
+        Bot = require('bot'),
+        DataHash = require('datahash'),
+        JSESSION = require('JSESSION').JSESSION;
     
-    TourNotification = function (src, chan, info) { // info is an object
+    // Whitespace
+    function white(src, chan) {
+        sys.sendMessage(src, "", chan);
+    }
+    
+    // Sends the tour border to [src]
+    function border(src, chan) {
+        sys.sendHtmlMessage(src, Tours.border, chan);
+    }
+    
+    // Table for channels with ToursChannelConfig#display === Tours.displays.clean
+    function tourBox(message, chan) {
+        sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
+    }
+    
+    // Sends a tourBox to a player
+    function tourBoxPlayer(src, message, chan) {
+        sys.sendHtmlMessage(src, "<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
+    }
+    
+    // Sends a tournament notification to a player
+    // Also called by bots to notify a new tournament has started
+    // ------
+    // info is an object and only used when called by a bot
+    // Contains these properties:
+    // name: Name of the bot.
+    // color: Color of the bot.
+    // TODO: This function is really ugly.
+    function tourNotification(src, chan, info) {
         var tour = JSESSION.channels(chan).tour,
-            mode = tour.tourmode;
+            mode = tour.mode,
+            prize = '',
+            finalsStr = '',
+            startTime;
     
         if (src !== 0) {
             if (mode === 0) {
                 return;
             }
+            
+            startTime = Utils.timeToString(+(sys.time()) - tour.startTime);
     
-            var white = function () {
-                sys.sendMessage(src, "", chan);
-            },
-                border = function () {
-                    sys.sendHtmlMessage(src, TOUR_BORDER, chan);
-                },
-                startTime = getTimeString(+(sys.time()) - tour.startTime);
+            white(src, chan);
+            border(src, chan);
     
-            white();
-            border();
-    
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + player(tour.tourstarter) + " " + startTime + " ago! </b></font>", chan);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + tour.tournumber, chan);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + tour.identify(), chan);
-            sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tourtier, chan);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + PlayerUtils.formatName(tour.starter) + " " + startTime + " ago! </b></font>", chan);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + tour.entrants, chan);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + Tours.identify(tour), chan);
+            sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tier, chan);
     
             if (!isEmpty(tour.prize)) {
                 sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + tour.prize, chan);
             }
     
-            border();
+            border(src, chan);
     
             if (mode === 1) {
                 sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
             } else if (mode === 2) {
-                var finalsStr = "";
                 if (tour.finals) {
                     finalsStr = " (<B>Finals</B>)";
                 }
     
-                sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + tour.roundnumber + finalsStr + ". " + tour.remaining + " players remaining.", chan);
+                sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + tour.round + finalsStr + ". " + tour.remaining + " players remaining.", chan);
     
             }
     
-            border();
-            white();
+            border(src, chan);
+            white(src, chan);
         } else {
-            if (tour.TourDisplay === tour.Displays.Normal) {
-                tour.white();
-                tour.border();
+            // these are broadcasted by the bot.
+            // that's why everything is sendHtmlAll
+            if (tour.display === Tours.displays.normal) {
+                Tours.white(chan);
+                Tours.border(chan);
                 // TODO: Implement color support for bot.
-                sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + player(info.starter) + "! </b></font>", chan);
-                sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + tour.tournumber, chan);
-                sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + tour.identify(), chan);
-                sys.sendHtmlAll("<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tourtier, chan);
-                if (!isEmpty(tour.prize)) {
+                sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + Utils.escapeHtml(info.starter) + "! </b></font>", chan);
+                sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + tour.entrants, chan);
+                sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + Tours.identify(tour), chan);
+                sys.sendHtmlAll("<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tier, chan);
+                
+                if (!Utils.isEmpty(tour.prize)) {
                     sys.sendHtmlAll("<timestamp/><b><font color=brown>Prize:</b></font> " + tour.prize, chan);
                 }
-                tour.border();
+                
+                Tours.border(chan);
                 sys.sendHtmlAll("<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
-                tour.border();
-                tour.white();
+                Tours.border(chan);
+                Tours.white(chan);
             } else {
-                var prize = '';
-    
-                if (!isEmpty(tour.prize)) {
+                if (!Utils.isEmpty(tour.prize)) {
                     prize = '<b style="color: brown;">Prize:</b> ' + tour.prize + '<br/>';
                 }
-    
-                // Bots
-                TourBox("A Tournament was started by <b style='color:" + info.color + "'>" + html_escape(info.starter) + "</b>! <br/> <b style='color:red'>Players:</b> " + tour.tournumber + " <br/> <b style='color: blue'>Type:</b> " + tour.identify() + " <br/> <b style='color: orange'>Tier:</b> " + tour.tourtier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!", chan);
+                
+                tourBox("A Tournament was started by <b style='color:" + info.color + "'>" + Utils.escapeHtml(info.starter) + "</b>! <br/> <b style='color:red'>Players:</b> " + tour.entrants + " <br/> <b style='color: blue'>Type:</b> " + Tours.identify(tour) + " <br/> <b style='color: orange'>Tier:</b> " + tour.tier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!", chan);
             }
         }
-    };
+    }
     
-    function Tours(id) {
+    // Tours channel config
+    // Is a constructor, so should be initialized with new
+    function ToursChannelConfig(id) {
+        if (!this instanceof ToursChannelConfig) {
+            return new ToursChannelConfig(id);
+        }
+        
+        // id of the channel
         this.id = id;
-        this.tourmode = 0;
-        this.tourstarter = "";
+        // state the tournament is in
+        // 0: no tour is running
+        // 1: tour is in signups
+        // 2: tour is running
+        this.state = 0;
+        // the tournament's starter's name
+        this.starter = "";
+        // the tournament's prize
         this.prize = "";
-        this.roundnumber = 0;
-        this.tourtier = "";
-        this.tournumber = 0;
-        this.AutoStartBattles = false;
+        // round number of the tournament
+        this.round = 0;
+        // tier of the tournament
+        this.tier = "";
+        // amount of entrants that this tournament needs
+        this.entrants = 0;
+        // if battles should automatically start
+        this.autoStartBattles = false;
+        // amount of players remaining
         this.remaining = 0;
+        // if the tournament is in the finals
         this.finals = false;
+        // type of the tournament.
+        // 0: Not running
+        // 1: Single Elimination
+        // 2: Double Elimination
+        // 3: Triple Elimination
+        // 4: Tag Team Single Elimination
+        // 5: Tag Team Double Elimination
+        // 6: Tag Team Triple Elimination
+        this.type = 0;
     
-        this.battlemode = 0;
-    
+        // status of the current round
+        // contains:
+        // - battles that have not begun (idleBattles)
+        // - battles that have begun but have not been finished (ongoingBattles)
+        // - battles that have ended (winLose)
         this.roundStatus = {
             idleBattles: {},
             ongoingBattles: {},
             winLose: {}
         };
     
+        // couples objects (the pairs that have to battle)
         this.couples = {};
+        // player objects
+        /* {
+                'name': name,
+                'couplesid': -1,
+                'couplenum': -1,
+                'roundwins': 0,
+                'team': -1
+            };
+        */
         this.players = {};
-        this.roundplayers = 0;
+        // players in this round that still have to battle
+        this.roundPlayers = 0;
+        // time since epoch when tour started (signups)
         this.startTime = 0;
-        this.TourDisplay = 1;
-    
-        this.Displays = {
-            Normal: 1,
-            Clean: 2
-        };
+        // display of the tour
+        // 0: normal
+        // 1: clean
+        this.display = 1;
     }
     
-    Tours.prototype.border = function () {
-        sys.sendHtmlAll(TOUR_BORDER, this.id);
+    // This object holds tournament manipulation functions
+    // And other constants
+    Tours = {};
+    
+    // Sends the tournament border to a channel
+    Tours.border = function (chan) {
+        sys.sendHtmlAll(Tours.border, chan);
     };
     
-    Tours.prototype.white = function () {
-        sys.sendAll("", this.id);
+    // Sends whitespace to a channel
+    Tours.white = function (chan) {
+        sys.sendAll("", chan);
     };
     
-    Tours.prototype.hasTourAuth = function (id) {
+    // Checks if a player has tour auth in the specified channel
+    Tours.hasTourAuth = function (id, channel) {
         var poUser = JSESSION.users(id),
-            poChannel = JSESSION.channels(this.id);
+            poChannel = JSESSION.channels(channel);
     
-        return poChannel.tourAuth[poUser.lowername] !== undefined || poUser.megauser || poChannel.isChanMod(id);
+        return poChannel.tourAuth.hasOwnProperty(poUser.name.toLowerCase()) || poUser.megauser || poChannel.isChanMod(id);
     };
     
-    Tours.prototype.identify = function (test) {
-        if (test === null) {
-            test = this.battlemode;
-        }
-        if (test === 0) {
-            return "No tournament is running.";
-        } else if (test === 1) {
-            return "Single Elimination";
-        } else if (test === 2) {
-            return "Double Elimination";
-        } else if (test === 3) {
-            return "Triple Elimination";
-        } else if (test === 4) {
-            return "Tag Team Single Elimination";
-        } else if (test === 5) {
-            return "Tag Team Double Elimination";
-        } else if (test === 6) {
-            return "Tag Team Triple Elimination";
-        } else {
-            return "Unknown Mode";
-        }
+    // Identifies a tour's type.
+    // Expects a ToursChannelConfig
+    Tours.identify = function (tcc) {
+        return Tours.modes[tcc.type] || "Unknown";
     };
     
-    Tours.prototype.sendAll = function (message) {
-        botAll(message, this.id);
-    };
-    
-    Tours.prototype.sendPM = function (src, message) {
-        botMessage(src, message, this.id);
-    };
-    
-    Tours.prototype.TourBox = function (message, Display) {
-        var x, curr;
+    // Tourbox that can also take an array
+    // Has support for ToursChannelConfig.display === Tours.displays.normal
+    // Expects a ToursChannelConfig
+    Tours.tourBox = function (message, tcc) {
+        var i,
+            length,
+            msg;
     
         if (typeof message === "string") {
-            message = [message]; // Make it an array.
+            // make it an array
+            message = [message];
         }
     
-        if (Display !== this.Displays.Normal && Display !== this.Displays.Clean) {
-            Display = this.TourDisplay;
+        if (tcc.display !== Tours.displays.normal && tcc.display !== Tours.displays.clean) {
+            // this shouldn't happen, ever
+            return;
         }
     
-        if (Display === this.Displays.Normal) {
-            this.white();
-            this.border();
-            this.white();
+        if (tcc.display === Tours.displays.normal) {
+            Tours.white(tcc.id);
+            Tours.border(tcc.id);
+            Tours.white(tcc.id);
     
-            for (x in message) {
-                curr = message[x];
-                if (curr.isEmpty()) {
-                    sys.sendAll("", this.id);
+            for (i = 0, length = message.length; i < length; ++i) {
+                msg = message[i];
+                if (Utils.isEmpty(msg)) {
+                    sys.sendAll("", tcc.id);
                 } else {
-                    this.sendAll(message[x]);
+                    sys.sendHtmlAll(msg, tcc.id);
                 }
             }
     
-            this.white();
-            this.border();
-            this.white();
-        } else { // this.Displays.Clean
-            TourBox(message.join("<br/>"), this.id);
+            Tours.white(tcc.id);
+            Tours.border(tcc.id);
+            Tours.white(tcc.id);
+        } else { // Tours.displays.clean
+            // Just use the default tourbox
+            // Join with <br/> (newline)
+            tourBox(message.join("<br/>"), tcc.id);
         }
     };
     
-    Tours.prototype.idleBattler = function (name) {
-        var hash = this.roundStatus.idleBattles,
-            x,
-            chash;
+    // Checks if [name] hasn't begun their battle
+    // Returns their entry in ToursChannelConfig.roundStatus.idleBattle if they are
+    Tours.idleBattler = function (name, tcc) {
+        var hash = tcc.roundStatus.idleBattles,
+            curr,
+            i;
     
-        for (x in hash) {
-            chash = hash[x];
-            if (chash[0] === name || chash[1] === name) {
+        for (i in hash) {
+            curr = hash[i];
+            // is the first or second battler of this battle [name]?
+            if (curr[0] === name || curr[1] === name) {
                 return x;
             }
         }
@@ -206,14 +271,18 @@
         return false;
     };
     
-    Tours.prototype.isBattling = function (name) {
-        var hash = this.roundStatus.ongoingBattles,
-            x,
-            chash;
+    // Checks if [name] has begun their battle but hasn't finished yet
+    // Returns their entry in ToursChannelConfig.roundStatus.ongoingBattles if they are
+    Tours.isBattling = function (name) {
+        var hash = tcc.roundStatus.ongoingBattles,
+            cur,
+            i;
     
-        for (x in hash) {
-            chash = hash[x];
-            if (chash[0] === name || chash[1] === name) {
+        name = name.toLowerCase();
+        for (i in hash) {
+            cur = hash[i];
+            // is the first or second battler of this battle [name]?
+            if (cur[0].toLowerCase() === name || cur[1].toLowerCase() === name) {
                 return x;
             }
         }
@@ -221,6 +290,7 @@
         return false;
     };
     
+    // TODO: Move these away.
     Tours.prototype.command_display = function (src, commandData, fullCommand) {
         if (!this.hasTourAuth(src)) {
             noPermissionMessage(src, fullCommand, this.id);
@@ -479,7 +549,7 @@
             botMessage(src, "The players need to exist!", this.id);
             return;
         }
-        if (this.ongoingTourneyBattle(parts[0])) {
+        if (!!this.isBattling(parts[0])) {
             botMessage(src, "You can't switch a battling player!", this.id);
             return;
         }
@@ -737,69 +807,149 @@
         botMessage(src, "No tournament is running.", this.id);
     };
     
-    Tours.prototype.clearVariables = function () {
-        this.tourmode = 0;
-        this.tourstarter = "";
-        this.prize = "";
-        this.roundnumber = 0;
-        this.tourtier = "";
-        this.tournumber = 0;
-        this.remaining = 0;
-        this.finals = false;
+    // Resets all tournament variables
+    // Copied from ToursChannelConfig
+    // Expects a ToursChannelConfig
+    Tours.clearVariables = function (tcc) {
+        // state the tournament is in
+        // 0: no tour is running
+        // 1: tour is in signups
+        // 2: tour is running
+        tcc.state = 0;
+        // the tournament's starter's name
+        tcc.starter = "";
+        // the tournament's prize
+        tcc.prize = "";
+        // round number of the tournament
+        tcc.round = 0;
+        // tier of the tournament
+        tcc.tier = "";
+        // amount of entrants that this tournament needs
+        tcc.entrants = 0;
+        // amount of players remaining
+        tcc.remaining = 0;
+        // if the tournament is in the finals
+        tcc.finals = false;
+        // type of the tournament.
+        // 0: Not running
+        // 1: Single Elimination
+        // 2: Double Elimination
+        // 3: Triple Elimination
+        // 4: Tag Team Single Elimination
+        // 5: Tag Team Double Elimination
+        // 6: Tag Team Triple Elimination
+        tcc.type = 0;
     
-        this.battlemode = 0;
-    
-        this.couples = {};
-        this.roundStatus = {
+        // status of the current round
+        // contains:
+        // - battles that have not begun (idleBattles)
+        // - battles that have begun but have not been finished (ongoingBattles)
+        // - battles that have ended (winLose)
+        tcc.roundStatus = {
             idleBattles: {},
             ongoingBattles: {},
             winLose: {}
         };
     
-        this.winners = [];
-        this.players = {};
-        this.roundplayers = 0;
-        this.startTime = 0;
+        // couples objects (the pairs that have to battle)
+        tcc.couples = {};
+        // player objects
+        /* {
+                'name': name,
+                'couplesid': -1,
+                'couplenum': -1,
+                'roundwins': 0,
+                'team': -1
+            };
+        */
+        tcc.players = {};
+        // players in this round that still have to battle
+        tcc.roundPlayers = 0;
+        // time since epoch when tour started (signups)
+        tcc.startTime = 0;
     };
     
-    Tours.prototype.cleanRoundVariables = function () {
-        this.roundStatus = {
+    // Resets round tournament variables
+    // Copied from ToursChannelConfig
+    // Expects a ToursChannelConfig
+    Tours.cleanRoundVariables = function (tcc) {
+        // status of the current round
+        // contains:
+        // - battles that have not begun (idleBattles)
+        // - battles that have begun but have not been finished (ongoingBattles)
+        // - battles that have ended (winLose)
+        tcc.roundStatus = {
             idleBattles: {},
             ongoingBattles: {},
             winLose: {}
         };
     
-        this.roundplayers = 0;
+        // couples objects (the pairs that have to battle)
+        tcc.couples = {};
+        // players in this round that still have to battle
+        tcc.roundPlayers = 0;
     };
     
-    Tours.prototype.playerName = function (hash, hashno) {
-        var x, now = 0;
-        for (x in hash) {
-            if (now === hashno) {
-                return hash[x].name;
+    // Returns the total amount of players that have signed up
+    // Expects a ToursChannelConfig
+    Tours.totalPlayers = function (tcc) {
+        return Utils.objectLength(tcc.players);
+    };
+    
+    // get the amount of spots left in the tournament
+    // using the formula: amount of entrants allowed - amount of entrants that joined
+    Tours.tourSpots = function (tcc) {
+        return tcc.entrants - Utils.objectLength(tcc.players);
+    };
+    
+    // if this tour is a tag team tour
+    Tours.isTagTeamTour = function (tcc) {
+        return tcc.type > 3 && tcc.type < 7;
+    };
+    
+    // Returns the object at [pos] in [hash]
+    // Returns an empty object ({}) if [hash] has less entries than [pos]
+    Tours.hashAt = function (hash, pos) {
+        var num = 0,
+            i;
+        
+        for (i in hash) {
+            if (now === pos) {
+                return hash[i];
             }
-            now++;
+            ++num;
         }
-    
-        return "";
+        
+        return {};
     };
     
-    Tours.prototype.teamWin = function () {
-        var b = this.Blue,
-            r = this.Red,
-            loser = "",
+    // Returns the name of the player in [hash] at position [hashno]
+    // Returns "" if the hash has less than [pos + 1] entries
+    Tours.playerName = function (hash, pos) {
+        return (Tours.hashAt(hash, pos).name || "");
+    };
+    
+    // Checks which team has won in tag team tours (if any).
+    // Returns an object with 3 properties:
+    // - winners: Names of the winners in a team (empty if none)
+    // - loser: The name of the loser's team
+    // - losingteam: ID of the team that lost (Tours.blue | Tours.red)
+    Tours.teamWin = function (tcc) {
+        var loser = "",
             winners = [],
             loseteam = -1;
     
-        if (this.playersOfTeam(b) === 0) {
+        if (this.playersOfTeam(Tours.blue) === 0) {
+            // blue loses
             loser = "Team Blue";
-            winners = this.namesOfTeam(r);
-            loseteam = b;
-        } else if (this.playersOfTeam(r) === 0) {
+            loseteam = Tours.blue;
+            winners = this.namesOfTeam(Tours.red);
+        } else if (this.playersOfTeam(Tours.red) === 0) {
+            // red loses
             loser = "Team Red";
-            winners = this.namesOfTeam(b);
-            loseteam = r;
-        }
+            loseteam = Tours.red;
+            winners = this.namesOfTeam(Tours.blue);
+        } // no team has lost (yet)
     
         return {
             'winners': winners,
@@ -808,548 +958,783 @@
         };
     };
     
-    Tours.prototype.roundPairing = function () {
-        if (this.roundnumber === 0 && this.tagteam_tour()) {
-            this.buildTeams();
+    // returns a random player's location in [object]
+    Tours.randomPlayer = function (object, teamId) {
+        var entries = Utils.objectLength(object),
+            playerObj,
+            random = sys.rand(0, entries);
+        
+        if (entries < 2) {
+            return 0;
+        } else if (entries === 2) {
+            return sys.rand(0, 2);
         }
     
-        this.roundnumber++;
-        this.cleanRoundVariables();
+        // if this isn't a tag team tour
+        // just return the random number
+        if (!Tours.isTagTeamTour(tcc)) {
+            return random;
+        }
     
-        if (this.players.length() === 1) {
-            var winner = this.players.first().name,
-                message = ["The winner of the " + this.tourtier + " tournament is " + winner + "!", "Congratulations, " + winner + ", on your success!"];
-            if (!isEmpty(this.prize)) {
+        // keep running until you get their team
+        playerObj = Tours.hashAt(object, random);
+        // no player at this first random position?
+        // bail, and print a warning
+        if (playerObj === undefined) {
+            print("Warning from scripts/tours.js: Unknown player in Tours.randomPlayer at position " + random + ".");
+            return 0;
+        }
+    
+        // keep doing it
+        // TODO: this might crash
+        while (playerObj.team !== team) {
+            random = sys.rand(0, entries);
+            playerObj = Tours.hashAt(object, random);
+        }
+    
+        // this position is fine.
+        return rand;
+    };
+    
+    // builds a new entrant's player hash
+    Tours.buildHash = function (src, tcc) {
+        var name = sys.name(src);
+        // just use their name
+        if (name === undefined) {
+            name = src;
+        }
+    
+        tcc.players[name.toLowerCase()] = {
+            'name': name, // their capitalized name
+            'couplesid': -1, // their couples id (which is set later on)
+            'couplenum': -1, // their couples number (which is set later on)
+            'roundwins': 0, // the amount of wins this round (for doubles & triples elimination)
+            'team': -1 // their team's id (set later on)
+        };
+    };
+    
+    // Builds the teams.
+    Tours.buildTeams = function (tcc) {
+        var players = tcc.players,
+            player,
+            id,
+            team = 0,
+            i;
+        
+        for (i in players) {
+            player = players[i];
+            player.team = team;
+            
+            id = sys.id(player.name);
+            
+            if (id !== undefined) {
+                if (team === 0) {
+                    Bot.sendMessage(id, "You are in Team Blue.", tcc.id);
+                } else {
+                    Bot.sendMessage(id, "You are in Team Red.", tcc.id);
+                }
+            }
+            
+            // trick to reverse team
+            // if it's 0: make it 1
+            // if it's 1: make it 0
+            team = 1 - team;
+        }
+    };
+    
+    // returns the amount of players of [team]
+    // expects a ToursChannelConfig
+    Tours.playersOfTeam = function (team, tcc) {
+        var players = tcc.players,
+            numPlayers = 0,
+            i;
+        
+        for (i in players) {
+            if (players[i].team === team) {
+                ++numPlayers;
+            }
+        }
+    
+        return numPlayers;
+    };
+    
+    // returns the names of all players in [team]
+    // expects a ToursChannelConfig
+    Tours.namesOfTeam = function (team, tcc) {
+        var players = tcc.players,
+            names = [],
+            player,
+            i;
+        
+        for (i in players) {
+            player = players[i];
+            if (player.team === team) {
+                names.push(player.name);
+            }
+        }
+    
+        return names;
+    };
+    
+    // check if someone is in the tournament
+    Tours.isInTourney = function (name, tcc) {
+        return tcc.players.hasOwnProperty(name.toLowerCase());
+    };
+    
+    // check if someone is in the tournament by id
+    Tours.isInTourneyId = function (id, tcc) {
+        return tcc.players.hasOwnProperty(sys.name(id).toLowerCase());
+    };
+    
+    // returns the name of [name]'s tour opponent
+    // expects a ToursChannelConfig
+    Tours.tourOpponent = function (name, tcc) {
+        name = name.toLowerCase();
+        
+        // no couplesid?
+        // return an empty string
+        if (tcc.players[name].couplesid === -1) {
+            return "";
+        }
+    
+        // returns the couple's name
+        // the couplesid of the player is reversed.
+        return tcc.couples[tcc.players[name].couplesid][1 - tcc.players[name].couplesid];
+    };
+    
+    // Checks if [src] (id) and [dest] (id) are opponents in this round.
+    // Expects a ToursChannelConfig
+    Tours.areOpponentsForTourBattle = function (src, dest, tcc) {
+        return Tours.isInTourney(sys.name(src)) && Tours.isInTourney(sys.name(dest)) && Tours.tourOpponent(sys.name(src), tcc).toLowerCase() === sys.name(dest).toLowerCase();
+    };
+    
+    // Checks if [src] (name) and [dest] (name) are opponents in this round.
+    // Expects a ToursChannelConfig
+    Tours.areOpponentsForTourBattle2 = function (src, dest, tcc) {
+        return Tours.isInTourney(src) && Tours.isInTourney(dest) && Tours.tourOpponent(src, tcc).toLowerCase() === dest.toLowerCase();
+    };
+    
+    // Returns the amount of battles required before a player goes on to the next round
+    // Expects a ToursChannelConfig
+    Tours.battlesRequired = function (tcc) {
+        return {
+            1: 1,
+            2: 2,
+            3: 3,
+            4: 1,
+            5: 2,
+            6: 3
+        }[tcc.mode];
+    };
+    
+    // Does the round pairing.
+    // Expects a ToursChannelConfig
+    Tours.roundPairing = function (tcc) {
+        var winner = "",
+            winnerNames = "",
+            // team tags
+            team1 = "",
+            team2 = "",
+            id = 0,
+            moneyGain = 0,
+            // used inside couples generation
+            // contains data about the players
+            p1 = [],
+            p2 = [],
+            winners = [],
+            message = [],
+            players = tcc.players,
+            // copy of player - stuff is deleted in this object
+            // hence why it's copied
+            playersCopy = Utils.extend({}, players),
+            isTagTeamTour = Tours.isTagTeamTour(tcc),
+            isAutoStartBattles = tcc.autoStartBattles,
+            i,
+            // iterator only
+            j,
+            length;
+        
+        // If it's the first round, and it's
+        // a tag team tour, then builds the teams
+        if (tcc.round === 0 && isTagTeamTour) {
+            Tours.buildTeams(tcc);
+        }
+    
+        ++this.round;
+        Tours.cleanRoundVariables(tcc);
+    
+        if (Utils.objectLength(tcc.players) === 1) {
+            // We have a winner!
+            winner = Tours.playerName(tcc.players, 0);
+            message = [
+                "The winner of the " + tcc.tier + " tournament is " + winner + "!",
+                "Congratulations, " + winner + ", on your success!"
+            ];
+            
+            if (!Utils.isEmpty(this.prize)) {
                 message.push("", winner + " will receive the tournament prize: " + this.prize + "!");
             }
     
-            this.TourBox(message);
+            Tours.tourBox(message, tcc);
     
-            if (this.id === 0) {
-                var name = winner.toLowerCase();
-                if (sys.dbIp(name) === undefined) {
-                    this.clearVariables();
-                    return;
+            // main channel
+            if (tcc.id === 0) {
+                // attempt to give money to the player
+                winner = winner.toLowerCase();
+                if (!PlayerUtils.ip(winner)) {
+                    return Tours.clearVariables(tcc);
                 }
-                var nameId = sys.id(name),
-                    money = DataHash.money;
-                if (!money.has(name)) {
-                    money[name] = 0;
+                
+                id = sys.id(winner);
+                
+                if (!DataHash.money.hasOwnProperty(winner)) {
+                    // ensure they exist in DataHash.money
+                    DataHash.money[winner] = 0;
                 }
-                var randNum = sys.rand(500, 1001);
-                money[name] += randNum;
-                cache.write("money", JSON.stringify(DataHash.money));
+                
+                moneyGain = sys.rand(500, 1001);
+                DataHash.money[name] += randNum;
+                DataHash.save("money");
     
-                if (nameId !== undefined) {
-                    botMessage(nameId, "You won " + randNum + " battle points!", this.id);
+                if (id !== undefined) {
+                    Bot.sendMessage(id, "You won " + moneyGain + " battle points!", tcc.id);
                 }
             }
     
-            this.clearVariables();
+            // just clear variables anyway..
+            Tours.clearVariables(tcc);
             return;
         }
     
-        if (this.tagteam_tour()) { // TODO: Improve in 3.0
-            var winners = this.teamWin();
+        // is this a tag team tour?
+        if (Tours.isTagTeamTour(tcc)) {
+            // check if there are winners
+            winners = Tours.teamWin(tcc);
+            
             if (winners.winners.length !== 0 && winners.loser !== "" && winners.losingteam !== -1) {
                 // We have winners!
-                var win = winners.winners.join(" and "),
-                    message = ["The winners of the " + this.tourtier + " tournament are " + win + "!", "Congratulations, " + win + ", on your success!"];
+                winnerNames = winners.winners.join(" and ");
+                message = [
+                    "The winners of the " + tcc.tier + " tournament are " + winnerNames + "!",
+                    "Congratulations, " + winnerNames + ", on your success!"
+                ];
     
-                if (!isEmpty(this.prize)) {
-                    message.push("", win + " will receive the tournament prize: " + this.prize + "!");
+                if (!Utils.isEmpty(this.prize)) {
+                    message.push("", winnerNames + " will receive the tournament prize: " + tcc.prize + "!");
                 }
     
-                this.TourBox(message);
-    
-                if (this.id === 0) {
-                    var z,
-                        ww = winners.winners,
-                        name;
-                    
-                    for (z in ww) {
-                        name = ww[z];
-                        if (sys.dbIp(name) === undefined) {
-                            continue;
+                Tours.tourBox(message, tcc);
+                
+                if (tcc.id === 0) {
+                    winners = winners.winners;
+                    for (i = 0, length = winners.length; i < length; ++i) {
+                        // attempt to give money to the players
+                        winner = winners[i].toLowerCase();
+                        if (!PlayerUtils.ip(winner)) {
+                            return Tours.clearVariables(tcc);
                         }
-    
-                        var nameId = sys.id(name),
-                            money = DataHash.money;
-                        if (money[name] === undefined) {
-                            money[name] = 0;
+                        
+                        id = sys.id(winner);
+                        
+                        if (!DataHash.money.hasOwnProperty(winner)) {
+                            // ensure they exist in DataHash.money
+                            DataHash.money[winner] = 0;
                         }
-                        var randNum = sys.rand(320, 751);
-    
-                        if (randNum < 350) {
-                            randNum = sys.rand(330, 380); // Give some more points (most of the time)
-                        }
-    
-                        money[name] += randNum;
-                        cache.write("money", JSON.stringify(DataHash.money));
-    
-                        if (nameId !== undefined) {
-                            botMessage(nameId, "You won " + randNum + " battle points!", this.id);
+                        
+                        moneyGain = sys.rand(500, 1001);
+                        DataHash.money[name] += randNum;
+                        DataHash.save("money");
+            
+                        if (id !== undefined) {
+                            Bot.sendMessage(id, "You won " + moneyGain + " battle points!", tcc.id);
                         }
                     }
                 }
     
-                this.clearVariables();
+                // clear anyway
+                Tours.clearVariables(tcc);
                 return;
             }
         }
-    
-        var plr = this.players,
-            x,
-            message = [];
         
-        for (x in plr) {
-            if (plr[x] === "") {
-                delete plr[x];
+        for (i in players) {
+            // clear empty players
+            // this is bug.
+            if (players[i] === "") {
+                print("Warning from scripts/tours.js: Empty player " + i + " found.");
+                delete players[i];
             }
         }
     
-        this.finals = this.players.length() === 2;
-        if (!this.finals) {
-            message.push("Round " + this.roundnumber + " of the " + this.tourtier + " tournament:", "");
+        this.finals = Utils.objectLength(players) === 2;
+        if (this.finals) {
+            message.push("Finals of the " + tcc.tier + " tournament:", "");
         } else {
-            message.push("Finals of the " + this.tourtier + " tournament:", "");
+            message.push("Round " + tcc.round + " of the " + tcc.tier + " tournament:", "");
         }
     
-        var i = 0,
-            x,
-            p = this.players,
-            tempplayers = ({}).extend(p),
-            x1,
-            name1,
-            n1tl,
-            x2,
-            name2,
-            n2tl,
-            a,
-            team1,
-            team2;
-    
-        if (this.tagteam_tour()) {
+        if (isTagTeamTour) {
+            // team tags
             team = "<b><font color=blue>[Team Blue]</font></b>";
             team2 = "<b><font color=red>[Team Red]</font></b>";
-        } else {
-            team = "";
-            team2 = "";
         }
-    
-        for (a in tempplayers) {
-            if (tempplayers.length() === 1) {
+        
+        i = 0;
+        
+        // generates the couples
+        // use j as iterator instead
+        for (j in playersCopy) {
+            // we have deleted all but one player (this is for our bye)
+            // quit the loop
+            if (Utils.objectLength(playersCopy) === 1) {
                 break;
             }
     
-            if (!this.tagteam_tour()) {
-                x1 = this.randomPlayer(tempplayers);
-                name1 = this.playerName(tempplayers, x1);
-                n1tl = name1.toLowerCase();
-                delete tempplayers[n1tl];
+            // reset variables
+            p1 = [];
+            p2 = [];
+            
+            if (isTagTeamTour) {
+                // gets a random player from blue
+                p1.push(Tours.randomPlayer(playersCopy, Tours.blue));
+                p1.push(Tours.playerName(playersCopy, p1[0]));
+                p1.push(p1[1].toLowerCase());
+                // delete them from the players copy
+                delete playersCopy[p1[2]];
     
-                x2 = this.randomPlayer(tempplayers);
-                name2 = this.playerName(tempplayers, x2);
-                n2tl = name2.toLowerCase();
-                delete tempplayers[n2tl];
-    
+                // gets a random player from red
+                p2.push(Tours.randomPlayer(playersCopy, Tours.red));
+                p2.push(Tours.playerName(playersCopy, p2[0]));
+                p2.push(p2[1].toLowerCase());
+                // delete them from the players copy
+                delete playersCopy[p2[2]];
             } else {
-                x1 = this.randomPlayer(tempplayers, 0);
-                name1 = this.playerName(tempplayers, x1);
-                n1tl = name1.toLowerCase();
-                delete tempplayers[n1tl];
-    
-                x2 = this.randomPlayer(tempplayers, 1);
-                name2 = this.playerName(tempplayers, x2);
-                n2tl = name2.toLowerCase();
-                delete tempplayers[n2tl];
+                // just get random players
+                p1.push(Tours.randomPlayer(playersCopy));
+                p1.push(Tours.playerName(playersCopy, p1[0]));
+                p1.push(p1[1].toLowerCase());
+                // delete them from the players copy
+                delete playersCopy[p1[2]];
+                
+                p2.push(Tours.randomPlayer(playersCopy));
+                p2.push(Tours.playerName(playersCopy, p2[0]));
+                p2.push(p2[1].toLowerCase());
+                // delete them from the players copy
+                delete playersCopy[p2[2]];
             }
     
-            this.couples[i] = [name1, name2];
-            this.players[n1tl].couplesid = i;
-            this.players[n2tl].couplesid = i;
-            this.players[n1tl].couplenum = 0;
-            this.players[n2tl].couplenum = 1;
+            // make a couples object
+            // index: [i]: the ID
+            // array of 2 entries: the first player's name, and the second player's name
+            tcc.couples[i] = [p1[1], p2[1]];
+            
+            // set their couples id
+            tcc.players[p1[2]].couplesid = i;
+            tcc.players[p2[2]].couplesid = i;
+            
+            // set their couples number (their index in the couples array)
+            tcc.players[p1[2]].couplenum = 0;
+            tcc.players[p2[2]].couplenum = 1;
     
-            if (!this.AutoStartBattles) {
-                this.roundStatus.idleBattles[i] = [name1, name2];
+            // auto start battles?
+            if (isAutoStartBattles) {
+                // add them to idleBattles with their couples id and name
+                tcc.roundStatus.idleBattles[i] = [p1[1], p2[1]];
             }
-            i++;
+            
+            ++i;
     
-            if (!this.finals) {
-                message.push(i + ". " + team + name1 + " VS " + team2 + name2);
+            if (tcc.finals) {
+                message.push(team1 + name1 + " VS " + team2 + name2);
             } else {
-                message.push(team + name1 + " VS " + team2 + name2);
+                // add their battle number
+                message.push(i + ". " + team1 + name1 + " VS " + team2 + name2);
             }
         }
     
         message.push("");
     
-        if (tempplayers.length() > 0) {
-            message.push(tempplayers.first().name + " is randomly selected to go to next round!", "");
+        // players are left? (e.g. an uneven number of players this round)
+        if (Utils.objectLength(playersCopy) > 0) {
+            // give them a bye
+            message.push(Tours.hashAt(playersCopy, 0) + " is randomly selected to go to next round!", "");
         }
     
-        this.TourBox(message);
+        // Send it as a tourBox
+        // Note: Expects a ToursChannelConfig, not a channel id
+        Tours.tourBox(message, tcc);
     
-        if (this.AutoStartBattles) {
-            var tourInst = this;
-            sys.quickCall(function () {
-                var tour = tourInst,
-                    t,
-                    p,
-                    op,
-                    meteams,
-                    oppteams,
-                    couples = tour.couples;
+        // automatically start all battles
+        // slightly delay it
+        if (isAutoStartBattles) {
+            sys.setTimer(function () {
+                // reference to couples, because we're going to iterate it
+                var couples = tcc.couples,
+                    couple,
+                    player,
+                    opponent,
+                    playerTeam,
+                    opponentTeam,
+                    // iterator only
+                    i;
                 
-                for (t in couples) {
-                    p = couples[t][0].toLowerCase();
-                    op = couples[t][1].toLowerCase();
+                for (i in couples) {
+                    couple = couples[i];
+                    player = couple[0].toLowerCase();
+                    opponent = couple[1].toLowerCase();
                     
-                    if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
-                        meteams = firstTeamForTier(sys.id(p), tour.tourtier);
-                        oppteams = firstTeamForTier(sys.id(op), tour.tourtier);
-                        if (meteams !== -1 && oppteams !== -1) {
-                            if (!tour.ongoingTourneyBattle(p) && !tour.ongoingTourneyBattle(op)) {
-                                sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(tour.tourtier), 0, false);
-                                tour.roundStatus.ongoingBattles[tour.roundStatus.ongoingBattles.length()] = [p.name(), op.name()];
+                    // only start a battle if both players are logged in
+                    if (sys.id(player) !== undefined && sys.id(opponent) !== undefined) {
+                        playerTeam = PlayerUtils.firstTeamForTier(sys.id(player), tcc.tier);
+                        opponentTeam = PlayerUtils.firstTeamForTier(sys.id(opponent), tcc.tier);
+                        if (playerTeam !== -1 && opponentTeam !== -1) {
+                            if (!Tours.isBattling(player, tcc) && !Tours.isBattling(opponent, tcc)) {
+                                sys.forceBattle(
+                                    sys.id(player), // first player's id
+                                    sys.id(opponent), // second player's id
+                                    playerTeam, // first player's team id
+                                    opponentTeam, // second player's team id
+                                    sys.getClauses(tcc.tier), // clauses
+                                    0, // battle mode: singles, doubles, triples
+                                    false // is the battle rated?
+                                );
+                                
+                                // add them to ongoing battles
+                                // be lazy, just copy couples over as it contains the information we need.
+                                tcc.roundStatus.ongoingBattles[Utils.objectLength(tcc.roundStatus.ongoingBattles)] = couple;
+                            }
+                        } else {
+                            // notify them that they don't have a valid team
+                            if (playerTeam === -1) {
+                                Bot.sendMessage(sys.id(player), "You don't have a valid team for the " + tcc.tier + " tier. Your battle with " + couple[1] + " couldn't automatically be started. Please get a valid team to avoid disqualification.", tcc.id);
+                            }
+                            if (opponentTeam === -1) {
+                                Bot.sendMessage(sys.id(opponent), "You don't have a valid team for the " + tcc.tier + " tier. Your battle with " + couple[0] + " couldn't automatically be started. Please get a valid team to avoid disqualification.", tcc.id);
                             }
                         }
                     }
                 }
-            }, 2500);
+            }, 2500, false);
         }
+        
+        // end of roundPairing..
+        // that was a long ride :P
     };
     
-    Tours.prototype.isInTourney = function (name) {
-        var name2 = name.toLowerCase();
-        return this.players.has(name2);
-    };
+    // Tournament events
+    Tours.events = {};
     
-    Tours.prototype.isInTourneyId = function (id) {
-        var name = sys.name(id).toLowerCase();
-        return this.players.has(name);
-    };
-    
-    Tours.prototype.tourOpponent = function (nam) {
-        var name = nam.toLowerCase();
-        if (this.players[name].couplesid === -1) {
-            return "";
-        }
-        var namenum = this.players[name].couplenum,
-            id = this.players[name].couplesid;
-    
-        if (namenum === 0) {
-            namenum = 1;
-        } else {
-            namenum = 0;
-        }
-    
-        return this.couples[id][namenum];
-    };
-    
-    Tours.prototype.areOpponentsForTourBattle = function (src, dest) {
-        return this.isInTourney(sys.name(src)) && this.isInTourney(sys.name(dest)) && this.tourOpponent(sys.name(src)).toLowerCase() === sys.name(dest).toLowerCase();
-    };
-    
-    Tours.prototype.areOpponentsForTourBattle2 = function (src, dest) {
-        return this.isInTourney(src) && this.isInTourney(dest) && this.tourOpponent(src).toLowerCase() === dest.toLowerCase();
-    };
-    
-    Tours.prototype.ongoingTourneyBattle = function (name) {
-        return this.isBattling(name.name());
-    };
-    
-    Tours.prototype.afterBattleStarted = function (src, dest, clauses, rated, srcteam, destteam) {
-        if (this.tourmode === 2) {
-            if (this.areOpponentsForTourBattle(src, dest)) {
-                var n1 = sys.name(src),
-                    n2 = sys.name(dest);
-                if (Config.NoCrash) {
-                    if (sys.tier(src, srcteam) === sys.tier(dest, destteam) && cmp(sys.tier(src, srcteam), this.tourtier)) {
-                        var idleBattleIndex = this.idleBattler(n1);
-                        if (this.roundStatus.idleBattles[idleBattleIndex] !== undefined) {
-                            delete this.roundStatus.idleBattles[idleBattleIndex];
-                            this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [n1, n2];
-                        }
-                        if (!this.finals) {
-                            botAll("Round " + this.roundnumber + " tournament match between " + n1 + " and " + n2 + " has started!", this.id);
-                        } else {
-                            botAll("Final round tournament match between " + n1 + " and " + n2 + " has started!", this.id);
-                        }
+    // After a battle has started.
+    // Expects a ToursChannelConfig
+    Tours.events.afterBattleStarted = function (src, dest, clauses, rated, srcteam, destteam, tcc) {
+        var srcName = sys.name(src),
+            destName = sys.name(dest),
+            idleBattler;
+        
+        // e.g. when the tour has started
+        if (tcc.mode === 2) {
+            if (Tours.areOpponentsForTourBattle(src, dest, ttc)) {
+                // No crash safety guard
+                if (!Config.NoCrash) {
+                    // don't check for tiers as we don't want to (possibly) crash.
+                    idleBattler = Tours.idleBattler(srcName, tcc);
+                    if (tcc.roundStatus.idleBattles[idleBattler] !== undefined) {
+                        // be lazy and copy it over
+                        tcc.roundStatus.ongoingBattles[Utils.objectLength(tcc.roundStatus.ongoingBattles)] = tcc.roundStatus.idleBattles[idleBattler];
+                        delete tcc.roundStatus.idleBattles[idleBattler];
+                    }
+                    
+                    if (tcc.finals) {
+                        Bot.sendMessage("Final round tournament match between " + srcName + " and " + destName + " has started!", tcc.id);
                     } else {
-                        botMessage(src, "Your or your opponents team does not match the tournament tier (the match is not official).");
-                        botMessage(dest, "Your or your opponents team does not match the tournament tier (the match is not official).");
+                        Bot.sendMessage("Round " + tcc.round + " tournament match between " + srcName + " and " + destName + " has started!", tcc.id);
                     }
                 } else {
-                    var idleBattleIndex = this.idleBattler(n1);
-                    if (this.roundStatus.idleBattles[idleBattleIndex] !== undefined) {
-                        delete this.roundStatus.idleBattles[idleBattleIndex];
-                        this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [n1, n2];
-                    }
-                    if (!this.finals) {
-                        botAll("Round " + this.roundnumber + " tournament match between " + n1 + " and " + n2 + " has started!", this.id);
+                    if (sys.tier(src, srcteam) === sys.tier(dest, destteam) && Utils.isEqual(sys.tier(src, srcteam), tcc.tier)) {
+                        idleBattler = Tours.idleBattler(srcName, ttc);
+                        
+                        if (tcc.roundStatus.idleBattles[idleBattler] !== undefined) {
+                            // be lazy and copy it over
+                            tcc.roundStatus.ongoingBattles[Utils.objectLength(tcc.roundStatus.ongoingBattles)] = tcc.roundStatus.idleBattles[idleBattler];
+                            delete tcc.roundStatus.idleBattles[idleBattler];
+                        }
+                        
+                        if (tcc.finals) {
+                            Bot.sendMessage("Final round tournament match between " + srcName + " and " + destName + " has started!", tcc.id);
+                        } else {
+                            Bot.sendMessage("Round " + tcc.round + " tournament match between " + srcName + " and " + destName + " has started!", tcc.id);
+                        }
                     } else {
-                        botAll("Final round tournament match between " + n1 + " and " + n2 + " has started!", this.id);
+                        Bot.sendMessage(src, "Your or your opponents team does not match the tournament tier (the match is not official).", tcc.id);
+                        Bot.sendMessage(dest, "Your or your opponents team does not match the tournament tier (the match is not official).", tcc.id);
                     }
                 }
             }
         }
     };
     
-    Tours.prototype.tie = function (src, dest) {
-        var s = sys.name(src),
-            d = sys.name(dest),
-            sTL = s.toLowerCase,
-            dTL = d.toLowerCase(),
-            me = player(src),
-            target = player(dest);
-    
-        botAll(me + " and " + target + " tied and has to battle again for the tournament!", this.id);
-    
-        if (this.AutoStartBattles) {
-            sys.forceBattle(src, dest, sys.getClauses(this.tourtier), 0, false);
-        } else {
-            var startedBattleIndex = this.isBattling(s);
-            if (startedBattleIndex !== false) {
-                delete this.roundStatus.startedBattles[startedBattleIndex];
-                this.roundStatus.idleBattles[objLength(this.roundStatus.idleBattles)] = [s, d];
-            }
-        }
-    };
-    
-    Tours.prototype.afterBattleEnded = function (src, dest, desc) {
-        if (this.tourmode !== 2 || this.players.length() === 1) {
+    // when the battles have ended
+    // expects a ToursChannelConfig
+    Tours.events.afterBattleEnded = function (src, dest, desc, tcc) {
+        // bail if the tour hasn't started or we only have one player left.
+        if (tcc.mode !== 2 || Utils.objectLength(tcc.players) === 1) {
             return;
         }
     
+        // result = tie?
+        // call Tours.events.tie
         if (desc === "tie") {
-            this.tie(src, dest);
+            Tours.event.tie(src, dest, tcc);
             return;
         }
     
-        this.tourBattleEnd(sys.name(src), sys.name(dest));
+        // false because we don't want to force the player to get kicked out (for doubles/triples)
+        Tours.events.tourBattleEnd(sys.name(src), sys.name(dest), false, tcc);
     };
     
-    Tours.prototype.tourBattleEnd = function (src, dest, rush) {
-        if ((!this.areOpponentsForTourBattle2(src, dest) || !this.ongoingTourneyBattle(src)) && !rush) {
+    
+    // When a two players tie
+    // Expects a ToursChannelConfig
+    Tours.events.tie = function (src, dest, tcc) {
+        // their teams
+        var playerTeam = PlayerUtils.firstTeamForTier(src, tcc.tier),
+            opponentTeam = PlayerUtils.firstTeamForTier(dest, tcc.tier),
+            // their couples object
+            couple = tcc.couples[tcc.players[sys.name(src).toLowerCase()].couplesid],
+            startedBattle;
+    
+        Bot.sendAll(PlayerUtils.formatName(src) + " and " + PlayerUtils.formatName(dest) + " tied and has to battle again for the tournament!", tcc.id);
+    
+        // automatically start battles
+        if (tcc.autoStartBattles) {
+            if (playerTeam !== -1 && opponentTeam !== -1) {
+                if (!Tours.isBattling(player, tcc) && !Tours.isBattling(opponent, tcc)) {
+                    sys.forceBattle(
+                        src, // first player's id
+                        dest, // second player's id
+                        playerTeam, // first player's team id
+                        opponentTeam, // second player's team id
+                        sys.getClauses(tcc.tier), // clauses
+                        0, // battle mode: singles, doubles, triples
+                        false // is the battle rated?
+                    );
+                    
+                    // don't add them to ongoingBattles
+                    // as they should already be in there
+                }
+            } else {
+                // notify them that they don't have a valid team
+                if (playerTeam === -1) {
+                    Bot.sendMessage(src, "You don't have a valid team for the " + tcc.tier + " tier. Your battle with " + couple[1] + " couldn't automatically be started. Please get a valid team to avoid disqualification.", tcc.id);
+                }
+                if (opponentTeam === -1) {
+                    Bot.sendMessage(dest, "You don't have a valid team for the " + tcc.tier + " tier. Your battle with " + couple[0] + " couldn't automatically be started. Please get a valid team to avoid disqualification.", tcc.id);
+                }
+            }
+        } else {
+            // auto start battles is off
+            startedBattle = Tours.isBattling(sys.name(src).toLowerCase(), tcc);
+            if (startedBattle !== false) {
+                // they were battling, actually pretty weird if they weren't
+                // but anyway..
+                tcc.roundStatus.idleBattles[Utils.objectLength(tcc.roundStatus.idleBattles)] = tcc.roundStatus.startedBattles[startedBattle];
+                delete tcc.roundStatus.startedBattles[startedBattle];
+            }
+        }
+    };
+    
+    // After a battle has ended
+    // [src] and [dest] are names
+    // Expects a ToursChannelConfig
+    Tours.events.tourBattleEnd = function (src, dest, rush, tcc) {
+        var srcLower = src.toLowerCase(),
+            destLower = dest.toLowerCase(),
+            winner = '',
+            loser = '',
+            srcWins = 0,
+            destWins = 0,
+            totalWins = 0,
+            playerTeam = 0,
+            destTeam = 0,
+            message = [],
+            srcPlayer,
+            destPlayer,
+            winnerPlayer,
+            isBattling,
+            entries;
+        
+        // check if they are actually opponents / still "battling"
+        // if rush is true, then don't care about the above (this is used for dqing)
+        if ((!Tours.areOpponentsForTourBattle2(src, dest, tcc) || !Tours.isBattling(src, tcc)) && !rush) {
             return;
         }
-    
-        var srcTL = src.toLowerCase(),
-            destTL = dest.toLowerCase(),
-            message = [];
-    
-        if (this.battlemode === 1 || this.battlemode === 4 || rush) {
-            var stuff = this.roundStatus,
-                stuffSBIndex = this.isBattling(src);
-    
-            stuff.winLose[objLength(stuff.winLose)] = [src, dest];
-            if (stuffSBIndex !== false) {
-                delete stuff.ongoingBattles[stuffSBIndex];
+        
+        // Single Elimination / Rush
+        if (tcc.type === 1 || tcc.type === 4 || rush) {
+            isBattling = Tours.isBattling(srcLower, tcc);
+            srcPlayer = tcc.players[srcLower];
+            
+            // add them to winLose (battle results)
+            tcc.roundStatus.winLose[Utils.objectLength(tcc.roundStatus.winLose)] = [src, dest];
+            
+            if (isBattling !== false) {
+                // remove them from ongoingBattles
+                delete tcc.roundStatus.ongoingBattles[isBattling];
             }
     
-            delete this.players[destTL];
-            delete this.couples[this.players[srcTL].couplesid];
-            this.players[srcTL].couplesid = -1;
-            this.players[srcTL].couplenum = -1;
-            this.players[srcTL].roundwins = 0;
-            this.remaining--;
+            // we don't care about the dest (loser) and the couples object anymore
+            delete tcc.players[destLower];
+            delete tcc.couples[srcPlayer.couplesid];
+            
+            // reset variables
+            srcPlayer.couplesid = -1;
+            srcPlayer.couplenum = -1;
+            srcPlayer.roundwins = 0;
+            
+            // one less remaining..
+            --tcc.remaining;
     
             message.push(src + " advances to the next round of the tournament.", dest + " is out of the tournament.");
     
-            var couplesLen = this.couples.length();
-            if (couplesLen > 0) {
-                message.push("", couplesLen + " " + Grammar.s("battle", couplesLen) + " remaining.");
+            entries = Utils.objectLength(tcc.couples);
+            
+            if (entries > 0) {
+                message.push("", entries + " battle(s) remaining.");
             } else {
-                this.roundPairing();
+                tcc.roundPairing();
             }
-        } else if (this.battlemode === 2 || this.battlemode === 3 || this.battlemode === 5 || this.battlemode === 6) {
-            this.players[srcTL].roundwins++;
+        // Double and Triple Elimination
+        // Although this checks for Tag Team Single Elimination, we don't care as we already handled that.
+        } else if (tcc.type >= 2 && tcc.type <= 6) {
+            srcPlayer = tcc.players[srcLower];
+            destPlayer = tcc.players[destLower];
+            
+            // give [src] a round win
+            ++srcPlayer.roundwins;
     
-            var winnums = this.players[srcTL].roundwins + this.players[destTL].roundwins,
-                srcwin = this.players[srcTL].roundwins,
-                destwin = this.players[destTL].roundwins,
-                winner = '',
-                loser = '',
-                winnerTL = '',
-                loserTL = '',
-                tln = this.battlemode - winnums;
+            srcWins = srcPlayer.roundwins;
+            destWins = destPlayer.roundwins;
     
-            if (winnums >= this.battlemode) {
-                if (srcwin === destwin) {
-                    this.tie();
+            if (srcWins === Tours.battlesRequired(tcc) || destWins === Tours.battlesRequired(tcc)) {
+                // this should tie
+                if (srcWins === destWins) {
+                    // not sure if this is really supposed to happen..
+                    Tours.events.tie(sys.id(src), sys.id(dest), tcc);
                     return;
                 }
     
-                if (srcwin > destwin) {
+                if (srcWins > destWins) {
                     winner = src;
-                    winnerTL = src.toLowerCase();
                     loser = dest;
-                    loserTL = dest.toLowerCase();
                 } else {
                     winner = dest;
-                    winnerTL = dest.toLowerCase();
                     loser = src;
-                    loserTL = src.toLowerCase();
                 }
     
-                var stuff = this.roundStatus,
-                    stuffSBIndex = this.isBattling(src),
-                    winner = this.players[winnerTL];
+                isBattling = Tours.isBattling(src, tcc);
+                winnerPlayer = tcc.players[winner.toLowerCase()];
     
-                stuff.winLose[stuff.winLose.length()] = [src, dest];
-                if (stuffSBIndex !== false) {
-                    delete stuff.ongoingBattles[stuffSBIndex];
+                // add them to winLose (battle results)
+                tcc.roundStatus.winLose[Utils.objectLength(tcc.roundStatus.winLose)] = [src, dest];
+                
+                if (isBattling !== false) {
+                    // remove them from ongoingBattles
+                    delete tcc.roundStatus.ongoingBattles[isBattling];
                 }
-    
-                delete this.players[loserTL];
-                delete this.couples[winner.couplesid];
-                winner.couplesid = -1;
-                winner.couplenum = -1;
-                winner.roundwins = 0;
-                this.remaining--;
-    
-                message.push(winner + " advances to the next round of the tournament.", loser + " is out of the tournament.");
-    
-                var couplesLen = this.couples.length();
-                if (couplesLen > 0) {
-                    message.push("", couplesLen + " " + Grammar.s("battle", couplesLen) + " remaining.");
-                } else {
-                    this.roundPairing();
-                }
-            } else {
-                var sid = sys.id(src),
-                    did = sys.id(dest);
-    
-                botMessage(sid, "Great job, you've won this round! You have won " + srcwin + "/" + tln + " rounds so far.", this.id);
-                botMessage(did, "Sadly, you have lost this round. Try to win next round! You have won " + destwin + "/" + tln + " rounds so far.", this.id);
-                sys.forceBattle(sid, did, sys.getClauses(this.tourtier), 0, false);
-            }
-        }
-    
-        this.TourBox(message);
-    };
-    
-    Tours.prototype.tourSpots = function () {
-        return this.tournumber - objLength(this.players);
-    };
-    
-    Tours.prototype.randomPlayer = function (hash, team) {
-        var ol = objLength(hash);
-        if (ol === 1 || ol === 0) {
-            return 0;
-        }
-        if (ol === 2) {
-            return sys.rand(0, 2);
-        }
-        var rand = sys.rand(0, ol);
-    
-        if (!this.tagteam_tour()) {
-            return rand;
-        }
-    
-        var h = this.hashOf(hash, rand);
-        if (h === undefined) {
-            return "";
-        }
-    
-        while (h.team !== team) {
-            rand = sys.rand(0, ol);
-            h = this.hashOf(hash, rand);
-        }
-    
-        return rand;
-    };
-    
-    Tours.prototype.buildHash = function (src) {
-        var name = sys.name(src);
-        if (name === undefined) {
-            name = src;
-        }
-    
-    
-        this.players[name.toLowerCase()] = {
-            'name': name,
-            'couplesid': -1,
-            'couplenum': -1,
-            'roundwins': 0,
-            'team': -1
-        };
-    };
-    
-    Tours.prototype.tagteam_tour = function () {
-        var b = this.battlemode;
-        return b > 3 && b < 7;
-    };
-    
-    Tours.prototype.buildTeams = function () {
-        var p = this.players,
-            y,
-            team = 0,
-            id;
         
-        for (y in p) {
-            p[y].team = team;
-            id = sys.id(p[y].name);
-            if (team === 0) {
-                if (id !== undefined) {
-                    botMessage(id, "You are in Team Blue.", this.id);
+                // we don't care about the loser and the couples object anymore
+                delete tcc.players[loser.toLowerCase()];
+                delete tcc.couples[winnerPlayer.couplesid];
+                
+                // reset variables
+                winnerPlayer.couplesid = -1;
+                winnerPlayer.couplenum = -1;
+                winnerPlayer.roundwins = 0;
+                
+                // one less remaining..
+                --tcc.remaining;
+        
+                message.push(winner + " advances to the next round of the tournament.", loser + " is out of the tournament.");
+        
+                entries = Utils.objectLength(tcc.couples);
+                
+                if (entries > 0) {
+                    message.push("", entries + " battle(s) remaining.");
+                } else {
+                    tcc.roundPairing();
                 }
-    
-                team++;
             } else {
-                if (id !== undefined) {
-                    botMessage(id, "You are in Team Red.", this.id);
+                // tell them how many times they still have to win and auto-launch the next battle
+                // TODO: make this require autostartbattles
+                
+                srcPlayer = tcc.players[srcLower];
+                destPlayer = tcc.players[destLower];
+                
+                srcWins = srcPlayer.roundwins;
+                destWins = destPlayer.roundwins;
+                totalWins = (srcWins) + (destWins);
+                
+                Bot.sendMessage(sys.id(src), "Great job, you've won this round! You have won " + srcWins + "/" + totalWins + " rounds so far.", tcc.id);
+                Bot.sendMessage(sys.id(dest), "Sadly, you have lost this round. Try to win next round! You have won " + destWins + "/" + totalWins + " rounds so far.", tcc.id);
+                
+                playerTeam = PlayerUtils.firstTeamForTier(sys.id(src), tcc.tier);
+                opponentTeam = PlayerUtils.firstTeamForTier(sys.id(dest), tcc.tier);
+                
+                // just use their first team for now
+                if (playerTeam === -1) {
+                    playerTeam = 0;
                 }
-    
-                team--;
-            }
-        }
-    };
-    
-    Tours.prototype.playersOfTeam = function (team) {
-        var y,
-            p = this.players,
-            ret = 0;
-        for (y in p) {
-            if (p[y].team === team) {
-                ret++;
-            }
-        }
-    
-        return ret;
-    };
-    
-    Tours.prototype.namesOfTeam = function (team) {
-        var y, p = this.players,
-            ret = [];
-        for (y in p) {
-            if (p[y].team === team) {
-                ret.push(p[y].name);
+                if (opponentTeam === -1) {
+                    opponentTeam = 0;
+                }
+                
+                sys.forceBattle(
+                    sys.id(src), // first player's id
+                    sys.id(dest), // second player's id
+                    playerTeam, // first player's team id
+                    opponentTeam, // second player's team id
+                    sys.getClauses(tcc.tier), // clauses
+                    0, // battle mode: singles, doubles, triples
+                    false // is the battle rated?
+                );
             }
         }
     
-        return ret;
+        Tours.tourBox(message, tcc);
     };
     
-    Tours.prototype.totalPlayers = function () {
-        return objLength(this.players);
+    Tours.blue = 0;
+    Tours.red = 1;
+    
+    Tours.border = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
+    
+    Tours.displays = {
+        normal: 1,
+        clean: 2
     };
     
-    Tours.prototype.hashOf = function (hash, num) {
-        var y, i = 0;
-        for (y in hash) {
-            if (i === num) {
-                return hash[y];
-            }
-            i++;
-        }
+    Tour.modes = {
+        0: "No tournament is running.",
+        1: "Single Elimination",
+        2: "Double Elimination",
+        3: "Triple Elimination",
+        4: "Tag Team Single Elimination",
+        5: "Tag Team Double Elimination",
+        6: "Tag Team Triple Elimination"
     };
-    
-    Tours.prototype.Blue = 0;
-    Tours.prototype.Red = 1;
     
     // exports Tours
     exports.Tours = Tours;
+    
+    // exports ToursChannelConfig
+    exports.ToursChannelConfig = ToursChannelConfig;
+    
+    // exports tourBox, tourBoxPlayer, and tourNotification
+    exports.tourBox = tourBox;
+    exports.tourBoxPlayer = tourBoxPlayer;
+    exports.tourNotification = tourNotification;
+    
+    // exports white and border
+    exports.white = white;
+    exports.border = border;
 }());

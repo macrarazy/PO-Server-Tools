@@ -119,4 +119,18 @@
     
         return [].concat(array).splice(entry).join(join);
     };
+    
+    exports.objectLength = function (obj) {
+        return Object.keys(obj).length;
+    };
+    
+    exports.extend = function (obj, otherObj) {
+        var x;
+    
+        for (x in otherObj) {
+            obj[x] = otherObj[x];
+        }
+    
+        return obj;
+    }
 }());
