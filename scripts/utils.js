@@ -25,7 +25,7 @@
     // Escapes a string's html
     exports.escapeHtml = function (msg) {
         return (sys.escapeHtml || function (str) {
-            return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+            return str.replace(/\&/g, "&amp;").replace(/</g, "&lt;").replace(/\>/g, "&gt;");
         })(msg);
     };
     
@@ -132,5 +132,5 @@
         }
     
         return obj;
-    }
+    };
 }());

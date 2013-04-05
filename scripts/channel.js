@@ -29,18 +29,15 @@
         // TODO: Rename topicsetter -> topicSetter
         this.topicSetter = '';
         
-        // TODO: REMOVE ALL THIS TOURS STUFF
-        this.toursEnabled = false;
+        this.tour = new Tours.ToursChannelConfig(this.id);
         
         this.perm = false;
     
         // it only contains names..
+        // anyways, these are auto perm channels
         if (Options.indexOf(this.name) !== -1) {
             this.perm = true;
-            
-            // TODO: REMOVE ALL THIS TOURS STUFF
-            this.tour = new Tours(this.id);
-            this.toursEnabled = true;
+            // TODO: REMOVE ALL THIS TOURS STUFF (old this.tours and this.toursEnabled)
         }
     
         this.private = false;
@@ -50,7 +47,6 @@
         // TODO: Rename banlist -> banList; mutelist -> muteList
         this.banList = {};
         this.muteList = {};
-    
     }
     
     // gives/takes tour auth to a player
@@ -147,7 +143,7 @@
         }
     
         // test if the target has more/equal auth than the issuer
-        if (PlayerUtils.trueAuth(src) <= PlayerUtils.trueAuth(tar)) { 
+        if (PlayerUtils.trueAuth(src) <= PlayerUtils.trueAuth(tar)) {
             return false;
         }
         
