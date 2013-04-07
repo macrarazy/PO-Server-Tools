@@ -3,7 +3,7 @@
 
 // File: tours.js
 // Contains most tournament logic, including commands.
-// Depends on: player-utils, utils, bot, datahash, jsession
+// Depends on: player-utils, utils, channel-data, bot, style, datahash, jsession
 
 // Table of Content:
 // [t-c-c]: ToursChannelConfig
@@ -17,13 +17,16 @@
 (function () {
     // TODO: PlayerUtils: PlayerUtils.formatName(id | name) (same as player())
     var PlayerUtils = require('player-utils'),
-        // TODO: ChannelData: ChannelData.save(chanId, propertyName, propertyValue)
-        ChannelData = require('channel-data'),
         // TODO: Utils: Utils.timeToString(): getTimeString
         // TODO: Utils: Utils.isEqual(): cmp
         // TODO: Utils: Utils.toOnString(bool): toOn
         Utils = require('utils'),
+        // TODO: ChannelData: ChannelData.save(chanId, propertyName, propertyValue)
+        ChannelData = require('channel-data'),
         Bot = require('bot'),
+        // TODO: Style. Very important!
+        // NOTE: Style is require('style').style, not .manager or both
+        Style = require('style').style,
         DataHash = require('datahash'),
         JSESSION = require('jsession').JSESSION;
     
@@ -1208,10 +1211,10 @@
     Tours.commands = {};
     
     // List of all commands that can be used by users and above
-    Tours.commands.userCommands = ['tourprize'];
+    Tours.commands.userCommands = ['tourprize', 'join', 'unjoin', 'viewround'];
     
     // List of all commands that can be used by operators (chan auth/megauser/channel megauser) and above
-    Tours.commands.operatorCommands = ['display', 'autostartbattles'];
+    Tours.commands.operatorCommands = ['display', 'autostartbattles', 'dq', 'switch', 'push', 'cancelbattle', 'tour', 'changespots', 'endtour'];
     
     // List of all commands that can be used by moderators and above
     Tours.commands.modCommands = [];
@@ -1241,6 +1244,184 @@
         }
             
         return false;
+    };
+    
+    // Displays the tournament prize
+    // Permission: User
+    Tours.commands.tourprize = function (src, commandData, chan, tcc) {
+        if (tcc.mode === 0) {
+            Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
+            return;
+        }
+        if (Utils.isEmpty(tcc.prize)) {
+            Bot.sendMessage(src, "This tournament has no prize. <font color='gray'>:(</font>", chan);
+            return;
+        }
+    
+        Bot.sendMessage(src, "This tournament's prize is: " + tcc.prize, chan);
+    };
+    
+    // To join the tournament.
+    // Permission: User
+    Tours.commands.join = function (src, commandData, chan, tcc) {
+        var name = sys.name(src),
+            nameToLower = name.toLowerCase(),
+            message = PlayerUtils.formatName(src) + " joined the tournament! <b>" + Tours.tourSpots(tcc) - 1 + "</b> more spot(s) left!";
+        
+        // either hasn't started or isn't running
+        if (tcc.mode !== 1) {
+            Bot.sendMessage(src, "No tournament has started or is already running.", chan);
+            return;
+        }
+    
+        if (tcc.players.hasOwnProperty(nameToLower)) {
+            Bot.sendMessage(src, "You are already in the tournament. You are not able to join more than once.", chan);
+            return;
+        }
+        
+        if (!PlayerUtils.hasTeamForTier(src, tcc.tier)) {
+            Bot.sendMessage(src, "You don't have a team for the " + tcc.tier + " tier. Load or make one to join.", chan);
+            return;
+        }
+    
+        if (spots > 0) {
+            Tours.buildHash(src, tcc);
+            
+            if (tcc.entrants < 9) {
+                // Send a tourbox if less than 9 can participate
+                Tours.tourBox(message, tcc);
+            } else {
+                Bot.sendAll(message, chan);
+            }
+    
+            if (Tours.tourSpots(src) === 0) {
+                // because a player has joined, there is one less spot remaining.
+                tcc.mode = 2;
+                tcc.round = 0;
+            }
+        } else {
+            Bot.sendMessage(src, "There are no more spots left!", chan);
+        }
+    };
+    
+    // To leave the tournament.
+    // Permission: User
+    Tours.commands.unjoin = function (src, commandData, chan, tcc) {
+        var name = sys.name(src),
+            nameToLower = name.toLowerCase();
+        
+        if (tcc.mode === 0) {
+            // no tour has started yet..
+            Bot.sendMessage(src, "No tournament has started.", chan);
+            return;
+        }
+    
+        if (!tcc.players.hasOwnProperty(nameToLower)) {
+            Bot.sendMessage(src, "You have to join the tournament first!", chan);
+            return;
+        }
+    
+        // if there the tour has already started, lower the amount
+        // of players still remaining
+        if (tcc.mode === 2) {
+            --tcc.remaining;
+            
+            if (tcc.players[nameToLower].couplesid !== -1) {
+                // forcefully end their battle
+                Tours.events.tourBattleEnd(Tours.tourOpponent(name, tcc), name, true, tcc);
+            }
+        }
+        
+        delete tcc.players[nameToLower];
+        
+        Tours.tourBox(PlayerUtils.formatName(src) + " left the tournament! <b>" + Tours.tourSpots(tcc) + "</b> spot(s) left!", tcc);
+    
+        // if there are no more couples remaining,
+        // and we are in the battling phase,
+        // call .roundPairing (note that we do this after the tourBox above to prevent the order from being all messed up)
+        if (tcc.mode === 2 && Utils.objectLength(tcc.couples) === 0) {
+            Tours.roundPairing(tcc);
+        }
+    };
+    
+    // To view the status of the current round.
+    // Permission: User
+    Tours.commands.viewround = function (src, commandData, chan, tcc) {
+        var idleBattles = tcc.roundStatus.idleBattles,
+            ongoingBattles = tcc.roundStatus.ongoingBattles,
+            winLose = tcc.roundStatus.winLose,
+            anyIdleBattles = Utils.objectLength(idleBattles) !== 0,
+            anyOngoingBattles = Utils.objectLength(ongoingBattles) !== 0,
+            anyFinishedBattles = Utils.objectLength(winLose) !== 0,
+            roundIdentifier = tcc.finals ? "Finals" : "Round " + tcc.round,
+            cur,
+            i;
+        
+        if (tcc.mode !== 2) {
+            Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
+            return;
+        }
+    
+        sys.sendMessage(src, "", chan);
+        sys.sendHtmlMessage(src, Style.header, chan);
+        sys.sendMessage(src, "", chan);
+    
+        Bot.sendMessage(src, roundIdentifier + " of " + tcc.tier + " tournament:", chan);
+        
+        if (anyFinishedBattles) {
+            sys.sendMessage(src, "", chan);
+            Bot.sendMessage(src, "Battles finished:", chan);
+            sys.sendMessage(src, "", chan);
+            
+            for (i in winLose) {
+                cur = winLose[i];
+                Bot.sendMessage(src, PlayerUtils.formatName(cur[0]) + " won against " + PlayerUtils.formatName(cur[1]), chan);
+            }
+    
+            sys.sendMessage(src, "", chan);
+        }
+    
+        if (anyOngoingBattles) {
+            sys.sendMessage(src, "", chan);
+            botMessage(src, "Ongoing battles:", chan);
+            sys.sendMessage(src, "", chan);
+            
+            for (i in ongoingBattles) {
+                cur = ongoingBattles[i];
+                Bot.sendMessage(src, PlayerUtils.formatName(cur[0]) + " VS " + PlayerUtils.formatName(cur[1]), chan);
+            }
+    
+            sys.sendMessage(src, "", chan);
+        }
+    
+        if (anyIdleBattles) {
+            sys.sendMessage(src, "", chan);
+            botMessage(src, "Yet to start battles:", chan);
+            sys.sendMessage(src, "", chan);
+            
+            for (i in idleBattles) {
+                cur = idleBattles[i];
+                Bot.sendMessage(src, PlayerUtils.formatName(cur[0]) + " VS " + PlayerUtils.formatName(cur[1]), chan);
+            }
+            
+            sys.sendMessage(src, "", chan);
+        }
+    
+        if (anyFinishedBattles) {
+            sys.sendMessage(src, "", chan);
+            botMessage(src, "Players to the next round:", chan);
+            sys.sendMessage(src, "", chan);
+    
+            for (i in winLose) {
+                // the first player, e.g. the winner
+                Bot.sendMessage(src, PlayerUtils.formatName(winLose[i][0]), chan);
+            }
+                                
+            sys.sendMessage(src, "", chan);
+        }
+    
+        sys.sendMessage(src, "", chan);
+        sys.sendHtmlMessage(src, Style.footer, chan);
     };
     
     // Changes the display mode of a channel.
@@ -1276,217 +1457,38 @@
         ChannelData.save(chan, 'autoStartBattles', tcc.autoStartBattles);
     };
     
-    // Displays the tournament prize
-    // Permission: User
-    Tours.commands.tourprize = function (src, commandData, chan, tcc) {
+    // Disqualifies a player from the tournament.
+    // Permission: Operator
+    Tours.commands.dq = function (src, commandData, chan, tcc) {
+        var target = commandData.toLowerCase();
+        
         if (tcc.mode === 0) {
             Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
-        if (Utils.isEmpty(tcc.prize)) {
-            Bot.sendMessage(src, "This tournament has no prize. <font color='gray'>:(</font>", chan);
+    
+        if (!tcc.players.hasOwnProperty(target)) {
+            Bot.sendMessage(src, "That player never joined the tournament!", chan);
             return;
         }
     
-        Bot.sendMessage(src, "This tournament's prize is: " + tcc.prize, chan);
+        Tours.tourBox(PlayerUtils.formatName(target) + " was disqualified from the tournament by " + PlayerUtils.formatName(src) + "!", tcc);
+    
+        if (tcc.mode === 2) {
+            --tcc.remaining;
+            
+            // forcefully dq them if they have a couple (e.g. not a bye)
+            if (tcc.players[target].couplesid !== -1) {
+                Tours.tourBattleEnd(Tours.tourOpponent(commandData), PlayerUtils.trueName(commandData), true, tcc);
+            }
+        }
+        
+        delete tcc.players[target];
     };
     
-    // To join the tournament.
-    // Permission: User
-    Tours.commands.join = function (src, commandData, chan, tcc) {
-        // either hasn't started or isn't running
-        if (tcc.mode !== 1) {
-            Bot.sendMessage(src, "No tournament has started or is already running.", tcc.id);
-            return;
-        }
-    
-        var self = sys.name(src).toLowerCase();
-        if (this.players.has(self)) {
-            botMessage(src, "You are already in the tournament. You are not able to join more than once.", this.id);
-            return;
-        }
-        if (!hasTeam(src, this.tourtier)) {
-            botMessage(src, "You don't have a team for the " + this.tourtier + " tier. Load or make one to join.", this.id);
-            return;
-        }
-    
-        var me = player(src),
-            spots = this.tourSpots(),
-            message;
-        if (spots > 0) {
-            this.buildHash(src);
-    
-            spots--;
-            message = me + " joined the tournament! <b>" + spots + "</b> more " + Grammar.s("spot", spots) + " left!";
-    
-            if (this.tournumber < 9) { // Max spots is 8 for the bigger message.
-                this.TourBox(message);
-            } else {
-                this.sendAll(message);
-            }
-    
-    
-            if (spots === 0) {
-                this.tourmode = 2;
-                this.roundnumber = 0;
-                this.roundPairing();
-            }
-            return;
-        }
-    
-        botMessage(src, "There are no spots remaining.", this.id);
-    };
-    
-    Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
-        if (this.tourmode === 0) {
-            botMessage(src, "Wait untill the tournament has started.", this.id);
-            return;
-        }
-    
-        var self = sys.name(src).toLowerCase();
-        if (!this.players.has(self)) {
-            botMessage(src, "You have not joined the tournament.", this.id);
-            return;
-        }
-    
-        if (this.tourmode === 2) {
-            this.remaining--;
-        }
-    
-        var me = player(src),
-            spotsNow = this.tourSpots() + 1;
-    
-        this.TourBox(me + " left the tournament! <b>" + spotsNow + "</b> spots left!");
-    
-        if (this.tourmode === 2 && this.players[self].couplesid !== -1) {
-            this.tourBattleEnd(this.tourOpponent(self.name()), self.name(), true);
-        }
-    
-        delete this.players[self];
-    
-        if (objLength(this.couples) === 0 && this.tourmode === 2) {
-            this.roundPairing();
-        }
-    };
-    
-    Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
-        if (this.tourmode !== 2) {
-            botMessage(src, "You are unable to view the round because a tournament is not currently running or is in signing up phase.", this.id);
-            return;
-        }
-    
-        var chan = this.id;
-    
-        sys.sendMessage(src, "", chan);
-        sys.sendHtmlMessage(src, style.header, chan);
-        sys.sendMessage(src, "", chan);
-    
-        var battleHash = this.roundStatus,
-            idleBattles = battleHash.idleBattles,
-            ongoingBattles = battleHash.ongoingBattles,
-            winLose = battleHash.winLose,
-            anyFinishedBattles = !winLose.isEmpty(),
-            x,
-            curr;
-    
-        var roundInfoStr = "Round " + this.roundnumber;
-        if (this.finals) {
-            roundInfoStr = "Finals";
-        }
-    
-        botMessage(src, roundInfoStr + " of " + this.tourtier + " tournament:", chan);
-        if (anyFinishedBattles) {
-            sys.sendMessage(src, "", chan);
-            botMessage(src, "Battles finished", chan);
-            sys.sendMessage(src, "", chan);
-            for (x in winLose) {
-                curr = winLose[x];
-                botMessage(src, player(curr[0]) + " won against " + player(curr[1]), chan);
-            }
-    
-            sys.sendMessage(src, "", chan);
-        }
-    
-        if (!ongoingBattles.isEmpty()) {
-            sys.sendMessage(src, "", chan);
-            botMessage(src, "Ongoing battles:", chan);
-            sys.sendMessage(src, "", chan);
-            for (x in ongoingBattles) {
-                curr = ongoingBattles[x];
-                botMessage(src, player(curr[0]) + " VS " + player(curr[1]), chan);
-            }
-    
-            sys.sendMessage(src, "", chan);
-        }
-    
-        if (!idleBattles.isEmpty()) {
-            sys.sendMessage(src, "", chan);
-            botMessage(src, "Yet to start battles:", chan);
-            sys.sendMessage(src, "", chan);
-            for (x in idleBattles) {
-                curr = idleBattles[x];
-                botMessage(src, player(curr[0]) + " VS " + player(curr[1]), chan);
-            }
-            sys.sendMessage(src, "", chan);
-        }
-    
-        if (anyFinishedBattles) {
-            sys.sendMessage(src, "", chan);
-            botMessage(src, "Players to the next round:", chan);
-            sys.sendMessage(src, "", chan);
-    
-            var str = "";
-            for (x in winLose) {
-                str += player(winLose[x][0]) + ", ";
-            }
-    
-            str = str.substr(0, str.lastIndexOf(","));
-    
-            botMessage(src, str, chan);
-            sys.sendMessage(src, "", chan);
-        }
-    
-        sys.sendMessage(src, "", chan);
-        sys.sendHtmlMessage(src, style.footer, chan);
-    };
-    
-    Tours.prototype.command_dq = function (src, commandData, fullCommand) {
-        if (!this.hasTourAuth(src)) {
-            noPermissionMessage(src, fullCommand, this.id);
-            return;
-        }
-    
-        if (this.tourmode === 0) {
-            botMessage(src, "Wait until the tournament has started.", this.id);
-            return;
-        }
-    
-        var target = commandData.toLowerCase();
-        if (!this.players.has(target)) {
-            botMessage(src, "This player is not in the tournament.", this.id);
-            return;
-        }
-    
-        if (this.tourmode === 2) {
-            this.remaining--;
-        }
-    
-        this.TourBox(player(target) + " was removed from the tournament by " + player(src) + "!");
-    
-    
-        if (this.tourmode === 2 && this.players[target].couplesid !== -1) {
-            this.tourBattleEnd(this.tourOpponent(target.name()), target.name(), true);
-        }
-    
-        delete this.players[target];
-    };
-    
-    Tours.prototype.command_switch = function (src, commandData, fullCommand) {
-        if (!this.hasTourAuth(src)) {
-            noPermissionMessage(src, fullCommand, this.id);
-            return;
-        }
-    
+    // Switches a player in the tournament (removing one from it and replacing them with another)
+    // Permission: Operator
+    Tours.commands.switch = function (src, commandData, chan, tcc) {
         var parts = commandData.split(':');
         parts[1] = parts[1].toLowerCase();
     
@@ -1531,11 +1533,9 @@
         this.TourBox(message);
     };
     
-    Tours.prototype.command_push = function (src, commandData, fullCommand) {
-        if (!this.hasTourAuth(src)) {
-            noPermissionMessage(src, fullCommand, this.id);
-            return;
-        }
+    // Adds a player to the tournament.
+    // Permission: Operator
+    Tours.commands.push = function (src, commandData, chan, tcc) {
         if (this.tourmode === 0) {
             botMessage(src, "Wait until the tournament has started.", this.id);
             return;
@@ -1583,11 +1583,9 @@
         return;
     };
     
-    Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) {
-        if (!this.hasTourAuth(src)) {
-            noPermissionMessage(src, fullCommand, this.id);
-            return;
-        }
+    // Cancels a battle being official.
+    // Permission: Operator
+    Tours.commands.cancelbattle = function (src, commandData, chan, tcc) {
         if (this.tourmode !== 2) {
             botMessage(src, "Wait until a tournament starts", this.id);
             return;
@@ -1613,11 +1611,9 @@
         return;
     };
     
-    Tours.prototype.command_tour = function (src, commandData, fullCommand) {
-        if (!this.hasTourAuth(src)) {
-            noPermissionMessage(src, fullCommand, this.id);
-            return;
-        }
+    // Starts a new tournament.
+    // Permission: Operator
+    Tours.commands.tour = function (src, commandData, chan, tcc) {
         if (this.tourmode > 0) {
             botMessage(src, "You are unable to start a tournament because one is still currently running.", this.id);
             return;
@@ -1684,12 +1680,9 @@
         });
     };
     
-    Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
-        if (!this.hasTourAuth(src)) {
-            noPermissionMessage(src, fullCommand, this.id);
-            return;
-        }
-    
+    // Changes the amount of entrants.
+    // Permission: Operator
+    Tours.commands.changespots = function (src, commandData, chan, tcc) {
         if (this.tourmode !== 1) {
             botMessage(src, "You cannot change the number of spots because the tournament has passed the sign-up phase.", this.id);
             return;
@@ -1735,21 +1728,17 @@
     
     };
     
-    Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
-        if (!this.hasTourAuth(src)) {
-            noPermissionMessage(src, fullCommand, this.id);
+    // Ends the running tournament.
+    // Permission: Operator
+    Tours.commands.endtour = function (src, commandData, chan, tcc) {
+        if (tcc.mode === 0) {
+            Bot.sendMessage("No tournament has started or is currently running.");
             return;
         }
-    
-        if (this.tourmode !== 0) {
-            this.clearVariables();
-    
-            var me = player(src);
-            this.TourBox("The tournament has been ended by " + me + "!");
-            return;
-        }
-    
-        botMessage(src, "No tournament is running.", this.id);
+        
+        // resets all the variables, stopping the running tournament
+        Tours.clearVariables(tcc);
+        Tours.tourBox("The tournament has been ended by " + PlayerUtils.formatName(src) + "!", tcc);
     };
     
     // Constants [t-const]
