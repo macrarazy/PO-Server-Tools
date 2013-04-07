@@ -1489,126 +1489,145 @@
     // Switches a player in the tournament (removing one from it and replacing them with another)
     // Permission: Operator
     Tours.commands.switch = function (src, commandData, chan, tcc) {
-        var parts = commandData.split(':');
-        parts[1] = parts[1].toLowerCase();
-    
-        if (!this.isInTourney(parts[0]) || sys.id(parts[1]) === undefined) {
-            botMessage(src, "The players need to exist!", this.id);
+        var mcmd = commandData.split(':'),
+            player1 = PlayerUtils.trueName(mcmd[0] || ""),
+            player1ToLower = player1.toLowerCase(),
+            player2 = PlayerUtils.trueName(mcmd[1] || ""),
+            player2ToLower = player2.toLowerCase(),
+            helpStr = "",
+            message = [],
+            idleIndex,
+            idleObject;
+        
+        if (tcc.mode === 0) {
+            Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
-        if (!!this.isBattling(parts[0])) {
-            botMessage(src, "You can't switch a battling player!", this.id);
+        
+        // give them a helpful message telling them what they did wrong.
+        if (!Tours.isInTourney(player1, tcc)) {
+            helpStr += "The first player needs to be in the tournament. ";
+        }
+        
+        if (sys.id(player2) === undefined) {
+            helpStr += "The second player needs to be logged in.";
+        }
+        
+        if (helpStr !== "") {
+            Bot.sendMessage(src, helpStr, chan);
+            return;
+        }
+        
+        if (!!Tours.isBattling(player1, tcc)) {
+            Bot.sendMessage(src, "The first player shouldn't be battling.", chan);
             return;
         }
     
-        var obj = this.players[parts[0].toLowerCase()],
-            playerN = parts[0].name(),
-            switchN = parts[1].name(),
-            indexOfIdle = this.idleBattler(playerN),
-            indexThingy,
-            pNum;
+        idleIndex = Tours.idleBattler(player1, tcc);
+        
+        // also copy over idleBattlers
+        if (idleIndex !== false) {
+            idleObject = tcc.roundStatus.idleBattles[idleIndex];
+            idleObject[idleObject.indexOf(player1)] = player2;
+        }
+        
+        // TODO: copy over winLose?
     
-        if (indexOfIdle !== false) {
-            indexThingy = this.roundStatus.idleBattles[indexOfIdle];
-            pNum = indexThingy[0] === playerN;
-            delete this.roundStatus.idleBattlers[indexOfIdle];
-            if (pNum) {
-                this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [swittchN, indexThingy[1]];
-            } else {
-                this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [indexThingy[0], switchN];
-            }
+        // copy the old player, but change the .name
+        // and then delete the old player.
+        tcc.players[player2ToLower] = Utils.extend({}, tcc.players[player1ToLower]);
+        tcc.players[player2ToLower].name = player2;
+        
+        delete tcc.players[player1ToLower];
+    
+        message.push(PlayerUtils.formatName(player1) + " was switched with " + PlayerUtils.formatName(player2) + " by " + PlayerUtils.formatName(src) + "!");
+    
+        if (tcc.mode === 1) {
+            message.push("<b>" + Tours.tourSpots(tcc) + "</b> more spot(s) left!");
         }
     
-        this.players[parts[1]] = obj;
-        this.players[parts[1]].name = switchN;
-        delete this.players[parts[0].toLowerCase()];
-    
-        var spots = this.tourSpots(),
-            message = [player(parts[0]) + " was switched with " + player(parts[1]) + " by " + player(src) + "!"];
-    
-        if (this.tourmode === 1) {
-            message.push("<b>" + spots + "</b> more " + s("spot", spots) + " left!");
-        }
-    
-        this.TourBox(message);
+        Tours.TourBox(message);
     };
     
     // Adds a player to the tournament.
     // Permission: Operator
     Tours.commands.push = function (src, commandData, chan, tcc) {
-        if (this.tourmode === 0) {
-            botMessage(src, "Wait until the tournament has started.", this.id);
+        var target = PlayerUtils.trueName(commandData || ""),
+            targetToLower = target.toLowerCase(),
+            message = [];
+        
+        if (tcc.mode === 0) {
+            Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
     
-        if (sys.dbIp(commandData) === undefined) {
-            botMessage(src, "This person doesn't exist.", this.id);
+        if (tcc.mode === 2 && Tours.isTagTeamTour(tcc)) {
+            Bot.sendMessage(src, "You cannot add players to a running tag team tour!", chan);
             return;
         }
     
-        if (this.tourmode === 2 && this.tagteam_tour()) {
-            botMessage(src, "You cannot add players to a running tag team tour!", this.id);
+        if (Tours.isInTourney(targetToLower, tcc)) {
+            Bot.sendMessage(src, target + " is already in the tournament!", chan);
             return;
         }
     
-        var target = player(commandData);
-        if (this.isInTourney(commandData.toLowerCase())) {
-            botMessage(src, target + " is already in the tournament.", this.id);
-            return;
+        message.push(PlayerUtils.formatName(target) + " was added to the tournament by " + PlayerUtils.formatName(src) + "!");
+    
+        // create a player object for them.
+        // note that they are automatically a bye if the tournament has already started.
+        Tours.buildHash(target, tcc);
+    
+        if (tcc.mode === 1) {
+            message.push("<b>" + Tours.tourSpots(tcc) + "</b> more spot(s) left!");
+        } else if (tcc.mode === 2) {
+            ++tcc.remaining;
         }
     
-        if (this.tourmode === 2) {
-            this.remaining++;
+        Tours.tourBox(message, tcc);
+        
+        // if there are no more spots left, run roundPairing
+        if (tcc.mode === 1 && Tours.tourSpots(tcc) === 0) {
+            tcc.mode = 2;
+            tcc.round = 0;
+            
+            Tours.roundPairing(tcc);
         }
-    
-        var name = commandData.name(),
-            spots = this.tourSpots(),
-            me = player(src),
-            message = [target + " was added to the tournament by " + me + "!"];
-    
-        this.buildHash(name);
-    
-        if (this.tourmode === 1) {
-            message.push("<b>" + spots + "</b> more " + s("spot", spots) + " left!");
-        }
-    
-        this.TourBox(message);
-    
-        if (this.tourmode === 1 && spots === 0) {
-            this.tourmode = 2;
-            this.roundnumber = 0;
-            this.roundPairing();
-        }
-    
-        return;
     };
     
     // Cancels a battle being official.
     // Permission: Operator
     Tours.commands.cancelbattle = function (src, commandData, chan, tcc) {
-        if (this.tourmode !== 2) {
-            botMessage(src, "Wait until a tournament starts", this.id);
+        var target = PlayerUtils.trueName(commandData || ""),
+            targetToLower = target.toLowerCase(),
+            battleIndex;
+        
+        if (tcc.mode === 0) {
+            Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
-        var name = commandData.toLowerCase();
-        if (!this.players.has(name)) {
-            botMessage(src, "This player is not in the tournament", this.id);
-            return;
-        }
-    
-        var startername = name.name(),
-            bIndex = this.isBattling(startername);
-    
-        if (bIndex === false) {
-            botMessage(src, "Either this player is through the next round, or his/her battle hasn't begon yet.", this.id);
+        
+        if (!tcc.players.hasOwnProperty(targetToLower)) {
+            Bot.sendMessage(src, target + " is not in the tournament.", chan);
             return;
         }
     
-        delete this.roundStatus.startedBattles[bIndex];
+        battleIndex = Tours.isBattling(target, tcc);
     
-        var target = player(startername);
-        this.TourBox(target + " can forfeit their battle and rematch now.");
-        return;
+        if (battleIndex === false) {
+            Bot.sendMessage(src, target + "'s battle has either not begun already, or they're through to the next round.", chan);
+            return;
+        }
+    
+        // delete them from ongoingBattles
+        // which makes their match unofficial
+        delete this.roundStatus.ongoingBattles[battleIndex];
+        
+        // add them back to idleBattles
+        // note that we can just copy the old battleIndex over, 
+        // because it's exactly what idleBattles (and winLose) uses as well.
+        tcc.roundStatus.idleBattles[Utils.objectLength(tcc.roundStatus.idleBattles)] = battleIndex;
+    
+        Tours.tourBox(PlayerUtils.formatName(target) + " can forfeit their battle and rematch now.", chan);
     };
     
     // Starts a new tournament.
