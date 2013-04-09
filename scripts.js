@@ -144,6 +144,7 @@ Utils.updatePrototype(JSESSION, require('jsession').jsession_constructor);
 
 // NOTE: hasTeam -> PlayerUtils.hasTeamForTier
 // NOTE: firstTeamForTier -> PlayerUtils.firstTeamForTier
+// NOTE: script.namecolor -> PlayerUtils.trueColor
 
 function Mail(sender, text, title) {
     var date = new Date();
@@ -7476,17 +7477,6 @@ if(message == "Maximum Players Changed.") {
 
         return false;
     },
-
-    namecolor: function (src) {
-        var myColor = sys.getColor(src);
-        if (myColor == '#000000') {
-            var namecolorlist = ['#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f', '#1b1390', '#028678', '#0324b1'];
-            return namecolorlist[src % namecolorlist.length];
-        }
-        return myColor;
-    },
-
-
     hostAuth: function (src) {
         var auth = sys.auth(src);
         if (auth < 3 || auth > 3) {
@@ -9045,8 +9035,6 @@ if(message == "Maximum Players Changed.") {
 
 
         BORDER = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
-        // NOTE: THIS HAS ALREADY BEEN MOVED TO tours.js
-        TOUR_BORDER = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
 
         Grammar = {
             "an": function (thingy, u) {
@@ -9439,25 +9427,6 @@ if(message == "Maximum Players Changed.") {
                 return true;
             }
             return false;
-        }
-
-        validTier = function (name) {
-            var x, tierlist = sys.getTierList(),
-                tier = name.toLowerCase(),
-                curr;
-            for (x in tierlist) {
-                curr = tierlist[x];
-                if (curr.toLowerCase() === tier) {
-                    return curr; // Corrects case, sometimes.
-                }
-            }
-
-            return false;
-        }
-
-        // NOTE: ALREADY HAS BEEN IMPORTED
-        objLength = function (obj) {
-            return Object.keys(obj).length;
         }
 
         botAllExcept = function (src, message, channel, type) {

@@ -120,10 +120,12 @@
         return [].concat(array).splice(entry).join(join);
     };
     
+    // Returns the amount of keys in an object.
     exports.objectLength = function (obj) {
         return Object.keys(obj).length;
     };
     
+    // Copies all values in [otherObj] to [obj]
     exports.extend = function (obj, otherObj) {
         var x;
     
@@ -132,5 +134,28 @@
         }
     
         return obj;
+    };
+    
+    // Checks if [name] is a valid tier and returns it with proper casing (if it does).
+    // Otherwise returns false
+    exports.isValidTier = function (name) {
+        var tiers = sys.getTierList(),
+            length = tiers.length,
+            cur,
+            i;
+        
+        name = name.toLowerCase();
+        
+        for (i = 0; i < length; ++i) {
+            curr = tiers[i];
+            
+            if (curr.toLowerCase() === name) {
+                // this corrects the case
+                return curr;
+            }
+        }
+
+        // return false to indicate that tier doesn't exist.
+        return false;
     };
 }());

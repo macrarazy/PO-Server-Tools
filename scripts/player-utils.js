@@ -2,7 +2,10 @@
 /*global sys, exports, module*/
 
 (function () {
-    
+    // list of default colors
+    // used when a player doesn't have one (by the client)
+    var defaultColorList = ['#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f', '#1b1390', '#028678', '#0324b1'];
+
     // Returns a player's first team for the given [tier].
     // IMPORTANT: Returns a team id, not a team object (or anything cool like that).
     // Returns 0 (the first team) if Config.NoCrash is true.
@@ -34,5 +37,18 @@
         }
     
         return sys.hasTier(id, tier);
+    };
+    
+    // Returns a player's true color
+    // So it doesn't appear to be black if the player has none (in html messages)
+    exports.trueColor = function (src) {
+        var defaultColor = sys.getColor(src);
+        
+        // when the player hasn't set their own color
+        if (defaultColor === '#000000') {
+            return defaultColorList[src % defaultColorList.length];
+        }
+        
+        return defaultColor;
     };
 }());

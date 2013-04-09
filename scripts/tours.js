@@ -392,7 +392,7 @@
         tcc.roundPlayers = 0;
     };
     
-    // Returns the total amount of players that have signed up
+    // Returns the total amount of players that are playing
     // Expects a ToursChannelConfig
     Tours.totalPlayers = function (tcc) {
         return Utils.objectLength(tcc.players);
@@ -1633,116 +1633,145 @@
     // Starts a new tournament.
     // Permission: Operator
     Tours.commands.tour = function (src, commandData, chan, tcc) {
-        if (this.tourmode > 0) {
-            botMessage(src, "You are unable to start a tournament because one is still currently running.", this.id);
+        // Player MCMD arguments:
+        // 0: Tier name
+        // 1: Amount of entrants
+        // 2: Tournament mode [optional=1]
+        // 3: Prize [optional]
+        
+        var mcmd = commandData.split(':'),
+            newSpots = parseInt(mcmd[1], 10),
+            newType = parseInt(mcmd[2], 10),
+            name = sys.name(src),
+            tierName;
+        
+        // if a tour is in the signups / battling phase
+        if (tcc.mode !== 0) {
+            Bot.sendMessage(src, "A tournament is already running.", chan);
             return;
         }
     
-        this.clearVariables();
-    
-        var mcmd = commandData.split(':');
-        this.tournumber = parseInt(mcmd[1], 10);
-    
-        var cp = parseInt(mcmd[2], 10);
-        if (this.identify(cp) === "Unknown Mode") {
-            cp = 1; /* set to Single Elimination */
-        }
-    
-        this.battlemode = cp;
-    
-        if (!this.tagteam_tour()) {
-            if (isNaN(this.tournumber) || this.tournumber <= 2) {
-                botMessage(src, "You must specify a tournament size of 3 or more.", this.id);
-                return;
-            }
-        } else {
-            if (isNaN(this.tournumber) || this.tournumber <= 3) {
-                botMessage(src, "You must specify a tournament size of 4 or more.", this.id);
-                return;
-            }
-    
-            if (this.tournumber % 2 !== 0) {
-                botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12, ..]", this.id);
-                return;
-            }
-        }
-    
-        if (this.tournumber > 150) {
-            botMessage(src, "Having over 150 players would be impossible!", this.id);
+        // clear the variables just in case
+        Tours.clearVariables(tcc);
+        
+        if (isNaN(newSpots)) {
+            Bot.sendMessage(src, "Specify a valid number for the entrants.", chan);
             return;
         }
+            
+        if (newSpots < 3) {
+            Bot.sendMessage(src, "Specify a size of 3 or more for the entrants.", chan);
+            return;
+        }
+        
+        if (Tours.isTagTeamTour(tcc)) {
+            // we already checked if it was < 3
+            if (newSpots === 3) {
+                Bot.sendMessage(src, "Specify a size of 4 or more for the entrants.", chan);
+                return;
+            }
     
-        var tierName = validTier(mcmd[0]);
+            if (newSpots % 2 !== 0) {
+                Bot.sendMessage(src, "Specify an even number of players (4, 6, 8, 12, 20, ...) for the entrants.", chan);
+                return;
+            }
+        }
+        
+        // also set the amount of players "remaining"
+        tcc.entrants = tcc.remaining = newSpots;
+        
+        // If the mode couldn't be found,
+        // change it to single elimination.
+        // note: we have to set it first
+        tcc.type = newType;
+        
+        if (Tours.identify(tcc) === "Unknown") {
+            newType = 1;
+        }
+    
+        // in case it was changed.
+        tcc.type = newType;
+    
+        // this fancy piece of code checks if the tier the user specified actually exists
+        tierName = Utils.isValidTier(mcmd[0]);
+        
         if (!tierName) {
-            botMessage(src, "There does not seem to be a " + mcmd[0] + " tier.", this.id);
+            Bot.sendMessage(src, "Specify a valid tier (" + mcmd[0] + " is not a valid tier).", chan);
             return;
         }
     
-        this.tourtier = tierName;
-        mcmd[3] = cut(mcmd, 3, ':');
-        this.prize = html_escape(mcmd[3]);
+        // everything after the 4th ':'
+        tcc.prize = Utils.escapeHtml(Utils.cut(mcmd, 3, ':'));
     
-        if (isEmpty(this.prize)) {
-            this.prize = "";
+        if (Utils.isEmpty(tcc.prize)) {
+            tcc.prize = "";
         }
+        
+        // set all important information
+        tcc.tier = tierName;
+        tcc.mode = 1;
+        tcc.startTime = +(sys.time());
+        tcc.starter = name;
     
-        var m_name = sys.name(src);
-    
-        this.remaining = this.tournumber;
-        this.tourmode = 1;
-        this.startTime = +(sys.time());
-        this.tourstarter = m_name;
-    
-        tourNotification(0, this.id, {
-            "starter": m_name,
-            "color": script.namecolor(src)
+        tourNotification(0, chan, {
+            "starter": name,
+            "color": PlayerUtils.trueColor(src)
         });
     };
     
     // Changes the amount of entrants.
     // Permission: Operator
     Tours.commands.changespots = function (src, commandData, chan, tcc) {
-        if (this.tourmode !== 1) {
-            botMessage(src, "You cannot change the number of spots because the tournament has passed the sign-up phase.", this.id);
+        var newSpots = parseInt(commandData, 10);
+        
+        // if this isn't the signups.
+        if (tcc.tourmode !== 1) {
+            Bot.sendMessage(src, "No tournament is running or it appears to have passed the signups.", chan);
             return;
         }
     
-        var count = parseInt(commandData, 10);
-        if (!this.tagteam_tour()) {
-            if (isNaN(count) || count < 3) {
-                botMessage(src, "You must specify a size of 3 or more.", this.id);
-                return;
-            }
-        } else {
-            if (isNaN(count) || count <= 3) {
-                botMessage(src, "You must specify a size of 4 or more.", this.id);
+        if (isNaN(newSpots)) {
+            Bot.sendMessage(src, "Specify a valid number.", chan);
+            return;
+        }
+            
+        if (newSpots < 3) {
+            Bot.sendMessage(src, "Specify a size of 3 or more.", chan);
+            return;
+        }
+        
+        if (Tours.isTagTeamTour(tcc)) {
+            // we already checked if it was < 3
+            if (newSpots === 3) {
+                Bot.sendMessage(src, "Specify a size of 4 or more.", chan);
                 return;
             }
     
-            if (count % 2 !== 0) {
-                botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12]", this.id);
+            if (newSpots % 2 !== 0) {
+                Bot.sendMessage(src, "Specify an even number of players (4, 6, 8, 12, 20, ...).", chan);
                 return;
             }
         }
     
-        if (count < this.players.length()) {
-            botMessage(src, "There are more than that people registered.", this.id);
+        if (Tours.totalPlayers(tcc) > newSpots) {
+            Bot.sendMessage(src, "More than " + newSpots + " players have already signed up!", chan);
             return;
         }
     
-        this.tournumber = count;
-        this.remaining = count;
+        tcc.entrants = tcc.remaining = newSpots;
+        Tours.tourBox(
+            [
+                PlayerUtils.trueName(src) + " changed the numbers of entrants to " + newSpots + "!",
+                "<b>" + Tours.tourSpots(tcc) + "</b> more spot(s) remaining!"
+            ]
+        );
     
-        var spots = this.tourSpots(),
-            me = player(src),
-            message = [me + " changed the numbers of entrants to " + count + "!", "<b>" + spots + "</b> more " + s("spot", spots) + " left!"];
-    
-        this.TourBox(message);
-    
-        if (spots === 0) {
-            this.tourmode = 2;
-            this.roundnumber = 0;
-            this.roundPairing();
+        // call roundPairing if no more spots are remaining.
+        if (Tours.tourSpots(tcc) === 0) {
+            tcc.mode = 2;
+            tcc.round = 0;
+            
+            Tours.roundPairing(tcc);
         }
     
     };
