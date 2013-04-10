@@ -5,12 +5,10 @@
     // TODO: ChannelData: Add cData (ChannelData.xxx)
     var ChannelData = require('channel-data'),
         ChannelUtils = require('channel-utils'),
-        // TODO: PlayerUtils: PlayerUtils.name(id | name) (like old String#name (as in modules/jsext.js))
         // TODO: PlayerUtils: PlayerUtils.formatName(id | name) (same as player())
         // TODO: PlayerUtils: PlayerUtils.name(id | name) (like modules/utilities.js' util.player.name)
-        // TODO: PlayerUtils: PlayerUtils.ip(id | name | ip) (that checks sys.ip, dbIp, and proxyIp (because of the webclient))
+        // TODO: PlayerUtils: PlayerUtils.ip(id | name | ip) (that checks sys.ip and dbIp)
         PlayerUtils = require('player-utils'),
-        // TODO: Utils.isEmpty
         Utils = require('utils'),
         // TODO: This is being improved.
         Tours = require('tours'),
@@ -35,9 +33,8 @@
     
         // it only contains names..
         // anyways, these are auto perm channels
-        if (Options.indexOf(this.name) !== -1) {
+        if (Options.defaultChannels.indexOf(this.name) !== -1) {
             this.perm = true;
-            // TODO: REMOVE ALL THIS TOURS STUFF (old this.tours and this.toursEnabled)
         }
     
         this.private = false;
@@ -92,8 +89,6 @@
         }
     
         if (!this.isChanMod(src)) {
-            // TODO: Possibly move .noPermissionMessage somewhere else
-            // Like ux.js
             Utils.noPermissionMessage(src, fullCommand, this.id);
             return;
         }

@@ -17,9 +17,6 @@
 (function () {
     // TODO: PlayerUtils: PlayerUtils.formatName(id | name) (same as player())
     var PlayerUtils = require('player-utils'),
-        // TODO: Utils: Utils.timeToString(): getTimeString
-        // TODO: Utils: Utils.isEqual(): cmp
-        // TODO: Utils: Utils.toOnString(bool): toOn
         Utils = require('utils'),
         // TODO: ChannelData: ChannelData.save(chanId, propertyName, propertyValue)
         ChannelData = require('channel-data'),
@@ -57,7 +54,6 @@
     // Contains these properties:
     // name: Name of the bot.
     // color: Color of the bot.
-    // TODO: This function is really ugly.
     function tourNotification(src, chan, info) {
         var tour = JSESSION.channels(chan).tour,
             mode = tour.mode,

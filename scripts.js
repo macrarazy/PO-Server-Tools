@@ -9219,10 +9219,6 @@ if(message == "Maximum Players Changed.") {
             return "<img src='pokemon:" + num + "&shiny=" + shiny + "&back=" + back + "&gender=" + gender + "&gen=" + gen + "'>";
         }
 
-        cmp = function (a, b) {
-            return a.toLowerCase() == b.toLowerCase();
-        }
-
         stringToTime = function (str, time) {
             if (time == "") {
                 return "forever";
@@ -9297,45 +9293,6 @@ if(message == "Maximum Players Changed.") {
             }
 
             return fancyJoin(s) + "</b>";
-        }
-
-        getTimeString = function (sec) {
-            var d = [
-                [315569260, "decade"],
-                [31556926, "year"],
-
-                [2629744, "month"],
-                [604800, "week"],
-                [86400, "day"],
-                [3600, "hour"],
-                [60, "minute"],
-                [1, "second"]
-            ],
-                s = [],
-                j, n, sL, len = d.length;
-
-            for (j = 0; j < d.length; ++j) {
-                n = parseInt(sec / d[j][0]);
-                if (n > 0) {
-                    sL = "";
-                    if (n > 1) {
-                        sL = "s";
-                    }
-
-                    s.push((n + " " + d[j][1] + sL));
-                    sec -= n * d[j][0];
-
-                    if (s.length >= d.length) {
-                        break;
-                    }
-                }
-            }
-
-            if (s.length == 0) {
-                return "1 second";
-            }
-
-            return fancyJoin(s);
         }
 
         clauseList = function (clauses) {
@@ -11061,45 +11018,7 @@ if(message == "Maximum Players Changed.") {
         updateProtoForJSESSION(POUser);
         updateProtoForJSESSION(POChannel);
         updateProtoForJSESSION(Tours);
-
-        isNonNegative = function (n) {
-            return !isNaN(n) && n >= 0;
-        }
-
-        isEmpty = function (s) {
-            var type = typeof s;
-            if (type == "undefined" || s == null) {
-                return true;
-            }
-
-            if (type === "string") {
-                if (s === "" || s === " ") {
-                    return true;
-                }
-            }
-
-            if (type === "number") {
-                if (!isNonNegative(s)) {
-                    return true;
-                }
-            }
-
-            if (type == "object") {
-                if (!Array.isArray(s)) {
-                    if (objLength(s) == 0) {
-                        return true;
-                    }
-                }
-                else {
-                    if (s.length == 0) {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
+        
         createFile = function (file, replacement) {
             sys.appendToFile(file, "");
             if (sys.getFileContent(file) == "") {
@@ -11119,14 +11038,6 @@ if(message == "Maximum Players Changed.") {
             }
 
             return false;
-        }
-
-        toOn = function (bool) {
-            if (bool) {
-                return "on";
-            }
-
-            return "off";
         }
 
         WatchPlayer = function (player, type, message, channel) {
