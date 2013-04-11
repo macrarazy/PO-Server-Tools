@@ -238,7 +238,6 @@
     };
     
     // export JSESSION
-    // TODO: Check if this works.
     exports.JSESSION = new JSESSION();
     
     // export the JSESSION constructor

@@ -73,17 +73,19 @@ var Script = {
     URL: "https://raw.github.com/TheUnknownOne/PO-Server-Tools/",
 
     /* Branch to download modules (and other data) from. */
-    BRANCH: "devel"
+    BRANCH: "devel",
+    
+    EVAL_TIME_START: new Date().getTime(),
+    
+    SCRIPT_URL: "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js"
 };
+    
 
-/** Do not modify this! This is only to calculate load speed! **/
-var EvaluationTimeStart = new Date().getTime();
-var ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
-var CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
-var global = this,
-    GLOBAL = this;
 
+var global = this;
+var GLOBAL = this;
+    
 if (typeof require === 'undefined') {
     // includes a script
     var require = (function () {
@@ -145,6 +147,7 @@ Utils.updatePrototype(JSESSION, require('jsession').jsession_constructor);
 // NOTE: hasTeam -> PlayerUtils.hasTeamForTier
 // NOTE: firstTeamForTier -> PlayerUtils.firstTeamForTier
 // NOTE: script.namecolor -> PlayerUtils.trueColor
+// NOTE: script.loadAll -> script.init
 
 function Mail(sender, text, title) {
     var date = new Date();
@@ -334,41 +337,48 @@ JSESSION.registerGlobal(POGlobal);
 JSESSION.refill();
 
 ({
+    // Event: serverStartUp [event-serverStartUp]
+    // Called when: Server starts up
+    // Sets start up variables and calls event beforeNewMessage
     serverStartUp: function () {
-        startupTime = +(sys.time());
-        StartUp = true;
-
-        if (sys.getFileContent(".scriptsession") === "") {
-            Config.NoCrash = true;
-            sys.writeToFile("nocrash.txt", "Delete this file to turn NoCrash off (in case of a system crash or something similar).");
-        } else if (sys.getFileContent("nocrash.txt") !== undefined) {
-            Config.NoCrash = true;
-        }
-
-        script.beforeNewMessage("Script Check: OK");
-        sys.updateDatabase();
-
+        var Options = require('options'),
+            Utils = require('utils');
+        
+        Options.isStartingUp = true;
+        Options.startUpTime = +(sys.time());
+        
+        // Call beforeNewMessage with "Script Check: OK"
+        // This is weirdly not done by the server itself in serverStartUp
+        Utils.callEvent("beforeNewMessage", "Script Check: OK");
+        
+        // sys.updateDatabase();
     },
 
+    // Event: serverShutDown [event-serverShutDown]
+    // Called when: Server shuts down
+    // Currently does nothing.
     serverShutDown: function () {
-        sys.deleteFile(".scriptsession");
     },
 
-    loadAll: function () {
-        if (typeof run === 'undefined') {
-            run = function (f) {
-                try {
-                    script[f]();
-                } catch (e) {
-                    print(FormatError("Runtime Error: Could not call script." + f + "!", e));
-                }
-            }
+    // Event: init [event-init]
+    // Called when: Custom
+    // Initializes certain values
+    init: function () {
+        var Options = require('options'),
+            Utils = require('utils'),
+            serverLine = sys.getFileContent("config").split("\n")[30],
+            defaultChannels = Options.defaultChannels,
+            channelIdKeys = Object.keys(Options.defaultChannelIds),
+            length = defaultChannels.length,
+            i;
+        
+        Options.serverName = serverLine.substring(5).replace(/\\xe9/i, "é").trim();
+        
+        for (i = 0; i < length; ++i) {
+            Options.defaultChannelIds[channelIdKeys[i]] = sys.channelId(defaultChannels[i]);
         }
-
-        var line = sys.getFileContent("config").split("\n")[30];
-        servername = line.substring(5).replace(/\\xe9/i, "é").trim();
-
-        run("loadRequiredUtilities");
+        
+        /*run("loadRequiredUtilities");
         run("loadCache");
 
         run("loadUtilities");
@@ -385,10 +395,9 @@ JSESSION.refill();
 
         run("loadTemplateUtility");
         run("loadIfyUtility");
-        run("loadCommandStatsUtility");
+        run("loadCommandStatsUtility");*/
 
-        poGlobal = JSESSION.global();
-
+        /*
         loadOldPoll = function () {
             if (typeof Poll === 'undefined') {
                 Poll = {};
@@ -410,7 +419,8 @@ JSESSION.refill();
         }
 
         loadOldPoll();
-
+*/
+        /*
         if (typeof DataHash.spammers == "undefined") {
             DataHash.spammers = {};
         }
@@ -435,43 +445,73 @@ JSESSION.refill();
         var date = String(new Date());
         cache.write("Script_LastLoad", date);
         cache.save("Script_Registered", date);
+        */
     },
 
-    attemptToSpectateBattle: function (src, srcbattler, tarbattler) {
-        var c = sys.channelIds(),
-            b, chan;
+    // Event: attemptToSpectateBattle
+    // Called when: [src] tries to spectate a battle between [battler1] and [battler2]
+    // Allows [src] to watch [battler1]'s and [battler2]'s battle if they are currently playing
+    // a tournament finals match (even when Disallow Spectators is on).
+    attemptToSpectateBattle: function (src, battler1, battler2) {
+        var Tours = require('tours').Tours,
+            channelIds = sys.channelIds(),
+            length = channelIds.length,
+            tour,
+            i;
 
-        for (b in c) {
-            chan = JSESSION.channels(c[b]);
-            if (!chan.toursEnabled) {
-                continue;
-            }
-            if (chan.tour.tourmode == 2 && chan.tour.finals) {
-                botMessage(src, "Enjoy the finals!", chan.id);
+        for (i = 0; i < length; ++i) {
+            // ensure we have an object
+            tour = (JSESSION.channels(channelIds[i]) || {tour: {}}).tour;
+            
+            if (tour.finals && Tours.isInTourneyId(battler1, tour) && Tours.isInTourneyId(battler2, tour)) {
+                Bot.sendMessage(src, "Enjoy the final match!", tour.id);
                 return "allow";
             }
         }
     },
 
+    // Event: beforeFindBattle
+    // Called when: [src] tries to find a battle via the "Find Battle" button.
+    // Logs [src] pressing "Find Battle".
     beforeFindBattle: function (src) {
-        WatchEvent(src, "Find Battle");
+        // TODO: WatchUtils: WatchUtils.logPlayerEvent()
+        var WatchUtils = require('watch-utils');
+        
+        WatchUtils.logPlayerEvent(src, "Pressed \"Find Battle\"");
     },
 
-    beforeChannelJoin: function (src, c) {
-        if (JSESSION.users(src) == undefined) {
+    // Event: beforeChannelJoin
+    // Called when: [src] joins the channel [chan].
+    // 
+    beforeChannelJoin: function (src, chan) {
+        var JSESSION = require('jsession').JSESSION,
+            Options = require('options'),
+            channelIds = Options.defaultChannelIds,
+            name = sys.name(src),
+            user,
+            channel;
+        
+        // Ensure their JSESSION objects exist
+        // Only alarm when a channel object doesn't exist yet
+        if (!JSESSION.hasUser(src)) {
             JSESSION.createUser(src);
         }
-        if (JSESSION.channels(c) == undefined) {
-            JSESSION.createChannel(c);
+        if (!JSESSION.hasChannel(chan)) {
+            JSESSION.createChannel(chan);
         }
 
-        var chan = JSESSION.channels(c),
-            srcname = sys.name(src).toLowerCase(),
-            user = JSESSION.users(src);
+        user = JSESSION.users(src);
+        channel = JSESSION.channels(src);
 
-        if (chan.isChanMod(src) || (sys.auth(src) >= 1 && sys.auth(src) <= 2 && channel != scriptchannel) || sys.auth(src) > 2 || DataHash.megausers.has(srcname) && c == staffchannel || DataHash.evalops.has(srcname) && c == scriptchannel) {
+        // Allow them in if they're (channel) auth (even if banned, etc.)
+        // This checks if they're normal auth as well.
+        if (channel.isChanMod(src)) {
             return;
         }
+        
+/*        if ( DataHash.megausers.has(srcname) && c == staffchannel || DataHash.evalops.has(srcname) && c == scriptchannel) {
+            return;
+        }*/
 
         var ip = sys.ip(src);
         if (chan.isBannedInChannel(ip)) {
@@ -481,8 +521,8 @@ JSESSION.refill();
                 var ban = chan.banlist[ip],
                     time;
 
-                if (ban.time != 0) {
-                    time = "Banned for " + getTimeString(ban.time - sys.time() * 1);
+                if (ban.time !== 0) {
+                    time = "Banned for " + getTimeString(ban.time - +sys.time());
                 } else {
                     time = "Banned forever";
                 }
@@ -490,7 +530,7 @@ JSESSION.refill();
                 var by = ban.by,
                     why = ban.why,
                     last = why[why.length - 1];
-                if (last != "." && last != "!" && last != "?") {
+                if (last !== "." && last !== "!" && last !== "?") {
                     why += ".";
                 }
 
@@ -499,32 +539,51 @@ JSESSION.refill();
             }
         }
 
-        if (c === 0) {
+        // If this is the main channel, ignore it being private,
+        // but do prevent them from getting in main if they're banned
+        if (chan === 0) {
             return;
         }
 
-        if (chan.private) {
-            botMessage(src, "That channel is auth-only!");
+        // don't care about #name being changed
+        // this can only happen to the main channel, and we already prevented it from reaching this
+        if (channel.private) {
+            Bot.sendMessage(src, channel.name + " is auth-only!");
             sys.stopEvent();
             return;
         }
 
-        if ((c === watch || c === staffchannel /* || c === trivreview*/ )) {
-            botMessage(src, "The access to that channel is restricted!");
+        if (chan === channelIds.triviarev
+                || chan === channelIds.watch
+                || chan === channelIds.staff
+                || chan === channelIds.eval) {
+            Bot.sendMessage(src, "The access to " + channel.name + " is restricted!");
             sys.stopEvent();
             return;
         }
     },
 
-    beforeChannelDestroyed: function (channel) {
-        if ( /*channel == trivia || */ channel == watch || channel == scriptchannel || channel == staffchannel || channel == mafiachan || JSESSION.channels(channel).perm) {
+    // Event: beforeChannelDestroyed
+    // Called when: Before a channel is deleted
+    // Stops perm/default channels from being destroyed.
+    beforeChannelDestroyed: function (chan) {
+        var WatchUtils = require('watch-utils'),
+            JSESSION = require('jsession').JSESSION,
+            defaultIds = require('options').defaultChannelIds;
+        
+        if (chan === defaultIds.mafia
+                || chan === defaultIds.trivia
+                || chan === defaultIds.triviarev
+                || chan === defaultIds.watch
+                || chan === defaultIds.staff
+                || chan === defaultIds.eval
+                || JSESSION.channels(chan).perm) {
             sys.stopEvent();
             return;
         }
 
-        WatchChannelEvent(channel, "Destroyed");
-
-        JSESSION.destroyChannel(channel);
+        WatchUtils.logChannelEvent(chan, "Destroyed");
+        JSESSION.destroyChannel(chan);
     },
 
     afterChannelCreated: function (chan, name, src) {

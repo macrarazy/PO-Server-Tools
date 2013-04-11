@@ -1,29 +1,35 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
+// File: utils.js
+// Contains utilities not specificly for players, channels, and logging.
+// Depends on: bot
+
+// No Table of Content.
+
 (function () {
     var Bot = require('bot');
     
     // TODO: Possibly move to scripts/ux.js
     // Team alert shortcut
-    exports.teamAlertMessage = function (src, team, message) {
+    exports.teamAlertMessage = function teamAlertMessage(src, team, message) {
         Bot.sendMessage(src, "Team #" + (team + 1) + ": " + message);
     };
         
     // TODO: Possibly move to scripts/ux.js
     // Invalid command shortcut
-    exports.invalidCommand = function (src, command, chan) {
+    exports.invalidCommand = function invalidCommand(src, command, chan) {
         Bot.escapeMessage(src, "The command " + command + " doesn't exist.", chan);
     };
         
     // TODO: Possibly move to scripts/ux.js
     // No permission shortcut
-    exports.noPermissionMessage = function (src, command, chan) {
+    exports.noPermissionMessage = function noPermissionMessage(src, command, chan) {
         Bot.escapeMessage(src, "You may not use the " + command + " command.", chan);
     };
     
     // Escapes a string's html
-    exports.escapeHtml = function (msg) {
+    exports.escapeHtml = function escapeHtml(msg) {
         return (sys.escapeHtml || function (str) {
             return str.replace(/\&/g, "&amp;").replace(/</g, "&lt;").replace(/\>/g, "&gt;");
         })(msg);
@@ -31,7 +37,7 @@
     
     // Formats errors nicely.
     // Message is optional.
-    exports.formatError = function (message, error) {
+    exports.formatError = function formatError(message, error) {
         var line = "";
         
         if (typeof error === "undefined") {
@@ -51,7 +57,7 @@
     };
     
     // Creates a clickable channel link
-    exports.channelLink = function (channel) {
+    exports.channelLink = function channelLink(channel) {
         if (sys.channelId(channel) === undefined) {
             return "";
         }
@@ -60,30 +66,33 @@
     };
     
     // Returns an array of channel names.
-    exports.channelNames = function () {
+    exports.channelNames = function channelNames() {
         var channelIds = sys.channelIds(),
-            channelNames = [],
+            chanNames = [],
             length = channelIds.length,
             i;
     
         for (i = 0; i < length; ++i) {
-            channelNames.push(sys.channel(channelIds[i]));
+            chanNames.push(sys.channel(channelIds[i]));
         }
     
-        return channelNames;
+        return chanNames;
     };
     
     // TODO: Possibly move to scripts/ux.js
     // Adds channel links to a message
-    exports.addChannelLinks = function (str) {
-        var channelNames = exports.channelNames(),
-            length = channelNames.length,
+    exports.addChannelLinks = function addChannelLinks(str) {
+        var chanNames = channelNames(),
+            length = chanNames.length,
+            chanName,
             i;
     
         for (i = 0; i < length; ++i) {
+            chanName = chanNames[i];
+            
             str = str.replace(
-                new RegExp("#" + channelNames[i], "gi"),
-                "<a href='po:join/" + channelNames[i] + "'>" + channelNames[i] + "</a>"
+                new RegExp("#" + chanName, "gi"),
+                "<a href='po:join/" + chanName + "'>" + chanName + "</a>"
             );
         }
     
@@ -91,24 +100,24 @@
     };
     
     // If the given letter is capitalized
-    exports.isCapitalLetter = function (letter) {
+    exports.isCapitalLetter = function isCapitalLetter(letter) {
         return (/[QWERTYUIOPASDFGHJKLZXCVBNM]/).test(letter);
     };
     
     // If the given letter isn't capitalized
-    exports.isNormalLetter = function (letter) {
+    exports.isNormalLetter = function isNormalLetter(letter) {
         return (/[qwertyuiopasdfghjklzxcvbnm]/).test(letter);
     };
     
     // Returns the length of a file
-    exports.fileLength = function (file) {
+    exports.fileLength = function fileLength(file) {
         return (sys.getFileContent(file) || "").length;
     };
     
     // Cuts an array starting from [entry], turning it into an array.
     // Then .join is called using [join] as argument. The result is returned (an array).
     // If the [array] isn't an array, then simply returns it back.
-    exports.cut = function (array, entry, join) {
+    exports.cut = function cut(array, entry, join) {
         if (!join) {
             join = "";
         }
@@ -121,12 +130,12 @@
     };
     
     // Returns the amount of keys in an object.
-    exports.objectLength = function (obj) {
+    exports.objectLength = function objectLength(obj) {
         return Object.keys(obj).length;
     };
     
     // Copies all values in [otherObj] to [obj]
-    exports.extend = function (obj, otherObj) {
+    exports.extend = function extend(obj, otherObj) {
         var x;
     
         for (x in otherObj) {
@@ -138,7 +147,7 @@
     
     // Checks if [name] is a valid tier and returns it with proper casing (if it does).
     // Otherwise returns false
-    exports.isValidTier = function (name) {
+    exports.isValidTier = function isValidTier(name) {
         var tiers = sys.getTierList(),
             length = tiers.length,
             cur,
@@ -160,7 +169,7 @@
     };
     
     // Checks if [value] is empty.
-    exports.isEmpty = function (value) {
+    exports.isEmpty = function isEmpty(value) {
         // don't check this strictly
         if (value == undefined
                 || value === " ") {
@@ -169,7 +178,7 @@
 
         // check if it's negative or 0
         if (type === "number") {
-            return Utils.isNegative(value);
+            return isNegative(value);
         }
 
         // check if there are no values
@@ -180,25 +189,25 @@
         // check if there are no keys
         // note that we already checked for null and array, so this is guaranteed to be an object
         if (type === "object") {
-            return Utils.objectLength(value) === 0;
+            return objectLength(value) === 0;
         }
 
         return false;
     };
     
     // If [n] isn't NaN, negative, or 0
-    exports.isPositive = function (number) {
+    exports.isPositive = function isPositive(number) {
         return !isNaN(number) && number >= 0;
     };
     
     // If [n] isn't NaN, is negative, or is 0
-    exports.isNegative = function (number) {
-        return !isNaN(number) && !exports.isPositive(number);
+    exports.isNegative = function isNegative(number) {
+        return !isNaN(number) && !isPositive(number);
     };
     
     // Returns "on" if bool is true,
     // "off" if false
-    exports.toOnString = function (bool) {
+    exports.toOnString = function toOnString(bool) {
         return bool ? "on" : "off";
     };
     
@@ -330,7 +339,7 @@
     
     // Turns [time] into a string (for example, 60 becomes "Minute"
     // TODO: Comments
-    exports.timeToString = function (time) {
+    exports.timeToString = function timeToString(time) {
         var ret = [],
             times = [
                 [2629744, "Month"],
@@ -360,12 +369,12 @@
             return "1 Second";
         }
 
-        return exports.fancyJoin(ret) + "</b>";
+        return fancyJoin(ret) + "</b>";
     };
     
     // A more fancy looking version than the default .join
     // TODO: Comments
-    exports.fancyJoin = function (array) {
+    exports.fancyJoin = function fancyJoin(array) {
         var retstr = "",
             arrlen = array.length - 1;
 
@@ -383,5 +392,41 @@
         });
 
         return retstr;
+    };
+    
+    exports.callEvent = function callEvent(name, args) {
+        // this is quite rare..
+        if (!script) {
+            print("Runtime Error (from scripts/utils.js:callEvent): script doesn't exist.");
+            return;
+        }
+        
+        if (!script[name]) {
+            print("Runtime Error (from scripts/utils.js:callEvent): script." + name + " doesn't exist.");
+            return;
+        }
+        
+        // wrap it in a try/catch
+        
+        try {
+            // properly set the scope.
+            script[name].apply(script[name], [].slice.call(arguments, 1));
+        } catch (e) {
+            print("Runtime Error (from scripts/utils.js:callEvent): script." + name + " returned an error: " + formatError(e));
+        }
+    };
+    
+    // Calls multiple events.
+    // Array should be as follows: [["eventName", "eventArgument1", "eventArgumentEtc"], ["etc"]]
+    exports.callEvents = function callEvents(events) {
+        var length = events.length,
+            event,
+            i;
+        
+        for (i = 0; i < length; ++i) {
+            event = events[i];
+            // defined at "exports.callEvent = function callEvent"
+            callEvent.apply(this, [event[0], [].slice.call(arguments, 1)]);
+        }
     };
 }());

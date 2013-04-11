@@ -15,8 +15,6 @@ if (typeof require === 'undefined') {
                 identifier = path.split('.js').pop(),
                 module = {exports: {}, path: path},
                 exports = module.exports;
-                
-            identifier.join('.js');
             
             // delete the cache or quickly get the module
             if (require.modules[identifier]) {

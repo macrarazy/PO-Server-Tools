@@ -10,7 +10,7 @@
         // TODO: PlayerUtils: PlayerUtils.trueAuth(name | ip | id) (hpAuth w/ improvements)
         // TODO: PlayerUtils: PlayerUtils.mute(opts) see below
         PlayerUtils = require('player-utils'),
-        // TODO: WatchUtils: WatchUtils.logPlayer() (WatchPlayer)
+        // TODO: WatchUtils: WatchUtils.logPlayerMessage() (WatchPlayer)
         WatchUtils = require('watch-utils');
     
     // JSESSION user constructor
@@ -93,7 +93,7 @@
         this.caps += caps;
     
         if (this.caps >= 70) {
-            WatchUtils.logPlayer(this.id, "CAPS Mute Message", message, channel);
+            WatchUtils.logPlayerMessage(this.id, "CAPS Mute Message", message, channel);
             Bot.sendAll(this.name + " got muted for 5 minutes. [Reason: TALKING TOO MUCH IN CAPS]", channel);
     
             // TODO: PlayerUtils.mute
