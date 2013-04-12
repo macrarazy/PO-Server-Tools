@@ -55,7 +55,6 @@
     }
     
     // gives/takes tour auth to a player
-    // TODO: Remove this, merge with new tours.js (or something)
     Channel.prototype.doTourAuth = function (name, mode) {
         var toLower = String(name).toLowerCase();
     
@@ -102,7 +101,7 @@
         }
     
         // set the topic.
-        // magic word "default" sets it back to normal
+        // magic word "default" sets it back to the default
         if (topic.toLowerCase() === "default") {
             this.topic = "Welcome to " + this.name + "!";
             this.topicSetter = '';

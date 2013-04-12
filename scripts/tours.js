@@ -15,7 +15,6 @@
 // [expt]: Exports
 
 (function () {
-    // TODO: PlayerUtils: PlayerUtils.formatName(id | name) (same as player())
     var PlayerUtils = require('player-utils'),
         Utils = require('utils'),
         // TODO: ChannelData: ChannelData.save(chanId, propertyName, propertyValue)
@@ -27,12 +26,12 @@
         DataHash = require('datahash'),
         JSESSION = require('jsession').JSESSION;
     
-    // Whitespace
+    // Sends a line of whitespace to [src].
     function white(src, chan) {
         sys.sendMessage(src, "", chan);
     }
     
-    // Sends the tour border to [src]
+    // Sends the tournament border to [src].
     function border(src, chan) {
         sys.sendHtmlMessage(src, Tours.border, chan);
     }
@@ -101,8 +100,7 @@
             if (tour.display === Tours.displays.normal) {
                 Tours.white(chan);
                 Tours.border(chan);
-                // TODO: Implement color support for bot.
-                sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + Utils.escapeHtml(info.starter) + "! </b></font>", chan);
+                sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by <b><font color='" + info.color + "'>" + Utils.escapeHtml(info.starter) + "</font></b>! </b></font>", chan);
                 sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + tour.entrants, chan);
                 sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + Tours.identify(tour), chan);
                 sys.sendHtmlAll("<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tier, chan);
@@ -479,7 +477,7 @@
         // no player at this first random position?
         // bail, and print a warning
         if (playerObj === undefined) {
-            print("Warning from scripts/tours.js: Unknown player in Tours.randomPlayer at position " + random + ".");
+            Utils.panic("scripts/tours.js", "Tours.randomPlayer(object, teamId)", "Unknown player at position " + random + ".", tcc.players, Utils.panic.warning);
             return 0;
         }
     

@@ -56,6 +56,38 @@
         return message + " " + error.name + line + ": " + error.message;
     };
     
+    // Not as serious as Unix, but still meant for error reporting.
+    // Prints a dump, a message, and the file the error originates from.
+    // dump is optional and can be an object/array as well.
+    // isWarning is to indicate that this is a warning, and not an error.
+    // TODO: Config option to turn warning reports off.
+    exports.panic = function panic(fileName, functionName, message, dump, isWarning) {
+        print("");
+        print((isWarning ? "Warning" : "Error") + " from " + fileName + "@" + functionName + ":");
+        print(message);
+        
+        if (dump) {
+            // turns arrays/objects into strings (doesn't like functions/numbers/etc., though).
+            try {
+                dump = JSON.stringify(dump);
+            } catch (e) {}
+            
+            print("Data dump supplied: " + dump);
+        }
+        
+        print("");
+        
+        if (isWarning) {
+            print("Please note that this is a warning. The script should work fine, and reporting it is completely optional. In certain cases, reports might even be ignored.");
+        } else {
+            print("Please report this at GitHub ( https://github.com/TheUnknownOne/PO-Server-Tools/issues ) or PM ( http://pokemon-online.eu/forums/private.php?do=newpm&u=15094 ). In certain cases, features might cease to function or you might have to restart the server (don't do this right away though, unless if the error message states so).");
+        }
+    };
+    
+    // Makes the isWarning argument more readable.
+    exports.panic.warning = true;
+    exports.panic.error = false;
+    
     // Creates a clickable channel link
     exports.channelLink = function channelLink(channel) {
         if (sys.channelId(channel) === undefined) {
@@ -427,6 +459,13 @@
             event = events[i];
             // defined at "exports.callEvent = function callEvent"
             callEvent.apply(this, [event[0], [].slice.call(arguments, 1)]);
+        }
+    };
+    
+    // Updates an object's prototype (adding/removing functions)
+    exports.updatePrototype = function (object, proto) {
+        if (object.__proto__ !== proto.prototype) {
+            func.__proto__ = proto.prototype;
         }
     };
 }());

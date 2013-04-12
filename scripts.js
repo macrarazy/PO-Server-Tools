@@ -146,7 +146,6 @@ if (typeof require === 'undefined') {
         
     var JSESSION = require('jsession').JSESSION;
     
-    // TODO: Utils.updatePrototype
     // Attempts to add new features to JSESSION
     Utils.updatePrototype(JSESSION, require('jsession').jsession_constructor);
     
@@ -383,8 +382,10 @@ function Mail(sender, text, title) {
         
         Options.serverName = serverLine.substring(5).replace(/\\xe9/i, "é").trim();
         
+        // creates/gets the id of the default channels.
+        // NOTE: Very important that this is done in init(). If this is done during (or before) serverStartUp, the server crashes.
         for (i = 0; i < length; ++i) {
-            Options.defaultChannelIds[channelIdKeys[i]] = sys.channelId(defaultChannels[i]);
+            Options.defaultChannelIds[channelIdKeys[i]] = sys.createChannel(defaultChannels[i]) || sys.channelId(defaultChannels[i]);
         }
         
         /*run("loadRequiredUtilities");
@@ -9055,7 +9056,7 @@ if(message == "Maximum Players Changed.") {
             }
         }
 
-        auths = function () { // TODO: Test if somewhat faster or equal to a playerIds loop.
+        auths = function () {
             var ids = [],
                 list = sys.dbAuths(),
                 i, id;
@@ -11074,13 +11075,6 @@ if(message == "Maximum Players Changed.") {
                         }
                     }
                 });
-            }
-        }
-
-        updateProto = function (func, proto) {
-            var p = proto.prototype;
-            if (func.__proto__ != p) {
-                func.__proto__ = p;
             }
         }
 
