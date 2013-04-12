@@ -1,6 +1,12 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
+// File: player-utils.js
+// Contains player utilities (such as easily getting player and team information).
+// No dependencies.
+
+// No Table of Content.
+
 (function () {
     // list of default colors
     // used when a player doesn't have one (by the client)

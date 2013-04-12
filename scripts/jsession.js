@@ -1,8 +1,16 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
+// File: jsession.js
+// Contains JSESSION, which is a replacement for PO's in-built 'SESSION', which is pretty buggy.
+// No dependencies.
+
+// Table of Content:
+// [ctor]: JSESSION constructor.
+// [expt]: Exports.
+
 (function () {
-    // JSESSION constructor
+    // JSESSION constructor [ctor]
     function JSESSION() {
         this.UserData = {};
         this.ChannelData = {};
@@ -237,9 +245,11 @@
         this.ScriptID = undefined;
     };
     
+    // Exports [expt]
+    
     // export JSESSION
     exports.JSESSION = new JSESSION();
     
-    // export the JSESSION constructor
+    // export the JSESSION constructor (used with Utils.updatePrototype)
     exports.jsession_constructor = JSESSION;
 }());

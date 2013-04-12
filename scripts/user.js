@@ -1,6 +1,14 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
+// File: user.js
+// Contains the JSESSION user constructor.
+// Depends on: datahash, options, jsession, utils, player-utils, watch-utils
+
+// Table of Content:
+// [user-ctor]: JSESSION user constructor.
+// [expt]: Exports
+
 (function () {
     var DataHash = require('datahash'),
         Options = require('options'),
@@ -13,7 +21,7 @@
         // TODO: WatchUtils: WatchUtils.logPlayerMessage() (WatchPlayer)
         WatchUtils = require('watch-utils');
     
-    // JSESSION user constructor
+    // JSESSION user constructor [user-ctor]
     function User(id) {
         var name = sys.name(id),
             nameToLower = name.toLowerCase(),
@@ -70,8 +78,8 @@
     User.prototype.capsMute = function (message, channel) {
         var messageLength = message.length,
             caps = 0,
-            i,
-            char;
+            char,
+            i;
         
         if (PlayerUtils.trueAuth(this.id) < 1) {
             return false;
@@ -112,6 +120,8 @@
         return false;
     };
     
-    // Export User.
+    // Exports [expt]
+    
+    // Export User (the JSESSION user constructor)
     exports.User = User;
 }());

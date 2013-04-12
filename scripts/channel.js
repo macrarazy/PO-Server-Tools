@@ -1,6 +1,15 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
+// File: channel.js
+// Contains the JSESSION channel constructor.
+// Depends on: channel-data, channel-utils, player-utils, utils, tours, bot, options
+
+// Table of Content:
+// [chan-ctor]: JSESSION channel constructor.
+// [chan-util]: Channel utilities defined in the JSESSION channel constructor (isBanned, isMuted, isChanMod, etc.)
+// [expt]: Exports
+
 (function () {
     // TODO: ChannelData: Add cData (ChannelData.xxx)
     var ChannelData = require('channel-data'),
@@ -10,12 +19,11 @@
         // TODO: PlayerUtils: PlayerUtils.ip(id | name | ip) (that checks sys.ip and dbIp)
         PlayerUtils = require('player-utils'),
         Utils = require('utils'),
-        // TODO: This is being improved.
         Tours = require('tours'),
         Bot = require('bot'),
         Options = require('options');
     
-    // JSESSION channel constructor
+    // JSESSION channel constructor [chan-ctor]
     function Channel(id) {
         this.name = sys.channel(id);
         this.id = id;
@@ -27,12 +35,12 @@
         // TODO: Rename topicsetter -> topicSetter
         this.topicSetter = '';
         
-        this.tour = new Tours.ToursChannelConfig(this.id);
+        this.tour = new Tours.ToursChannelConfig(id);
         
         this.perm = false;
     
         // it only contains names..
-        // anyways, these are auto perm channels
+        // anyways, these are auto perm channels (the default channels, basically).
         if (Options.defaultChannels.indexOf(this.name) !== -1) {
             this.perm = true;
         }
@@ -97,11 +105,11 @@
         // magic word "default" sets it back to normal
         if (topic.toLowerCase() === "default") {
             this.topic = "Welcome to " + this.name + "!";
-            this.topicsetter = '';
+            this.topicSetter = '';
             this.defaultTopic = true;
         } else {
             this.topic = topic;
-            this.topicsetter = me;
+            this.topicSetter = me;
             this.defaultTopic = false;
         }
     
@@ -120,6 +128,8 @@
         this.chanAuth[trueName] = auth;
         return true;
     };
+    
+    // Channel utilities (defined in the JSESSION channel constructor) [chan-util]
     
     // if a player can issue channel punishment on another player
     Channel.prototype.canIssue = function (src, tar) {
@@ -176,6 +186,7 @@
         return PlayerUtils.trueAuth(src) >= 3 || (this.chanAuth[PlayerUtils.name(src).toLowerCase()] || 0) >= 3;
     };
     
-    // export Channel
+    // Exports [expt]
+    // export Channel (the JSESSION channel constructor)
     exports.Channel = Channel;
 }());

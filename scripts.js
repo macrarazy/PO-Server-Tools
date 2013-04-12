@@ -1,9 +1,11 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys*/
+
 /*
  ==== SCRIPT INFORMATION ====
+ - Version: 3.0.0 Devel -
  - Maintained by TheUnknownOne -
- - Licensed under GPL 3.0 (LICENSE.txt) -
+ - Licensed under MIT (LICENSE.txt) | Version 2.x is licensed under GPL v3 -
  - Special Thanks to Lamperi, Mystra, and Intel_iX -
 
  Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
@@ -15,8 +17,7 @@
  Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
  - Untested code/sandbox for all other versions
 
- - All modules are available in modules/ -
- - All commands are available in commands/ -
+ - All modules are in the directory 'scripts' -
  */
 
 // TODO: More comments. :]
@@ -44,7 +45,9 @@ var Config = {
     },
     
     /* After how many seconds a player's message should be 'forgiven', causing it to not be counted by
-        the floodbot. */
+        the floodbot. The floodbot counts the amount of messages a player posts (the exact amount is in scripts/user.js) before it kicks them.
+        After this many seconds, the floodbot forgets that the player ever posted a message, causing it not
+        to be counted in flood kick calculations. */
     AutoFloodTime: 6,
     
     /* Attempts to fix crashes. Some features might not be available (so if you don't have any problems
@@ -64,25 +67,26 @@ var Config = {
     }
 };
 
-/* Don't modify anything beyond this point if you don't know what you're doing. */
 var Script = {
     /* Version of the script. */
     SCRIPT_VERSION: "3.0.0 Devel",
-
-    /* URL of modules/commands/languages */
+    
+    /* URL of the script only. */
+    SCRIPT_URL: "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js",
+    
+    /* URL for modules/languages (github) */
     URL: "https://raw.github.com/TheUnknownOne/PO-Server-Tools/",
 
     /* Branch to download modules (and other data) from. */
     BRANCH: "devel",
     
-    EVAL_TIME_START: new Date().getTime(),
-    
-    SCRIPT_URL: "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js"
+    /* Time in ms (since epoch) since the server (re)loaded the script. Used to calculate loading speeds. */
+    EVAL_TIME_START: new Date().getTime()
 };
-    
 
 var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
 
+/* Don't modify anything beyond this point if you don't know what you're doing. */
 var global = this;
 var GLOBAL = this;
     
@@ -127,28 +131,209 @@ if (typeof require === 'undefined') {
     }());
 }
 
-// Require'd (included) scripts.
-var Options = require('options');
-var Bot = require('bot');
-var Utils = require('utils');
-
-// JSESSION stuff
-var POUser = require('user').User;
-var POChannel = require('channel').Channel;
-// TODO: Remove this and merge it with options.js
-var POGlobal = require('global').Global;
+// No need to polute the global namespace with this.
+(function () {
+    // Require'd (included) scripts.
+    var Options = require('options');
+    var Bot = require('bot');
+    var Utils = require('utils');
     
-var JSESSION = require('jsession').JSESSION;
+    // JSESSION stuff
+    var POUser = require('user').User;
+    var POChannel = require('channel').Channel;
+    // TODO: Remove this and merge it with options.js
+    var POGlobal = require('global').Global;
+        
+    var JSESSION = require('jsession').JSESSION;
+    
+    // TODO: Utils.updatePrototype
+    // Attempts to add new features to JSESSION
+    Utils.updatePrototype(JSESSION, require('jsession').jsession_constructor);
+    
+    // NOTE: hasTeam -> PlayerUtils.hasTeamForTier
+    // NOTE: firstTeamForTier -> PlayerUtils.firstTeamForTier
+    // NOTE: script.namecolor -> PlayerUtils.trueColor
+    // NOTE: script.loadAll -> script.init
+    
+    // NOTE: These will not be used anymore as-is, but some of them (like linkify) will be merged with utils
+    /*
+    defineCoreProperty = function (core, prop, func) {
+        Object.defineProperty(core, prop, {
+            "value": func,
+    
+            writable: true,
+            enumerable: false,
+            configurable: true
+        });
+    }
+    
+    defineCoreProperty(String.prototype, "reverse", function () {
+        var strThis = this;
+        strThisArr = strThis.split("").reverse().join("");
+    
+        this = strThisArr;
+        return this;
+    });
+    
+    defineCoreProperty(String.prototype, "isEmpty", function () {
+        var mess = this;
+        return mess == "" || mess.trim() == "";
+    });
+    
+    defineCoreProperty(String.prototype, "contains", function (string) {
+        var str = this;
+        return str.indexOf(string) > -1;
+    });
+    
+    defineCoreProperty(String.prototype, "has", function (string) {
+        return this.contains(string);
+    });
+    
+    defineCoreProperty(String.prototype, "name", function () {
+        var str = this;
+        if (typeof DataHash.names == "undefined") {
+            return str;
+        }
+    
+        var tl = str.toLowerCase();
+        if (typeof DataHash.names[tl] != "undefined") {
+            str = DataHash.names[tl];
+        }
+    
+        return str;
+    });
+    
+    defineCoreProperty(String.prototype, "format", function () {
+        var str = this,
+            exp, i, args = arguments.length,
+            icontainer = 0;
+        for (i = 0; i < args; i++) {
+            icontainer++;
+            exp = new RegExp("%" + icontainer, "");
+            str = str.replace(exp, arguments[i]);
+        }
+        return str;
+    });
+    
+    defineCoreProperty(String.prototype, "fontsize", function (size) {
+        var str = this;
+    
+        return "<font size='" + size + "'>" + str + "</font>";
+    });
+    
+    defineCoreProperty(String.prototype, "scramble", function () {
+        var thisString = this.split("");
+        for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
+        return thisString.join("");
+    });
+    
+    defineCoreProperty(String.prototype, "linkify", function () {
+        var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
+            pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
+            emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
+            poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+    
+        return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>').replace(poPattern, function ($) {
+            var type = $.substring($.indexOf(":", $.indexOf("/"))),
+                thing = $.substring($.indexOf("/"));
+    
+            type = type[0].toUpperCase() + type.substring(1);
+    
+            return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
+        });
+    });
+    
+    defineCoreProperty(Boolean.prototype, "isEmpty", function () {
+        return this === false;
+    });
+    
+    defineCoreProperty(Number.prototype, "isEmpty", function () {
+        return !isFinite(this) || this === 0;
+    });
+    
+    defineCoreProperty(Number.prototype, "positive", function () {
+        return !this.isEmpty();
+    });
+    
+    defineCoreProperty(Object.prototype, "isEmpty", function () {
+        return this.length() === 0;
+    });
+    
+    defineCoreProperty(Object.prototype, "keys", function () {
+        return Object.keys(this);
+    });
+    
+    defineCoreProperty(Object.prototype, "has", function (prop) {
+        return typeof this[prop] !== "undefined";
+    });
+    
+    defineCoreProperty(Object.prototype, "contains", function (prop) {
+        return this.has(prop);
+    });
+    
+    defineCoreProperty(Object.prototype, "insert", function (name, val) {
+        this[name] = val;
+    });
+    
+    defineCoreProperty(Object.prototype, "extend", function (other) {
+        var x;
+    
+        if (typeof other === "object" && !Array.isArray(other) && other !== null) {
+            for (x in other) {
+                this[x] = other[x];
+            }
+        }
+    
+        return this;
+    });
+    
+    defineCoreProperty(Object.prototype, "remove", function (name) {
+        if (!this.has(name)) {
+            return;
+        }
+    
+        delete this[name];
+    });
+    
+    defineCoreProperty(Object.prototype, "first", function () {
+        var x;
+        for (x in this) {
+            return this[x];
+        }
+    });
+    
+    defineCoreProperty(Object.prototype, "length", function () {
+        return Object.keys(this).length;
+    });
+    
+    defineCoreProperty(Array.prototype, "has", function (prop) {
+        var x;
+        for (x in this) {
+            if (this[x] == prop) {
+                return true;
+            }
+        }
+    
+        return false;
+    });
+    
+    defineCoreProperty(Array.prototype, "isEmpty", function () {
+        return this.length === 0;
+    });
+    
+    defineCoreProperty(Array.prototype, "contains", function (prop) {
+        return this.has(prop);
+    });
+    */
+    
+    JSESSION.identifyScriptAs("TheUnknownOne's Server Script " + Script.SCRIPT_VERSION);
+    JSESSION.registerUser(POUser);
+    JSESSION.registerChannel(POChannel);
+    JSESSION.registerGlobal(POGlobal);
+    JSESSION.refill();
+}());
 
-// TODO: Utils.updatePrototype
-// Attempts to add new features to JSESSION
-Utils.updatePrototype(JSESSION, require('jsession').jsession_constructor);
-
-// NOTE: hasTeam -> PlayerUtils.hasTeamForTier
-// NOTE: firstTeamForTier -> PlayerUtils.firstTeamForTier
-// NOTE: script.namecolor -> PlayerUtils.trueColor
-// NOTE: script.loadAll -> script.init
-
+    
 function Mail(sender, text, title) {
     var date = new Date();
 
@@ -159,182 +344,6 @@ function Mail(sender, text, title) {
     this.sendtime = String(date);
     this.sendAgo = +(sys.time());
 }
-
-/*
-defineCoreProperty = function (core, prop, func) {
-    Object.defineProperty(core, prop, {
-        "value": func,
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-}
-
-defineCoreProperty(String.prototype, "reverse", function () {
-    var strThis = this;
-    strThisArr = strThis.split("").reverse().join("");
-
-    this = strThisArr;
-    return this;
-});
-
-defineCoreProperty(String.prototype, "isEmpty", function () {
-    var mess = this;
-    return mess == "" || mess.trim() == "";
-});
-
-defineCoreProperty(String.prototype, "contains", function (string) {
-    var str = this;
-    return str.indexOf(string) > -1;
-});
-
-defineCoreProperty(String.prototype, "has", function (string) {
-    return this.contains(string);
-});
-
-defineCoreProperty(String.prototype, "name", function () {
-    var str = this;
-    if (typeof DataHash.names == "undefined") {
-        return str;
-    }
-
-    var tl = str.toLowerCase();
-    if (typeof DataHash.names[tl] != "undefined") {
-        str = DataHash.names[tl];
-    }
-
-    return str;
-});
-
-defineCoreProperty(String.prototype, "format", function () {
-    var str = this,
-        exp, i, args = arguments.length,
-        icontainer = 0;
-    for (i = 0; i < args; i++) {
-        icontainer++;
-        exp = new RegExp("%" + icontainer, "");
-        str = str.replace(exp, arguments[i]);
-    }
-    return str;
-});
-
-defineCoreProperty(String.prototype, "fontsize", function (size) {
-    var str = this;
-
-    return "<font size='" + size + "'>" + str + "</font>";
-});
-
-defineCoreProperty(String.prototype, "scramble", function () {
-    var thisString = this.split("");
-    for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
-    return thisString.join("");
-});
-
-defineCoreProperty(String.prototype, "linkify", function () {
-    var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
-        pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
-        emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
-        poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-
-    return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>').replace(poPattern, function ($) {
-        var type = $.substring($.indexOf(":", $.indexOf("/"))),
-            thing = $.substring($.indexOf("/"));
-
-        type = type[0].toUpperCase() + type.substring(1);
-
-        return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
-    });
-});
-
-defineCoreProperty(Boolean.prototype, "isEmpty", function () {
-    return this === false;
-});
-
-defineCoreProperty(Number.prototype, "isEmpty", function () {
-    return !isFinite(this) || this === 0;
-});
-
-defineCoreProperty(Number.prototype, "positive", function () {
-    return !this.isEmpty();
-});
-
-defineCoreProperty(Object.prototype, "isEmpty", function () {
-    return this.length() === 0;
-});
-
-defineCoreProperty(Object.prototype, "keys", function () {
-    return Object.keys(this);
-});
-
-defineCoreProperty(Object.prototype, "has", function (prop) {
-    return typeof this[prop] !== "undefined";
-});
-
-defineCoreProperty(Object.prototype, "contains", function (prop) {
-    return this.has(prop);
-});
-
-defineCoreProperty(Object.prototype, "insert", function (name, val) {
-    this[name] = val;
-});
-
-defineCoreProperty(Object.prototype, "extend", function (other) {
-    var x;
-
-    if (typeof other === "object" && !Array.isArray(other) && other !== null) {
-        for (x in other) {
-            this[x] = other[x];
-        }
-    }
-
-    return this;
-});
-
-defineCoreProperty(Object.prototype, "remove", function (name) {
-    if (!this.has(name)) {
-        return;
-    }
-
-    delete this[name];
-});
-
-defineCoreProperty(Object.prototype, "first", function () {
-    var x;
-    for (x in this) {
-        return this[x];
-    }
-});
-
-defineCoreProperty(Object.prototype, "length", function () {
-    return Object.keys(this).length;
-});
-
-defineCoreProperty(Array.prototype, "has", function (prop) {
-    var x;
-    for (x in this) {
-        if (this[x] == prop) {
-            return true;
-        }
-    }
-
-    return false;
-});
-
-defineCoreProperty(Array.prototype, "isEmpty", function () {
-    return this.length === 0;
-});
-
-defineCoreProperty(Array.prototype, "contains", function (prop) {
-    return this.has(prop);
-});
-*/
-
-JSESSION.identifyScriptAs("TheUnknownOne's Server Script v3.0.0 Devel");
-JSESSION.registerUser(POUser);
-JSESSION.registerChannel(POChannel);
-JSESSION.registerGlobal(POGlobal);
-JSESSION.refill();
 
 ({
     // Event: serverStartUp [event-serverStartUp]
@@ -567,6 +576,7 @@ JSESSION.refill();
     // Called when: Before a channel is deleted
     // Stops perm/default channels from being destroyed.
     beforeChannelDestroyed: function (chan) {
+        // TODO: WatchUtils: logChannelEvent(): WatchChannelEvent
         var WatchUtils = require('watch-utils'),
             JSESSION = require('jsession').JSESSION,
             defaultIds = require('options').defaultChannelIds;

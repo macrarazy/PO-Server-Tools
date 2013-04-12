@@ -1,10 +1,17 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
+// File: bot.js
+// Contains the bot message sending functions (and a copy of escapeHtml found in utils).
+// These functions are very commonly used, be careful not to break anything.
+// No dependencies.
+
+// No Table of Content.
+
 (function () {
     function escapeHtml(msg) {
         return (sys.escapeHtml || function (str) {
-            return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+            return str.replace(/\&/g, "&amp;").replace(/</g, "&lt;").replace(/\>/g, "&gt;");
         })(msg);
     }
     
