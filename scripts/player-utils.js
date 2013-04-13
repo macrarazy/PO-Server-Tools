@@ -99,9 +99,21 @@
         return "0.0.0.0";
     };
     
-    exports.trueAuth = function trueAuth() {
+    // Returns the true authority level of a player (take PlayerPermissions in account)
+    exports.trueAuth = function trueAuth(nameOrId) {
+        // fixes the case, and lets us accept ids
+        var trueName = name(nameOrId),
+            trueNameToLower = trueName.toLowerCase(),
+            auth = sys.dbAuth(trueName);
+        
+        // check for PlayerPermissions (which is the main purpose of this function)
+        if ((Config.PlayerPermissions[trueNameToLower] || auth) > auth) {
+            auth = Config.PlayerPermissions[trueNameToLower];
+        }
+        
+        return auth;
     };
     
-    exports.mute = function mute() {
+    exports.mute = function mute(opts) {
     };
 }());

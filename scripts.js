@@ -39,9 +39,13 @@ var Config = {
     CommandStarts: ["/", "!"],
 
     /* Changes that players authority to that level when performing an auth lookup (so an administrator with a PlayerPermission of 3 can use owner commands, 
-        however, they still appear as an administrator) */
+        however, they still appear as an administrator).
+        
+        Note that it's important to write the player's name in lower case (so "theunknownone" instead of "TheUnknownOne")
+    */
     PlayerPermissions: {
-        "Example player with Config.PlayerPermissions": 3
+        "Example player with Config.PlayerPermissions": 3,
+        "Another example player with Config.PlayerPermissions": 2
     },
     
     /* After how many seconds a player's message should be 'forgiven', causing it to not be counted by
