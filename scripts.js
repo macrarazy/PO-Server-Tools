@@ -57,6 +57,9 @@ var Config = {
     /* Attempts to fix crashes. Some features might not be available (so if you don't have any problems
         with crashes, don't enable this). */
     NoCrash: false,
+    
+    /* If warnings should be printed on the server window. Errors will not be affected by this option. */
+    Warnings: true,
 
     /* Mafia Configuration */
     Mafia: {
@@ -123,7 +126,7 @@ if (typeof require === 'undefined') {
             try {
                 eval.call(global, content);
             } catch (e) {
-                print("Couldn't load module " + identifier + " (scripts/" + path + "): " + e.toString() + " on line " + e.lineNumber);
+                print("Fatal Error: Couldn't load module " + identifier + " (scripts/" + path + "): " + e.toString() + " on line " + e.lineNumber);
             }
             
             require.modules[identifier] = module.exports;
@@ -137,18 +140,13 @@ if (typeof require === 'undefined') {
 
 // No need to polute the global namespace with this.
 (function () {
-    // Require'd (included) scripts.
-    var Options = require('options');
-    var Bot = require('bot');
-    var Utils = require('utils');
-    
-    // JSESSION stuff
-    var POUser = require('user').User;
-    var POChannel = require('channel').Channel;
-    // TODO: Remove this and merge it with options.js
-    var POGlobal = require('global').Global;
-        
-    var JSESSION = require('jsession').JSESSION;
+    var Utils = require('utils'),
+        // JSESSION stuff
+        POUser = require('user').User,
+        POChannel = require('channel').Channel,
+        // TODO: Remove this and merge it with options.js
+        POGlobal = require('global').Global,
+        JSESSION = require('jsession').JSESSION;
     
     // Attempts to add new features to JSESSION
     Utils.updatePrototype(JSESSION, require('jsession').jsession_constructor);
@@ -336,7 +334,6 @@ if (typeof require === 'undefined') {
     JSESSION.refill();
 }());
 
-    
 function Mail(sender, text, title) {
     var date = new Date();
 
@@ -362,8 +359,6 @@ function Mail(sender, text, title) {
         // Call beforeNewMessage with "Script Check: OK"
         // This is weirdly not done by the server itself in serverStartUp
         Utils.callEvent("beforeNewMessage", "Script Check: OK");
-        
-        // sys.updateDatabase();
     },
 
     // Event: serverShutDown [event-serverShutDown]
@@ -488,7 +483,6 @@ function Mail(sender, text, title) {
     // Called when: [src] tries to find a battle via the "Find Battle" button.
     // Logs [src] pressing "Find Battle".
     beforeFindBattle: function (src) {
-        // TODO: WatchUtils: WatchUtils.logPlayerEvent()
         var WatchUtils = require('watch-utils');
         
         WatchUtils.logPlayerEvent(src, "Pressed \"Find Battle\"");
@@ -525,7 +519,7 @@ function Mail(sender, text, title) {
         
 /*        if ( DataHash.megausers.has(srcname) && c == staffchannel || DataHash.evalops.has(srcname) && c == scriptchannel) {
             return;
-        }*/
+        }
 
         var ip = sys.ip(src);
         if (chan.isBannedInChannel(ip)) {
@@ -552,7 +546,8 @@ function Mail(sender, text, title) {
                 return;
             }
         }
-
+*/
+        
         // If this is the main channel, ignore it being private,
         // but do prevent them from getting in main if they're banned
         if (chan === 0) {
@@ -581,7 +576,6 @@ function Mail(sender, text, title) {
     // Called when: Before a channel is deleted
     // Stops perm/default channels from being destroyed.
     beforeChannelDestroyed: function (chan) {
-        // TODO: WatchUtils: logChannelEvent(): WatchChannelEvent
         var WatchUtils = require('watch-utils'),
             JSESSION = require('jsession').JSESSION,
             defaultIds = require('options').defaultChannelIds;
@@ -9024,27 +9018,6 @@ if(message == "Maximum Players Changed.") {
             return str;
         }
 
-        hpAuth = function (src) {
-            var perms = Config.HighPermission,
-                name = sys.name(src),
-                auth = sys.auth(src),
-                maxAuth = sys.maxAuth(sys.ip(src));
-
-            if (!sys.loggedIn(src)) {
-                name = src, auth = sys.dbAuth(src), maxAuth = sys.maxAuth(auth);
-            }
-
-            perms = perms[name];
-
-            if (perms != undefined) {
-                if (perms[0] == auth && perms[1] > maxAuth) {
-                    maxAuth = perms[1];
-                }
-            }
-
-            return maxAuth;
-        }
-
         permission = function (id, auth) {
             return hpAuth(id) >= auth;
         }
@@ -9423,20 +9396,7 @@ if(message == "Maximum Players Changed.") {
         regexp_escape = function (str) {
             return str.replace(/([\.\\\+\*\?\[\^\]\$\(\)])/g, '\\$1');
         }
-
-        idsOfIP = function (ip) {
-            var players = sys.playerIds(),
-                y, ipArr = [];
-
-            for (y in players) {
-                if (sys.ip(players[y]) == ip) {
-                    ipArr.push(players[y]);
-                }
-            }
-
-            return ipArr;
-        }
-
+        
         hasCommandStart = function (message) {
             return message[0] == '/' || message[0] == '!';
         }

@@ -1,7 +1,7 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
-// File: player-utils.js
+// File: player-utils.js (PlayerUtils)
 // Contains player utilities (such as easily getting player and team information).
 // Dependencies: datahash, jsession, utils
 
@@ -9,7 +9,7 @@
 
 (function () {
     var JSESSION = require('jsession').JSESSION,
-        // TODO: DataHash.correctNames, DataHash.namesByIp
+        // TODO: DataHash.correctNames, DataHash.namesByIp, DataHash.mutes
         DataHash = require('datahash'),
         Utils = require('utils'),
         // list of default colors, used when a player doesn't have one (by the client)
@@ -94,17 +94,17 @@
         }
         
         // panics if it isn't a string or number.
-        Utils.panic("scripts/player-utils.js", "PlayerUtils.ip(nameOrIdOrIp)", "Player is not a string or a number.", "typeof nameOrIdOrIp: " + typeof nameOrIdOrIp + " | nameOrIdOrIp's value: " + nameOrIdOrIp, utils.panic.warning);
+        Utils.panic("scripts/player-utils.js", "PlayerUtils.ip(nameOrIdOrIp)", "Player is not a string or a number.", "typeof nameOrIdOrIp: " + typeof nameOrIdOrIp + " | nameOrIdOrIp's value: " + nameOrIdOrIp, Utils.panic.warning);
         
         return "0.0.0.0";
     };
     
-    // Returns the true authority level of a player (take PlayerPermissions in account)
+    // Returns the true authority level of a player (takes PlayerPermissions and maxAuth in account)
     exports.trueAuth = function trueAuth(nameOrId) {
         // fixes the case, and lets us accept ids
         var trueName = name(nameOrId),
             trueNameToLower = trueName.toLowerCase(),
-            auth = sys.dbAuth(trueName);
+            auth = sys.maxAuth(sys.dbIp(trueName)) || 0;
         
         // check for PlayerPermissions (which is the main purpose of this function)
         if ((Config.PlayerPermissions[trueNameToLower] || auth) > auth) {
@@ -114,6 +114,55 @@
         return auth;
     };
     
+    // returns an array of all ids of [ip] (everyone logged in with [i])
+    exports.ipIds = function ipIds(ip) {
+        var playerIds = sys.playerIds(),
+            ids = [],
+            length = playerIds.length,
+            player,
+            i;
+
+        for (i = 0; i < length; ++i) {
+            player = playerIds[i];
+            
+            if (ip === sys.ip(player)) {
+                ids.push(player);
+            }
+        }
+
+        return ids;
+    };
+    
+    // opts is an array with these values:
+    // ip: The ip to mute.
+    // by: The player who issued the mute.
+    // reason: The reason of the mute.
+    // time: Time the mute lasts in seconds.
     exports.mute = function mute(opts) {
+        if (!opts.ip) {
+            Utils.panic("scripts/player-utils.js", "mute", "IP is not specified.", opts, Utils.panic.warning);
+            return;
+        }
+        
+        if (!opts.by) {
+            Utils.panic("scripts/player-utils.js", "mute", "By is not specified.", opts, Utils.panic.warning);
+            return;
+        }
+        
+        if (typeof opts.time !== 'number') {
+            Utils.panic("scripts/player-utils.js", "mute", "Time is not specified or isn't a number.", opts, Utils.panic.warning);
+            return;
+        }
+        
+        if (!opts.reason) {
+            opts.reason = "";
+        }
+
+        DataHash.mutes[opts.ip] = opts;
+        
+        // mute all of [opts.ip]'s names that are currently online.
+        ipIds(opts.ip).forEach(function (id) {
+            JSESSION.users(id).muted = true;
+        });
     };
 }());

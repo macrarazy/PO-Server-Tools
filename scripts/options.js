@@ -1,7 +1,7 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
-// File: options.js
+// File: options.js (Options)
 // Contains script options (mainly default and hardcoded values). If you're looking to change behavior,
 // change Config in scripts.js. Note that this file does have a couple of interesting properties,
 // mainly defaultChannels (which you could change, if you wanted to).

@@ -1,7 +1,7 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
-// File: utils.js
+// File: utils.js (Utils)
 // Contains utilities not specificly for players, channels, and logging.
 // Depends on: bot
 
@@ -60,8 +60,12 @@
     // Prints a dump, a message, and the file the error originates from.
     // dump is optional and can be an object/array as well.
     // isWarning is to indicate that this is a warning, and not an error.
-    // TODO: Config option to turn warning reports off.
     exports.panic = function panic(fileName, functionName, message, dump, isWarning) {
+        // don't do anything if warnings are disabled and this is a warning.
+        if (!Config.Warnings && isWarning) {
+            return;
+        }
+        
         print("");
         print((isWarning ? "Warning" : "Error") + " from " + fileName + "@" + functionName + ":");
         print(message);
@@ -463,9 +467,25 @@
     };
     
     // Updates an object's prototype (adding/removing functions)
-    exports.updatePrototype = function (object, proto) {
-        if (object.__proto__ !== proto.prototype) {
-            func.__proto__ = proto.prototype;
+    exports.updatePrototype = function updatePrototype(object, proto) {
+        if (object.prototype !== proto.prototype) {
+            func.prototype = proto.prototype;
         }
+    };
+    
+    // Finishes a sentence by adding '.' to it if the last character isn't '.', '?', '!', or ';'.
+    exports.finishSentence = function finishSentence(string) {
+        var lastCharacter = string[string.length - 1];
+        
+        if (!lastCharacter) {
+            return "";
+        }
+        
+        // if the last character isn't...
+        if (['.', '?', '!', ';'].indexOf(lastCharacter) !== -1) {
+            string += ".";
+        }
+        
+        return string;
     };
 }());

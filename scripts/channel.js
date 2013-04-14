@@ -1,7 +1,7 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
-// File: channel.js
+// File: channel.js (Channel)
 // Contains the JSESSION channel constructor.
 // Depends on: channel-data, channel-utils, player-utils, utils, tours, bot, options
 
@@ -14,9 +14,6 @@
     // TODO: ChannelData: Add cData (ChannelData.xxx)
     var ChannelData = require('channel-data'),
         ChannelUtils = require('channel-utils'),
-        // TODO: PlayerUtils: PlayerUtils.formatName(id | name) (same as player())
-        // TODO: PlayerUtils: PlayerUtils.name(id | name) (like modules/utilities.js' util.player.name)
-        // TODO: PlayerUtils: PlayerUtils.ip(id | name | ip) (that checks sys.ip and dbIp)
         PlayerUtils = require('player-utils'),
         Utils = require('utils'),
         Tours = require('tours'),

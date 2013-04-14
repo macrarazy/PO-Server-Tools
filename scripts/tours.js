@@ -1,7 +1,7 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
-// File: tours.js
+// File: tours.js (Tours)
 // Contains most tournament logic, including commands.
 // Depends on: player-utils, utils, channel-data, bot, style, datahash, jsession
 

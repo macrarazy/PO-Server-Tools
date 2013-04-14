@@ -1,7 +1,7 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
 /*global sys, exports, module*/
 
-// File: user.js
+// File: user.js (User)
 // Contains the JSESSION user constructor.
 // Depends on: datahash, options, jsession, utils, player-utils, watch-utils
 
@@ -10,17 +10,15 @@
 // [expt]: Exports
 
 (function () {
+    // TODO: DataHash.mutes, megausers, voices, icons, macros
     var DataHash = require('datahash'),
         Options = require('options'),
         JSESSION = require('jsession'),
-        
         Utils = require('utils'),
-        // TODO: PlayerUtils: PlayerUtils.trueAuth(name | ip | id) (hpAuth w/ improvements)
-        // TODO: PlayerUtils: PlayerUtils.mute(opts) see below
         PlayerUtils = require('player-utils'),
-        // TODO: WatchUtils: WatchUtils.logPlayerMessage() (WatchPlayer)
         WatchUtils = require('watch-utils');
     
+    // TODO: Add comments here.
     // JSESSION user constructor [user-ctor]
     function User(id) {
         var name = sys.name(id),
@@ -28,12 +26,17 @@
             time = +(sys.time());
         
         if (name === undefined) {
-            print('JSESSION Warning: Unknown user created.');
+            Utils.panic('scripts/user.js', 'User (constructor)', 'User ' + id + ' is not logged in.', name, Utils.panic.error);
             return;
         }
     
+        if (!DataHash) {
+            Utils.panic('scripts/user.js', 'User (constructor)', 'DataHash does not exist.', name, Utils.panic.error);
+            return;
+        }
+        
         this.id = id;
-        // TODO: ensure this is properly set.
+        // TODO: ensure this is set properly.
         //this.impersonation = undefined;
         this.ip = sys.ip(id);
         this.name = name;
@@ -45,11 +48,6 @@
         this.lastFuture = 0;
         this.isAutoAFK = false;
         this.teamChanges = 0;
-    
-        if (!DataHash) {
-            print('JSESSION Warning: DataHash does not exist.');
-            return;
-        }
         
         this.muted = DataHash.mutes.hasOwnProperty(this.ip);
         this.megauser = DataHash.megausers.hasOwnProperty(nameToLower);
@@ -102,13 +100,12 @@
     
         if (this.caps >= 70) {
             WatchUtils.logPlayerMessage(this.id, "CAPS Mute Message", message, channel);
-            Bot.sendAll(this.name + " got muted for 5 minutes. [Reason: TALKING TOO MUCH IN CAPS]", channel);
+            Bot.sendAll(this.name + " got muted for 5 minutes by " + Options.Bot.name + " with reason 'CAPS'.", channel);
     
-            // TODO: PlayerUtils.mute
             PlayerUtils.mute({
                 ip: this.ip,
                 by: Options.Bot.name,
-                reason: "TAKING TOO MUCH IN CAPS",
+                reason: "CAPS",
                 time: 60 * 5
             });
     
