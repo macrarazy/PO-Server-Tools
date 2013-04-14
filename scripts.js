@@ -5791,7 +5791,7 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, 'That person is already channel banned.', chan);
                         return;
                     }
-                    if (poChan.isChanMod(sys.id(mcmd[0])) || sys.auth(sys.id(mcmd[0])) > 0) {
+                    if (poChan.isChanMod(sys.id(mcmd[0])) || hpAuth(mcmd[0]) > 0) {
                         botMessage(src, "You can't channel ban channel operators or server authority.", chan);
                         return;
                     }
