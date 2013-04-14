@@ -9,7 +9,6 @@
 
 (function () {
     var JSESSION = require('jsession').JSESSION,
-        // TODO: DataHash.correctNames, DataHash.namesByIp, DataHash.mutes
         DataHash = require('datahash'),
         Utils = require('utils'),
         // list of default colors, used when a player doesn't have one (by the client)

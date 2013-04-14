@@ -429,19 +429,9 @@ function Mail(sender, text, title) {
 
         loadOldPoll();
 */
-        /*
-        if (typeof DataHash.spammers == "undefined") {
-            DataHash.spammers = {};
-        }
-
-        if (typeof DataHash.teamSpammers == "undefined") {
-            DataHash.teamSpammers = {};
-        }
-
-        if (typeof DataHash.reconnect == "undefined") {
-            DataHash.reconnect = {};
-        }
-
+        // NOTE: DataHash.spammers -> chatSpammers
+        // reconnect -> autoReconnectBlock
+/*
         if (typeof Clantag === "undefined" || Clantag.full !== ClanTag) {
             Clantag = {};
             Clantag.full = ClanTag;
@@ -11045,14 +11035,6 @@ if(message == "Maximum Players Changed.") {
         updateProtoForJSESSION(POUser);
         updateProtoForJSESSION(POChannel);
         updateProtoForJSESSION(Tours);
-        
-        createFile = function (file, replacement) {
-            sys.appendToFile(file, "");
-            if (sys.getFileContent(file) == "") {
-                sys.writeToFile(file, replacement);
-            }
-
-        }
 
         on = function (str) {
             var onArray = ["yes", "true", "on"],
@@ -11101,75 +11083,6 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadCache: function () {
-        CacheInst = function (file) {
-            this.file = file + ".json";
-            this.ensures = 0;
-            createFile(this.file, "{}");
-
-            try {
-                this.hash = JSON.parse(sys.getFileContent(this.file));
-            }
-            catch (e) {
-                sys.writeToFile(file + "-corrupt.json", JSON.stringify(this.hash));
-                this.hash = {};
-                this.saveAll();
-                var cacheName = file;
-                if (file != "Cache") {
-                    cacheName += " cache";
-                } else {
-                    cacheName = "cache";
-                }
-
-                print(FormatError("Could not load " + cacheName + " from file " + this.file + ".json!", e));
-                print("Old cache available in " + file + "-corrupt.json. Cache has been cleared and " + file + ".json has been cleared.");
-            }
-        }
-
-        CacheInst.prototype.save = function (key, value) {
-            if (typeof this.hash[key] == "undefined") {
-                this.hash[key] = value;
-                this.saveAll();
-            }
-        }
-
-        CacheInst.prototype.write = function (key, value) {
-            this.hash[key] = value;
-            this.saveAll();
-        }
-
-        CacheInst.prototype.remove = function (key) {
-            if (this.get(key) == "") {
-                return;
-            }
-
-            delete this.hash[key];
-            this.saveAll();
-        }
-
-        CacheInst.prototype.get = function (key) {
-            if (this.hash[key] == undefined) {
-                return "";
-            }
-
-            return this.hash[key];
-        }
-
-        CacheInst.prototype.reset = function () {
-            this.hash = {};
-            sys.writeToFile(this.file, "{}");
-        }
-
-        CacheInst.prototype.saveAll = function () {
-            sys.writeToFile(this.file, JSON.stringify(this.hash));
-        }
-
-        CacheInst.prototype.ensure = function (key, value) {
-            if (typeof this.hash[key] == "undefined") {
-                this.hash[key] = value;
-                this.ensures++;
-            }
-        }
-
         if (typeof cache == "undefined") {
             cache = new CacheInst("Cache");
         }

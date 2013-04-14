@@ -10,19 +10,16 @@
 (function () {
     var Bot = require('bot');
     
-    // TODO: Possibly move to scripts/ux.js
     // Team alert shortcut
     exports.teamAlertMessage = function teamAlertMessage(src, team, message) {
         Bot.sendMessage(src, "Team #" + (team + 1) + ": " + message);
     };
         
-    // TODO: Possibly move to scripts/ux.js
     // Invalid command shortcut
     exports.invalidCommand = function invalidCommand(src, command, chan) {
         Bot.escapeMessage(src, "The command " + command + " doesn't exist.", chan);
     };
         
-    // TODO: Possibly move to scripts/ux.js
     // No permission shortcut
     exports.noPermissionMessage = function noPermissionMessage(src, command, chan) {
         Bot.escapeMessage(src, "You may not use the " + command + " command.", chan);
@@ -487,5 +484,15 @@
         }
         
         return string;
+    };
+    
+    // Ensures the file [fileName] exists, and writes [defaultContent] to it if it doesn't.
+    // defaultContent is optional; nothing will be written regardless if the file exists or not if it isn't passed.
+    exports.createFile = function (fileName, defaultContent) {
+        sys.appendToFile(fileName, "");
+        
+        if (defaultContent && sys.getFileContent(fileName) === "") {
+            sys.writeToFile(fileName, defaultContent);
+        }
     };
 }());

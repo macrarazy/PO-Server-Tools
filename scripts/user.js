@@ -10,7 +10,6 @@
 // [expt]: Exports
 
 (function () {
-    // TODO: DataHash.mutes, megausers, voices, icons, macros
     var DataHash = require('datahash'),
         Options = require('options'),
         JSESSION = require('jsession'),
@@ -49,15 +48,13 @@
         this.isAutoAFK = false;
         this.teamChanges = 0;
         
-        this.muted = DataHash.mutes.hasOwnProperty(this.ip);
-        this.megauser = DataHash.megausers.hasOwnProperty(nameToLower);
-        this.voice = DataHash.voices.hasOwnProperty(nameToLower);
+        this.muted = DataHash.hasDataProperty('mutes', this.ip);
+        this.megauser = DataHash.hasDataProperty('megausers', nameToLower);
+        this.voice = DataHash.hasDataProperty('voices', nameToLower);
         this.icon = DataHash.icons[nameToLower] || "";
-        this.macro = ["%m1", "%m2", "%m3", "%m4", "%m5"];
-    
-        if (DataHash.macros.hasOwnProperty(nameToLower)) {
-            this.macro = DataHash.macros.hasOwnProperty[nameToLower];
-        }
+        this.macro = DataHash.hasDataProperty('macros', nameToLower)
+            ? DataHash.macros[nameToLower]
+            : ["%m1", "%m2", "%m3", "%m4", "%m5"];
     }
     
     // Adds floodCount to User
