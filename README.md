@@ -1,5 +1,4 @@
 ## TheUnknownOne's Server Tools
----
 
 ### Server Script (scripts.js)
 <b>Version:</b> 3.0.0 Devel | **[Report bugs](issues/)**
