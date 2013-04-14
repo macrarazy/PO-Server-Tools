@@ -5765,7 +5765,7 @@ if(message == "Maximum Players Changed.") {
                         spam_color = [],
                         spam_array = [],
                         spam_script = "Script Check",
-                        spam_script_color = Bot.botcolor.
+                        spam_script_color = Bot.botcolor,
                         x,
                         pl = sys.playerIds(),
                         cur, curn, randomUser = function () {
