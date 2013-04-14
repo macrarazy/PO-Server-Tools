@@ -5145,7 +5145,7 @@ if(message == "Maximum Players Changed.") {
                         ct.register(removespaces(ChanTour0).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ChanTour0) + " in this channel.");
                         ct.register(removespaces(ChanTour1).toLowerCase(), ["{Player::Database Player}"], "To make {Player::Database Player} " + Grammar.a(ChanTour1) + " in this channel.");
 
-                        ct.register("channelban", ["{Player::Database Player}", "<u>{o Time}</u>", "{bv <u>Time Unit</b>}", "<u>{p Reason}</u>"], "Bans or unbans someone from this channel.");
+                        ct.register("channelban", ["{Player::Database Player}", "<u>{o Time}</u>", "{bv <u>Time Unit</b>}", "<u>{p Reason}</u>"], "Bans or unbans someone from this channel. Note that if the target has authority or is an operator, this doesn't work.");
                     }
 
                     if (poChan.isChanOwner(src)) {
@@ -5791,8 +5791,8 @@ if(message == "Maximum Players Changed.") {
                         botMessage(src, 'That person is already channel banned.', chan);
                         return;
                     }
-                    if (!poChan.canIssue(src, mcmd[0])) {
-                        botMessage(src, 'That person has either equal or higher channel auth than you.', chan);
+                    if (poChan.isChanMod(sys.id(mcmd[0])) || sys.auth(sys.id(mcmd[0])) > 0) {
+                        botMessage(src, "You can't channel ban channel operators or server authority.", chan);
                         return;
                     }
                     if (self(src, mcmd[0])) {
