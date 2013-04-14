@@ -5792,7 +5792,7 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
                     if (!poChan.canIssue(src, mcmd[0])) {
-                        botMessage(src, 'That person has either equal or higher channel auth than you.'.chan);
+                        botMessage(src, 'That person has either equal or higher channel auth than you.', chan);
                         return;
                     }
                     if (self(src, mcmd[0])) {
