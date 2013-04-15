@@ -17,7 +17,6 @@
 (function () {
     var PlayerUtils = require('player-utils'),
         Utils = require('utils'),
-        // TODO: ChannelData: ChannelData.save(chanId, propertyName, propertyValue)
         ChannelData = require('channel-data'),
         Bot = require('bot'),
         // TODO: Style. Very important!

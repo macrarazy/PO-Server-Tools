@@ -11,8 +11,7 @@
 // [expt]: Exports
 
 (function () {
-    // TODO: ChannelData: Add cData (ChannelData.xxx)
-    var ChannelData = require('channel-data'),
+    var ChannelData = require('channel-data').ChannelData,
         ChannelUtils = require('channel-utils'),
         PlayerUtils = require('player-utils'),
         Utils = require('utils'),
@@ -27,7 +26,7 @@
     
         this.chanAuth = {};
         this.tourAuth = {};
-        this.creator = '';
+        this.creator = "~Unknown~";
         this.topic = 'Welcome to ' + this.name + '!';
         // TODO: Rename topicsetter -> topicSetter
         this.topicSetter = '';
@@ -65,7 +64,7 @@
             throw new TypeError("Channel#doTourAuth (defined in scripts/channel.js): Mode is not 'give' or 'take'.");
         }
     
-        ChannelData.changeTourAuth(this.id, this.tourAuth);
+        ChannelData.save(this.id, 'tourAuth', this.tourAuth);
     };
     
     // Changes the channel topic

@@ -21,6 +21,7 @@
  */
 
 // TODO: More comments. :]
+// TODO: Use the new events.
 /* Script Configuration */
 var Config = {
     /* If teams should be checked for Dream World abilities */
@@ -37,16 +38,6 @@ var Config = {
 
     /* Characters which indicate the usage of a command. */
     CommandStarts: ["/", "!"],
-
-    /* Changes that players authority to that level when performing an auth lookup (so an administrator with a PlayerPermission of 3 can use owner commands, 
-        however, they still appear as an administrator).
-        
-        Note that it's important to write the player's name in lower case (so "theunknownone" instead of "TheUnknownOne")
-    */
-    PlayerPermissions: {
-        "Example player with Config.PlayerPermissions": 3,
-        "Another example player with Config.PlayerPermissions": 2
-    },
     
     /* After how many seconds a player's message should be 'forgiven', causing it to not be counted by
         the floodbot. The floodbot counts the amount of messages a player posts (the exact amount is in scripts/user.js) before it kicks them.
@@ -60,7 +51,27 @@ var Config = {
     
     /* If warnings should be printed on the server window. Errors will not be affected by this option. */
     Warnings: true,
-
+    
+    /* File to save channel data in. It's recommended to keep this as-is, unless if you want to reset
+        all channel data stored or want to import a file. Note that v3 (this version) is not compatible with v2 channel data. */
+    ChannelDataFile: "channel-data.json",
+    
+    /* Changes that players authority to that level when performing an auth lookup (so an administrator with a PlayerPermission of 3 can use owner commands, 
+        however, they still appear as an administrator).
+        
+        Note that it's important to write the player's name in lower case (so "theunknownone" instead of "TheUnknownOne")
+    */
+    PlayerPermissions: {
+        "Example player with Config.PlayerPermissions": 3,
+        "Another example player with Config.PlayerPermissions": 2
+    },
+    
+    /* List of players that can use the /eval command */
+    EvalAccess: [
+        "Example player with Config.EvalAccess",
+        "Another example player with Config.EvalAccess"
+    ],
+    
     /* Mafia Configuration */
     Mafia: {
         /* Amount of different themes that have to be started before one that has been played (norepeat) games ago */
@@ -146,10 +157,15 @@ if (typeof require === 'undefined') {
         POChannel = require('channel').Channel,
         // TODO: Remove this and merge it with options.js
         POGlobal = require('global').Global,
-        JSESSION = require('jsession').JSESSION;
+        JSESSION = require('jsession'),
+        // these are only used for Utils.updatePrototype
+        Cache = require('cache'),
+        ChannelData = require('channel-data');
     
-    // Attempts to add new features to JSESSION
-    Utils.updatePrototype(JSESSION, require('jsession').jsession_constructor);
+    // Attempts to add new features to JSESSION, Cache, and ChannelData
+    Utils.updatePrototype(JSESSION.JSESSION, JSESSION.jsession_constructor);
+    Utils.updatePrototype(Cache.Cache, Cache.cache_constructor);
+    Utils.updatePrototype(ChannelData.ChannelData, ChannelData.channeldata_constructor);
     
     // NOTE: hasTeam -> PlayerUtils.hasTeamForTier
     // NOTE: firstTeamForTier -> PlayerUtils.firstTeamForTier
@@ -373,10 +389,14 @@ function Mail(sender, text, title) {
     init: function () {
         var Options = require('options'),
             Utils = require('utils'),
+            ChannelData = require('channel-data').ChannelData,
             serverLine = sys.getFileContent("config").split("\n")[30],
             defaultChannels = Options.defaultChannels,
             channelIdKeys = Object.keys(Options.defaultChannelIds),
             length = defaultChannels.length,
+            chanData = ChannelData.data,
+            curChan,
+            cur,
             i;
         
         Options.serverName = serverLine.substring(5).replace(/\\xe9/i, "é").trim();
@@ -385,6 +405,14 @@ function Mail(sender, text, title) {
         // NOTE: Very important that this is done in init(). If this is done during (or before) serverStartUp, the server crashes.
         for (i = 0; i < length; ++i) {
             Options.defaultChannelIds[channelIdKeys[i]] = sys.createChannel(defaultChannels[i]) || sys.channelId(defaultChannels[i]);
+        }
+        
+        // loads old channel data
+        // we don't have to worry if the channel has any data saved at all, that's handled for us. :]
+        for (i in chanData) {
+            if (chanData.hasOwnProperty(i)) {
+                ChannelData.exportData(sys.channelId(i));
+            }
         }
         
         /*run("loadRequiredUtilities");
@@ -447,12 +475,14 @@ function Mail(sender, text, title) {
         */
     },
 
-    // Event: attemptToSpectateBattle
+    // Event: attemptToSpectateBattle [event-attemptToSpectateBattle]
     // Called when: [src] tries to spectate a battle between [battler1] and [battler2]
     // Allows [src] to watch [battler1]'s and [battler2]'s battle if they are currently playing
     // a tournament finals match (even when Disallow Spectators is on).
     attemptToSpectateBattle: function (src, battler1, battler2) {
-        var Tours = require('tours').Tours,
+        var Bot = require('bot'),
+            Utils = require('utils'),
+            Tours = require('tours').Tours,
             channelIds = sys.channelIds(),
             length = channelIds.length,
             tour,
@@ -460,7 +490,12 @@ function Mail(sender, text, title) {
 
         for (i = 0; i < length; ++i) {
             // ensure we have an object
-            tour = (JSESSION.channels(channelIds[i]) || {tour: {}}).tour;
+            tour = (JSESSION.channels(channelIds[i]) || {tour: "NoTour"}).tour || {tour: "NoTour"};
+            
+            if (tour === "NoTour") {
+                Utils.panic("scripts.js", "event[attemptToSpectateBattle]", "No tour object exists in channel " + sys.channel(channelIds[i]) + " (" + channelIds[i] + ").", JSESSION.channels(channelIds[i]), Utils.panic.warning);
+                continue;
+            }
             
             if (tour.finals && Tours.isInTourneyId(battler1, tour) && Tours.isInTourneyId(battler2, tour)) {
                 Bot.sendMessage(src, "Enjoy the final match!", tour.id);
@@ -469,7 +504,7 @@ function Mail(sender, text, title) {
         }
     },
 
-    // Event: beforeFindBattle
+    // Event: beforeFindBattle [event-beforeFindBattle]
     // Called when: [src] tries to find a battle via the "Find Battle" button.
     // Logs [src] pressing "Find Battle".
     beforeFindBattle: function (src) {
@@ -478,11 +513,12 @@ function Mail(sender, text, title) {
         WatchUtils.logPlayerEvent(src, "Pressed \"Find Battle\"");
     },
 
-    // Event: beforeChannelJoin
+    // Event: beforeChannelJoin [event-beforeChannelJoin)
     // Called when: [src] joins the channel [chan].
-    // 
+    // Checks if a player can join [chan] - handling bans, the channel being private, and the channel being restricted (default channels such as Ever Grande City (staff channel))
     beforeChannelJoin: function (src, chan) {
         var JSESSION = require('jsession').JSESSION,
+            Bot = require('bot'),
             Options = require('options'),
             channelIds = Options.defaultChannelIds,
             name = sys.name(src),
@@ -585,36 +621,53 @@ function Mail(sender, text, title) {
         JSESSION.destroyChannel(chan);
     },
 
-    afterChannelCreated: function (chan, name, src) {
-        if (typeof cData != "undefined") {
-            cData.loadDataFor(name);
-        }
+    // Event: beforeChannelCreated
+    // Called when: Before a channel will be created.
+    // Checks if channels are enabled and creates the JSESSION object of the channel.
+    beforeChannelCreated: function (name, chan, src) {
+        if (typeof ChannelsAllowed != 'undefined' && ChannelsAllowed === false && src != 0 && permission(src, 1)) {
+            botMessage(src, "You cannot create channels at the moment.");
+            sys.stopEvent();
+            return;
+        }/*
+        if (src != 0 && unicodeAbuse(src, name)) {
+            sendFailWhale(src, 0);
+            sys.stopEvent();
+            return;
+        }*/
 
-        if (!JSESSION.hasChannel(chan)) {
+        JSESSION.createChannel(cid);
+    },
+
+    // Event: afterChannelCreated
+    // Called when: After a channel has been created.
+    // Sets channel data stored in ChannelData, and gives creator/auth perms if the channel was created by a player.
+    afterChannelCreated: function (chan, name, src) {
+        var Utils = require('utils'),
+            ChannelData = require('channel-data').ChannelData,
+            JSESSION = require('jsession').JSESSION,
+            channel = JSESSION.channels(chan);
+
+        // Bail and panic if the channel doesn't exist.
+        if (channel === undefined) {
+            Utils.panic("scripts.js", "event[afterChannelCreated]", "JSESSION does not contain channel " + chan + " (" + name + ").", JSESSION.ChannelData, Utils.panic.error);
             return;
         }
-
-        var POChan = JSESSION.channels(chan);
-        if (sys.loggedIn(src) && POChan.creator == src) {
-            POChan.creator = sys.name(src).toLowerCase();
-        } else {
-            POChan.creator = "~Unknown~";
-        }
-
-        if (src) {
-            POChan.changeAuth(src, 3);
+        
+        ChannelData.exportData(chan);
+        
+        // if creator is -1 then it was set in beforeChannelCreated, which means the channel was actually created for the first time.
+        // also give them auth.
+        if (sys.loggedIn(src) && channel.creator === -1) {
+            channel.creator = sys.name(src).toLowerCase();
+            // TODO: Channel#changeAuth -> ChannelUtils.changeAuth
+            channel.changeAuth(src, 3);
         }
     },
 
+    // TODO: Do step()
     step: function () {
-        if (typeof RECOVERY != "undefined") {
-            sys.callLater("RECOVERY();", 2);
-        }
-
-        if (typeof cache == 'undefined' || typeof DataHash == 'undefined') {
-            return;
-        }
-
+        var Options = require('options');
         if (typeof stepCounter == "undefined") {
             stepCounter = 0;
         }
@@ -684,11 +737,6 @@ Trivia.start();
 }
 }
 */
-
-        //if (stepCounter % 3600 === 0) { /* 60*60 */
-        //  clearlogs();
-        //}
-        // no longer working on v2
         if (typeof mafia != "undefined") {
             mafia.tickDown();
         }
@@ -698,22 +746,6 @@ Trivia.start();
         }
 
     },
-
-    beforeChannelCreated: function (name, cid, src) {
-        if (typeof ChannelsAllowed != 'undefined' && ChannelsAllowed === false && src != 0 && permission(src, 1)) {
-            botMessage(src, "You cannot create channels at the moment.");
-            sys.stopEvent();
-            return;
-        }
-        if (src != 0 && unicodeAbuse(src, name)) {
-            sendFailWhale(src, 0);
-            sys.stopEvent();
-            return;
-        }
-
-        JSESSION.createChannel(cid);
-    },
-
     beforeLogIn: function (src) {
         var myIp = sys.ip(src),
             myName = sys.name(src),
@@ -9443,283 +9475,6 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadChannelUtilities: function () {
-        var makeChan = function (name) {
-            if (!sys.existChannel(name)) {
-                return sys.createChannel(name);
-            }
-            return sys.channelId(name);
-        },
-            y, current, isUndefined = typeof cData == "undefined";
-
-        mafiachan = makeChan("Mafia Channel");
-/*
-        trivia = makeChan("Trivia");
-        trivreview = makeChan("Trivia Review");*/
-        watch = makeChan("Watch");
-        staffchannel = makeChan("Staff Channel");
-        scriptchannel = makeChan("Eval Area");
-
-        // ALREADY HAS BEEN IMPORTED!!: options.js
-        DefaultChannels = [0, mafiachan, /*trivia, trivreview, */ staffchannel, watch, scriptchannel];
-
-
-        cData = new(function () {
-            var file = "Channel Data.json";
-            createFile(file, "{}");
-
-            this.channelData = {};
-
-            if (sys.getFileContent(file) != "") {
-                try {
-                    this.channelData = JSON.parse(sys.getFileContent(file));
-                }
-                catch (e) {
-                    this.channelData = {};
-                    this.save();
-
-                    if (!e.toString().contains("JSON")) {
-                        print(FormatError("Could not load " + file, e));
-                    }
-                }
-            }
-
-            this.importValue = function (from, to, property_name, default_value) {
-                if (typeof from[property_name] == "undefined") {
-                    to[property_name] = default_value;
-                } else {
-                    to[property_name] = from[property_name];
-                }
-            }
-
-            this.importJSONValue = function (from, to, property_name) {
-                if (typeof from[property_name] == "undefined") {
-                    to[property_name] = {};
-                } else {
-                    to[property_name] = JSON.parse(from[property_name]);
-                }
-            }
-
-            this.exportValue = function (to, property, value) {
-                to[property] = value;
-            }
-
-            this.exportJSONValue = function (to, property, value) {
-                to[property] = JSON.stringify(value);
-            }
-
-            this.loadDataForAll = function () {
-                var cd = sys.channelIds(),
-                    x;
-
-                for (x in cd) {
-                    this.loadDataFor(cd[x]);
-                }
-            }
-
-            this.loadDataFor = function (channel) {
-                if (JSESSION.channels(channel) == undefined || sys.channel(channel) == undefined) {
-                    return "ERROR: No Channel"; /* No such channel. Probally called by /eval */
-                }
-
-                var cChan = JSESSION.ChannelData[channel];
-
-                if (typeof this.channelData[cChan.name] == "undefined") {
-                    this.generateBasicData(cChan.name);
-                    return;
-                }
-
-                var cData = this.channelData[cChan.name],
-                    isPerm = DefaultChannels.has(cChan.id),
-                    properties = {
-                        "creator": "~Unknown~",
-                        "topic": "Welcome to " + cChan.name + "!",
-                        "topicsetter": "",
-                        "perm": isPerm,
-                        "private": false,
-                        "defaultTopic": true,
-                        "silence": 0,
-                        "toursEnabled": DefaultChannels.has(cChan.id)
-                    },
-                    json_properties = ["chanAuth", "banlist", "mutelist", "tourAuth"],
-                    tour_properties = {
-                        "TourDisplay": 1,
-                        "AutoStartBattles": false
-                    },
-                    x;
-
-                for (x in properties) {
-                    this.importValue(cData, cChan, x, properties[x]);
-                }
-                for (x in json_properties) {
-                    this.importJSONValue(cData, cChan, json_properties[x]);
-                }
-
-                if (cChan.toursEnabled && cChan.tour == undefined) {
-                    cChan.tour = new Tours(cChan.id);
-                    var tour = cChan.tour;
-                    for (x in tour_properties) {
-                        this.importValue(cData, tour, x, tour_properties[x]);
-                    }
-                }
-            }
-
-            this.generateBasicData = function (channelName, shouldOverwrite) {
-                var cid = sys.channelId(channelName),
-                    cData = this.channelData,
-                    cChan = JSESSION.channels(cid);
-
-                if (cChan == undefined || sys.channel(cid) == undefined) {
-                    return "ERROR: No Channel"; /* No such channel. Probally called by /eval */
-                }
-
-
-                if (cData.has(channelName) && !shouldOverwrite) {
-                    return;
-                }
-
-                var newHash = {};
-
-                newHash.chanAuth = "{}";
-                newHash.creator = cChan.creator;
-                newHash.topic = cChan.topic;
-                newHash.topicsetter = "";
-                newHash.perm = cChan.perm;
-                newHash.banlist = "{}";
-                newHash.mutelist = "{}";
-                newHash.private = false;
-                newHash.defaultTopic = true;
-                newHash.silence = 0;
-                newHash.TourDisplay = 1;
-                newHash.AutoStartBattles = false;
-                newHash.toursEnabled = DefaultChannels.has(cid);
-
-                cData[channelName] = newHash;
-
-                this.save();
-            }
-
-            this.changeChanAuth = function (chan, auth) {
-                var name = sys.channel(chan);
-
-                if (!this.channelData.has(name)) {
-                    this.generateBasicData(name);
-                }
-
-                this.exportJSONValue(this.channelData[name], "chanAuth", auth);
-                this.save();
-            }
-
-            this.changeTourAuth = function (chan, auth) {
-                var name = sys.channel(chan);
-
-                if (!this.channelData.has(name)) {
-                    this.generateBasicData(name);
-                }
-
-                this.exportJSONValue(this.channelData[name], "tourAuth", auth);
-                this.save();
-            }
-
-            this.changeTopic = function (chan, topic, topicsetter, defaultTopic) {
-                var name = sys.channel(chan);
-
-                if (!this.channelData.has(name)) {
-                    this.generateBasicData(name);
-                }
-
-                var data = this.channelData[name],
-                    properties = {
-                        "topic": topic,
-                        "topicsetter": topicsetter,
-                        "defaultTopic": defaultTopic
-                    },
-                    x;
-
-                for (x in properties) {
-                    this.exportValue(data, x, properties[x]);
-                }
-
-                this.save();
-            }
-
-            this.changeStatus = function (chan, perm, private, silence) {
-                var name = sys.channel(chan);
-
-                if (!this.channelData.has(name)) {
-                    this.generateBasicData(name);
-                }
-
-                var data = this.channelData[name],
-                    properties = {
-                        "perm": perm,
-                        "private": private,
-                        "silence": silence
-                    },
-                    x;
-
-                for (x in properties) {
-                    this.exportValue(data, x, properties[x]);
-                }
-
-                this.save();
-            }
-
-            this.changeBans = function (chan, mutes, bans) {
-                var name = sys.channel(chan);
-
-                if (!this.channelData.has(name)) {
-                    this.generateBasicData(name);
-                }
-
-                var data = this.channelData[name],
-                    properties = {
-                        "mutelist": mutes,
-                        "banlist": bans
-                    },
-                    x;
-
-                for (x in properties) {
-                    this.exportJSONValue(data, x, properties[x]);
-                }
-
-                this.save();
-            }
-
-            this.changeToursEnabled = function (chan, enabled) {
-                var name = sys.channel(chan);
-
-                if (!this.channelData.has(name)) {
-                    this.generateBasicData(name);
-                }
-
-                this.exportValue(this.channelData[name], "toursEnabled", enabled);
-                this.save();
-            }
-
-            this.changeTourOptions = function (chan, display, autostartbattles) {
-                var name = sys.channel(chan);
-
-                if (!this.channelData.has(name)) {
-                    this.generateBasicData(name);
-                }
-
-                var data = this.channelData[name],
-                    properties = {
-                        "TourDisplay": display,
-                        "AutoStartBattles": autostartbattles
-                    },
-                    x;
-
-                for (x in properties) {
-                    this.exportValue(data, x, properties[x]);
-                }
-            }
-
-            this.save = function () {
-                sys.writeToFile(file, JSON.stringify(this.channelData));
-            }
-        })();
-
         var chanList = cData.channelData,
             x, c_chan, creator_id;
 

@@ -23,7 +23,7 @@
         try {
             this.hash = JSON.parse(sys.getFileContent(this.file));
         } catch (e) {
-            sys.writeToFile(file + "-corrupted.json", JSON.stringify(this.hash));
+            sys.writeToFile(file + "-corrupted.json", sys.getFileContent(this.file));
             
             // resets the hash and clears the file (changing its content to "{}")
             this.reset();
