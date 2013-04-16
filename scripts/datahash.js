@@ -20,6 +20,9 @@
     DataHash.macros = {};
     DataHash.correctNames = {};
     DataHash.namesByIp = {};
+    DataHash.tempAuth = {};
+    DataHash.tempBans = {};
+    DataHash.rangeBans = {};
     
     // NOTE: These properties should never be saved.
     DataHash.chatSpammers = {};
@@ -32,9 +35,9 @@
         return Object.prototype.hasOwnProperty.call(DataHash[property], value);
     };
     
-    // TODO: Cache interface
+    // Saves the DataHash.[type] object.
     DataHash.save = function (type) {
-        Cache.save(type, "");
+        Cache.save("DataHash_" + type, JSON.stringify(DataHash[type]));
     };
     
     // Gets all the values from Cache.

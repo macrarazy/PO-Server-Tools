@@ -35,15 +35,6 @@ var Config = {
 
     /* If admins can give and take auth from users and to moderators. */
     AdminsCanAuth: true,
-
-    /* Characters which indicate the usage of a command. */
-    CommandStarts: ["/", "!"],
-    
-    /* After how many seconds a player's message should be 'forgiven', causing it to not be counted by
-        the floodbot. The floodbot counts the amount of messages a player posts (the exact amount is in scripts/user.js) before it kicks them.
-        After this many seconds, the floodbot forgets that the player ever posted a message, causing it not
-        to be counted in flood kick calculations. */
-    AutoFloodTime: 6,
     
     /* Attempts to fix crashes. Some features might not be available (so if you don't have any problems
         with crashes, don't enable this). */
@@ -52,9 +43,27 @@ var Config = {
     /* If warnings should be printed on the server window. Errors will not be affected by this option. */
     Warnings: true,
     
+    /* If channels can be created by players. Default channels (and those created with the 'eval' command) can be created regardless. */
+    ChannelsEnabled: true,
+    
     /* File to save channel data in. It's recommended to keep this as-is, unless if you want to reset
         all channel data stored or want to import a file. Note that v3 (this version) is not compatible with v2 channel data. */
     ChannelDataFile: "channel-data.json",
+    
+    /* After how many seconds a player's message should be 'forgiven', causing it to not be counted by
+        the floodbot. The floodbot counts the amount of messages a player posts (the exact amount is in scripts/user.js) before it kicks them.
+        After this many seconds, the floodbot forgets that the player ever posted a message, causing it not
+        to be counted in flood kick calculations. */
+    AutoFloodTime: 6,
+    
+    /* Characters which indicate the usage of a command. */
+    CommandStarts: ["/", "!"],
+    
+    /* List of players that can use the 'eval') command */
+    EvalAccess: [
+        "Example player with Config.EvalAccess",
+        "Another example player with Config.EvalAccess"
+    ],
     
     /* Changes that players authority to that level when performing an auth lookup (so an administrator with a PlayerPermission of 3 can use owner commands, 
         however, they still appear as an administrator).
@@ -65,12 +74,6 @@ var Config = {
         "Example player with Config.PlayerPermissions": 3,
         "Another example player with Config.PlayerPermissions": 2
     },
-    
-    /* List of players that can use the /eval command */
-    EvalAccess: [
-        "Example player with Config.EvalAccess",
-        "Another example player with Config.EvalAccess"
-    ],
     
     /* Mafia Configuration */
     Mafia: {
@@ -98,10 +101,11 @@ var Script = {
     /* Branch to download modules (and other data) from. */
     BRANCH: "devel",
     
-    /* Time in ms (since epoch) since the server (re)loaded the script. Used to calculate loading speeds. */
+    /* Time in milliseconds (since the Unix epoch) since the server (re)loaded the script. Used to calculate loading speeds. */
     EVAL_TIME_START: new Date().getTime()
 };
 
+// TODO: remove this line below and make it static
 var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
 
 /* Don't modify anything beyond this point if you don't know what you're doing. */
@@ -408,7 +412,7 @@ function Mail(sender, text, title) {
         }
         
         // loads old channel data
-        // we don't have to worry if the channel has any data saved at all, that's handled for us. :]
+        // we don't have to worry if the channel has any data saved at all (empty object), that's handled for us. :]
         for (i in chanData) {
             if (chanData.hasOwnProperty(i)) {
                 ChannelData.exportData(sys.channelId(i));
@@ -493,7 +497,7 @@ function Mail(sender, text, title) {
             tour = (JSESSION.channels(channelIds[i]) || {tour: "NoTour"}).tour || {tour: "NoTour"};
             
             if (tour === "NoTour") {
-                Utils.panic("scripts.js", "event[attemptToSpectateBattle]", "No tour object exists in channel " + sys.channel(channelIds[i]) + " (" + channelIds[i] + ").", JSESSION.channels(channelIds[i]), Utils.panic.warning);
+                Utils.panic("scripts.js", "event[attemptToSpectateBattle]", "No tour object exists for channel " + sys.channel(channelIds[i]) + " (" + channelIds[i] + ").", JSESSION.channels(channelIds[i]), Utils.panic.warning);
                 continue;
             }
             
@@ -513,7 +517,7 @@ function Mail(sender, text, title) {
         WatchUtils.logPlayerEvent(src, "Pressed \"Find Battle\"");
     },
 
-    // Event: beforeChannelJoin [event-beforeChannelJoin)
+    // Event: beforeChannelJoin [event-beforeChannelJoin]
     // Called when: [src] joins the channel [chan].
     // Checks if a player can join [chan] - handling bans, the channel being private, and the channel being restricted (default channels such as Ever Grande City (staff channel))
     beforeChannelJoin: function (src, chan) {
@@ -621,25 +625,30 @@ function Mail(sender, text, title) {
         JSESSION.destroyChannel(chan);
     },
 
-    // Event: beforeChannelCreated
+    // Event: beforeChannelCreated [event-beforeChannelCreated]
     // Called when: Before a channel will be created.
     // Checks if channels are enabled and creates the JSESSION object of the channel.
-    beforeChannelCreated: function (name, chan, src) {
-        if (typeof ChannelsAllowed != 'undefined' && ChannelsAllowed === false && src != 0 && permission(src, 1)) {
-            botMessage(src, "You cannot create channels at the moment.");
+    beforeChannelCreated: function (chan, name, src) {
+        var Bot = require('bot');
+        
+        // prevent players from creating a channel if Config.ChannelsEnabled is false.
+        if (!Config.ChannelsEnabled && sys.loggedIn(src)) {
+            Bot.sendMessage(src, "The creation of channels by players is disabled.");
             sys.stopEvent();
             return;
-        }/*
+        }
+        
+        /*
         if (src != 0 && unicodeAbuse(src, name)) {
             sendFailWhale(src, 0);
             sys.stopEvent();
             return;
         }*/
 
-        JSESSION.createChannel(cid);
+        JSESSION.createChannel(chan);
     },
 
-    // Event: afterChannelCreated
+    // Event: afterChannelCreated [event-afterChannelCreated]
     // Called when: After a channel has been created.
     // Sets channel data stored in ChannelData, and gives creator/auth perms if the channel was created by a player.
     afterChannelCreated: function (chan, name, src) {
@@ -665,70 +674,15 @@ function Mail(sender, text, title) {
         }
     },
 
-    // TODO: Do step()
     step: function () {
-        var Options = require('options');
-        if (typeof stepCounter == "undefined") {
-            stepCounter = 0;
-        }
-
-        stepCounter++;
-
-        if (AutoStartTours) {
-            if (stepCounter % 300 === 0) { /* 60*5 */
-                var mainChan = JSESSION.channels(0).tour;
-                if (mainChan.tourmode == 0) {
-                    var tourTiers = sys.getTierList(),
-                        max = sys.numPlayers() + 1;
-
-                    if (max > 51) {
-                        max = 51;
-                    }
-                    else if (max < 4) {
-                        max = 4;
-                    }
-
-                    var battleMode = sys.rand(1, 7),
-                        tourNumber, tourTier;
-
-                    if (max != 4) {
-                        tourNumber = sys.rand(3, max);
-                        if (battleMode > 3) {
-                            while (tourNumber % 2 != 0) {
-                                tourNumber = sys.rand(4, max);
-                            }
-                        }
-                    }
-                    else {
-                        tourNumber = 3;
-                        if (battleMode > 3) {
-                            tourNumber++;
-                        }
-                    }
-
-                    if (tourTiers.length == 1) {
-                        tourTier = tourTiers[0];
-                    }
-                    else {
-                        tourTier = tourTiers[Math.round(Math.random() * tourTiers.length)];
-                    }
-
-                    mainChan.tournumber = tourNumber;
-                    mainChan.tourtier = tourTier;
-                    mainChan.startTime = sys.time() * 1;
-                    mainChan.battlemode = battleMode;
-                    mainChan.prize = "";
-                    mainChan.tourmode = 1;
-                    mainChan.tourstarter = Bot.bot + "</i>";
-
-                    TourNotification(0, 0, {
-                        "starter": Bot.bot + "</i>",
-                        "color": Bot.botcolor
-                    });
-
-                }
-            }
-        }
+        var Options = require('options'),
+            // TODO: Mafia
+            Mafia = require('mafia').Mafia,
+            // TODO: Prune
+            Prune = require('prune'),
+            stepCounter = Options.stepCounter;
+        
+        ++stepCounter;
 
 /*
 if(typeof Trivia != "undefined") {
@@ -737,15 +691,16 @@ Trivia.start();
 }
 }
 */
-        if (typeof mafia != "undefined") {
-            mafia.tickDown();
-        }
 
-        if (stepCounter % 10 === 0) { // Do this every 10 seconds.
+        // Prune temp auth every 10 seconds.
+        if (stepCounter % 10 === 0) {
             Prune.tempAuth();
         }
+        
+        Mafia.tickDown();
 
     },
+    
     beforeLogIn: function (src) {
         var myIp = sys.ip(src),
             myName = sys.name(src),
@@ -9498,141 +9453,6 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadPrune: function () {
-        Prune = new(function () {
-            this.tempAuth = function () {
-                var auth = DataHash.tempauth,
-                    hashauth, CURR_TIME = sys.time() * 1,
-                    curr_inst, made_change = false;
-
-                for (hashauth in auth) {
-                    curr_inst = auth[hashauth];
-                    if (CURR_TIME >= curr_inst.time) {
-                        if (sys.dbAuth(curr_inst.name) > curr_inst.role) {
-                            delete auth[hashauth];
-                            return;
-                        }
-
-                        var changeAuth = 0;
-                        if (curr_inst.oldauth != undefined) {
-                            changeAuth = curr_inst.oldauth;
-                        }
-
-                        botAll(curr_inst.name + " is no longer " + authToString(curr_inst.role) + ".", 0);
-
-                        var id = sys.id(curr_inst.name);
-                        if (id != undefined) {
-                            sys.changeAuth(id, changeAuth);
-                        }
-
-                        sys.changeDbAuth(curr_inst.name, changeAuth);
-                        made_change = true;
-                        delete auth[hashauth];
-                    }
-                }
-
-                if (made_change) {
-                    cache.write("tempauth", JSON.stringify(a));
-                }
-            }
-
-            this.bans = function () {
-                var tb = DataHash.tempbans,
-                    hashban, TIME_NOW = sys.time() * 1,
-                    hasDeleted = false;
-
-                for (hashban in tb) {
-                    if (TIME_NOW >= tb[hashban].time) {
-                        delete tb[hashban];
-                        hasDeleted = true;
-                    }
-                }
-
-                if (hasDeleted) {
-                    cache.write("tempbans", JSON.stringify(tb));
-                }
-            }
-
-            this.mutes = function () {
-                var hashmute, mute = DataHash.mutes,
-                    TIME_NOW = sys.time() * 1,
-                    hasDeleted = false,
-                    current_mute;
-
-                for (hashmute in mute) {
-                    current_mute = mute[hashmute];
-                    if (TIME_NOW >= current_mute.time && current_mute.time != 0) {
-                        delete mute[hashmute];
-                        hasDeleted = true;
-                    }
-                }
-
-                if (hasDeleted) {
-                    cache.write("mutes", JSON.stringify(mute));
-                }
-            }
-
-            this.rangeBans = function () {
-                var hashrange, rb = DataHash.rangebans,
-                    TIME_NOW = sys.time() * 1,
-                    hasDeleted = false,
-                    current_rb;
-
-                for (hashrange in rb) {
-                    current_rb = rb[hashrange];
-                    if (TIME_NOW >= current_rb.time && current_rb.time != 0) {
-                        delete rb[hashrange];
-                        hasDeleted = true;
-                    }
-                }
-
-                if (hasDeleted) {
-                    cache.write("rangebans", JSON.stringify(rb));
-                }
-            }
-
-            this.channelBans = function (chan) {
-                var pruneban, c = JSESSION.channels(chan),
-                    ban = c.banlist
-                    TIME_NOW = sys.time() * 1,
-                    hasDeleted = false,
-                    current_ban;
-
-                for (pruneban in ban) {
-                    current_ban = ban[pruneban];
-                    if (TIME_NOW >= current_ban.time && current_ban.time != 0) {
-                        delete ban[pruneban];
-                        hasDeleted = true;
-                    }
-                }
-
-                if (hasDeleted) {
-                    cData.changeBans(chan, c.mutelist, ban);
-                }
-
-            }
-
-            this.channelMutes = function (chan) {
-                var pruneban, c = JSESSION.channels(chan),
-                    current_mute
-                    ban = c.mutelist,
-                    TIME_NOW = sys.time() * 1,
-                    hasDeleted = false;
-
-                for (pruneban in ban) {
-                    current_mute = ban[pruneban];
-                    if (TIME_NOW >= current_mute.time && current_mute.time != 0) {
-                        delete ban[pruneban];
-                        hasDeleted = true;
-                    }
-                }
-
-                if (hasDeleted) {
-                    cData.changeBans(chan, ban, c.banlist);
-                }
-            }
-
-        })();
-
     },
 
     loadIfyUtility: function () {

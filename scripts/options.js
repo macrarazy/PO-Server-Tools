@@ -40,6 +40,9 @@
     // Time (since Unix epoch) when the server started up (don't change this).
     exports.startUpTime = 0;
     
+    // Counter for the 'step' event, which increases every second.
+    exports.stepCounter = 0;
+    
     // Hardcoded values [hcdval]
     
     // Default/main channels

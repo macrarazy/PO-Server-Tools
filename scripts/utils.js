@@ -445,11 +445,36 @@
     
     // Ensures the file [fileName] exists, and writes [defaultContent] to it if it doesn't.
     // defaultContent is optional; nothing will be written regardless if the file exists or not if it isn't passed.
-    exports.createFile = function (fileName, defaultContent) {
+    exports.createFile = function createFile(fileName, defaultContent) {
         sys.appendToFile(fileName, "");
         
         if (defaultContent && sys.getFileContent(fileName) === "") {
             sys.writeToFile(fileName, defaultContent);
         }
     };
+    
+    /* Changes all occurances of %num in [string] to the argument at the position of [string] + 1
+        
+        For example, when called like: format("Goodbye, %1. %2", playerName, randomGoodbye),
+        the string returned will, for example, be "Goodbye, TheUnknownOne. Hope you had a nice time!" if playerName would be "TheUnknownOne"
+        and randomGoodbye would be "Hope you had a nice time!". 
+        
+        This function is similar to http://qt-project.org/doc/qt-4.8/qstring.html#arg , except that it accepts all the arguments in one go.
+        
+        Very important to note that if, for example, you call the function with 3 arguments (the string and the 2 arguments that are replaced).
+        but the string is, for example, "%1 %2 %3", %3 will remain untouched ("TheUnknownOne Hope you had a nice time! %3", for example, if called the same way
+        as illustrated above, but with the example string given in this section).
+    */
+    exports.format = function format(string) {
+        var argsLength = arguments.length,
+            i;
+        
+        // start at the first argument, which is the string.
+        for (i = 1; i < argsLength; ++i) {
+            string = string.replace(new RegExp("%" + (i + 1), "gm"), arguments[i]);
+        }
+        
+        return str;
+    };
+    
 }());
