@@ -1,5 +1,5 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: utils.js (Utils)
 // Contains utilities not specificly for players, channels, and logging.
@@ -43,11 +43,11 @@
         }
     
         if (typeof error.toLowerCase !== 'undefined') { // when throw is used, error is a string.
-            return message + " Custom Error: " + e.toString();
+            return message + " Custom Error: " + error.toString();
         }
     
-        if (e.lineNumber !== 1) {
-            line = " on line " + e.lineNumber;
+        if (error.lineNumber !== 1) {
+            line = " on line " + error.lineNumber;
         }
     
         return message + " " + error.name + line + ": " + error.message;
@@ -146,11 +146,11 @@
         name = name.toLowerCase();
         
         for (i = 0; i < length; ++i) {
-            curr = tiers[i];
+            cur = tiers[i];
             
-            if (curr.toLowerCase() === name) {
+            if (cur.toLowerCase() === name) {
                 // this corrects the case
-                return curr;
+                return cur;
             }
         }
 
@@ -158,8 +158,20 @@
         return false;
     };
     
+    // If [n] isn't NaN, negative, or 0
+    exports.isPositive = function isPositive(number) {
+        return !isNaN(number) && number >= 0;
+    };
+    
+    // If [n] isn't NaN, is negative, or is 0
+    exports.isNegative = function isNegative(number) {
+        return !isNaN(number) && !isPositive(number);
+    };
+    
     // Checks if [value] is empty.
     exports.isEmpty = function isEmpty(value) {
+        var type = typeof value;
+        
         // don't check this strictly
         if (value == undefined
                 || value === " ") {
@@ -183,16 +195,6 @@
         }
 
         return false;
-    };
-    
-    // If [n] isn't NaN, negative, or 0
-    exports.isPositive = function isPositive(number) {
-        return !isNaN(number) && number >= 0;
-    };
-    
-    // If [n] isn't NaN, is negative, or is 0
-    exports.isNegative = function isNegative(number) {
-        return !isNaN(number) && !isPositive(number);
     };
     
     // Returns "on" if bool is true,
@@ -423,7 +425,7 @@
     // Updates an object's prototype (adding/removing functions)
     exports.updatePrototype = function updatePrototype(object, proto) {
         if (object.prototype !== proto.prototype) {
-            func.prototype = proto.prototype;
+            object.prototype = proto.prototype;
         }
     };
     
@@ -474,7 +476,7 @@
             string = string.replace(new RegExp("%" + (i + 1), "gm"), arguments[i]);
         }
         
-        return str;
+        return string;
     };
     
 }());

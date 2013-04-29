@@ -1,14 +1,16 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: bot.js
 // Contains the bot message sending functions (and a copy of escapeHtml found in utils).
 // These functions are very commonly used, be careful not to break anything.
-// No dependencies.
+// Depends on: options
 
 // No Table of Content.
 
 (function () {
+    var Options = require('options');
+    
     function escapeHtml(msg) {
         return (sys.escapeHtml || function (str) {
             return str.replace(/\&/g, "&amp;").replace(/</g, "&lt;").replace(/\>/g, "&gt;");
@@ -22,14 +24,14 @@
         if (typeof channel === "undefined") {
             sys.sendHtmlMessage(
                 src,
-                "<font color='" + Script.Bot.color + "'><timestamp/><b>" + Script.Bot.name + ":</b></font> " + message
+                "<font color='" + Options.Bot.color + "'><timestamp/><b>" + Options.Bot.name + ":</b></font> " + message
             );
             return;
         }
         
         sys.sendHtmlMessage(
             src,
-            "<font color='" + Script.Bot.color + "'><timestamp/><b>" + Script.Bot.name + ":</b></font> " + message,
+            "<font color='" + Options.Bot.color + "'><timestamp/><b>" + Options.Bot.name + ":</b></font> " + message,
             channel
         );
     };
@@ -45,13 +47,13 @@
         // PO APIs are silly.
         if (typeof channel === "undefined") {
             sys.sendHtmlAll(
-                "<font color='" + Script.Bot.color + "'><timestamp/><b>" + Script.Bot.name + ":</b></font> " + message
+                "<font color='" + Options.Bot.color + "'><timestamp/><b>" + Options.Bot.name + ":</b></font> " + message
             );
             return;
         }
         
         sys.sendHtmlAll(
-            "<font color='" + Script.Bot.color + "'><timestamp/><b>" + Script.Bot.name + ":</b></font> " + message,
+            "<font color='" + Options.Bot.color + "'><timestamp/><b>" + Options.Bot.name + ":</b></font> " + message,
             channel
         );
     };

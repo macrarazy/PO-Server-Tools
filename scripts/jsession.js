@@ -1,5 +1,5 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: jsession.js
 // Contains JSESSION, which is a replacement for PO's in-built 'SESSION', which is pretty buggy.

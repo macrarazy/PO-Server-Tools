@@ -1,5 +1,5 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: channel-data.js (ChannelData)
 // Contains ChannelData, which stores data (chan auth, etc.) of channels even after the server has shut down.
@@ -88,7 +88,7 @@
             cur = data[i];
             
             // Tournament properties.
-            if (['autoStartBattles', 'display'].indexOf(i)) {
+            if (['autoStartBattles', 'display'].indexOf(i) > -1) {
                 channel.tour[i] = cur;
             } else {
                 channel[i] = cur;

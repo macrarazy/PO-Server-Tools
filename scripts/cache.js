@@ -1,5 +1,5 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: cache.js (Cache)
 // Contains Cache, which is used to persistently store values, unlike DataHash, which stores them in RAM.

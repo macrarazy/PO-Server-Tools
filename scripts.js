@@ -1,5 +1,5 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 /*
  ==== SCRIPT INFORMATION ====
@@ -105,13 +105,14 @@ var Script = {
     EVAL_TIME_START: new Date().getTime()
 };
 
-// TODO: remove this line below and make it static
+// TODO: remove this line below and make it (the url) static
 var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
 
 /* Don't modify anything beyond this point if you don't know what you're doing. */
 var global = this;
 var GLOBAL = this;
-    
+var require;
+
 if (typeof require === 'undefined') {
     // includes a script
     var require = (function () {
@@ -487,6 +488,7 @@ function Mail(sender, text, title) {
         var Bot = require('bot'),
             Utils = require('utils'),
             Tours = require('tours').Tours,
+            JSESSION = require('jsession'),
             channelIds = sys.channelIds(),
             length = channelIds.length,
             tour,
@@ -629,7 +631,8 @@ function Mail(sender, text, title) {
     // Called when: Before a channel will be created.
     // Checks if channels are enabled and creates the JSESSION object of the channel.
     beforeChannelCreated: function (chan, name, src) {
-        var Bot = require('bot');
+        var Bot = require('bot'),
+            JSESSION = require('jsession');
         
         // prevent players from creating a channel if Config.ChannelsEnabled is false.
         if (!Config.ChannelsEnabled && sys.loggedIn(src)) {
@@ -678,7 +681,6 @@ function Mail(sender, text, title) {
         var Options = require('options'),
             // TODO: Mafia
             Mafia = require('mafia').Mafia,
-            // TODO: Prune
             Prune = require('prune'),
             stepCounter = Options.stepCounter;
         
@@ -698,33 +700,28 @@ Trivia.start();
         }
         
         Mafia.tickDown();
-
     },
     
     beforeLogIn: function (src) {
-        var myIp = sys.ip(src),
-            myName = sys.name(src),
-            dhn = DataHash.names,
-            toLower = myName.toLowerCase();
+        var DataHash = require('datahash'),
+            name = sys.name(src),
+            ip = sys.ip(src);
 
-        script.hostAuth(src);
+        //script.hostAuth(src);
 
-        dhn.extend({
-            myIp: myName,
-            toLower: myName
-        });
+        DataHash.correctNames[name.toLowerCase()] = name;
+        DataHash.namesByIp[ip] = name;
 
-        playerscache.write("names", JSON.stringify(dhn));
-        script.resolveLocation(src, myIp, false);
+        DataHash.save("correctNames");
+        DataHash.save("namesByIp");
+        //script.resolveLocation(src, myIp, false);
 
-        if (DataHash.reconnect.has(myIp)) {
-            testNameKickedPlayer = src;
+        if (DataHash.hasDataProperty("autoReconnectBlock", ip)) {
             sys.stopEvent();
             return;
         }
 
         if (script.testName(src)) {
-            testNameKickedPlayer = src;
             sys.stopEvent();
             return;
         }

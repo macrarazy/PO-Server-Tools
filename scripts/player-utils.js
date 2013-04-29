@@ -1,5 +1,5 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: player-utils.js (PlayerUtils)
 // Contains player utilities (such as easily getting player and team information).
@@ -60,7 +60,7 @@
         return defaultColor;
     };
     
-    // Capitalizes a name (even when the player is offline), or returns it (id)
+    // Capitalizes a name (even when the player is offline), or returns it (id).
     exports.name = function name(nameOrId) {
         if (typeof nameOrId === 'string') {
             return DataHash.correctNames[nameOrId.toLowerCase()] || sys.name(nameOrId) || nameOrId;
@@ -69,7 +69,7 @@
         }
         
         // panics if it isn't a string or number.
-        Utils.panic("scripts/player-utils.js", "PlayerUtils.name(nameOrId)", "Player is not a string or a number.", "typeof nameOrId: " + typeof nameOrId + " | nameOrId's value: " + nameOrId, utils.panic.warning);
+        Utils.panic("scripts/player-utils.js", "PlayerUtils.name(nameOrId)", "Player is not a string or a number.", "typeof nameOrId: " + typeof nameOrId + " | nameOrId's value: " + nameOrId, Utils.panic.warning);
         
         return "~Unknown~";
     };
@@ -113,7 +113,7 @@
         return auth;
     };
     
-    // returns an array of all ids of [ip] (everyone logged in with [i])
+    // returns an array of all ids of [ip] (everyone logged in with [ip])
     exports.ipIds = function ipIds(ip) {
         var playerIds = sys.playerIds(),
             ids = [],
@@ -164,4 +164,45 @@
             JSESSION.users(id).muted = true;
         });
     };
+    
+    // Returns the string name of the auth level [auth].
+    // If img is true (PlayerUtils.authToString.imageIdentifier), returns the image identifier (the one used in po's default theme files)
+    // of that auth level.
+    exports.authToString = function (auth, img) {
+        var auths = {
+            'true': {
+                0: "User",
+                1: "Moderator",
+                2: "Administrator",
+                3: "Owner",
+                '3+': "Invisible"
+            },
+            'false': {
+                0: "U",
+                1: "M",
+                2: "A",
+                3: "O",
+                '3+': "U"
+            }
+        };
+        
+        // Make sure it's an integer
+        auth = Math.round(auth);
+        
+        // Make sure it's >= 0
+        if (auth < 0) {
+            auth = 0;
+        }
+        
+        // Give it '3+' if it's > 3 (Invisible)
+        if (auth > 3) {
+            auth = '3+';
+        }
+        
+        // true/false are used in the object to represent if the image identifier should be
+        // returned, or not.
+        return auths[img][auth];
+    };
+    
+    exports.authToString.imageIdentifier = true;
 }());

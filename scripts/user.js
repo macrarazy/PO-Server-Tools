@@ -1,9 +1,9 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: user.js (User)
 // Contains the JSESSION user constructor.
-// Depends on: datahash, options, jsession, utils, player-utils, watch-utils
+// Depends on: datahash, options, jsession, utils, player-utils, watch-utils, bot
 
 // Table of Content:
 // [user-ctor]: JSESSION user constructor.
@@ -15,7 +15,8 @@
         JSESSION = require('jsession'),
         Utils = require('utils'),
         PlayerUtils = require('player-utils'),
-        WatchUtils = require('watch-utils');
+        WatchUtils = require('watch-utils'),
+        Bot = require('bot');
     
     // TODO: Add comments here.
     // JSESSION user constructor [user-ctor]
@@ -28,11 +29,6 @@
             Utils.panic('scripts/user.js', 'User (constructor)', 'User ' + id + ' is not logged in.', name, Utils.panic.error);
             return;
         }
-    
-        if (!DataHash) {
-            Utils.panic('scripts/user.js', 'User (constructor)', 'DataHash does not exist.', name, Utils.panic.error);
-            return;
-        }
         
         this.id = id;
         // TODO: ensure this is set properly.
@@ -40,7 +36,7 @@
         this.ip = sys.ip(id);
         this.name = name;
         this.lastMsg = 0;
-        this.loginTime = date;
+        this.loginTime = (new Date()).getTime();
         this.lastChallenge = 0;
         this.floodCount = 0;
         this.caps = 0;
@@ -89,7 +85,7 @@
             if (Utils.isCapitalLetter(char)) {
                 ++caps;
             } else if (Utils.isNormalLetter(char) && caps > 0) {
-                newCapsAmount -= 1;
+                caps -= 1;
             }
         }
         

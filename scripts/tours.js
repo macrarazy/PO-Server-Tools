@@ -1,5 +1,5 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: tours.js (Tours)
 // Contains most tournament logic, including commands.
@@ -74,7 +74,7 @@
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + Tours.identify(tour), chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tier, chan);
     
-            if (!isEmpty(tour.prize)) {
+            if (!Utils.isEmpty(tour.prize)) {
                 sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + tour.prize, chan);
             }
     
@@ -197,7 +197,7 @@
     
     // This object holds tournament manipulation functions [t-o]
     // And other constants
-    Tours = {};
+    var Tours = {};
     
     // Sends the tournament border to a channel
     Tours.border = function (chan) {
@@ -276,7 +276,7 @@
             curr = hash[i];
             // is the first or second battler of this battle [name]?
             if (curr[0] === name || curr[1] === name) {
-                return x;
+                return i;
             }
         }
     
@@ -285,7 +285,7 @@
     
     // Checks if [name] has begun their battle but hasn't finished yet
     // Returns their entry in ToursChannelConfig.roundStatus.ongoingBattles if they are
-    Tours.isBattling = function (name) {
+    Tours.isBattling = function (name, tcc) {
         var hash = tcc.roundStatus.ongoingBattles,
             cur,
             i;
@@ -295,7 +295,7 @@
             cur = hash[i];
             // is the first or second battler of this battle [name]?
             if (cur[0].toLowerCase() === name || cur[1].toLowerCase() === name) {
-                return x;
+                return i;
             }
         }
     
@@ -409,7 +409,7 @@
             i;
         
         for (i in hash) {
-            if (now === pos) {
+            if (num === pos) {
                 return hash[i];
             }
             ++num;
@@ -454,7 +454,7 @@
     };
     
     // returns a random player's location in [object]
-    Tours.randomPlayer = function (object, teamId) {
+    Tours.randomPlayer = function (object, teamId, tcc) {
         var entries = Utils.objectLength(object),
             playerObj,
             random = sys.rand(0, entries);
@@ -482,13 +482,13 @@
     
         // keep doing it
         // TODO: this might crash
-        while (playerObj.team !== team) {
+        while (playerObj.team !== teamId) {
             random = sys.rand(0, entries);
             playerObj = Tours.hashAt(object, random);
         }
     
         // this position is fine.
-        return rand;
+        return random;
     };
     
     // builds a new entrant's player hash
@@ -688,7 +688,7 @@
                 }
                 
                 moneyGain = sys.rand(500, 1001);
-                DataHash.money[name] += randNum;
+                DataHash.money[winner] += moneyGain;
                 DataHash.save("money");
     
                 if (id !== undefined) {
@@ -737,7 +737,7 @@
                         }
                         
                         moneyGain = sys.rand(500, 1001);
-                        DataHash.money[name] += randNum;
+                        DataHash.money[winner] += moneyGain;
                         DataHash.save("money");
             
                         if (id !== undefined) {
@@ -770,7 +770,7 @@
     
         if (isTagTeamTour) {
             // team tags
-            team = "<b><font color=blue>[Team Blue]</font></b>";
+            team1 = "<b><font color=blue>[Team Blue]</font></b>";
             team2 = "<b><font color=red>[Team Red]</font></b>";
         }
         
@@ -840,10 +840,10 @@
             ++i;
     
             if (tcc.finals) {
-                message.push(team1 + name1 + " VS " + team2 + name2);
+                message.push(team1 + p1[1] + " VS " + team2 + p2[1]);
             } else {
                 // add their battle number
-                message.push(i + ". " + team1 + name1 + " VS " + team2 + name2);
+                message.push(i + ". " + team1 + p1[1] + " VS " + team2 + p2[1]);
             }
         }
     
@@ -928,7 +928,7 @@
         
         // e.g. when the tour has started
         if (tcc.mode === 2) {
-            if (Tours.areOpponentsForTourBattle(src, dest, ttc)) {
+            if (Tours.areOpponentsForTourBattle(src, dest, tcc)) {
                 // No crash safety guard
                 if (!Config.NoCrash) {
                     // don't check for tiers as we don't want to (possibly) crash.
@@ -946,7 +946,7 @@
                     }
                 } else {
                     if (sys.tier(src, srcteam) === sys.tier(dest, destteam) && Utils.isEqual(sys.tier(src, srcteam), tcc.tier)) {
-                        idleBattler = Tours.idleBattler(srcName, ttc);
+                        idleBattler = Tours.idleBattler(srcName, tcc);
                         
                         if (tcc.roundStatus.idleBattles[idleBattler] !== undefined) {
                             // be lazy and copy it over
@@ -994,8 +994,10 @@
         // their teams
         var playerTeam = PlayerUtils.firstTeamForTier(src, tcc.tier),
             opponentTeam = PlayerUtils.firstTeamForTier(dest, tcc.tier),
+            player = sys.name(src),
+            opponent = sys.name(dest),
             // their couples object
-            couple = tcc.couples[tcc.players[sys.name(src).toLowerCase()].couplesid],
+            couple = tcc.couples[tcc.players[player.toLowerCase()].couplesid],
             startedBattle;
     
         Bot.sendAll(PlayerUtils.formatName(src) + " and " + PlayerUtils.formatName(dest) + " tied and has to battle again for the tournament!", tcc.id);
@@ -1050,7 +1052,7 @@
             destWins = 0,
             totalWins = 0,
             playerTeam = 0,
-            destTeam = 0,
+            opponentTeam = 0,
             message = [],
             srcPlayer,
             destPlayer,
@@ -1277,7 +1279,7 @@
             return;
         }
     
-        if (spots > 0) {
+        if (Tours.tourSpots(tcc) > 0) {
             Tours.buildHash(src, tcc);
             
             if (tcc.entrants < 9) {
@@ -1376,7 +1378,7 @@
     
         if (anyOngoingBattles) {
             sys.sendMessage(src, "", chan);
-            botMessage(src, "Ongoing battles:", chan);
+            Bot.sendMessage(src, "Ongoing battles:", chan);
             sys.sendMessage(src, "", chan);
             
             for (i in ongoingBattles) {
@@ -1389,7 +1391,7 @@
     
         if (anyIdleBattles) {
             sys.sendMessage(src, "", chan);
-            botMessage(src, "Yet to start battles:", chan);
+            Bot.sendMessage(src, "Yet to start battles:", chan);
             sys.sendMessage(src, "", chan);
             
             for (i in idleBattles) {
@@ -1402,7 +1404,7 @@
     
         if (anyFinishedBattles) {
             sys.sendMessage(src, "", chan);
-            botMessage(src, "Players to the next round:", chan);
+            Bot.sendMessage(src, "Players to the next round:", chan);
             sys.sendMessage(src, "", chan);
     
             for (i in winLose) {
@@ -1793,7 +1795,7 @@
         clean: 2
     };
     
-    Tour.modes = {
+    Tours.modes = {
         0: "No tournament is running.",
         1: "Single Elimination",
         2: "Double Elimination",

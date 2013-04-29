@@ -1,5 +1,5 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: channel-utils.js (ChannelUtils)
 // Contains various utilities that are for/have to do with channels
@@ -31,7 +31,6 @@
         return chanNames;
     };
     
-    // TODO: Possibly move to scripts/ux.js
     // Adds channel links to a message
     exports.addChannelLinks = function addChannelLinks(str) {
         var chanNames = channelNames(),

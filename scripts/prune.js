@@ -1,18 +1,18 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, undef: true, vars: true*/
-/*global sys, exports, module*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: prune.js (Prune)
 // Contains utilities used to prune mutes, bans, and temp auth.
-// Depends on: channel-data, datahash, player-utils, bot
+// Depends on: jsession, channel-data, datahash, player-utils, bot
 
 // Table of Content:
 // [prune-ctor]: Prune constructor
 // [expt]: Exports
 
 (function () {
-    var ChannelData = require('channel-data'),
+    var JSESSION = require('jsession'),
+        ChannelData = require('channel-data'),
         DataHash = require('datahash'),
-        // TODO: PlayerUtils.authToString
         PlayerUtils = require('player-utils'),
         Bot = require('bot');
     
