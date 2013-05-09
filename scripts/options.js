@@ -1,4 +1,4 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: options.js (Options)
@@ -19,14 +19,33 @@
 (function () {
     // Dynamic values [dynval]
     
-    // Bot: name and color
+    /* These properties are configured to be the same as their Cache value. 
+        Note that if you wish to change these, then you should use a command, or if you insist on changing the default,
+        then cache.js is be the way to go. */
+    // The bot's name and its color.
+    // Cache field used: botSettings
     exports.Bot = {
         bot: "~Server~",
         color: "red"
     };
+
+    // Message of the day.
+    // Cache field used: motdSettings
+    exports.motd = {
+        enabled: false,
+        message: "",
+        setter: ""
+    };
     
     // If players should automatically be muted for flooding.
-    exports.AutoMute = true;
+    // Cache field used: autoMute
+    // TODO: AutoMute -> autoMute
+    exports.autoMute = true;
+    
+    // Highest amount of players recorded.
+    // Cache field used: mostPlayersOnline
+    exports.mostPlayersOnline = 0;
+    /* End */
     
     // The server's name.
     exports.serverName = "";

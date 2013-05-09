@@ -1,21 +1,27 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: cache.js (Cache)
 // Contains Cache, which is used to persistently store values, unlike DataHash, which stores them in RAM.
-// Depends on: utils
+// Depends on: options, utils
 
 // Table of Content:
+// [cachector]: Cache constructor
+// [cacheinit]: Cache initialiser
 // [expt]: Exports
 
 /* Values used by the default cache:
-    - mostPlayersOnline
+    - mostPlayersOnline (Number)
+    - autoMute (Boolean)
+    - botSettings (Object)
+    - motdSettings (Object)
 */
 
 (function () {
-    var Utils = require('utils');
+    var Options = require('options'),
+        Utils = require('utils');
     
-    // Constructs a cache object.
+    // Constructs a cache object. [cachector]
     function Cache(file) {
         this.file = file + ".json";
         this.hash = {};
@@ -45,12 +51,15 @@
         }
     };
     
-    // Just like Cache#save, but also increments Cache#ensure if a key was created (and doesn't call Cache#saveAll).
-    // Used to optimize the way default keys are set. This makes sure Cache#saveAll isn't called if nothing had to be saved.
-    Cache.prototype.ensure = function (key, value) {
-        if (typeof this.hash[key] === "undefined") {
-            this.hash[key] = value;
-            ++this.ensure;
+    // Ensures all keys (which an object) exist (keyName -> keyValue).
+    // Only runs saveAll if a new key had to be created.
+    Cache.prototype.ensure = function (keys) {
+        var key;
+        
+        for (key in keys) {
+            if (typeof this.hash[key] === "undefined") {
+                this.hash[key] = keys[key];
+            }
         }
     };
     
@@ -90,11 +99,48 @@
         sys.writeToFile(this.file, JSON.stringify(this.hash));
     };
     
-    // Exports [expt]
+    // Helper used by init(), to change properties in Options with a value from Cache
+    function initValues(values) {
+        var i;
+        
+        for (i in values) {
+            Options[i] = exports.Cache.get(values[i]);
+        }
+    }
     
+    // Initialises all cache values, with the exception of DataHash (which is done in datahash.js). [cacheinit]
+    function init() {
+        // Ensures all cache values exist, with a default value.
+        exports.Cache.ensure({
+            botSettings: {
+                bot: "~Server~",
+                color: "red"
+            },
+            motdSettings: {
+                enabled: false,
+                message: "",
+                setter: ""
+            },
+            autoMute: true,
+            mostPlayersOnline: 0
+        });
+        
+        // Sets the Option.xxx values.
+        initValues({
+            Bot: 'botSettings',
+            motd: 'motdSettings',
+            autoMute: 'autoMute',
+            mostPlayersOnline: 'mostPlayersOnline'
+        });
+    }
+    
+    // Exports [expt]
     // Exports a cache object.
     exports.Cache = new Cache();
     
     // Exports the cache constructor.
     exports.cache_constructor = Cache;
+    
+    // Exports the cache value initialiser.
+    exports.init = init;
 }());

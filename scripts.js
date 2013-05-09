@@ -1,4 +1,4 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 /*
@@ -50,7 +50,10 @@ var Config = {
         all channel data stored or want to import a file. Note that v3 (this version) is not compatible with v2 channel data. */
     ChannelDataFile: "channel-data.json",
     
-    /* File where actions and events will be logged to. */
+    /* File where actions and events will be logged to. 
+        Change this to "" in order to disable the log file. 
+        Note that it's recommended to clear this file (or simply move it to for example, a logs directory) every now and then, 
+        otherwise the server might become laggy. */
     LogFile: "server.log",
     
     /* After how many seconds a player's message should be 'forgiven', causing it to not be counted by
@@ -96,14 +99,8 @@ var Script = {
     /* Version of the script. */
     SCRIPT_VERSION: "3.0.0 Devel",
     
-    /* URL of the script only. */
-    SCRIPT_URL: "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js",
-    
-    /* URL for modules/languages (github) */
-    URL: "https://raw.github.com/TheUnknownOne/PO-Server-Tools/",
-
-    /* Branch to download modules (and other data) from. */
-    BRANCH: "devel",
+    /* URL for modules/languages, as well as the script itself. */
+    DOWNLOAD_URL: "https://raw.github.com/TheUnknownOne/PO-Server-Tools/devel/",
     
     /* Time in milliseconds (since the Unix epoch) since the server (re)loaded the script. Used to calculate loading speeds. */
     EVAL_TIME_START: new Date().getTime()
@@ -370,6 +367,7 @@ function Mail(sender, text, title) {
     this.sendAgo = +(sys.time());
 }
 
+// TODO: events.js for all the events down below (would really help with the massive use of requires in them, because a closure can be used).
 ({
     // Event: serverStartUp [event-serverStartUp]
     // Called when: Server starts up
@@ -397,6 +395,7 @@ function Mail(sender, text, title) {
     // Initializes certain values
     init: function () {
         var Options = require('options'),
+            Cache = require('cache'),
             Utils = require('utils'),
             ChannelData = require('channel-data').ChannelData;
         
@@ -424,6 +423,9 @@ function Mail(sender, text, title) {
                 ChannelData.exportData(sys.channelId(i));
             }
         }
+        
+        // Initialises all cache values.
+        Cache.init();
         
         /*run("loadRequiredUtilities");
         run("loadCache");
@@ -757,7 +759,7 @@ Trivia.start();
             PlayerUtils = require('player-utils'),
             WatchUtils = require('watch-utils'),
             Tours = require('tours'),
-            Cache = require('cache'),
+            Cache = require('cache').Cache,
             JSESSION = require('jsession');
         
         var name = PlayerUtils.formatName(src),
@@ -771,17 +773,17 @@ Trivia.start();
 
         Bot.sendMessage(src, "Welcome, " + name + "!", 0);
         Bot.sendMessage(src, "Type '<b><font color=green>/commands</font></b>' to see the server commands and '<b><font color=green>/rules</font></b>' to read the server rules.", 0);
-
         if (Options.startUpTime !== 0) {
             Bot.sendMessage(src, "The server has been up for " + Utils.timeToString(Options.startUpTime) + ".", 0);
         }
 
         // Update the most players online, if we've hit a new limit
-        if (playersOnline > Cache.get("mostPlayersOnline")) {
+        if (playersOnline > Options.mostPlayersOnline) {
+            Options.mostPlayersOnline = playersOnline;
             Cache.write("mostPlayersOnline", playersOnline);
         }
 
-        Bot.sendMessage(src, "<b>" + playersOnline + "</b> players are currently online. The highest amount of players we've ever seen is <b>" + Cache.get("mostPlayersOnline") + "</b>.", 0);
+        Bot.sendMessage(src, "<b>" + playersOnline + "</b> players are currently online. The highest amount of players we've ever seen is <b>" + Options.mostPlayersOnlines + "</b>.", 0);
 
         // Check if they are registered.
         if (!sys.dbRegistered(nameLower)) {
@@ -824,50 +826,39 @@ Trivia.start();
         script.afterChangeTeam(src, true);*/
     },
 
-    afterChannelJoin: function (src, channel) {
-        WatchEvent(src, "Channel Joined", channel);
+    afterChannelJoin: function (src, chan) {
+        var Options = require('options'),
+            PlayerUtils = require('player-utils'),
+            WatchUtils = require('watch-utils'),
+            ChannelData = require('channel-data'),
+            Tours = require('tours'),
+            JSESSION = require('jsession');
+        
+        var channel = JSESSION.channels(chan),
+            name = sys.name(src),
+            nameLower = name.toLowerCase(),
+            user = JSESSION.users(src),
+            setterAuth = PlayerUtils.trueAuth(channel.topicSetter);
+        
+        WatchUtils.logPlayerEvent(src, "Joined channel " + sys.channel(chan) + " (ID " + chan + ")");
 
-        var chan = JSESSION.channels(channel),
-            srcname = sys.name(src).toLowerCase(),
-            user = JSESSION.users(src);
-
+        // TODO: chat-gradient.js (ChatGradient)
         if (ChatColorRandomizers.has(channel)) {
             var index = ChatColorRandomizers[channel],
                 code = '<center><hr width="150"/><b>Party Time!</b><hr width="150"/></center><div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
 
-            sys.sendHtmlMessage(src, code, channel);
+            sys.sendHtmlMessage(src, code, chan);
         }
 
-        if (!chan.topic) {
-            chan.topic = "Welcome to " + sys.channel(channel) + "!";
-            chan.defaultTopic = true;
-            cData.changeTopic(chan, chan.topic, "", true);
-        }
-        else {
-            var topic = chan.topic,
-                tsetter = chan.topicsetter,
-                dbAuth = hpAuth(tsetter);
+        sys.sendHtmlMessage(src, "<font color='orange'><timestamp/><b>Topic:</b></font> " + channel.topic, chan);
 
-            if (dbAuth == undefined || dbAuth < 0) {
-                topic = format(html_escape(topic));
-            }
-
-            sys.sendHtmlMessage(src, "<font color=orange><timestamp/><b>Welcome Message:</b></font> " + topic, channel);
-
-            if (tsetter != '') {
-                sys.sendHtmlMessage(src, "<font color=darkorange><timestamp/><b>Set By:</b></font> " + tsetter, channel);
-            }
+        if (channel.topicSetter !== "") {
+            sys.sendHtmlMessage(src, "<font color='darkorange'><timestamp/><b>Set By:</b></font> " + channel.topicSetter, chan);
         }
 
-        if (motd) {
-            var MOTDSetter = cache.get("MOTDSetter"),
-                MOTD = cache.get("MOTDMessage");
-
-            sys.sendHtmlMessage(src, '<font color=red><timestamp/><b>Message Of The Day: </b></font>' + MOTD, channel);
-            sys.sendHtmlMessage(src, '<font color=darkred><timestamp/><b>Set By: </b></font>' + MOTDSetter, channel);
-        }
-        else {
-            sys.sendHtmlMessage(src, '<font color=red><timestamp/><b>Message Of The Day:</b></font> Enjoy your stay at ' + servername + '!', channel);
+        if (Options.motd.enabled) {
+            sys.sendHtmlMessage(src, "<font color='red'><timestamp/><b>Message Of The Day:</b></font> " + Options.motd.message, chan);
+            sys.sendHtmlMessage(src, "<font color='darkred'><timestamp/><b>Set By:</b></font> " + Options.motd.setter, chan);
         }
 
 /*
@@ -875,119 +866,94 @@ Trivia.start();
             botMessage(src, "This channel is currently using a default topic. Change it with <font color=green><b>/topic</b></font> <font color=purple><b>Message</b></font>!", channel);
         }*/
 
+        // TODO: Polls
+        /*
         if (Poll.mode) {
-            botMessage(src, "A poll is going on! Use <font color=green><b>/viewpoll</b></font> for more information.", channel);
-        }
-
-        if (chan.toursEnabled) {
-            if (channel != 0) {
-                TourNotification(src, channel);
-            }
-        }
-/*
-        if (channel === trivreview) {
-            var triv_rev_count = Trivia.reviewCount(),
-                s = "are",
-                s2 = "s";
-            if (triv_rev_count != 0) {
-                if (triv_rev_count === 1) {
-                    s = "is";
-                    s2 = "";
-                }
-                botMessage(src, "There " + s + " " + triv_rev_count + " question" + s2 + " to review. Type /review for a full list.");
-            }
+            botMessage(src, "A poll is going on! Use <font color=green><b>/viewpoll</b></font> for more information.", chan);
         }*/
 
+        // Don't send them a notification if this is the main channel.
+        if (channel !== 0) {
+            Tours.tourNotification(src, channel);
+        }
     },
 
     beforeNewMessage: function (message) {
-        if (message.substring(0, 8) == "[#Watch]") {
+        var Options = require('options'),
+            Utils = require('utils'),
+            WatchUtils = require('watch-utils'),
+            ChannelData = require('channel-data'),
+            JSESSION = require('jsession');
+        
+        var result,
+            mainChan;
+        
+        // Don't post any messages from Guardtower here.
+        // Guardtower is index 3.
+        // Also take out empty messages.
+        if (message.substring(0, "[#" + Options.defaultChannels[3] + "]") === "[#" + Options.defaultChannels[3] + "]"
+                || message.replace(/\[#(.*?)\]/, "") === " ") {
             sys.stopEvent();
             return;
         }
 
-        if (message.replace(/\[#(.*?)\]/, "") == " ") {
+        if (message.substring(0, 14) === "Script Warning") {
+            WatchUtils.logSystemEvent("Script Warning", message);
             sys.stopEvent();
             return;
         }
 
-        if (message.substring(0, 14) == "Script Warning") {
-            sys.stopEvent();
-            if (typeof watch != "undefined") {
-                botAll(message, watch);
-            }
-            return;
-        }
-
-        if (message.substring(0, 14) == "~~Server~~: ->") {
+        if (message.substring(0, 14) === "~~Server~~: ->") {
             sys.stopEvent();
             print("-> " + message.substring(14));
-
-            var result;
+            
             try {
-                result = eval(message.substring(14));
+                result = GLOBAL.eval.call(null, message.substring(14));
             } catch (e) {
-                result = FormatError("", e);
+                result = Utils.formatError(e);
             }
 
             print("<- " + result);
             return;
         }
-/*
-        if (message.substr(0, 2) != "[#") {
+
+        if (message.substr(0, 2) !== "[#") {
             if (/Script Error line \d+:/.test(message)) {
-                botAll(message, watch);
+                WatchUtils.logSystemEvent("Script Error", message);
                 return;
             }
-        }*/
+        }
 
 /*
 if(message == "Safe scripts setting changed") {
 if(message == "Logging changed") {
 if(message == "Proxy Servers setting changed") {
 if(message == "Low TCP Delay setting changed") {
-if(message == "Maximum Players Changed.") { 
+if(message == "Maximum Players Changed.") {
+if (message === "Announcement changed.") {
+if (message === "The description of the server was changed.") {
 */
 
-        if (message == "Main channel name changed") {
-            var mainChan = JSESSION.channels(0);
-            if (mainChan.defaultTopic || mainChan.topicsetter == '') {
-                var update = function () {
-                    mainChan.topic = "Welcome to " + sys.channel(0) + "!";
-                    cData.changeTopic(0, mainChan.topic, '', true);
-                }
-                sys.quickCall(update, 20); // since it's before.
+        // Update the main channel's topic if it's in default mode.
+        if (message === "Main channel name changed") {
+            mainChan = JSESSION.channels(0);
+            
+            if (mainChan.defaultTopic) {
+                mainChan.topic = "Welcome to " + sys.channel(0) + "!";
+                ChannelData.save(0, "topic", mainChan.topic);
             }
+            
             return;
         }
 
-        if (message == "Script Check: OK") {
+        if (message === "Script Check: OK") {
             script.init();
-            ScriptUpdateMessage();
+            Utils.scriptUpdateMessage();
             return;
         }
 
-        if (message == "Announcement changed.") {
-            var pidsin, pids = sys.playerIds();
-            for (pidsin in pids) {
-                sys.sendMessage(pids[pidsin], "~~Server~~: Announcement was changed.");
-            }
-            return;
-        }
-
-        if (message == "The description of the server was changed.") {
-            var pidsin, pids = sys.playerIds();
-            for (pidsin in pids) {
-                sys.sendAll(pids[pidsin], "~~Server~~: Description of the server was changed.");
-            }
-            return;
-        }
-
-        if (message.substr(0, 33) == "The name of the server changed to") {
-            servername = message.substring(34, message.lastIndexOf("."));
-            if (!motd) {
-                cache.write("MOTDMessage", "Enjoy your stay at " + servername + "!");
-            }
+        if (message.substr(0, 33) === "The name of the server changed to") {
+            Options.serverName = message.substring(34, message.lastIndexOf("."));
             return;
         }
     },
@@ -6680,8 +6646,7 @@ if(message == "Maximum Players Changed.") {
                     if (res !== undefined) {
                         print(res);
                     }
-                },
-
+                }
             });
 
             ownerCommands[removespaces(OwnerName).toLowerCase() + "commands"] = function () {
@@ -8594,23 +8559,7 @@ if(message == "Maximum Players Changed.") {
             updateChecking = true;
         }
 
-        ScriptUpdateMessage = function () {
-            var runEndTime = new Date().getTime(),
-                ending = runEndTime - EvaluationTimeStart,
-                load = "Runtime: " + ending / 1000 + " seconds.";
-            delete EvaluationTimeStart;
-
-            DisableChatColorRandomizer(0);
-
-            if (typeof StartUp !== 'undefined') {
-                delete StartUp;
-                print("\t\tServer Script has been loaded.\t\t\n\t\tEvaluation Time: " + ending / 1000 + " seconds.\t\t");
-                return;
-            }
-
-            var code = '<center><table border="1" width="50%" style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><td align="center"><img src="pokemon:493&back=true" align="left"><img src="pokemon:385&back=false" align="right"><font size="4"><b><br/> ' + servername + ' - Scripts <br/></b></font> Scripts have been updated! <br/> ' + load + ' <br/> ~ ' + Version + ' ~ <br/></td></tr></table></center>';
-            sys.sendHtmlAll(code, 0);
-        }
+        // ScriptUpdateMessage -> Utils.scriptUpdateMessage
 
         ChatColorRandomizer = function (firstColor, secondColor, channel) {
             if (firstColor === undefined || firstColor.toLowerCase() == "random") {

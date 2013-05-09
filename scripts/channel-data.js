@@ -1,4 +1,4 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: channel-data.js (ChannelData)
@@ -41,7 +41,11 @@
         // this allows this function to accept ids as well.
         chanName = sys.channel(chanName) || chanName;
         
-        this.getData(chanName)[property] = value;
+        if (this.data[chanName] === undefined) {
+            this.data[chanName] = {};
+        }
+        
+        this.data[chanName][property] = value;
         this.saveData();
         
         return this;
@@ -52,23 +56,12 @@
         // this allows this function to accept ids as well.
         chanName = sys.channel(chanName) || chanName;
         
-        this.getData(chanName)[property] = value;
-        this.saveData();
-        
-        return this;
-    };
-    
-    // Gets the channel data of [chanName], creating it if necessary.
-    ChannelData.prototype.getData = function (chanName) {
-        // this allows this function to accept ids as well.
-        chanName = sys.channel(chanName) || chanName;
-        
-        // we have to create this, if we want ChannelData#save to function (and for it to make sense in the first place).
         if (this.data[chanName] === undefined) {
             this.data[chanName] = {};
         }
         
-        return this.data[chanName];
+        this.data[chanName][property] = value;
+        return this;
     };
     
     // Exports channel data into the channel, [chan] (channel id).

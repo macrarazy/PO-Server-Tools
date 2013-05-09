@@ -1,4 +1,4 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
 
 // File: user.js (User)
@@ -76,7 +76,7 @@
             return false;
         }
     
-        if (Options.AutoMute === false) {
+        if (Options.autoMute === false) {
             return false;
         }
         

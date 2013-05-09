@@ -1,5 +1,5 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true*/
-/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script, print, gc, version, Config, require, module, exports: true*/
 
 // File: datahash.js (DataHash)
 // Contains DataHash, which is used to read and write values.
@@ -36,8 +36,9 @@
     };
     
     // Saves the DataHash.[type] object.
+    // Note that we don't have to call JSON.stringify, this is already done by the Cache itself.
     DataHash.save = function (type) {
-        Cache.save("DataHash_" + type, JSON.stringify(DataHash[type]));
+        Cache.save("DataHash_" + type, DataHash[type]);
     };
     
     // Gets all the values from Cache.
