@@ -8,6 +8,10 @@
 // Table of Content:
 // [expt]: Exports
 
+/* Values used by the default cache:
+    - mostPlayersOnline
+*/
+
 (function () {
     var Utils = require('utils');
     

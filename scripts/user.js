@@ -92,7 +92,7 @@
         this.caps += caps;
     
         if (this.caps >= 70) {
-            WatchUtils.logPlayerMessage(this.id, "CAPS Mute Message", message, channel);
+            WatchUtils.logPlayerMessage("Message (triggered CAPS mute)", this.id, message, channel);
             Bot.sendAll(this.name + " got muted for 5 minutes by " + Options.Bot.name + " with reason 'CAPS'.", channel);
     
             PlayerUtils.mute({

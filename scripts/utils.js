@@ -349,7 +349,7 @@
 
             if (currentTime > 0) {
                 if (currentTime > 1) {
-                    s = "<b>s</b>";
+                    s = "s";
                 }
 
                 ret.push((currentTime + " " + value[1] + s));
@@ -361,7 +361,7 @@
             return "1 Second";
         }
 
-        return fancyJoin(ret) + "</b>";
+        return fancyJoin(ret);
     };
     
     // A more fancy looking version than the default .join
@@ -464,7 +464,7 @@
         This function is similar to http://qt-project.org/doc/qt-4.8/qstring.html#arg , except that it accepts all the arguments in one go.
         
         Very important to note that if, for example, you call the function with 3 arguments (the string and the 2 arguments that are replaced).
-        but the string is, for example, "%1 %2 %3", %3 will remain untouched ("TheUnknownOne Hope you had a nice time! %3", for example, if called the same way
+        but the string is, for example, "%1 %2 %3", %3 will remain untouched ("TheUnknownOne Hope you had a nice time! %3", it will be called the same way
         as illustrated above, but with the example string given in this section).
     */
     exports.format = function format(string) {

@@ -50,6 +50,9 @@ var Config = {
         all channel data stored or want to import a file. Note that v3 (this version) is not compatible with v2 channel data. */
     ChannelDataFile: "channel-data.json",
     
+    /* File where actions and events will be logged to. */
+    LogFile: "server.log",
+    
     /* After how many seconds a player's message should be 'forgiven', causing it to not be counted by
         the floodbot. The floodbot counts the amount of messages a player posts (the exact amount is in scripts/user.js) before it kicks them.
         After this many seconds, the floodbot forgets that the player ever posted a message, causing it not
@@ -59,7 +62,8 @@ var Config = {
     /* Characters which indicate the usage of a command. */
     CommandStarts: ["/", "!"],
     
-    /* List of players that can use the 'eval') command */
+    /* List of players that can use the 'eval') command. Note that if the player isn't in this list, then they are simply not allowed to use the command,
+        even if they are Owner, with the exception of the server host (who has ip 127.0.0.1).*/
     EvalAccess: [
         "Example player with Config.EvalAccess",
         "Another example player with Config.EvalAccess"
@@ -394,8 +398,9 @@ function Mail(sender, text, title) {
     init: function () {
         var Options = require('options'),
             Utils = require('utils'),
-            ChannelData = require('channel-data').ChannelData,
-            serverLine = sys.getFileContent("config").split("\n")[30],
+            ChannelData = require('channel-data').ChannelData;
+        
+        var serverLine = sys.getFileContent("config").split("\n")[30],
             defaultChannels = Options.defaultChannels,
             channelIdKeys = Object.keys(Options.defaultChannelIds),
             length = defaultChannels.length,
@@ -488,8 +493,9 @@ function Mail(sender, text, title) {
         var Bot = require('bot'),
             Utils = require('utils'),
             Tours = require('tours').Tours,
-            JSESSION = require('jsession'),
-            channelIds = sys.channelIds(),
+            JSESSION = require('jsession');
+        
+        var channelIds = sys.channelIds(),
             length = channelIds.length,
             tour,
             i;
@@ -525,8 +531,9 @@ function Mail(sender, text, title) {
     beforeChannelJoin: function (src, chan) {
         var JSESSION = require('jsession').JSESSION,
             Bot = require('bot'),
-            Options = require('options'),
-            channelIds = Options.defaultChannelIds,
+            Options = require('options');
+        
+        var channelIds = Options.defaultChannelIds,
             name = sys.name(src),
             user,
             channel;
@@ -609,8 +616,9 @@ function Mail(sender, text, title) {
     // Stops perm/default channels from being destroyed.
     beforeChannelDestroyed: function (chan) {
         var WatchUtils = require('watch-utils'),
-            JSESSION = require('jsession').JSESSION,
-            defaultIds = require('options').defaultChannelIds;
+            JSESSION = require('jsession').JSESSION;
+        
+        var defaultIds = require('options').defaultChannelIds;
         
         if (chan === defaultIds.mafia
                 || chan === defaultIds.trivia
@@ -657,8 +665,9 @@ function Mail(sender, text, title) {
     afterChannelCreated: function (chan, name, src) {
         var Utils = require('utils'),
             ChannelData = require('channel-data').ChannelData,
-            JSESSION = require('jsession').JSESSION,
-            channel = JSESSION.channels(chan);
+            JSESSION = require('jsession').JSESSION;
+        
+        var channel = JSESSION.channels(chan);
 
         // Bail and panic if the channel doesn't exist.
         if (channel === undefined) {
@@ -681,10 +690,9 @@ function Mail(sender, text, title) {
         var Options = require('options'),
             // TODO: Mafia
             Mafia = require('mafia').Mafia,
-            Prune = require('prune'),
-            stepCounter = Options.stepCounter;
+            Prune = require('prune');
         
-        ++stepCounter;
+        ++Options.stepCounter;
 
 /*
 if(typeof Trivia != "undefined") {
@@ -695,7 +703,7 @@ Trivia.start();
 */
 
         // Prune temp auth every 10 seconds.
-        if (stepCounter % 10 === 0) {
+        if (Options.stepCounter % 10 === 0) {
             Prune.tempAuth();
         }
         
@@ -703,8 +711,9 @@ Trivia.start();
     },
     
     beforeLogIn: function (src) {
-        var DataHash = require('datahash'),
-            name = sys.name(src),
+        var DataHash = require('datahash');
+        
+        var name = sys.name(src),
             ip = sys.ip(src);
 
         //script.hostAuth(src);
@@ -728,71 +737,82 @@ Trivia.start();
     },
 
     beforeChannelLeave: function (src, chan) {
-        WatchEvent(src, "Left Channel", chan);
+        var WatchUtils = require('watch-utils');
+        
+        WatchUtils.logPlayerEvent(src, "Left channel " + sys.channel(chan) + " (ID: " + chan + ")");
     },
 
     afterLogIn: function (src) {
+        /*
         var me = player(src),
             self = JSESSION.users(src),
             srcToLower = sys.name(src).toLowerCase(),
             myAuth = sys.auth(src),
             sendWelcomeMessage = Config.WelcomeMessages && (myAuth < 1 || myAuth > 3),
             temp = "",
-            pNum = sys.numPlayers();
+            pNum = sys.numPlayers();*/
+        var Options = require('options'),
+            Bot = require('bot'),
+            Utils = require('utils'),
+            PlayerUtils = require('player-utils'),
+            WatchUtils = require('watch-utils'),
+            Tours = require('tours'),
+            Cache = require('cache'),
+            JSESSION = require('jsession');
+        
+        var name = PlayerUtils.formatName(src),
+            plainName = sys.name(src),
+            nameLower = plainName.toLowerCase(),
+            auth = PlayerUtils.trueAuth(src),
+            playersOnline = sys.numPlayers(),
+            chanIds = [Options.defaultChannelIds.mafia];
+        
+        WatchUtils.logPlayerEvent(src, "Logged in with ip '" + sys.ip(src) + "'");
 
-        WatchEvent(src, "Log In on IP " + sys.ip(src));
+        Bot.sendMessage(src, "Welcome, " + name + "!", 0);
+        Bot.sendMessage(src, "Type '<b><font color=green>/commands</font></b>' to see the server commands and '<b><font color=green>/rules</font></b>' to read the server rules.", 0);
 
-        if (sendWelcomeMessage) {
-            botAllExcept(src, me + " joined the server!", 0);
+        if (Options.startUpTime !== 0) {
+            Bot.sendMessage(src, "The server has been up for " + Utils.timeToString(Options.startUpTime) + ".", 0);
         }
 
-        botMessage(src, "Welcome, " + me + "!", 0);
-
-        botMessage(src, "Type in <b><font color=green>/Commands</font></b> to see the commands and <b><font color=green>/Rules</font></b> to see the rules.", 0);
-
-        if (typeof startupTime == 'number' && startupTime != NaN) {
-            botMessage(src, "The server has been up for " + startUpTime() + "</b>.", 0);
+        // Update the most players online, if we've hit a new limit
+        if (playersOnline > Cache.get("mostPlayersOnline")) {
+            Cache.write("mostPlayersOnline", playersOnline);
         }
 
-        if (pNum > maxPlayersOnline) {
-            maxPlayersOnline = pNum;
+        Bot.sendMessage(src, "<b>" + playersOnline + "</b> players are currently online. The highest amount of players we've ever seen is <b>" + Cache.get("mostPlayersOnline") + "</b>.", 0);
+
+        // Check if they are registered.
+        if (!sys.dbRegistered(nameLower)) {
+            Bot.sendMessage(src, "You are not registered. Click on the 'Register' button to claim this name. Registration only requires a password.", 0);
         }
 
-        if (maxPlayersOnline > cache.get("MaxPlayersOnline")) {
-            cache.write("MaxPlayersOnline", maxPlayersOnline);
-        }
-
-        botMessage(src, "Current amount of players online is <b>" + pNum + "</b>. Record is <b>" + maxPlayersOnline + "</b>.", 0);
-
-        if (!sys.dbRegistered(srcToLower)) {
-            botMessage(src, "You are not registered. Click on the 'Register' button if you wish to protect your alias. Registration only requires a password.", 0);
-        }
-
-        TourNotification(src, 0);
+        // Notify them about running tournaments
+        Tours.tourNotification(src, 0);
+        
+        // Send a white line.
         sys.sendMessage(src, "", 0);
 
         if (Config.AutoChannelJoin) {
-            var ChanIds = [mafiachan /*, trivia*/ ];
-
-            if (sys.auth(src) > 0 || JSESSION.channels(watch).isChanMod(src)) {
-                ChanIds.push(watch);
+            if (auth > 0 || JSESSION.channels(Options.defaultChannelIds.watch).isChanMod(src)) {
+                chanIds.push(Options.defaultChannelIds.watch);
             }
 
-            if (self.megauser || sys.auth(src) > 0 || JSESSION.channels(staffchannel).isChanMod(src)) {
-                ChanIds.push(staffchannel);
+            if (auth > 0 || JSESSION.users(src).megauser || SESSION.channels(Options.defaultChannelIds.staff).isChanMod(src)) {
+                chanIds.push(Options.defaultChannelIds.staff);
             }
 
-            if (sys.auth(src) > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
-                ChanIds.push(scriptchannel);
+            if (auth > 1 || JSESSION.channels(Options.defaultChannelIds.eval).isChanMod(src) || Config.evalAccess.indexOf(plainName) !== -1) {
+                chanIds.push(Options.defaultChannelIds.eval);
             }
-/*
-            if (sys.auth(src) > 1 || JSESSION.channels(trivreview).isChanMod(src)) {
-                ChanIds.push(trivreview);
-            }*/
-
-            putInMultipleChannels(src, ChanIds);
+            
+            // puts the player in those channels.
+            PlayerUtils.pushChannels(src, chanIds);
         }
 
+        // TODO: This needs work.
+        /*
         if (DataHash.idles.has(srcToLower)) {
             if (DataHash.idles[srcToLower].entry != "") {
                 botAll(format("lvl2", DataHash.idles[srcToLower].entry), 0);
@@ -801,7 +821,7 @@ Trivia.start();
         }
 
         ify.afterLogIn(src);
-        script.afterChangeTeam(src, true);
+        script.afterChangeTeam(src, true);*/
     },
 
     afterChannelJoin: function (src, channel) {
@@ -899,9 +919,9 @@ Trivia.start();
             return;
         }
 
-        if (message.substring(0, 14) == "~~Server~~: >>") {
+        if (message.substring(0, 14) == "~~Server~~: ->") {
             sys.stopEvent();
-            print(">> " + message.substring(14));
+            print("-> " + message.substring(14));
 
             var result;
             try {
@@ -910,7 +930,7 @@ Trivia.start();
                 result = FormatError("", e);
             }
 
-            print("<< " + result);
+            print("<- " + result);
             return;
         }
 /*
@@ -942,16 +962,8 @@ if(message == "Maximum Players Changed.") {
         }
 
         if (message == "Script Check: OK") {
-            sys.appendToFile(".scriptsession", "");
-
-            script.loadAll();
-
+            script.init();
             ScriptUpdateMessage();
-
-            RECOVERY_BACKUP = {};
-            for (var x in script) {
-                RECOVERY_BACKUP[x] = script[x];
-            }
             return;
         }
 
@@ -9417,13 +9429,7 @@ if(message == "Maximum Players Changed.") {
         botAllExcept.Normal = 0;
         botAllExcept.EscapeHTML = 1;
 
-        putInMultipleChannels = function (src, channelList) {
-            var x, pinC = sys.putInChannel;
-
-            for (x in channelList) {
-                pinC(src, channelList[x]);
-            }
-        }
+        // putInMultipleChannels -> PlayerUtils.pushChannels
     },
 
     loadChannelUtilities: function () {
@@ -11073,684 +11079,6 @@ if(message == "Maximum Players Changed.") {
                 botMessage(src, "Started counting command usage " + getTimeString(time - this.stats.startTime) + " ago. Last command used " + getTimeString(time - this.stats.lastCommandTime) + " ago.", chan);
             }
         })();
-    },
-
-    loadTrivia: function () {
-        return;
-
-        if (typeof Trivia === 'undefined' || !Trivia.loaded) {
-            Trivia = new(function () {
-                var Flags = {
-                    "html": 1,
-                    "AutoGenerator": "Automatic Trivia Question Generator",
-                    "NoQuestionsAvailable": "No questions are available.",
-                };
-
-                this.questionNumber = this.freeId = function () {
-                    return this.questions.length();
-                }
-
-                function sendAll(msg, html) {
-                    if (html == Flags.html) {
-                        sys.sendHtmlAll(msg, trivia);
-                        return;
-                    }
-
-                    botAll(msg, trivia);
-                }
-
-                function sendMessage(id, msg, html) {
-                    if (html == Flags.html) {
-                        sys.sendHtmlMessage(id, msg, trivia);
-                        return;
-                    }
-
-                    botMessage(id, msg, trivia);
-                }
-
-                function escapeMessage(id, msg) {
-                    botEscapeMessage(id, msg, trivia);
-                }
-
-                this.questionInfo = function () { /* No escaping on purpose; admins should review well */
-                    var currentQuestion = this.currentQuestion,
-                        displayQuestion = currentQuestion.display;
-
-                    sendAll("<hr width='450'/><center><b>Category:</b> " + currentQuestion.category + " <br/> <b>Question</b>: " + displayQuestion + " </center><hr width='450'/>", Flags.html);
-                }
-
-                this.leaderboardDisplay = function (src, match) {
-                    var scores = this.leaderboard;
-                    if (scores.isEmpty()) {
-                        sendMessage(src, "No leaderboard available.");
-                        return;
-                    }
-
-                    var l = [],
-                        i, num, p;
-
-                    if (match.isEmpty()) {
-                        for (i in scores) {
-                            l.push([i, scores[i]]);
-                        }
-
-                        l.sort(function (a, b) {
-                            return b[1] - a[1];
-                        });
-
-                        sendMessage(src, "<font size='4'>Trivia Leaderboard</font>");
-
-                        p = player(l[i][0]);
-
-                        for (i in l) {
-                            num = Number(i) + 1;
-                            escapeMessage(src, num + ". Player " + p + " with " + l[i][1] + " game wins.");
-                        }
-                        return;
-                    }
-
-                    p = player(match);
-                    sendMessage(src, "<font size='4'>Leaderboard for " + p + "</font>");
-                    escapeMessage(src, "Player " + p + " with " + scores[match] + " game wins.");
-                }
-
-                this.clearVariables = function (inLoad) {
-                    if (inLoad && this.loaded) {
-                        return;
-                    }
-
-                    this.mode = -1;
-
-/* Modes:
-			-1: No game.
-			0: Signups. 60 Sec delay.
-			1: Question
-			2: Delay time between questions
-			*/
-
-                    this.currentQuestion = {}; /* Current Question data (for this.questionInfo()) */
-
-                    this.players = {};
-
-/* Struct players:
-				nameToLower => "name", "points", "actionTime" 
-				(Correct case, points earned, time (in millisecs) of the /a if q was correct)
-				defaults: null, 0, 0
-			*/
-
-                    this.gamePoints = -1;
-
-                    /* Amount of points required */
-
-                    this.roundWrongAnswers = []; /* Incorrect answers. */
-
-                    if (typeof this.questions === 'undefined') {
-                        this.questionsLoad();
-                    }
-                    if (typeof this.leaderboard === 'undefined') {
-                        this.leaderboardLoad();
-                    }
-
-                    if (typeof this.review == 'undefined') {
-                        this.reviewLoad();
-                    }
-
-                    this.loaded = true;
-                }
-
-                this.randomQ = function () {
-                    var list = this.questions.keys(),
-                        len = list.length;
-
-                    if (len == 0) {
-                        return Flags.NoQuestionsAvailable;
-                    }
-
-                    var rand = Math.floor(len * Math.random()),
-                        result = this.questions[list[rand]],
-                        resn = result.name;
-
-                    while (result === undefined) {
-                        rand = Math.floor(len * Math.random());
-                        result = this.questions[list[rand]], resn = result.name;
-                    }
-
-                    this.currentQuestion = result;
-                }
-
-                this.isQuestion = function (id) {
-                    var x, questions = this.questions,
-                        curr;
-                    for (x in questions) {
-                        curr = questions[x]
-                        if (curr != id) {
-                            continue;
-                        }
-                        return true;
-                    }
-
-                    return false;
-                }
-
-                this.addQuestion = function (info) {
-                    if (!info.display_question) {
-                        info.display_question = info.question;
-                    }
-
-                    this.questions[this.freeId()] = info;
-                }
-
-                this.questionsLoad = function () {
-                    try {
-                        this.questions = JSON.parse(TrivCache.get("Questions"));
-                    }
-                    catch (e) {
-                        this.questions = {};
-                    }
-
-                    if (TrivCache.get("init_pokes_done") == "") {
-                        var nums = 1,
-                            poke, randchance, scrambled;
-
-                        for (; nums < 650; nums++) {
-                            poke = sys.pokemon(nums);
-                            randchance = sys.rand(0, 3) == 1 ? '&shiny=true' : '';
-                            scrambled = poke.scrambled;
-
-                            this.addQuestion({
-                                'by': Flags.AutoGenerator,
-                                'answers': [poke],
-                                'question': 'Who is this Pokémon? <br/> <img src="pokemon:' + nums + randchance + '&gen=5">',
-                                'category': 'Pokémon'
-                            });
-                            this.addQuestion({
-                                'by': Flags.AutoGenerator,
-                                'answers': [poke],
-                                'question': 'Who is this Pokemon? - ' + poke,
-                                'display_question': 'What is the correct Pokémon name? <br/> ' + scrambled.bold(),
-                                'category': 'Pokémon'
-                            });
-                        };
-
-                        TrivCache.write("init_pokes_done", true);
-                        this.saveQuestions();
-                    }
-                }
-
-                this.leaderboardLoad = function () {
-                    try {
-                        this.leaderboard = JSON.parse(TrivCache.get("LeaderBoard"));
-                    }
-                    catch (e) {
-                        this.leaderboard = {};
-                    }
-                }
-
-                this.reviewLoad = function () {
-                    try {
-                        this.review = JSON.parse(TrivCache.get("Review"));
-                    }
-                    catch (e) {
-                        this.review = {};
-                    }
-
-                }
-
-                this.saveQuestions = function () {
-                    TrivCache.write("Questions", JSON.stringify(this.questions));
-                }
-
-                this.saveLeaderBoard = function () {
-                    TrivCache.write("LeaderBoard", JSON.stringify(this.leaderboard));
-                }
-
-                this.saveReview = function () {
-                    TrivCache.write("Reviews", JSON.stringify(this.review));
-                }
-
-                this.saveLeaderboard = function (user) {
-                    user = user.toLowerCase();
-
-                    var lbNum = 1,
-                        board = this.leaderboard;
-                    if (board.has(user)) {
-                        lbNum + board[user];
-                    }
-
-                    board[user] = lbNum;
-                    this.saveLeaderBoard();
-                }
-
-                this.command_start = function (src, points) {
-                    var name = sys.name(src),
-                        send = function (mess) {
-                            if (src) {
-                                sendMessage(src, mess);
-                            }
-                        };
-
-                    if (!src) {
-                        name = Bot.bot + "</i>";
-                    }
-
-                    if (this.isGameGoingOn()) {
-                        send("A Trivia game is already going on.");
-                        return;
-                    }
-                    if (this.questions.isEmpty()) {
-                        send("No questions exist.");
-                        return;
-                    }
-
-                    points = parseInt(points);
-
-                    if (points < 30) {
-                        send("Specify at least 30 points for this game.");
-                        return;
-                    }
-
-                    if (points > 200) {
-                        send("Specify less than 200 points for this game.");
-                        return;
-                    }
-
-                    this.mode = 0;
-                    this.gamePoints = points;
-
-                    var me = player(src);
-                    if (!src) {
-                        me = name;
-                    }
-
-                    botAll("A new trivia game was started by " + me + "! It will start in 60 seconds. Go to " + ChannelLink(sys.channel(trivia)) + " and type /join to join it! First to get " + points + " points or more wins!", 0);
-                    sendAll("A new trivia game was started by " + me + "! It will start in 60 seconds. Type /join to join the game! First to get " + points + " points or more wins! <ping/>");
-                    sys.callLater("Trivia.startGame();", 60);
-                }
-
-                this.isGameGoingOn = function () {
-                    return this.mode != -1;
-                }
-
-                this.durningGame_beforeChatMessage = function (src, message) {
-/* return value bool:
-				true = stop message from appearing
-				false = ignore this
-				
-				arg message string:
-				the message.
-				*/
-
-                    if (this.mode == 2 || this.mode == 0) {
-                        return false;
-                    }
-
-                    var myName = sys.name(src).toLowerCase();
-                    if (this.players.has(myName)) {
-                        this.command_join(src);
-                    }
-
-                    var myPlayer = this.players[myName];
-
-                    if (message.isEmpty()) {
-                        sendMessage(src, "Specify an answer.");
-                        return true;
-                    }
-
-                    var qList = this.currentQuestion.answers.map(function (q) {
-                        return q.toLowerCase();
-                    }),
-                        messageToLower = message.toLowerCase();
-
-                    if (qList.has(messageToLower)) {
-                        myPlayer.actionTime = new Date().getTime();
-                    }
-                    else {
-                        if (myPlayer.actionTime != -1) {
-                            myPlayer.actionTime = -1; // Wrong, reset.
-                            this.roundWrongAnswers.push(message + " (by " + sys.name(src) + ")");
-                        }
-                    }
-
-
-                    this.sendMessage(src, "Your answer was submitted.");
-                    return true;
-                }
-
-                this.endGame = function () {
-                    this.clearVariables(false);
-                }
-
-                this.startGame = function () {
-                    var pList = this.players.keys().map(function (n) {
-                        return player(n);
-                    });
-
-                    if (pList.length != 0) {
-                        sendAll(fancyJoin(pList) + " joined the game!");
-                    }
-
-                    this.displayQInfo();
-                    this.callNewRound();
-                }
-
-                this.sendToTrivReview = function (src, question) {
-                    if (sys.playersOfChannel(trivreview) != 0) {
-                        sys.sendHtmlAll("<timestamp/> <i><b>" + sys.name(src) + "</b> has submit a question.</i> <ping/>", trivreview);
-                        sys.sendHtmlAll("<timestamp/> <i>" + question.question + " | " + html_escape(question.category) + " | " + question.answers.join(" & ") + "</i>", trivreview);
-                        var questionContainHTML = html_strip(question.display_question) != question.display_question;
-                        var categoryContainHTML = html_strip(question.category) != question.category;
-                        sys.sendHtmlAll("<timestamp/> <i>Contains HTML in displayed question: " + questionContainHTML + " | Contains HTML in category: " + categoryContainHTML, trivreview);
-                    }
-                }
-
-                this.callNewRound = function () {
-                    if (this.mode === -1) { /* Game ended */
-                        return;
-                    }
-
-                    var longestAnswer = 0,
-                        x, q = this.currentQuestion.answers,
-                        curr;
-                    for (x in q) {
-                        curr = q[x].length;
-                        if (curr > longestAnswer) {
-                            longestAnswer = curr
-                        }
-                    }
-
-                    if (longestAnswer > 19) {
-                        longestAnswer = Math.round(longestAnswer / 2);
-                    }
-
-                    sys.callLater("Trivia.roundEnd(" + longestAnswer + ");", longestAnswer);
-                }
-
-                this.startWait = function () {
-                    var rand = sys.rand(13, 21);
-
-                    this.mode = 2;
-                    sendAll("Have a " + rand + " second break before the next question!");
-                    sys.callLater("Trivia.displayQInfo(); Trivia.callNewRound();", rand);
-                }
-
-                this.roundEnd = function (longestAnswerLength) {
-                    if (this.mode === -1) {
-                        return;
-                    } /* Game ended */
-
-                    var x, p = this.players,
-                        ctime = new Date().getTime(),
-                        correct = [],
-                        winners = {},
-                        cplayer, cplayertimediff, cplayeraddpoints;
-
-                    for (x in p) {
-                        cplayer = p[x];
-                        cplayertimediff = Math.round(ctime - cplayer.actionTime);
-                        if (cplayer.actionTime != -1) {
-                            cplayeraddpoints = longestAnswerLength;
-
-                            if (cplayertimediff > longestAnswerLength / 2) {
-                                cplayeraddpoints = Math.round(cplayeraddpoints / 2);
-                            }
-
-                            correct.push(cplayer.name);
-                            cplayer.points += Math.round(Math.tan(cplayertimediff)) + cplayeraddpoints + sys.rand(-1, 2);
-                            if (cplayer.points >= this.gamePoints) {
-                                winners[cplayer.name] = cplayer.points;
-                            }
-                        }
-                    }
-
-                    if (!winners.isEmpty()) {
-                        var winnersList = [],
-                            win = " is";
-
-                        for (x in winners) {
-                            winnersList.push(x.bold() + " (" + winners[x] + ")");
-                        }
-
-                        if (winnersList.length != 1) {
-                            win = "s are";
-                        }
-
-                        sendAll("The winner" + win + ": " + fancyJoin(winnersList));
-
-                        for (x in winnersList) {
-                            this.saveLeaderboard(winnersList[x]);
-                        }
-
-                        this.endGame();
-                        return;
-                    }
-
-                    this.sendAll("Time's up!");
-                    if (!correct.isEmpty()) {
-                        this.sendAll("Correct Answered: " + fancyJoin(correct));
-                    } else {
-                        this.sendAll("No one was correct!");
-                    }
-                    if (this.roundWrongAnswers.length != 0) {
-                        this.sendAll("Incorrect answers: " + this.roundWrongAnswers.join(", "));
-                    }
-
-                    var lbArr = [],
-                        lbStr = "",
-                        i = 0,
-                        c_pl;
-
-                    for (x in this.players) {
-                        c_pl = this.players[x];
-                        lbArr.push([c_pl.name, c_pl.points]);
-                        i++;
-
-                        c_pl.actionTime = 0; /* Do this while we can! */
-                    }
-
-                    lbArr = lbArr.sort(function (a, b) {
-                        return b[1] - a[1];
-                    });
-
-                    var lbArrLen = lbArr.length - 1;
-
-                    for (x in lbArr) {
-                        lbStr += lbArr[x][0].bold() + " (<b>" + lbArr[x][1] + "</b>)";
-                        if (x != lbArrLen) {
-                            lbStr += ", ";
-                        }
-                    }
-
-                    sendAll("Leaderboard:");
-                    sendAll(lbStr);
-
-                    this.roundWrongAnswers = [];
-                    this.startWait();
-                }
-
-                this.getCategories = function () {
-                    if (this.categoryCache !== undefined) {
-                        return this.categoryCache;
-                    }
-
-                    var x, quest = this.questions,
-                        catArr = [],
-                        c_quest;
-                    for (x in quest) {
-                        c_quest = quest[x].category;
-                        if (!catArr.has(c_quest)) {
-                            catArr.push(c_quest);
-                        }
-                    }
-
-                    this.categoryCache = catArr;
-                    return catArr;
-                }
-
-                this.displayQInfo = function () {
-                    if (this.mode === -1) { // Game ended.
-                        return;
-                    }
-
-                    this.randomQ();
-                    this.questionInfo();
-                }
-
-                this.end = function (src) {
-                    if (this.mode === -1) {
-                        sendMessage(src, "No game is going on.");
-                        return;
-                    }
-
-                    sendAll("Trivia game ended by " + player(src) + "!");
-                    this.endGame();
-                }
-
-                this.command_questions = function (src) {
-                    var len = this.questionsLength();
-                    if (len === 0) {
-                        sendMessage(src, "No questions exist.");
-                        return;
-                    }
-
-                    if (len > 2998) {
-                        sendMessage(src, "There are too many questions to display. You will not see them all.");
-                    }
-
-                    var q = this.questions,
-                        y, curr;
-                    for (y in q) {
-                        curr = q[y];
-                        escapeMessage(src, y + ": " + curr.question);
-                    }
-                }
-
-                this.command_categories = function (src) {
-                    if (this.questions.isEmpty()) {
-                        this.sendMessage(src, "No questions exist. There can't be any categories.");
-                        return;
-                    }
-
-                    var catArr = this.getCategories();
-                    sendMessage(src, "Question Categories: " + catArr.join(", "));
-                }
-
-                this.command_rmquestion = function (src, commandData) {
-                    if (this.questionNumber() === 0) {
-                        botMessage(src, "No questions exist.", trivreview);
-                        return;
-                    }
-                    if (!this.isQuestion()) {
-                        botMessage(src, "That question doesn't exist. For a list of questions, type /questions", trivreview);
-                        return;
-                    }
-                    if (!this.currentQuestion.isEmpty()) {
-                        if (this.currentQuestion.question == commandData) {
-                            botMessage(src, "A round is going on with this question. Use /skip first.", trivreview);
-                            return;
-                        }
-                    }
-
-                    delete this.questions[commandData];
-                    delete this.categoryCache;
-                    this.saveQuestions();
-                    botMessage(src, "Deleted question " + commandData + "!", trivreview);
-                }
-
-                this.command_skip = function (src) {
-                    if (!this.isGameGoingOn()) {
-                        sendMessage(src, "No trivia game is going on.");
-                        return;
-                    }
-                    if (this.mode === 2) {
-                        sendMessage(src, "You can't skip a round durning a break.");
-                        return;
-                    }
-                    sendAll(player(src) + " skipped this round!");
-                    this.startWait();
-                }
-
-                this.command_qdata = function (src, commandData) {
-                    if (this.questionNumber() === 0) {
-                        sendMessage(src, "No questions exist.");
-                        return;
-                    }
-                    if (!this.questions.has(commandData)) {
-                        sendMessage(src, "That question doesn't exist. For a list of questions, type /questions.");
-                        return;
-                    }
-
-                    var qData = this.questions[commandData],
-                        question = qData.question,
-                        by = qData.by,
-                        t = qData.category;
-
-                    sendMessage(src, "Question: " + html_escape(r));
-                    sendMessage(src, "Category: " + cat);
-
-                    if (by !== Flags.AutoGenerator) {
-                        sendMessage(src, "By: " + by);
-                    }
-
-                    if (hpAuth(src) > 0) {
-                        if (!this.currentQuestion.isEmpty() && this.currentQuestion.question != commandData) {
-                            var answers = qData.answers,
-                                s = answers.length == 1 ? " is" : "s are";
-
-                            sendMessage(src, "The answer" + s + ": " + answers.join(", "));
-                        }
-                    }
-                }
-
-                this.command_submit = function (src, mcmd) {
-                    if (isEmpty(mcmd[0]) || isEmpty(mcmd[1]) || isEmpty(mcmd[2])) {
-                        this.sendMessage(src, "Question name, category, or answers are missing.");
-                        return;
-                    }
-
-                    var q = this.questions[mcmd[0]],
-                        myName = sys.name(src);
-                    if (this.isQuestion(mcmd[0]) || this.isReview(mcmd[0])) {
-                        if (q.by.toLowerCase() !== myName.toLowerCase()) {
-                            this.sendMessage(src, "This question already exists!");
-                            return;
-                        }
-                    }
-
-                    var answers = cut(mcmd, 2, ':').split("").map(function (q) {
-                        return html_escape(q);
-                    }).split(",");
-                    if (answers.length == 0) {
-                        this.sendMessage(src, "Please specify answers.");
-                        return;
-                    }
-
-                    var questionHash = {
-                        "question": html_strip(mcmd[0]),
-                        "display_question": mcmd[0],
-                        "category": mcmd[1],
-                        "answers": answers,
-                        "by": myName
-                    };
-                    this.review[this.freeId()] = questionHash;
-                    delete this.categoryCache;
-
-                    this.sendMessage(src, "Submitted question!");
-                    this.questionsSave();
-                    this.sendToTrivReview(src, questionHash);
-                }
-
-                this.command_review = function (src, mcmd) {
-                    var qid = mcmd[0],
-                        keep = on(mcmd[1]);
-                    if (!keep) {
-                        delete this.review[qid];
-                        botAll("Removed question " + qid, trivreview);
-                    }
-                }
-            })();
-        }
-
-        Trivia.clearVariables(true);
     },
 
     // TODO: add mafia

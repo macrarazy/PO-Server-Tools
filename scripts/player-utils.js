@@ -205,4 +205,14 @@
     };
     
     exports.authToString.imageIdentifier = true;
+    
+    // Puts a player in multiple channels.
+    exports.pushChannels = function (src, channels) {
+        var len = channels.length,
+            i;
+
+        for (i = 0; i < len; ++i) {
+            sys.putInChannel(src, channels[i]);
+        }
+    };
 }());

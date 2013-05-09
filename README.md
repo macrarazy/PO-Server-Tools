@@ -13,7 +13,7 @@ Licensed under [MIT](LICENSE.txt). Contains T-Lite (https://raw.github.com/CapMo
 
 ### safeSys (extras/safeSys.js)
 
-This is a little script ensuring sys exists. Useful if you're testing your script in a browser/commonjs.
+This is a little script that ensures sys (and its methods) exists. Useful if you're testing your script in a browser/CommonJS.
 
 It does **NOT** ensure that SESSION exists. That might be implemented later.
 

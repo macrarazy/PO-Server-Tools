@@ -32,7 +32,7 @@
     exports.serverName = "";
     
     // The ids of the default channels (don't change this).
-    exports.defaultChannelIds = {"main": 0, "mafia": -1, "trivia": -1, "triviarev": -1, "staff": -1, "watch": -1, "eval": -1};
+    exports.defaultChannelIds = {"main": 0, "mafia": -1, "staff": -1, "watch": -1, "eval": -1};
     
     // If the server is starting up (don't change this).
     exports.isStartingUp = false;
@@ -49,8 +49,6 @@
     exports.defaultChannels = [
         sys.channel(0),
         "Mafia", // mafiachan
-        "Trivia", // trivchan
-        "Trivia Review", // trivrevchan
         "Ever Grande City", // staffchan
         "Guardtower", // watchchan
         "Area 51" // evalchan
