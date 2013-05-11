@@ -53,7 +53,7 @@
             : ["%m1", "%m2", "%m3", "%m4", "%m5"];
     }
     
-    // Adds floodCount to User
+    // Adds floodCount to User.
     User.prototype.addFlood = function () {
         if (PlayerUtils.trueAuth && PlayerUtils.trueAuth(this.id) < 1) {
             ++this.floodCount;
@@ -64,8 +64,8 @@
         }
     };
     
-    // Attempts to mute User for caps (it's not meant to be THAT mean)
-    // Returns true if User was muted
+    // Attempts to mute User for caps. Of course, this is only done if they have done stuff that is no good. :[
+    // Returns true if User was muted.
     User.prototype.capsMute = function (message, channel) {
         var messageLength = message.length,
             caps = 0,
@@ -111,7 +111,6 @@
     };
     
     // Exports [expt]
-    
     // Export User (the JSESSION user constructor)
     exports.User = User;
 }());

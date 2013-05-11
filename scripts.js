@@ -6,7 +6,7 @@
  - Version: 3.0.0 Devel -
  - Maintained by TheUnknownOne -
  - Licensed under MIT (LICENSE.txt) | Version 2.x is licensed under GPL v3 -
- - Special Thanks to Lamperi, Mystra, and Intel_iX -
+ - Special Thanks to Lamperi, Mystra, Intel_iX, and Lutra -
 
  Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
  - Has no known errors
@@ -17,7 +17,9 @@
  Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
  - Untested code/sandbox for all other versions
 
- - All modules are in the directory 'scripts' -
+ All module are in the 'scripts' directory. Note that these are required.
+ 
+ Thanks for using this script! :)
  */
 
 // TODO: More comments. :]
@@ -106,9 +108,6 @@ var Script = {
     EVAL_TIME_START: new Date().getTime()
 };
 
-// TODO: remove this line below and make it (the url) static
-var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
-
 /* Don't modify anything beyond this point if you don't know what you're doing. */
 var global = this;
 var GLOBAL = this;
@@ -161,10 +160,8 @@ if (typeof require === 'undefined') {
         // JSESSION stuff
         POUser = require('user').User,
         POChannel = require('channel').Channel,
-        // TODO: Remove this and merge it with options.js
-        POGlobal = require('global').Global,
         JSESSION = require('jsession'),
-        // these are only used for Utils.updatePrototype
+        // these are only used to be updated with Utils.updatePrototype
         Cache = require('cache'),
         ChannelData = require('channel-data');
     
@@ -180,70 +177,6 @@ if (typeof require === 'undefined') {
     
     // NOTE: These will not be used anymore as-is, but some of them (like linkify) will be merged with utils
     /*
-    defineCoreProperty = function (core, prop, func) {
-        Object.defineProperty(core, prop, {
-            "value": func,
-    
-            writable: true,
-            enumerable: false,
-            configurable: true
-        });
-    }
-    
-    defineCoreProperty(String.prototype, "reverse", function () {
-        var strThis = this;
-        strThisArr = strThis.split("").reverse().join("");
-    
-        this = strThisArr;
-        return this;
-    });
-    
-    defineCoreProperty(String.prototype, "isEmpty", function () {
-        var mess = this;
-        return mess == "" || mess.trim() == "";
-    });
-    
-    defineCoreProperty(String.prototype, "contains", function (string) {
-        var str = this;
-        return str.indexOf(string) > -1;
-    });
-    
-    defineCoreProperty(String.prototype, "has", function (string) {
-        return this.contains(string);
-    });
-    
-    defineCoreProperty(String.prototype, "name", function () {
-        var str = this;
-        if (typeof DataHash.names == "undefined") {
-            return str;
-        }
-    
-        var tl = str.toLowerCase();
-        if (typeof DataHash.names[tl] != "undefined") {
-            str = DataHash.names[tl];
-        }
-    
-        return str;
-    });
-    
-    defineCoreProperty(String.prototype, "format", function () {
-        var str = this,
-            exp, i, args = arguments.length,
-            icontainer = 0;
-        for (i = 0; i < args; i++) {
-            icontainer++;
-            exp = new RegExp("%" + icontainer, "");
-            str = str.replace(exp, arguments[i]);
-        }
-        return str;
-    });
-    
-    defineCoreProperty(String.prototype, "fontsize", function (size) {
-        var str = this;
-    
-        return "<font size='" + size + "'>" + str + "</font>";
-    });
-    
     defineCoreProperty(String.prototype, "scramble", function () {
         var thisString = this.split("");
         for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
@@ -265,97 +198,14 @@ if (typeof require === 'undefined') {
             return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
         });
     });
-    
-    defineCoreProperty(Boolean.prototype, "isEmpty", function () {
-        return this === false;
-    });
-    
-    defineCoreProperty(Number.prototype, "isEmpty", function () {
-        return !isFinite(this) || this === 0;
-    });
-    
-    defineCoreProperty(Number.prototype, "positive", function () {
-        return !this.isEmpty();
-    });
-    
-    defineCoreProperty(Object.prototype, "isEmpty", function () {
-        return this.length() === 0;
-    });
-    
-    defineCoreProperty(Object.prototype, "keys", function () {
-        return Object.keys(this);
-    });
-    
-    defineCoreProperty(Object.prototype, "has", function (prop) {
-        return typeof this[prop] !== "undefined";
-    });
-    
-    defineCoreProperty(Object.prototype, "contains", function (prop) {
-        return this.has(prop);
-    });
-    
-    defineCoreProperty(Object.prototype, "insert", function (name, val) {
-        this[name] = val;
-    });
-    
-    defineCoreProperty(Object.prototype, "extend", function (other) {
-        var x;
-    
-        if (typeof other === "object" && !Array.isArray(other) && other !== null) {
-            for (x in other) {
-                this[x] = other[x];
-            }
-        }
-    
-        return this;
-    });
-    
-    defineCoreProperty(Object.prototype, "remove", function (name) {
-        if (!this.has(name)) {
-            return;
-        }
-    
-        delete this[name];
-    });
-    
-    defineCoreProperty(Object.prototype, "first", function () {
-        var x;
-        for (x in this) {
-            return this[x];
-        }
-    });
-    
-    defineCoreProperty(Object.prototype, "length", function () {
-        return Object.keys(this).length;
-    });
-    
-    defineCoreProperty(Array.prototype, "has", function (prop) {
-        var x;
-        for (x in this) {
-            if (this[x] == prop) {
-                return true;
-            }
-        }
-    
-        return false;
-    });
-    
-    defineCoreProperty(Array.prototype, "isEmpty", function () {
-        return this.length === 0;
-    });
-    
-    defineCoreProperty(Array.prototype, "contains", function (prop) {
-        return this.has(prop);
-    });
     */
     
     JSESSION.identifyScriptAs("TheUnknownOne's Server Script " + Script.SCRIPT_VERSION);
     JSESSION.registerUser(POUser);
     JSESSION.registerChannel(POChannel);
-    JSESSION.registerGlobal(POGlobal);
     JSESSION.refill();
 }());
-
+/*
 function Mail(sender, text, title) {
     var date = new Date();
 
@@ -365,7 +215,7 @@ function Mail(sender, text, title) {
     this.read = false;
     this.sendtime = String(date);
     this.sendAgo = +(sys.time());
-}
+}*/
 
 // TODO: events.js for all the events down below (would really help with the massive use of requires in them, because a closure can be used).
 ({
@@ -395,7 +245,7 @@ function Mail(sender, text, title) {
     // Initializes certain values
     init: function () {
         var Options = require('options'),
-            Cache = require('cache'),
+            Cache = require('cache').Cache,
             Utils = require('utils'),
             ChannelData = require('channel-data').ChannelData;
         
@@ -404,6 +254,7 @@ function Mail(sender, text, title) {
             channelIdKeys = Object.keys(Options.defaultChannelIds),
             length = defaultChannels.length,
             chanData = ChannelData.data,
+            date = (new Date()).toUTCString(),
             curChan,
             cur,
             i;
@@ -426,25 +277,6 @@ function Mail(sender, text, title) {
         
         // Initialises all cache values.
         Cache.init();
-        
-        /*run("loadRequiredUtilities");
-        run("loadCache");
-
-        run("loadUtilities");
-        run("loadChannelUtilities");
-
-        run("loadTrivia");
-        run("loadMafia");
-        run("loadPrune");
-
-        run("loadTiers");
-        run("loadStyles");
-        run("loadRankIcons");
-        run("loadPokemonStats");
-
-        run("loadTemplateUtility");
-        run("loadIfyUtility");
-        run("loadCommandStatsUtility");*/
 
         /*
         loadOldPoll = function () {
@@ -480,11 +312,10 @@ function Mail(sender, text, title) {
         }
 
         ScriptLength = {};
-
-        var date = String(new Date());
-        cache.write("Script_LastLoad", date);
-        cache.save("Script_Registered", date);
-        */
+*/
+        // Register script recent re-load and register dates.
+        Cache.write("scriptRecentLoadDate", date);
+        Cache.save("scriptRegisterDate", date);
     },
 
     // Event: attemptToSpectateBattle [event-attemptToSpectateBattle]
@@ -688,36 +519,36 @@ function Mail(sender, text, title) {
         }
     },
 
+    // Event: step
+    // Called when: Every second.
+    // Handles temporary auth pruning and mafia's tick.
     step: function () {
         var Options = require('options'),
             // TODO: Mafia
-            Mafia = require('mafia').Mafia,
+            //Mafia = require('mafia').Mafia,
             Prune = require('prune');
         
         ++Options.stepCounter;
-
-/*
-if(typeof Trivia != "undefined") {
-if(!Trivia.isGameGoingOn()&&stepCounter % 300 === 0) {
-Trivia.start();
-}
-}
-*/
-
+        
         // Prune temp auth every 10 seconds.
         if (Options.stepCounter % 10 === 0) {
             Prune.tempAuth();
         }
         
-        Mafia.tickDown();
+        //Mafia.tickDown();
     },
     
+    // Event: beforeLogin
+    // Called when: Before a player logs in.
+    // Adds a player's correct name to DataHash, resolves their location, ensures they don't instantly reconnect after being kicked,
+    // and that their name doesn't contain characters such as those which make it easy to impersonate a player (cyrillic, greek).
     beforeLogIn: function (src) {
         var DataHash = require('datahash');
         
         var name = sys.name(src),
             ip = sys.ip(src);
 
+        // TODO: hostAuth
         //script.hostAuth(src);
 
         DataHash.correctNames[name.toLowerCase()] = name;
@@ -725,34 +556,27 @@ Trivia.start();
 
         DataHash.save("correctNames");
         DataHash.save("namesByIp");
-        //script.resolveLocation(src, myIp, false);
+        
+        DataHash.resolveLocation(src, ip);
 
+        // Players will only be in autoReconnectBlock if they were kicked.
         if (DataHash.hasDataProperty("autoReconnectBlock", ip)) {
             sys.stopEvent();
             return;
         }
 
+        // TODO: testName
+        /*
         if (script.testName(src)) {
             sys.stopEvent();
             return;
-        }
+        }*/
     },
 
-    beforeChannelLeave: function (src, chan) {
-        var WatchUtils = require('watch-utils');
-        
-        WatchUtils.logPlayerEvent(src, "Left channel " + sys.channel(chan) + " (ID: " + chan + ")");
-    },
-
+    // Event: afterLogIn
+    // Called when: After a player logs in.
+    // Logs the player logging in, sends them welcome messages, updates the most amount of players online, and sends a custom welcome message to everyone (if they have one).
     afterLogIn: function (src) {
-        /*
-        var me = player(src),
-            self = JSESSION.users(src),
-            srcToLower = sys.name(src).toLowerCase(),
-            myAuth = sys.auth(src),
-            sendWelcomeMessage = Config.WelcomeMessages && (myAuth < 1 || myAuth > 3),
-            temp = "",
-            pNum = sys.numPlayers();*/
         var Options = require('options'),
             Bot = require('bot'),
             Utils = require('utils'),
@@ -760,7 +584,8 @@ Trivia.start();
             WatchUtils = require('watch-utils'),
             Tours = require('tours'),
             Cache = require('cache').Cache,
-            JSESSION = require('jsession');
+            JSESSION = require('jsession').JSESSION,
+            DataHash = require('datahash');
         
         var name = PlayerUtils.formatName(src),
             plainName = sys.name(src),
@@ -813,26 +638,42 @@ Trivia.start();
             PlayerUtils.pushChannels(src, chanIds);
         }
 
-        // TODO: This needs work.
-        /*
-        if (DataHash.idles.has(srcToLower)) {
-            if (DataHash.idles[srcToLower].entry != "") {
-                botAll(format("lvl2", DataHash.idles[srcToLower].entry), 0);
+        
+        if (DataHash.hasDataProperty('autoIdle', nameLower)) {
+            if (DataHash.autoIdle[nameLower].welcomeMessage !== "") {
+                Bot.sendAll(DataHash.autoIdle[nameLower].welcomeMessage, 0);
             }
+            
             sys.changeAway(src, true);
         }
-
+        
+        // TODO: This needs work.
+/*
         ify.afterLogIn(src);
         script.afterChangeTeam(src, true);*/
     },
 
+
+    // Event: beforeChannelLeave
+    // Called when: Before a player leaves a channel.
+    // Logs the player leaving a channel.
+    beforeChannelLeave: function (src, chan) {
+        var WatchUtils = require('watch-utils');
+        
+        WatchUtils.logPlayerEvent(src, "Left channel " + sys.channel(chan) + " (ID: " + chan + ")");
+    },
+    
+    // Event: afterChannelJoin
+    // Called when: After a player joins a channel.
+    // Logs the player joining a channel, creates a chatgradient (if the channel has one), and sends them the channel topic and server message of the day (if any)..
     afterChannelJoin: function (src, chan) {
         var Options = require('options'),
             PlayerUtils = require('player-utils'),
             WatchUtils = require('watch-utils'),
             ChannelData = require('channel-data'),
             Tours = require('tours'),
-            JSESSION = require('jsession');
+            JSESSION = require('jsession'),
+            ChatGradient = require('chat-gradient');
         
         var channel = JSESSION.channels(chan),
             name = sys.name(src),
@@ -842,12 +683,8 @@ Trivia.start();
         
         WatchUtils.logPlayerEvent(src, "Joined channel " + sys.channel(chan) + " (ID " + chan + ")");
 
-        // TODO: chat-gradient.js (ChatGradient)
-        if (ChatColorRandomizers.has(channel)) {
-            var index = ChatColorRandomizers[channel],
-                code = '<center><hr width="150"/><b>Party Time!</b><hr width="150"/></center><div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
-
-            sys.sendHtmlMessage(src, code, chan);
+        if (ChatGradient.hasChannel(channel)) {
+            ChatGradient.refreshPlayer(src, channel);
         }
 
         sys.sendHtmlMessage(src, "<font color='orange'><timestamp/><b>Topic:</b></font> " + channel.topic, chan);
@@ -861,11 +698,6 @@ Trivia.start();
             sys.sendHtmlMessage(src, "<font color='darkred'><timestamp/><b>Set By:</b></font> " + Options.motd.setter, chan);
         }
 
-/*
-        if (chan.isChanMod(src) && chan.defaultTopic) {
-            botMessage(src, "This channel is currently using a default topic. Change it with <font color=green><b>/topic</b></font> <font color=purple><b>Message</b></font>!", channel);
-        }*/
-
         // TODO: Polls
         /*
         if (Poll.mode) {
@@ -878,6 +710,9 @@ Trivia.start();
         }
     },
 
+    // Event: beforeNewMessage
+    // Called when: Before a message is outputted to stdout.
+    // Logs script warnings, errors, gives the server host an eval command, and calls script.init if the scripts were (re)loaded.
     beforeNewMessage: function (message) {
         var Options = require('options'),
             Utils = require('utils'),
@@ -958,65 +793,77 @@ if (message === "The description of the server was changed.") {
         }
     },
 
+    // Event: beforeChatMessage
+    // Called when: Before a player sends a chat message.
+    // Runs macros, flood checks, commands, silences, mutes, rank icons, chat gradients.
     beforeChatMessage: function (src, message, chan) {
-        if (chan == undefined || sys.channel(chan) == undefined) {
+        var Options = require('options'),
+            ChatGradient = require('chat-gradient'),
+            PlayerUtils = require('player-utils'),
+            JSESSION = require('jsession').JSESSION;
+        
+        // Pseudo error for /eval.
+        if (sys.channel(chan) === undefined) {
             sys.stopEvent();
             return "Error: Unknown channel.";
         }
-
-        if (!sys.loggedIn(src)) { /* /future */
+        
+        // When the player logs off after they used /future
+        if (!sys.loggedIn(src)) {
             return "Error: Player not online.";
         }
-
+        
+        // Pseudo error for /eval.
         if (!sys.isInChannel(src, chan)) {
             sys.stopEvent();
             return "Error: Player not in channel.";
         }
 
-        var host = isHost(src),
-            poChan = JSESSION.channels(chan),
-            poUser = JSESSION.users(src),
-            chatcolor = ChatColorRandomizers.has(chan),
-            voice = poUser.voice,
-            macro = poUser.macro,
-            macroX, macroRegExp, macroXNum, myAuth = sys.auth(src);
+        var isServerHost = PlayerUtils.isServerHost(src),
+            hasChatGradient = ChatGradient.hasChannel(chan),
+            userObject = JSESSION.users(src),
+            channelObject = JSESSION.channels(chan),
+            playerAuth = PlayerUtils.trueAuth(src),
+            playerColor = PlayerUtils.trueColor(src),
+            playerIp = sys.ip(src),
+            playerName = sys.name(src);
 
-        if (poUser.floodCount == 'kicked') {
+        var macros = userObject.macros,
+            len,
+            i;
+        
+        // This is usually triggered if the player has a spam bot running, or something similar.
+        // Ensures that they can't post messages after they have (well, supposed to, although it will happen eventually) been floodkicked
+        if (userObject.floodCount === "ignore") {
             sys.stopEvent();
 
+            // TODO: PlayerUtils.kick
             if (sys.loggedIn(src)) {
-                kick(src);
+                PlayerUtils.kick(src);
             }
 
             return "Error: Player kicked.";
         }
 
-        for (macroX in macro) {
-            macroXNum = 1 + macroX;
-            macroRegExp = new RegExp("%m" + macroXNum, "g");
-            message = message.replace(macroRegExp, macro[macroX]);
+        // TODO: PlayerUtils.hostAuth
+        //if (sys.auth(src) < 3) {
+          //  script.hostAuth(src);
+        //}
+        
+        // Format the message with the player's macros.
+        for (i = 0, len = macros.length; i < len; ++i) {
+            message = message.replace(new RegExp("%m" + (i + 1), "g"), macros[i]);
         }
 
-        delete macroX, macroRegExp, macroXNum;
+        userObject.addFlood();
 
-        if (sys.auth(src) < 3) {
-            script.hostAuth(src);
-        }
-
-        var getColor = script.namecolor(src),
-            channel = chan,
-            ip = sys.ip(src),
-            srcname = sys.name(src);
-
-        poUser.addFlood();
-
-        if ((AutoMute || AutoKick) && poUser.floodCount >= 8) {
-            sys.stopEvent();
-            poUser.floodCount = 'kicked';
-
+        if ((Options.autoMute || Options.autoKick) && userObject.floodCount >= 8) {
             var spammersHash = DataHash.spammers,
                 tempbanHash = DataHash.tempbans;
 
+            poUser.floodCount = "ignore";
+            sys.stopEvent();
+            
             if (!spammersHash.has(ip)) {
                 spammersHash[ip] = 0;
             }
@@ -7052,13 +6899,7 @@ if (message === "The description of the server was changed.") {
             send(srcname + ": " + message);
             return;
         }
-
-/* 
-        if (chan === trivia && Trivia.isGameGoingOn() && !Trivia.timeout) {
-            Trivia.a(message);
-            return;
-
-        } */
+        
         sys.sendAll(srcname + ": " + message, chan);
     },
 
@@ -8456,70 +8297,12 @@ if (message === "The description of the server was changed.") {
 
     },
 
-    resolveLocation: function (id, ip, synchronously) {
-        var dhl = DataHash.locations,
-            myip = ip;
-        if (dhl[ip] == undefined) {
-            dhl[ip] = {
-                'hostname': 'pending',
-                'country_code': 'pending',
-                'country_name': 'pending'
-            };
-
-            if (!synchronously) {
-                sys.webCall(IP_Resolve_URL.format(ip), function (json_code) {
-                    json_code = json_code.replace("ip", '"ip"');
-                    json_code = json_code.replace("hostname", '"hostname"');
-                    json_code = json_code.replace("country_code", '"country_code"');
-                    json_code = json_code.replace("country_name", '"country_name"');
-
-                    var code = JSON.parse(json_code);
-                    dhl[myip] = code;
-                    playerscache.write("locations", JSON.stringify(dhl));
-
-                    if (sys.loggedIn(id)) {
-                        if (code.country_name == "Anonymous Proxy") {
-                            sendFailWhale(src, 0);
-                            botMessage(src, "Remove the proxy to enter the server.");
-                            botAll(sys.name(id) + " tried to enter the server and failed. [Reason: Proxy]", watch);
-                            kick(src);
-                        }
-                    }
-                });
-            }
-            else {
-                var json_code = sys.synchronousWebCall(IP_Resolve_URL.format(ip));
-                json_code = json_code.replace("ip", '"ip"');
-                json_code = json_code.replace("hostname", '"hostname"');
-                json_code = json_code.replace("country_code", '"country_code"');
-                json_code = json_code.replace("country_name", '"country_name"');
-
-                var code = JSON.parse(json_code);
-                dhl[myip] = code;
-                playerscache.write("locations", JSON.stringify(dhl));
-
-                if (sys.loggedIn(id)) {
-                    if (code.country_name == "Anonymous Proxy") {
-                        sendFailWhale(src, 0);
-                        botMessage(src, "Remove the proxy to enter the server.");
-                        botAll(sys.name(id) + " tried to enter the server and failed. [Reason: Proxy]", watch);
-                        kick(src);
-                    }
-                }
-            }
-
-        }
-    },
-
+    // NOTE: script.resolveLocation -> DataHash.resolveLocation
     loadUtilities: function () {
         if (typeof fonts == 'undefined') {
             // Windows 7 Fonts //
             // Note: Some fonts MIGHT not work/look too much like default font
             // so they won't be noticed.
-            fonts = ["Aharoni", "Andalus", "Angsana New", "AngsanaUPC", "Aparajita", "Arabic Typesetting", "Arial", "Arial Unicode MS", "Batang", "BatangChe", "Blackadder ITC", "Book Antiqua", "Bookman Old Style", "Bookshelf Symbol 7", "Bradley Hand ITC", "Browallia New", "BrowalliaUPC", "Calibri", "Cambria", "Cambria Math", "Candara", "Century Gothic", "Century", "Comic Sans MS", "Consolas", "Constantia", "Copperplate Gothic", "Corbel", "Cordia New", "CordiaUPC", "Courier New", "Courier", "Curlz MT", "DaunPenh", "David", "DFKai-SB", "DilleniaUPC", "DokChampa", "Dotum", "DotumChe", "Ebrima", "Edwardian Script ITC", "Engravers MT", "Eras ITC", "Estrangelo Edessa", "EucrosiaUPC", "Euphemia", "Eurostile", "FangSong", "Felix Titling", "Fixedsys", "Franklin Gothic", "Franklin Gothic Book", "FrankReuhl", "FreesiaUPC", "Freestyle Script", "French Script MT", "Gabriolia", "Garamond", "Gautami", "Georgia", "Gisha", "Gulim", "GulimChe", "Gungsuh", "GungsuhChe", "Impact", "IrisUPC", "Iskoola Pota", "JasmineUPC", "Jokerman", "Juice ITC", "KaiTI", "Kalinga", "Kartika", "Khmer UI", "KodchiangUPC", "Kokila", "Kristen ITC", "Lao UI", "Latha", "Leelawadee", "Levenim MT", "LilyUPC", "Lucida Console", "Lucida", "Lucida Handwriting", "Lucida Sans", "Lucida Sans Unicode", "Maiandra GD", "Malgun Gothic", "Mangal", "Matisse ITC", "Meiryo", "Meiryo UI", "Microsoft Himalaya", "Microsoft JhengHei", "Microsoft New Tai Lue", "Microsoft PhagsPa", "Microsoft Sans Serif", "Microsoft Tai Le", "Microsoft Uighur", "Microsoft YaHei", "Microsoft Yi Baiti", "MingLiU", "MingLiU_HKSCS", "MingLiU_HKSCS-ExtB", "MingLiU-ExtB", "Miriam Fixed", "Miriam", "Mistral", "Modern", "Mongolian Baiti", "Monotype Corsiva", "MoolBoran", "MS Gothic", "MS Mincho", "MS PGothic", "MS PMincho", "MS Reference1", "MS Reference2", "MS Reference Sans Serif", "MS Reference Specialty", "MS Sans Serif", "MS Serif", "MS UI Gothic", "MT Extra", "MV Boli", "Narkisim", "NSimSun", "Nyala", "OCR A Breed", "Palatino Linotype", "Papyrus", "Perpetua", "PlantageNet Cherokee", "PMingLiU", "PMingLiU-ExtB", "Pristina", "Raavi", "Rockwell", "Rod", "Roman", "Sakkal", "Script", "Segoe Print", "Segoe Script", "Segoe UI", "Segoe UI Symbol", "Shonar Bangla", "Shruti", "SemHei", "Simplified Arabic Fixed", "SimSun", "SimSun-ExtB", "Small Fonts", "Sylfaen", "Symbol", "System", "Tahoma", "Tempus Sans ITC", "Terminal", "Times New Roman", "Traditional Arabic", "Trebucket MS", "Tunga", "Utsaah", "Vani", "Verdana", "Vijaya", "Vivaldi", "Vrinda", "Webdings", "Wingdings2", "Wingdings3", "Wingdings"];
-
-            // PO Fonts //
-            fonts.push("LCD", "SignPainter'sGothicShadedSC JL");
         }
 
         checkForUpdates = function (noresume) {
@@ -8561,61 +8344,6 @@ if (message === "The description of the server was changed.") {
 
         // ScriptUpdateMessage -> Utils.scriptUpdateMessage
 
-        ChatColorRandomizer = function (firstColor, secondColor, channel) {
-            if (firstColor === undefined || firstColor.toLowerCase() == "random") {
-                firstColor = randcolor();
-            }
-            if (secondColor === undefined || secondColor.toLowerCase() == "random") {
-                secondColor = randcolor();
-            }
-
-            var code = '<center><hr width="150"/><b>Party Time!</b><hr width="150"/></center><div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + firstColor + ', stop:1 ' + secondColor + ');">';
-
-            sys.sendHtmlAll(code, channel);
-
-            ChatColorRandomizers[channel] = {
-                'firstColor': firstColor,
-                'secondColor': secondColor
-            };
-        }
-
-        DisableChatColorRandomizer = function (channel) {
-            if (!ChatColorRandomizers.has(channel)) {
-                return;
-            }
-
-            delete ChatColorRandomizers[channel];
-
-            sys.sendHtmlAll('<center><hr width="150"/><b>Party Time is over!</b><hr width="150"/></center>', channel);
-        }
-
-        RandFont = function () {
-            return fonts[Math.round(fonts.length * Math.random())];
-        }
-
-        RandomColorSpan = function () {
-            var color1 = sys.rand(0, 256),
-                color2 = sys.rand(0, 256),
-                color3 = sys.rand(0, 256);
-
-            return "<span style='background-color: rgb(" + color1 + ", " + color2 + ", " + color3 + ");'>"
-        }
-
-        randcolor = function (tagformat) {
-            var nums = 5,
-                str = '';
-
-            while (nums >= 0) {
-                str += sys.rand(0, 16).toString(16);
-                nums--;
-            }
-
-            if (!tagformat) {
-                return "#" + str;
-            } else {
-                return "<font color='#" + str + "'>";
-            }
-        }
 
         removespaces = function (string) {
             return string.split(' ').join('');
@@ -8774,10 +8502,6 @@ if (message === "The description of the server was changed.") {
                 "by": "",
                 "level": 0
             };
-        }
-
-        if (typeof ChatColorRandomizers == 'undefined') {
-            ChatColorRandomizers = {};
         }
 
         ban = function (name) {
@@ -10473,96 +10197,6 @@ if (message === "The description of the server was changed.") {
     },
 
     loadRequiredUtilities: function () {
-        RECOVERY = function () {
-            if (typeof script.message != 'undefined' && typeof script.step == 'undefined') {
-                botAll("Fatal Script Error detected! " + FormatError("", script));
-                botAll("Recovering script functions!");
-
-                var x, SC = RECOVERY_BACKUP,
-                    pushed = 0;
-                for (x in SC) {
-                    try {
-                        script[x] = SC[x];
-                        pushed++;
-                    }
-                    catch (e) {
-                        botAll("Caught an exception when recovering " + x + ".", 0);
-                        print("Exception: " + e + ", on line " + e.lineNumber);
-                    }
-                }
-
-                botAll("Function recovery completed! Recovered " + pushed + "/" + objLength(RECOVERY_BACKUP) + " functions.", 0);
-                delete script.message;
-                script.beforeNewMessage("Script Check: OK");
-                botAll("Recovery completed!", 0);
-            }
-        }
-
-        fancyJoin = function (array) {
-            var x, retstr = '',
-                arrlen = array.length;
-
-            if (arrlen === 0 || arrlen === 1) {
-                return array.join("");
-            }
-
-            arrlen--;
-
-            for (x in array) {
-                if (Number(x) === arrlen) {
-                    retstr = retstr.substr(0, retstr.lastIndexOf(","));
-                    retstr += " and " + array[x];
-
-                    return retstr;
-                }
-
-                retstr += array[x] + ", ";
-            }
-
-            return "";
-        }
-
-        updateProtoForJSESSION = function (Proto) {
-            var p = Proto.prototype;
-            if (p == undefined) {
-                return;
-            }
-
-            if (Proto == POUser) {
-                sys.playerIds().forEach(function (id) {
-                    if (sys.loggedIn(id) && JSESSION.users(id).__proto__ != p) {
-                        JSESSION.users(id).__proto__ = p;
-                    }
-                });
-            }
-            else if (Proto == POChannel || Proto == Tours) {
-                var list = sys.channelIds(),
-                    PROTOTOUR = Proto == Tours,
-                    channel;
-
-                list.forEach(function (id) {
-                    channel = JSESSION.channels(id);
-                    if (sys.existChannel(sys.channel(id))) {
-                        if (PROTOTOUR) {
-                            if (channel.toursEnabled && channel.tour.__proto__ != p) {
-                                channel.tour.__proto__ = p;
-                            }
-                        }
-                        else {
-                            if (channel.__proto__ != p) {
-                                channel.__proto__ = p;
-                                cData.loadDataFor(sys.channel(id));
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        updateProtoForJSESSION(POUser);
-        updateProtoForJSESSION(POChannel);
-        updateProtoForJSESSION(Tours);
-
         on = function (str) {
             var onArray = ["yes", "true", "on"],
                 x, strToLower = str.toLowerCase();
@@ -10574,38 +10208,6 @@ if (message === "The description of the server was changed.") {
             }
 
             return false;
-        }
-
-        WatchPlayer = function (player, type, message, channel) {
-            var chan = "";
-            if (typeof channel != "undefined") {
-                chan = "[" + ChannelLink(sys.channel(channel)) + "]";
-            }
-
-            var src = "<font color=" + script.namecolor(player) + ">" + html_escape(sys.name(player)) + ":</font>";
-
-            if (typeof watch != "undefined") {
-                sys.sendHtmlAll("<timestamp/><b>" + chan + " " + type + " -- " + src + "</b> " + html_escape(message), watch);
-            }
-        }
-
-        WatchEvent = function (player, message, channel) {
-            var chan = "";
-            if (typeof channel != "undefined") {
-                chan = "[" + ChannelLink(sys.channel(channel)) + "]";
-            }
-
-            var src = "<font color=" + script.namecolor(player) + ">" + html_escape(sys.name(player)) + ":</font>";
-
-            if (typeof watch != "undefined") {
-                sys.sendHtmlAll("<timestamp/><b>" + chan + " " + src + "</b> " + message, watch);
-            }
-        }
-
-        WatchChannelEvent = function (channel, message) {
-            if (typeof watch != "undefined") {
-                sys.sendHtmlAll("<timestamp/><b>" + sys.channel(channel) + ":</b> " + message, watch);
-            }
         }
     },
 

@@ -3,13 +3,14 @@
 
 // File: utils.js (Utils)
 // Contains utilities not specificly for players, channels, and logging.
-// Depends on: bot, options
+// Depends on: bot, options, chat-gradient
 
 // No Table of Content.
 
 (function () {
     var Bot = require('bot'),
-        Options = require('options');
+        Options = require('options'),
+        ChatGradient = require('chat-gradient');
     
     // Team alert shortcut
     exports.teamAlertMessage = function teamAlertMessage(src, team, message) {
@@ -481,13 +482,11 @@
     };
     
     // Displays the script update message to every player.
-    exports.scriptUpdateMessage = function () {
+    exports.scriptUpdateMessage = function scriptUpdateMessage() {
         var timeToRun = (new Date()).getTime() - Script.EVAL_TIME_START,
             took = "Runtime: " + timeToRun / 1000 + " seconds.";
 
         Script.EVAL_TIME_START = (new Date()).getTime();
-        
-        //DisableChatColorRandomizer(0);
 
         if (Options.isStartingUp) {
             print("\t\tServer Script has been loaded.\t\t\n\t\tEvaluation Time: " + timeToRun / 1000 + " seconds.\t\t");
@@ -495,5 +494,10 @@
         }
         
         sys.sendHtmlAll('<center><table border="1" width="50%" style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><td align="center"><img src="pokemon:493&back=true" align="left"><img src="pokemon:385&back=false" align="right"><font size="4"><b><br/> ' + Options.serverName + ' - Scripts <br/></b></font> Scripts have been updated! <br/> ' + took + ' <br/> ~ ' + Script.SCRIPT_VERSION + ' ~ <br/></td></tr></table></center>', 0);
+        
+        // Refresh the gradient in the main channel, if it uses one.
+        if (ChatGradient.hasChannel(0)) {
+            ChatGradient.refresh(0);
+        }
     };
 }());

@@ -64,7 +64,14 @@
     
     // Hardcoded values [hcdval]
     
-    // Default/main channels
+    // Default/main channels. Feel free to modify their names. Do note that you might have to restart the server afterwards (and stuff like tours, topics, auth, etc. won't carry over).
+    // NOTE: Never put channels in between of these, only add them at the end of the array. (don't put a channel called "Trivia" between "Mafia" and "Ever Grande City")
+    // Indexes:
+    // 0: Main channel.
+    // 1: Mafia channel (default is "Mafia").
+    // 2: Staff channel (default is "Ever Grande City").
+    // 3: Watch channel (default is "Guardtower").
+    // 4: Eval channel (default is "Area 51").
     exports.defaultChannels = [
         sys.channel(0),
         "Mafia", // mafiachan

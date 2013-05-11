@@ -10,11 +10,13 @@
 // [cacheinit]: Cache initialiser
 // [expt]: Exports
 
-/* Values used by the default cache:
+/* Values used by the default cache (with the exception of datahash properties):
     - mostPlayersOnline (Number)
     - autoMute (Boolean)
     - botSettings (Object)
     - motdSettings (Object)
+    - scriptRecentLoadDate (String)
+    - scriptRegisteredDate (String)
 */
 
 (function () {
@@ -110,6 +112,7 @@
     
     // Initialises all cache values, with the exception of DataHash (which is done in datahash.js). [cacheinit]
     function init() {
+        // NOTE: We don't have to init script recent load and script register, as this is done in init()
         // Ensures all cache values exist, with a default value.
         exports.Cache.ensure({
             botSettings: {

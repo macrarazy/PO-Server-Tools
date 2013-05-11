@@ -3,14 +3,17 @@
 
 // File: datahash.js (DataHash)
 // Contains DataHash, which is used to read and write values.
-// Depends on: cache
+// Depends on: cache, watch-utils
 
 // Table of Content:
 // [expt]: Exports
 
 (function () {
     var Cache = require('cache').Cache,
-        DataHash = {};
+        WatchUtils = require('watch-utils');
+    
+    var DataHash = {},
+        IP_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=";
     
     // TODO: More datahash properties
     DataHash.mutes = {};
@@ -23,6 +26,8 @@
     DataHash.tempAuth = {};
     DataHash.tempBans = {};
     DataHash.rangeBans = {};
+    DataHash.locations = {};
+    DataHash.autoIdles = {};
     
     // NOTE: These properties should never be saved.
     DataHash.chatSpammers = {};
@@ -60,6 +65,33 @@
         }
     };
     
+
+    // NOTE: All requests are async
+    DataHash.resolveLocation = function (src, ip) {
+        var resp;
+        
+        if (!DataHash.hasDataProperty('locations', ip)) {
+            DataHash.locations[ip] = {
+                'hostname': 'pending',
+                'country_code': 'pending',
+                'country_name': 'pending'
+            };
+            
+            sys.webCall(IP_URL + ip, function (json) {
+                // They return malformed JSON, but a valid JavaScript Object.
+                var resp = eval(json);
+                
+                DataHash.locations[ip] = resp;
+
+                if (sys.loggedIn(src)) {
+                    if (resp.country_name === "Anonymous Proxy") {
+                        WatchUtils.logPlayerEvent(src, "Proxy detected");
+                    }
+                }
+            });
+        }
+    };
+        
     DataHash.getData();
     
     // Exports [expt]

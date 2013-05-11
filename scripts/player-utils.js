@@ -93,7 +93,7 @@
         }
         
         // panics if it isn't a string or number.
-        Utils.panic("scripts/player-utils.js", "PlayerUtils.ip(nameOrIdOrIp)", "Player is not a string or a number.", "typeof nameOrIdOrIp: " + typeof nameOrIdOrIp + " | nameOrIdOrIp's value: " + nameOrIdOrIp, Utils.panic.warning);
+        Utils.panic("scripts/player-utils.js", "PlayerUtils.ip(nameOrIdOrIp)", "Player is not a string or a number.", "typeof idOrNameOrIp: " + typeof idOrNameOrIp + " | idOrNameOrIp's value: " + idOrNameOrIp, Utils.panic.warning);
         
         return "0.0.0.0";
     };
@@ -168,7 +168,7 @@
     // Returns the string name of the auth level [auth].
     // If img is true (PlayerUtils.authToString.imageIdentifier), returns the image identifier (the one used in po's default theme files)
     // of that auth level.
-    exports.authToString = function (auth, img) {
+    exports.authToString = function authToString(auth, img) {
         var auths = {
             'true': {
                 0: "User",
@@ -207,12 +207,17 @@
     exports.authToString.imageIdentifier = true;
     
     // Puts a player in multiple channels.
-    exports.pushChannels = function (src, channels) {
+    exports.pushChannels = function pushChannels(src, channels) {
         var len = channels.length,
             i;
 
         for (i = 0; i < len; ++i) {
             sys.putInChannel(src, channels[i]);
         }
+    };
+    
+    // If the player is on localhost (127.0.0.1)
+    exports.isServerHost = function isServerHost(idOrNameOrIp) {
+        return ip(idOrNameOrIp) === "127.0.0.1";
     };
 }());
