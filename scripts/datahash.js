@@ -24,7 +24,8 @@
     DataHash.correctNames = {};
     DataHash.namesByIp = {};
     DataHash.tempAuth = {};
-    DataHash.tempBans = {};
+    // TODO: tempbans -> ipBans. tempbans are replaced by po's new tempban system.
+    DataHash.ipBans = {};
     DataHash.rangeBans = {};
     DataHash.locations = {};
     DataHash.autoIdles = {};

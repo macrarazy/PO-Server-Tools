@@ -153,6 +153,9 @@
             return;
         }
         
+        // add the current time since epoch to the mute, as that is what we use to check if the mute has expired.
+        opts.time += +(sys.time());
+        
         if (!opts.reason) {
             opts.reason = "";
         }

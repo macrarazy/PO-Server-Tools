@@ -59,7 +59,7 @@
     exports.logSystemMessage = function logSystemMessage(type, message) {
         if (Options.defaultChannelIds.watch) {
             sys.sendHtmlAll(
-                "<timestamp>[~SYS - " + type + "] <i>" + message + "</i>",
+                "<timestamp>[<u><b>~SYS</b></u> - " + type + "] <i>" + message + "</i>",
                 Options.defaultChannelIds.watch
             );
         }

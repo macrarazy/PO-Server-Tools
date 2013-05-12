@@ -12,7 +12,8 @@
 
 /* Values used by the default cache (with the exception of datahash properties):
     - mostPlayersOnline (Number)
-    - autoMute (Boolean)
+    - messageCharacterLimit (Number)
+    - floodCheck (Boolean)
     - botSettings (Object)
     - motdSettings (Object)
     - scriptRecentLoadDate (String)
@@ -124,16 +125,18 @@
                 message: "",
                 setter: ""
             },
-            autoMute: true,
-            mostPlayersOnline: 0
+            floodCheck: true,
+            mostPlayersOnline: 0,
+            messageCharacterLimit: 300
         });
         
         // Sets the Option.xxx values.
         initValues({
             Bot: 'botSettings',
             motd: 'motdSettings',
-            autoMute: 'autoMute',
-            mostPlayersOnline: 'mostPlayersOnline'
+            floodCheck: 'floodCheck',
+            mostPlayersOnline: 'mostPlayersOnline',
+            messageCharacterLimit: 'messageCharacterLimit'
         });
     }
     

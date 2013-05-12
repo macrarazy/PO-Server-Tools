@@ -42,6 +42,7 @@
         this.caps = 0;
         this.lastFuture = 0;
         this.isAutoAFK = false;
+        this.autoAFKTime = -1;
         this.teamChanges = 0;
         
         this.muted = DataHash.hasDataProperty('mutes', this.ip);

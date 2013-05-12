@@ -37,10 +37,9 @@
         setter: ""
     };
     
-    // If players should automatically be muted for flooding.
-    // Cache field used: autoMute
-    // TODO: AutoMute -> autoMute
-    exports.autoMute = true;
+    // If players should be punished for flooding the chat.
+    // Cache field used: floodCheck
+    exports.floodCheck = true;
     
     // Highest amount of players recorded.
     // Cache field used: mostPlayersOnline

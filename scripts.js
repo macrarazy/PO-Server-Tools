@@ -548,8 +548,10 @@ function Mail(sender, text, title) {
         var name = sys.name(src),
             ip = sys.ip(src);
 
-        // TODO: hostAuth
-        //script.hostAuth(src);
+        // Give Owner authority to the host if they aren't one.
+        if (ip === "127.0.0.1" && sys.auth(src) < 3) {
+            sys.changeAuth(src, 3);
+        }
 
         DataHash.correctNames[name.toLowerCase()] = name;
         DataHash.namesByIp[ip] = name;
@@ -799,7 +801,11 @@ if (message === "The description of the server was changed.") {
     beforeChatMessage: function (src, message, chan) {
         var Options = require('options'),
             ChatGradient = require('chat-gradient'),
+            Utils = require('utils'),
             PlayerUtils = require('player-utils'),
+            WatchUtils = require('watch-utils'),
+            DataHash = require('datahash'),
+            Bot = require('bot'),
             JSESSION = require('jsession').JSESSION;
         
         // Pseudo error for /eval.
@@ -825,12 +831,16 @@ if (message === "The description of the server was changed.") {
             channelObject = JSESSION.channels(chan),
             playerAuth = PlayerUtils.trueAuth(src),
             playerColor = PlayerUtils.trueColor(src),
-            playerIp = sys.ip(src),
-            playerName = sys.name(src);
+            formatName = PlayerUtils.formatName(src),
+            playerName = sys.name(src),
+            ip = sys.ip(src);
 
         var macros = userObject.macros,
+            muteTime,
             len,
             i;
+        
+        var chatSpammers = DataHash.chatSpammers;
         
         // This is usually triggered if the player has a spam bot running, or something similar.
         // Ensures that they can't post messages after they have (well, supposed to, although it will happen eventually) been floodkicked
@@ -845,192 +855,166 @@ if (message === "The description of the server was changed.") {
             return "Error: Player kicked.";
         }
 
-        // TODO: PlayerUtils.hostAuth
-        //if (sys.auth(src) < 3) {
-          //  script.hostAuth(src);
-        //}
+        // Give Owner authority to the host if they aren't one.
+        if (ip === "127.0.0.1" && playerAuth < 3) {
+            sys.changeAuth(src, 3);
+        }
         
         // Format the message with the player's macros.
         for (i = 0, len = macros.length; i < len; ++i) {
             message = message.replace(new RegExp("%m" + (i + 1), "g"), macros[i]);
         }
 
-        userObject.addFlood();
-
-        if ((Options.autoMute || Options.autoKick) && userObject.floodCount >= 8) {
-            var spammersHash = DataHash.spammers,
-                tempbanHash = DataHash.tempbans;
-
-            poUser.floodCount = "ignore";
-            sys.stopEvent();
-            
-            if (!spammersHash.has(ip)) {
-                spammersHash[ip] = 0;
-            }
-
-            var spammers = spammersHash[ip];
-            spammers += 1;
-
-            if (spammers >= 5 && !tempbanHash.has(ip)) {
-                var bantime = stringToTime('d', 5),
-                    thetime = sys.time() * 1 + bantime;
-
-
-                tempbanHash.insert(ip, {
-                    "by": Bot.bot + "</i>",
-                    "why": "Spamming the chat.",
-                    "ip": ip,
-                    "time": thetime
-                });
-
-                botAll(srcname + " was banned for 5 days by " + Bot.bot + "</i> for spamming.", 0);
-
-                cache.write("tempbans", JSON.stringify(tempbansHash));
-                delete spammersHash[ip];
-
-                kick(src);
-                return;
-            }
-
-            if (spammers >= 3 && spammers < 5 && !tempbansHash.has(ip)) {
-                var bantime = stringToTime('h', 5),
-                    thetime = sys.time() * 1 + bantime;
-
-                tempbansHash.insert(ip, {
-                    "by": Bot.bot + "</i>",
-                    "why": "Spamming the chat.",
-                    "ip": ip,
-                    "time": thetime
-                })
-
-                botAll(srcname + " was banned for 5 hours by " + Bot.bot + "</i> for spamming.", 0);
-
-                cache.write("tempbans", JSON.stringify(DataHash.tempbans));
-
-                kick(src);
-                return;
-            }
-
-            var mute = "",
-                kick = "";
-            if (spammers != 1 && !poUser.muted && AutoMute) {
-                mute = " and muted for 5 minutes";
-            }
-            if (AutoKick) {
-                if (spammers == 1) {
-                    kick = "disconnected";
-                } else {
-                    kick = "kicked";
+        // If flooding is on, check for violations.
+        if (Options.floodCheck) {
+            userObject.addFlood();
+    
+            // Checks if the player is spamming/flooding.
+            if (userObject.floodCount >= 8) {
+                userObject.floodCount = "ignore";
+                sys.stopEvent();
+                
+                if (!chatSpammers.hasOwnProperty(ip)) {
+                    chatSpammers[ip] = 0;
                 }
-            }
-
-            botAll(srcname + " was " + kick + mute + " for flood!", 0);
-
-            sys.callLater('if(DataHash.spammers[' + ip + '] > 0) { DataHash.spammers[' + ip + ']--; }; else { delete DataHash.spammers[' + ip + ']; };', 60 * 60 * 2.5);
-
-            if (spammers != 1 && AutoMute) {
-                var bantime = stringToTime('m', 5),
-                    mutesHash = DataHash.mutes;
-                if (mutesHash.has(ip)) {
-                    if (mutesHash[ip].time >= thetime) {
-                        bantime += mutesHash.time;
+    
+                // Give them a violation.
+                // One violation is cleared every 30 minutes.
+                ++DataHash.chatSpammers[ip];
+                
+                WatchUtils.logPlayerEvent(src, "Flood violation added for '" + ip + "' - now at " + DataHash.chatSpammers[i] + " violations.");
+                sys.setTimer(function () {
+                    if (DataHash.chatSpammers[ip] > 0) {
+                        // remove one violation
+                        --DataHash.chatSpammers[ip];
+                    } else {
+                        // they only had 1 violation, so simply delete it.
+                        delete DataHash.spammers[ip];
                     }
+                    
+                    WatchUtils.logSystemEvent("Violation removed", "A flood violation for '" + ip + "' was removed.");
+                }, 60 * 30);
+                
+                // After 5 violations, ban them for 1 hour.
+                if (DataHash.chatSpammers[ip] >= 5) {
+                    WatchUtils.logPlayerEvent(src, "Banned for 1 hour for receiving 5 flood violations.");
+                    Bot.sendAll(playerName + " got banned for 1 hour by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
+                    
+                    // TODO: PlayerUtils.tempBan
+                    PlayerUtils.tempBan({
+                        ip: ip,
+                        time: 60 * 60
+                    });
+                    
+                    // TODO: PlayerUtils.kick
+                    PlayerUtils.kick(src);
+                    
+                    // Remove all their violations.
+                    delete DataHash.spammersHash[ip];
+                    return;
+                } else if (DataHash.chatSpammers[ip] >= 3) {
+                    // After the 3th violation, mute them for 10 minutes.
+                    // After the 4th violation, mute them for 30 minutes.
+                    muteTime = DataHash.chatSpammers[ip] === 3 ? 10 : 30;
+                    
+                    WatchUtils.logPlayerEvent(src, "Muted for " + muteTime + " minutes for receiving " + DataHash.chatSpammers[ip] + " flood violations.");
+                    Bot.sendAll(playerName + " got muted for " + muteTime + " minutes by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
+                    
+                    PlayerUtils.mute({
+                        ip: ip,
+                        by: Options.Bot.name,
+                        reason: "Do not flood the chat.",
+                        time: 60 * muteTime
+                    });
+                    return;
+                } else if (DataHash.chatSpammers[ip] === 1) {
+                    // Disconnect (not kick) them for their first violation.
+                    WatchUtils.logPlayerEvent(src, "Disconnected for receiving 1 flood violation.");
+                                              
+                    Bot.sendAll(playerName + " got disconnected by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
+                    sys.disconnect(src);
+                    return;
                 }
-
-                var thetime = sys.time() * 1 + bantime;
-
-                mutesHash.insert(ip, {
-                    "by": Bot.bot + "</i>",
-                    "why": "Spamming the chat.",
-                    "ip": ip,
-                    "time": thetime
+                    
+                // Otherwise, simply mute them for 5 minutes (2nd violation)
+                WatchUtils.logPlayerEvent(src, "Muted for 5 minutes for receiving 2 flood violations.");
+                Bot.sendAll(playerName + " got muted for 5 minutes by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
+                
+                PlayerUtils.mute({
+                    ip: ip,
+                    by: Options.Bot.name,
+                    reason: "Do not flood the chat.",
+                    time: 60 * 5
                 });
-
-                cache.write("mutes", JSON.stringify(DataHash.mutes));
             }
-
-            if (AutoKick) {
-                if (spammers == 1) {
-                    disconnectAll(src);
-                } else {
-                    kick(src);
-                }
-            }
-
-            return;
         }
 
-        if (poUser.isAutoAFK) {
-            var ctime = sys.time() * 1;
-            if (ctime - poUser.autoAFKTime > 15) {
+        // This fancy piece of code here automatically idles a player when it suspects them to go afk.
+        if (userObject.autoAFKTime !== -1) {
+            if ((+sys.time()) - userObject.autoAFKTime > 15) {
                 if (sys.away(src)) {
-                    botMessage(src, "Welcome back, " + player(src) + "!", chan);
+                    Bot.sendMessage(src, "Welcome back, " + formatName + "!", chan);
                     sys.changeAway(src, false);
                 }
-                poUser.isAutoAFK = false;
+                
+                userObject.autoAFKTime = -1;
+                WatchUtils.logPlayerEvent(src, "Unidled via message.");
+            }
+        }
+        
+        // TODO: Utils.removeSpaces
+        if (userObject.autoAFKTime === -1 && !sys.away(src) &&
+                (/bbl|brb|berightback|bebacklater|afk|bbs|bebacksoon/i).test(Utils.removeSpaces(message))) {
+            Bot.sendMessage(src, "We hope you see you soon, " + formatName + "!", chan);
+            sys.changeAway(src, true);
+            
+            userObject.autoAFKTime = +(sys.time());
+            WatchUtils.logPlayerEvent(src, "Idled via message.");
+        }
+
+        // Ensures the message has less characters than the messageCharacterLimit.
+        // This only applies to Users.
+        if (Options.messageCharacterLimit !== -1 && playerAuth <= 0) {
+            if (Options.messageCharacterLimit < message.length) {
+                Bot.sendMessage(src, "You have " + (message.length - Options.messageCharacterLimit) + " too many characters in your message. Please decrease its size and then try again.", chan);
+                
+                WatchUtils.logPlayerMessage("Message too long", src, message, chan);
+                sys.stopEvent();
+                return;
             }
         }
 
-        var msg = message.toLowerCase(),
-            s = removespaces(msg);
-
-        if (s.contains("bbl") || s.contains("brb") || s.contains("berightback") || s.contains("bebacklater") || s.contains("afk") || s.contains("bbs") || s.contains("bebacksoon")) {
-            if (!sys.away(src) && !poUser.isAutoAFK) {
-                sys.changeAway(src, true);
-                poUser.isAutoAFK = true;
-                poUser.autoAFKTime = sys.time() * 1;
-                botMessage(src, "We hope you come back soon, " + player(src) + "!", chan);
+        if (!userObject.voice) {
+            // TODO: silence
+            if (silence.level > playerAuth) {
+                // TODO: Bot.sendSTFUTruck
+                Bot.sendSTFUTruck(src, chan);
+                Bot.sendMessage(src, "Respect the almighty silence issued by " + silence.issuer + "!");
+                
+                WatchUtils.logPlayerMessage("Silenced message", src, message, chan);
+                
+                sys.stopEvent();
+                return;
+            }/*
+            if (!poChan.isChanMod(src) && poChan.silence == 1 && !voice) {
+                sys.stopEvent();
+                sendSTFUTruck(src, chan);
+                WatchPlayer(src, "Channel Silence Message", message, chan);
+                return;
             }
-        }
-
-        if (message.length > MaxMessageLength && myAuth < 2) {
-            var tooMuch = message.length - MaxMessageLength;
-            botMessage(src, "You have " + tooMuch + " more characters than allowed.", chan);
-            WatchPlayer(src, "Large Message", message, chan);
-            sys.stopEvent();
-            return;
-        }
-
-        if (myAuth <= 0 && silence.level == 1 && !voice) {
-            sys.stopEvent();
-            sendSTFUTruck(src, chan);
-            WatchPlayer(src, "Silence Message", message, chan);
-            return;
-        }
-
-        if (!poChan.isChanMod(src) && poChan.silence == 1 && !voice) {
-            sys.stopEvent();
-            sendSTFUTruck(src, chan);
-            WatchPlayer(src, "Channel Silence Message", message, chan);
-            return;
-        }
-
-        if (myAuth < 2 && silence.level == 2 && !voice) {
-            sys.stopEvent();
-            sendSTFUTruck(src, chan);
-            WatchPlayer(src, "Silence Message", message, chan);
-            return;
-        }
-
-        if (!poChan.isChanAdmin(src) && poChan.silence == 2 && !voice) {
-            sys.stopEvent();
-            sendSTFUTruck(src, chan);
-            WatchPlayer(src, "Channel Silence Message", message, chan);
-            return;
-        }
-
-        if (myAuth < 3 && silence.level == 3 && !voice) {
-            sys.stopEvent();
-            sendSTFUTruck(src, chan);
-            WatchPlayer(src, "Silence Message", message, chan);
-            return;
-        }
-
-        if (!poChan.isChanOwner(src) && poChan.silence == 3 && !voice) {
-            sys.stopEvent();
-            sendSTFUTruck(src, chan);
-            WatchPlayer(src, "Channel Silence Message", message, chan);
-            return;
+            if (!poChan.isChanAdmin(src) && poChan.silence == 2 && !voice) {
+                sys.stopEvent();
+                sendSTFUTruck(src, chan);
+                WatchPlayer(src, "Channel Silence Message", message, chan);
+                return;
+            }
+    
+            if (!poChan.isChanOwner(src) && poChan.silence == 3 && !voice) {
+                sys.stopEvent();
+                sendSTFUTruck(src, chan);
+                WatchPlayer(src, "Channel Silence Message", message, chan);
+                return;
+            }*/
         }
 
         if (poUser.muted && !host) {
