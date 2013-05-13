@@ -162,7 +162,7 @@
     };
     
     // if the player is muted in this channel
-    Channel.prototype.isMutedInChannel = function (ip) {
+    Channel.prototype.isMuted = function (ip) {
         return this.muteList.hasOwnProperty(PlayerUtils.ip(ip));
     };
     
