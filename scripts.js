@@ -219,6 +219,7 @@ function Mail(sender, text, title) {
 
 // TODO: events.js for all the events down below (would really help with the massive use of requires in them, because a closure can be used).
 ({
+    // System events.
     // Event: serverStartUp [event-serverStartUp]
     // Called when: Server starts up
     // Sets start up variables and calls event beforeNewMessage
@@ -318,207 +319,6 @@ function Mail(sender, text, title) {
         Cache.save("scriptRegisterDate", date);
     },
 
-    // Event: attemptToSpectateBattle [event-attemptToSpectateBattle]
-    // Called when: [src] tries to spectate a battle between [battler1] and [battler2]
-    // Allows [src] to watch [battler1]'s and [battler2]'s battle if they are currently playing
-    // a tournament finals match (even when Disallow Spectators is on).
-    attemptToSpectateBattle: function (src, battler1, battler2) {
-        var Bot = require('bot'),
-            Utils = require('utils'),
-            Tours = require('tours').Tours,
-            JSESSION = require('jsession');
-        
-        var channelIds = sys.channelIds(),
-            length = channelIds.length,
-            tour,
-            i;
-
-        for (i = 0; i < length; ++i) {
-            // ensure we have an object
-            tour = (JSESSION.channels(channelIds[i]) || {tour: "NoTour"}).tour || {tour: "NoTour"};
-            
-            if (tour === "NoTour") {
-                Utils.panic("scripts.js", "event[attemptToSpectateBattle]", "No tour object exists for channel " + sys.channel(channelIds[i]) + " (" + channelIds[i] + ").", JSESSION.channels(channelIds[i]), Utils.panic.warning);
-                continue;
-            }
-            
-            if (tour.finals && Tours.isInTourneyId(battler1, tour) && Tours.isInTourneyId(battler2, tour)) {
-                Bot.sendMessage(src, "Enjoy the final match!", tour.id);
-                return "allow";
-            }
-        }
-    },
-
-    // Event: beforeFindBattle [event-beforeFindBattle]
-    // Called when: [src] tries to find a battle via the "Find Battle" button.
-    // Logs [src] pressing "Find Battle".
-    beforeFindBattle: function (src) {
-        var WatchUtils = require('watch-utils');
-        
-        WatchUtils.logPlayerEvent(src, "Pressed \"Find Battle\"");
-    },
-
-    // Event: beforeChannelJoin [event-beforeChannelJoin]
-    // Called when: [src] joins the channel [chan].
-    // Checks if a player can join [chan] - handling bans, the channel being private, and the channel being restricted (default channels such as Ever Grande City (staff channel))
-    beforeChannelJoin: function (src, chan) {
-        var JSESSION = require('jsession').JSESSION,
-            Bot = require('bot'),
-            Options = require('options');
-        
-        var channelIds = Options.defaultChannelIds,
-            name = sys.name(src),
-            user,
-            channel;
-        
-        // Ensure their JSESSION objects exist
-        // Only alarm when a channel object doesn't exist yet
-        if (!JSESSION.hasUser(src)) {
-            JSESSION.createUser(src);
-        }
-        if (!JSESSION.hasChannel(chan)) {
-            JSESSION.createChannel(chan);
-        }
-
-        user = JSESSION.users(src);
-        channel = JSESSION.channels(src);
-
-        // Allow them in if they're (channel) auth (even if banned, etc.)
-        // This checks if they're normal auth as well.
-        if (channel.isChanMod(src)) {
-            return;
-        }
-        
-/*        if ( DataHash.megausers.has(srcname) && c == staffchannel || DataHash.evalops.has(srcname) && c == scriptchannel) {
-            return;
-        }
-
-        var ip = sys.ip(src);
-        if (chan.isBannedInChannel(ip)) {
-            Prune.channelBans(c);
-            if (chan.isBannedInChannel(ip)) { // repeat this because of ban pruning
-                sys.stopEvent();
-                var ban = chan.banlist[ip],
-                    time;
-
-                if (ban.time !== 0) {
-                    time = "Banned for " + getTimeString(ban.time - +sys.time());
-                } else {
-                    time = "Banned forever";
-                }
-
-                var by = ban.by,
-                    why = ban.why,
-                    last = why[why.length - 1];
-                if (last !== "." && last !== "!" && last !== "?") {
-                    why += ".";
-                }
-
-                botMessage(src, "You are banned in " + sys.channel(c) + " by " + by + ". Reason: " + why + " " + time + ".");
-                return;
-            }
-        }
-*/
-        
-        // If this is the main channel, ignore it being private,
-        // but do prevent them from getting in main if they're banned
-        if (chan === 0) {
-            return;
-        }
-
-        // don't care about #name being changed
-        // this can only happen to the main channel, and we already prevented it from reaching this
-        if (channel.private) {
-            Bot.sendMessage(src, channel.name + " is auth-only!");
-            sys.stopEvent();
-            return;
-        }
-
-        if (chan === channelIds.triviarev
-                || chan === channelIds.watch
-                || chan === channelIds.staff
-                || chan === channelIds.eval) {
-            Bot.sendMessage(src, "The access to " + channel.name + " is restricted!");
-            sys.stopEvent();
-            return;
-        }
-    },
-
-    // Event: beforeChannelDestroyed
-    // Called when: Before a channel is deleted
-    // Stops perm/default channels from being destroyed.
-    beforeChannelDestroyed: function (chan) {
-        var WatchUtils = require('watch-utils'),
-            JSESSION = require('jsession').JSESSION;
-        
-        var defaultIds = require('options').defaultChannelIds;
-        
-        if (chan === defaultIds.mafia
-                || chan === defaultIds.trivia
-                || chan === defaultIds.triviarev
-                || chan === defaultIds.watch
-                || chan === defaultIds.staff
-                || chan === defaultIds.eval
-                || JSESSION.channels(chan).perm) {
-            sys.stopEvent();
-            return;
-        }
-
-        WatchUtils.logChannelEvent(chan, "Destroyed");
-        JSESSION.destroyChannel(chan);
-    },
-
-    // Event: beforeChannelCreated [event-beforeChannelCreated]
-    // Called when: Before a channel will be created.
-    // Checks if channels are enabled and creates the JSESSION object of the channel.
-    beforeChannelCreated: function (chan, name, src) {
-        var Bot = require('bot'),
-            JSESSION = require('jsession');
-        
-        // prevent players from creating a channel if Config.ChannelsEnabled is false.
-        if (!Config.ChannelsEnabled && sys.loggedIn(src)) {
-            Bot.sendMessage(src, "The creation of channels by players is disabled.");
-            sys.stopEvent();
-            return;
-        }
-        
-        /*
-        if (src != 0 && unicodeAbuse(src, name)) {
-            sendFailWhale(src, 0);
-            sys.stopEvent();
-            return;
-        }*/
-
-        JSESSION.createChannel(chan);
-    },
-
-    // Event: afterChannelCreated [event-afterChannelCreated]
-    // Called when: After a channel has been created.
-    // Sets channel data stored in ChannelData, and gives creator/auth perms if the channel was created by a player.
-    afterChannelCreated: function (chan, name, src) {
-        var Utils = require('utils'),
-            ChannelData = require('channel-data').ChannelData,
-            JSESSION = require('jsession').JSESSION;
-        
-        var channel = JSESSION.channels(chan);
-
-        // Bail and panic if the channel doesn't exist.
-        if (channel === undefined) {
-            Utils.panic("scripts.js", "event[afterChannelCreated]", "JSESSION does not contain channel " + chan + " (" + name + ").", JSESSION.ChannelData, Utils.panic.error);
-            return;
-        }
-        
-        ChannelData.exportData(chan);
-        
-        // if creator is -1 then it was set in beforeChannelCreated, which means the channel was actually created for the first time.
-        // also give them auth.
-        if (sys.loggedIn(src) && channel.creator === -1) {
-            channel.creator = sys.name(src).toLowerCase();
-            // TODO: Channel#changeAuth -> ChannelUtils.changeAuth
-            channel.changeAuth(src, 3);
-        }
-    },
-
     // Event: step
     // Called when: Every second.
     // Handles temporary auth pruning and mafia's tick.
@@ -537,181 +337,8 @@ function Mail(sender, text, title) {
         
         //Mafia.tickDown();
     },
-    
-    // Event: beforeLogin
-    // Called when: Before a player logs in.
-    // Adds a player's correct name to DataHash, resolves their location, ensures they don't instantly reconnect after being kicked,
-    // and that their name doesn't contain characters such as those which make it easy to impersonate a player (cyrillic, greek).
-    beforeLogIn: function (src) {
-        var DataHash = require('datahash');
-        
-        var name = sys.name(src),
-            ip = sys.ip(src);
 
-        // Give Owner authority to the host if they aren't one.
-        if (ip === "127.0.0.1" && sys.auth(src) < 3) {
-            sys.changeAuth(src, 3);
-        }
-
-        DataHash.correctNames[name.toLowerCase()] = name;
-        DataHash.namesByIp[ip] = name;
-
-        DataHash.save("correctNames");
-        DataHash.save("namesByIp");
-        
-        DataHash.resolveLocation(src, ip);
-
-        // Players will only be in autoReconnectBlock if they were kicked.
-        if (DataHash.hasDataProperty("autoReconnectBlock", ip)) {
-            sys.stopEvent();
-            return;
-        }
-
-        // TODO: testName
-        /*
-        if (script.testName(src)) {
-            sys.stopEvent();
-            return;
-        }*/
-    },
-
-    // Event: afterLogIn
-    // Called when: After a player logs in.
-    // Logs the player logging in, sends them welcome messages, updates the most amount of players online, and sends a custom welcome message to everyone (if they have one).
-    afterLogIn: function (src) {
-        var Options = require('options'),
-            Bot = require('bot'),
-            Utils = require('utils'),
-            PlayerUtils = require('player-utils'),
-            WatchUtils = require('watch-utils'),
-            Tours = require('tours'),
-            Cache = require('cache').Cache,
-            JSESSION = require('jsession').JSESSION,
-            DataHash = require('datahash');
-        
-        var name = PlayerUtils.formatName(src),
-            plainName = sys.name(src),
-            nameLower = plainName.toLowerCase(),
-            auth = PlayerUtils.trueAuth(src),
-            playersOnline = sys.numPlayers(),
-            chanIds = [Options.defaultChannelIds.mafia];
-        
-        WatchUtils.logPlayerEvent(src, "Logged in with ip '" + sys.ip(src) + "'");
-
-        Bot.sendMessage(src, "Welcome, " + name + "!", 0);
-        Bot.sendMessage(src, "Type '<b><font color=green>/commands</font></b>' to see the server commands and '<b><font color=green>/rules</font></b>' to read the server rules.", 0);
-        if (Options.startUpTime !== 0) {
-            Bot.sendMessage(src, "The server has been up for " + Utils.timeToString(Options.startUpTime) + ".", 0);
-        }
-
-        // Update the most players online, if we've hit a new limit
-        if (playersOnline > Options.mostPlayersOnline) {
-            Options.mostPlayersOnline = playersOnline;
-            Cache.write("mostPlayersOnline", playersOnline);
-        }
-
-        Bot.sendMessage(src, "<b>" + playersOnline + "</b> players are currently online. The highest amount of players we've ever seen is <b>" + Options.mostPlayersOnlines + "</b>.", 0);
-
-        // Check if they are registered.
-        if (!sys.dbRegistered(nameLower)) {
-            Bot.sendMessage(src, "You are not registered. Click on the 'Register' button to claim this name. Registration only requires a password.", 0);
-        }
-
-        // Notify them about running tournaments
-        Tours.tourNotification(src, 0);
-        
-        // Send a white line.
-        sys.sendMessage(src, "", 0);
-
-        if (Config.AutoChannelJoin) {
-            if (auth > 0 || JSESSION.channels(Options.defaultChannelIds.watch).isChanMod(src)) {
-                chanIds.push(Options.defaultChannelIds.watch);
-            }
-
-            if (auth > 0 || JSESSION.users(src).megauser || SESSION.channels(Options.defaultChannelIds.staff).isChanMod(src)) {
-                chanIds.push(Options.defaultChannelIds.staff);
-            }
-
-            if (auth > 1 || JSESSION.channels(Options.defaultChannelIds.eval).isChanMod(src) || Config.evalAccess.indexOf(plainName) !== -1) {
-                chanIds.push(Options.defaultChannelIds.eval);
-            }
-            
-            // puts the player in those channels.
-            PlayerUtils.pushChannels(src, chanIds);
-        }
-
-        
-        if (DataHash.hasDataProperty('autoIdle', nameLower)) {
-            if (DataHash.autoIdle[nameLower].welcomeMessage !== "") {
-                Bot.sendAll(DataHash.autoIdle[nameLower].welcomeMessage, 0);
-            }
-            
-            sys.changeAway(src, true);
-        }
-        
-        // TODO: This needs work.
-/*
-        ify.afterLogIn(src);
-        script.afterChangeTeam(src, true);*/
-    },
-
-
-    // Event: beforeChannelLeave
-    // Called when: Before a player leaves a channel.
-    // Logs the player leaving a channel.
-    beforeChannelLeave: function (src, chan) {
-        var WatchUtils = require('watch-utils');
-        
-        WatchUtils.logPlayerEvent(src, "Left channel " + sys.channel(chan) + " (ID: " + chan + ")");
-    },
-    
-    // Event: afterChannelJoin
-    // Called when: After a player joins a channel.
-    // Logs the player joining a channel, creates a chatgradient (if the channel has one), and sends them the channel topic and server message of the day (if any)..
-    afterChannelJoin: function (src, chan) {
-        var Options = require('options'),
-            PlayerUtils = require('player-utils'),
-            WatchUtils = require('watch-utils'),
-            ChannelData = require('channel-data'),
-            Tours = require('tours'),
-            JSESSION = require('jsession'),
-            ChatGradient = require('chat-gradient');
-        
-        var channel = JSESSION.channels(chan),
-            name = sys.name(src),
-            nameLower = name.toLowerCase(),
-            user = JSESSION.users(src),
-            setterAuth = PlayerUtils.trueAuth(channel.topicSetter);
-        
-        WatchUtils.logPlayerEvent(src, "Joined channel " + sys.channel(chan) + " (ID " + chan + ")");
-
-        if (ChatGradient.hasChannel(channel)) {
-            ChatGradient.refreshPlayer(src, channel);
-        }
-
-        sys.sendHtmlMessage(src, "<font color='orange'><timestamp/><b>Topic:</b></font> " + channel.topic, chan);
-
-        if (channel.topicSetter !== "") {
-            sys.sendHtmlMessage(src, "<font color='darkorange'><timestamp/><b>Set By:</b></font> " + channel.topicSetter, chan);
-        }
-
-        if (Options.motd.enabled) {
-            sys.sendHtmlMessage(src, "<font color='red'><timestamp/><b>Message Of The Day:</b></font> " + Options.motd.message, chan);
-            sys.sendHtmlMessage(src, "<font color='darkred'><timestamp/><b>Set By:</b></font> " + Options.motd.setter, chan);
-        }
-
-        // TODO: Polls
-        /*
-        if (Poll.mode) {
-            botMessage(src, "A poll is going on! Use <font color=green><b>/viewpoll</b></font> for more information.", chan);
-        }*/
-
-        // Don't send them a notification if this is the main channel.
-        if (channel !== 0) {
-            Tours.tourNotification(src, channel);
-        }
-    },
-
+    // Message events.
     // Event: beforeNewMessage
     // Called when: Before a message is outputted to stdout.
     // Logs script warnings, errors, gives the server host an eval command, and calls script.init if the scripts were (re)loaded.
@@ -1054,21 +681,16 @@ if (message === "The description of the server was changed.") {
         }
 
         if (UseIcons) {
-            var rankico = '';
-            if (!isEmpty(poUser.icon)) {
-                rankico = poUser.icon;
-            }
-            else if (myAuth === 3) {
+            var rankico = Icons.user;
+            
+            if (!!userObject.icon) {
+                rankico = userObject.icon;
+            } else if (playerAuth === 3) {
                 rankico = Icons.Owner;
-            }
-            else if (myAuth === 2) {
+            } else if (playerAuth === 2) {
                 rankico = Icons.Admin;
-            }
-            else if (myAuth === 1) {
+            } else if (playerAuth === 1) {
                 rankico = Icons.Mod;
-            }
-            else {
-                rankico = Icons.User;
             }
         }
 
@@ -1085,7 +707,7 @@ if (message === "The description of the server was changed.") {
         }
 
         if (UseIcons) {
-            var namestr = '<font color=' + script.namecolor(src) + '><timestamp/><b>' + rankico + html_escape(srcname) + ':</font></b> ' + format(src, html_escape(message));
+            var namestr = '<font color=' + script.namecolor(src) + '><timestamp/><b>' + rankico + Utils.escapeHtml(srcname) + ':</font></b> ' + format(src, html_escape(message));
         }
 
         if (chatcolor) {
@@ -1136,7 +758,7 @@ if (message === "The description of the server was changed.") {
             return;
         }
 
-        if (typeof poUser.impersonation != 'undefined') {
+        if (typeof poUser.impersonation !== 'undefined') {
             if (myAuth <= 0 && implock) {
                 delete poUser.impersonation;
                 botMessage(src, "You are now yourself again!", chan);
@@ -1149,7 +771,8 @@ if (message === "The description of the server was changed.") {
                 font2 = '%1';
 
             if (chatcolor) {
-                font = ' face="' + fnt + '"', font2 = '<font face="' + fnt + '">%1</font>';
+                font = ' face="' + fnt + '"';
+                font2 = '<font face="' + fnt + '">%1</font>';
             }
 
             var l = "",
@@ -1184,12 +807,10 @@ if (message === "The description of the server was changed.") {
         if (UseIcons || chatcolor) {
             if (chan === watch) {
                 sendHtml(namestr);
-                return;
-            }
-            else {
+            } else {
                 sendHtml(namestr, chan);
-                return;
             }
+            return;
         }
 
         if (chan === watch) {
@@ -1199,7 +820,202 @@ if (message === "The description of the server was changed.") {
         
         sys.sendAll(srcname + ": " + message, chan);
     },
+    
+    // Channel events
+    
+    // Event: beforeChannelCreated [event-beforeChannelCreated]
+    // Called when: Before a channel will be created.
+    // Checks if channels are enabled and creates the JSESSION object of the channel.
+    beforeChannelCreated: function (chan, name, src) {
+        var Bot = require('bot'),
+            JSESSION = require('jsession');
+        
+        // prevent players from creating a channel if Config.ChannelsEnabled is false.
+        if (!Config.ChannelsEnabled && sys.loggedIn(src)) {
+            Bot.sendMessage(src, "The creation of channels by players is disabled.");
+            sys.stopEvent();
+            return;
+        }
+        
+        /*
+        if (src != 0 && unicodeAbuse(src, name)) {
+            sendFailWhale(src, 0);
+            sys.stopEvent();
+            return;
+        }*/
 
+        JSESSION.createChannel(chan);
+    },
+
+    // Event: afterChannelCreated [event-afterChannelCreated]
+    // Called when: After a channel has been created.
+    // Sets channel data stored in ChannelData, and gives creator/auth perms if the channel was created by a player.
+    afterChannelCreated: function (chan, name, src) {
+        var Utils = require('utils'),
+            ChannelData = require('channel-data').ChannelData,
+            JSESSION = require('jsession').JSESSION;
+        
+        var channel = JSESSION.channels(chan);
+
+        // Bail and panic if the channel doesn't exist.
+        if (channel === undefined) {
+            Utils.panic("scripts.js", "event[afterChannelCreated]", "JSESSION does not contain channel " + chan + " (" + name + ").", JSESSION.ChannelData, Utils.panic.error);
+            return;
+        }
+        
+        ChannelData.exportData(chan);
+        
+        // if creator is -1 then it was set in beforeChannelCreated, which means the channel was actually created for the first time.
+        // also give them auth.
+        if (sys.loggedIn(src) && channel.creator === -1) {
+            channel.creator = sys.name(src).toLowerCase();
+            // TODO: Channel#changeAuth -> ChannelUtils.changeAuth
+            channel.changeAuth(src, 3);
+        }
+    },
+    
+    // Event: beforeChannelJoin [event-beforeChannelJoin]
+    // Called when: [src] joins the channel [chan].
+    // Checks if a player can join [chan] - handling bans, the channel being private, and the channel being restricted (default channels such as Ever Grande City (staff channel))
+    beforeChannelJoin: function (src, chan) {
+        var JSESSION = require('jsession').JSESSION,
+            Bot = require('bot'),
+            Options = require('options');
+        
+        var channelIds = Options.defaultChannelIds,
+            name = sys.name(src),
+            user,
+            channel;
+        
+        // Ensure their JSESSION objects exist
+        // Only alarm when a channel object doesn't exist yet
+        if (!JSESSION.hasUser(src)) {
+            JSESSION.createUser(src);
+        }
+        if (!JSESSION.hasChannel(chan)) {
+            JSESSION.createChannel(chan);
+        }
+
+        user = JSESSION.users(src);
+        channel = JSESSION.channels(src);
+
+        // Allow them in if they're (channel) auth (even if banned, etc.)
+        // This checks if they're normal auth as well.
+        if (channel.isChanMod(src)) {
+            return;
+        }
+        
+/*        if ( DataHash.megausers.has(srcname) && c == staffchannel || DataHash.evalops.has(srcname) && c == scriptchannel) {
+            return;
+        }
+
+        var ip = sys.ip(src);
+        if (chan.isBannedInChannel(ip)) {
+            Prune.channelBans(c);
+            if (chan.isBannedInChannel(ip)) { // repeat this because of ban pruning
+                sys.stopEvent();
+                var ban = chan.banlist[ip],
+                    time;
+
+                if (ban.time !== 0) {
+                    time = "Banned for " + getTimeString(ban.time - +sys.time());
+                } else {
+                    time = "Banned forever";
+                }
+
+                var by = ban.by,
+                    why = ban.why,
+                    last = why[why.length - 1];
+                if (last !== "." && last !== "!" && last !== "?") {
+                    why += ".";
+                }
+
+                botMessage(src, "You are banned in " + sys.channel(c) + " by " + by + ". Reason: " + why + " " + time + ".");
+                return;
+            }
+        }
+*/
+        
+        // If this is the main channel, ignore it being private,
+        // but do prevent them from getting in main if they're banned
+        if (chan === 0) {
+            return;
+        }
+
+        // don't care about #name being changed
+        // this can only happen to the main channel, and we already prevented it from reaching this
+        if (channel.private) {
+            Bot.sendMessage(src, channel.name + " is auth-only!");
+            sys.stopEvent();
+            return;
+        }
+
+        if (chan === channelIds.triviarev
+                || chan === channelIds.watch
+                || chan === channelIds.staff
+                || chan === channelIds.eval) {
+            Bot.sendMessage(src, "The access to " + channel.name + " is restricted!");
+            sys.stopEvent();
+            return;
+        }
+    },
+    
+    // Event: afterChannelJoin
+    // Called when: After a player joins a channel.
+    // Logs the player joining a channel, creates a chatgradient (if the channel has one), and sends them the channel topic and server message of the day (if any)..
+    afterChannelJoin: function (src, chan) {
+        var Options = require('options'),
+            PlayerUtils = require('player-utils'),
+            WatchUtils = require('watch-utils'),
+            ChannelData = require('channel-data'),
+            Tours = require('tours'),
+            JSESSION = require('jsession'),
+            ChatGradient = require('chat-gradient');
+        
+        var channel = JSESSION.channels(chan),
+            name = sys.name(src),
+            nameLower = name.toLowerCase(),
+            user = JSESSION.users(src),
+            setterAuth = PlayerUtils.trueAuth(channel.topicSetter);
+        
+        WatchUtils.logPlayerEvent(src, "Joined channel " + sys.channel(chan) + " (ID " + chan + ")");
+
+        if (ChatGradient.hasChannel(channel)) {
+            ChatGradient.refreshPlayer(src, channel);
+        }
+
+        sys.sendHtmlMessage(src, "<font color='orange'><timestamp/><b>Topic:</b></font> " + channel.topic, chan);
+
+        if (channel.topicSetter !== "") {
+            sys.sendHtmlMessage(src, "<font color='darkorange'><timestamp/><b>Set By:</b></font> " + channel.topicSetter, chan);
+        }
+
+        if (Options.motd.enabled) {
+            sys.sendHtmlMessage(src, "<font color='red'><timestamp/><b>Message Of The Day:</b></font> " + Options.motd.message, chan);
+            sys.sendHtmlMessage(src, "<font color='darkred'><timestamp/><b>Set By:</b></font> " + Options.motd.setter, chan);
+        }
+
+        // TODO: Polls
+        /*
+        if (Poll.mode) {
+            botMessage(src, "A poll is going on! Use <font color=green><b>/viewpoll</b></font> for more information.", chan);
+        }*/
+
+        // Don't send them a notification if this is the main channel.
+        if (channel !== 0) {
+            Tours.tourNotification(src, channel);
+        }
+    },
+    
+    // Event: beforeChannelLeave
+    // Called when: Before a player leaves a channel.
+    // Logs the player leaving a channel.
+    beforeChannelLeave: function (src, chan) {
+        var WatchUtils = require('watch-utils');
+        
+        WatchUtils.logPlayerEvent(src, "Left channel " + sys.channel(chan) + " (ID: " + chan + ")");
+    },
+    
     beforeLogOut: function (src) {
         var func = function (id, name, color, autoKicked) {
             if (typeof autoKicked !== 'number') {
@@ -1217,6 +1033,296 @@ if (message === "The description of the server was changed.") {
 
         ify.beforeLogOut(src);
         JSESSION.destroyUser(src);
+    },
+
+    // Event: beforeChannelDestroyed
+    // Called when: Before a channel is deleted
+    // Stops perm/default channels from being destroyed.
+    beforeChannelDestroyed: function (chan) {
+        var WatchUtils = require('watch-utils'),
+            JSESSION = require('jsession').JSESSION;
+        
+        var defaultIds = require('options').defaultChannelIds;
+        
+        if (chan === defaultIds.mafia
+                || chan === defaultIds.trivia
+                || chan === defaultIds.triviarev
+                || chan === defaultIds.watch
+                || chan === defaultIds.staff
+                || chan === defaultIds.eval
+                || JSESSION.channels(chan).perm) {
+            sys.stopEvent();
+            return;
+        }
+
+        WatchUtils.logChannelEvent(chan, "Destroyed");
+        JSESSION.destroyChannel(chan);
+    },
+    
+    // Battle events
+
+    // Event: beforeFindBattle [event-beforeFindBattle]
+    // Called when: [src] tries to find a battle via the "Find Battle" button.
+    // Logs [src] pressing "Find Battle".
+    beforeFindBattle: function (src) {
+        var WatchUtils = require('watch-utils');
+        
+        WatchUtils.logPlayerEvent(src, "Pressed \"Find Battle\"");
+    },
+    
+    // Event: attemptToSpectateBattle [event-attemptToSpectateBattle]
+    // Called when: [src] tries to spectate a battle between [battler1] and [battler2]
+    // Allows [src] to watch [battler1]'s and [battler2]'s battle if they are currently playing
+    // a tournament finals match (even when Disallow Spectators is on).
+    attemptToSpectateBattle: function (src, battler1, battler2) {
+        var Bot = require('bot'),
+            Utils = require('utils'),
+            Tours = require('tours').Tours,
+            JSESSION = require('jsession');
+        
+        var channelIds = sys.channelIds(),
+            length = channelIds.length,
+            tour,
+            i;
+
+        for (i = 0; i < length; ++i) {
+            // ensure we have an object
+            tour = (JSESSION.channels(channelIds[i]) || {tour: "NoTour"}).tour || {tour: "NoTour"};
+            
+            if (tour === "NoTour") {
+                Utils.panic("scripts.js", "event[attemptToSpectateBattle]", "No tour object exists for channel " + sys.channel(channelIds[i]) + " (" + channelIds[i] + ").", JSESSION.channels(channelIds[i]), Utils.panic.warning);
+                continue;
+            }
+            
+            if (tour.finals && Tours.isInTourneyId(battler1, tour) && Tours.isInTourneyId(battler2, tour)) {
+                Bot.sendMessage(src, "Enjoy the final match!", tour.id);
+                return "allow";
+            }
+        }
+    },
+    
+    beforeBattleMatchup: function (src) {
+        if (!BattlesAllowed) {
+            botMessage(src, "Battles are currently disabled.");
+            return sys.stopEvent();
+        }
+    },
+    
+    beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier) {
+        if (Config.FixChallenges) {
+            return sys.stopEvent();
+        }
+        
+        if (!BattlesAllowed) {
+            botMessage(src, "Battles are currently disabled.");
+            return sys.stopEvent();
+        }
+
+        var poUser = JSESSION.users(src);
+        if (poUser == undefined) {
+            JSESSION.createUser(src);
+            poUser = JSESSION.users(src);
+        }
+
+        var time = sys.time() * 1;
+        if (poUser.lastChallenge + 15 - time > 0 && sys.auth(src) < 2 && poUser.lastChallenge != 0) {
+            botMessage(src, "Please wait " + getTimeString(poUser.lastChallenge + 15 - time) + " before challenging.");
+            return sys.stopEvent();
+        }
+
+        poUser.lastChallenge = time;
+
+        var isChallengeCup = sys.getClauses(destTier) % 32 >= 16,
+            hasChallengeCupClause = (clauses % 32) >= 16;
+
+        if (isChallengeCup && !hasChallengeCupClause) {
+            botMessage(src, "Challenge Cup must be enabled in the challenge window for a CC battle");
+            sys.stopEvent();
+            return;
+        }
+
+        if ((clauses % 32) >= 16) {
+            return;
+        }
+
+        if (!Config.NoCrash) {
+            if (sys.tier(src, team).contains("Doubles") && destTier.contains("Doubles") && mode != 1) {
+                botMessage(src, "To fight in doubles, enable doubles in the challenge window!");
+                sys.stopEvent();
+                return;
+            }
+            if (sys.tier(src, team).contains("Triples") && destTier.contains("Triples") && mode != 2) {
+                botMessage(src, "To fight in triples, enable triples in the challenge window!");
+                sys.stopEvent();
+                return;
+            }
+        }
+    },
+    
+    afterBattleStarted: function (src, dest, clauses, rated, srcteam, destteam) {
+        var c = sys.channelIds(),
+            b, c_chan;
+
+        for (b in c) {
+            c_chan = JSESSION.channels(c[b]);
+            if (c_chan.toursEnabled) {
+                c_chan.tour.afterBattleStarted(src, dest, clauses, rated, srcteam, destteam);
+            }
+        }
+    },
+    
+    afterBattleEnded: function (winner, loser, result, battle_id) {
+        if (result != "tie" && sys.ip(winner) != sys.ip(loser)) {
+            var winMoney = sys.rand(50, 81),
+                loseMoney = sys.rand(13, 36),
+                winnerName = sys.name(winner).toLowerCase(),
+                loserName = sys.name(loser).toLowerCase(),
+                money = DataHash.money;
+
+            if (typeof money[loserName] === "undefined") {
+                money[loserName] = 0;
+            }
+            if (typeof money[winnerName] === "undefined") {
+                money[winnerName] = 0;
+            }
+
+            money[winnerName] += winMoney;
+            money[loserName] -= loseMoney;
+
+            botMessage(winner, 'You won ' + winMoney + ' battle points!');
+            botMessage(loser, 'You lost ' + loseMoney + ' battle points!');
+
+            cache.write("money", JSON.stringify(DataHash.money));
+        }
+
+        var c = sys.channelIds(),
+            b, c_chan;
+
+        for (b in c) {
+            c_chan = JSESSION.channels(c[b]);
+            if (c_chan.toursEnabled) {
+                c_chan.tour.afterBattleEnded(winner, loser, result);
+            }
+        }
+    },
+    
+    // Player Events
+    
+    // Event: beforeLogin
+    // Called when: Before a player logs in.
+    // Adds a player's correct name to DataHash, resolves their location, ensures they don't instantly reconnect after being kicked,
+    // and that their name doesn't contain characters such as those which make it easy to impersonate a player (cyrillic, greek).
+    beforeLogIn: function (src) {
+        var DataHash = require('datahash');
+        
+        var name = sys.name(src),
+            ip = sys.ip(src);
+
+        // Give Owner authority to the host if they aren't one.
+        if (ip === "127.0.0.1" && sys.auth(src) < 3) {
+            sys.changeAuth(src, 3);
+        }
+
+        DataHash.correctNames[name.toLowerCase()] = name;
+        DataHash.namesByIp[ip] = name;
+
+        DataHash.save("correctNames");
+        DataHash.save("namesByIp");
+        
+        DataHash.resolveLocation(src, ip);
+
+        // Players will only be in autoReconnectBlock if they were kicked.
+        if (DataHash.hasDataProperty("autoReconnectBlock", ip)) {
+            sys.stopEvent();
+            return;
+        }
+
+        // TODO: testName
+        /*
+        if (script.testName(src)) {
+            sys.stopEvent();
+            return;
+        }*/
+    },
+
+    // Event: afterLogIn
+    // Called when: After a player logs in.
+    // Logs the player logging in, sends them welcome messages, updates the most amount of players online, and sends a custom welcome message to everyone (if they have one).
+    afterLogIn: function (src) {
+        var Options = require('options'),
+            Bot = require('bot'),
+            Utils = require('utils'),
+            PlayerUtils = require('player-utils'),
+            WatchUtils = require('watch-utils'),
+            Tours = require('tours'),
+            Cache = require('cache').Cache,
+            JSESSION = require('jsession').JSESSION,
+            DataHash = require('datahash');
+        
+        var name = PlayerUtils.formatName(src),
+            plainName = sys.name(src),
+            nameLower = plainName.toLowerCase(),
+            auth = PlayerUtils.trueAuth(src),
+            playersOnline = sys.numPlayers(),
+            chanIds = [Options.defaultChannelIds.mafia];
+        
+        WatchUtils.logPlayerEvent(src, "Logged in with ip '" + sys.ip(src) + "'");
+
+        Bot.sendMessage(src, "Welcome, " + name + "!", 0);
+        Bot.sendMessage(src, "Type '<b><font color=green>/commands</font></b>' to see the server commands and '<b><font color=green>/rules</font></b>' to read the server rules.", 0);
+        if (Options.startUpTime !== 0) {
+            Bot.sendMessage(src, "The server has been up for " + Utils.timeToString(Options.startUpTime) + ".", 0);
+        }
+
+        // Update the most players online, if we've hit a new limit
+        if (playersOnline > Options.mostPlayersOnline) {
+            Options.mostPlayersOnline = playersOnline;
+            Cache.write("mostPlayersOnline", playersOnline);
+        }
+
+        Bot.sendMessage(src, "<b>" + playersOnline + "</b> players are currently online. The highest amount of players we've ever seen is <b>" + Options.mostPlayersOnlines + "</b>.", 0);
+
+        // Check if they are registered.
+        if (!sys.dbRegistered(nameLower)) {
+            Bot.sendMessage(src, "You are not registered. Click on the 'Register' button to claim this name. Registration only requires a password.", 0);
+        }
+
+        // Notify them about running tournaments
+        Tours.tourNotification(src, 0);
+        
+        // Send a white line.
+        sys.sendMessage(src, "", 0);
+
+        if (Config.AutoChannelJoin) {
+            if (auth > 0 || JSESSION.channels(Options.defaultChannelIds.watch).isChanMod(src)) {
+                chanIds.push(Options.defaultChannelIds.watch);
+            }
+
+            if (auth > 0 || JSESSION.users(src).megauser || SESSION.channels(Options.defaultChannelIds.staff).isChanMod(src)) {
+                chanIds.push(Options.defaultChannelIds.staff);
+            }
+
+            if (auth > 1 || JSESSION.channels(Options.defaultChannelIds.eval).isChanMod(src) || Config.evalAccess.indexOf(plainName) !== -1) {
+                chanIds.push(Options.defaultChannelIds.eval);
+            }
+            
+            // puts the player in those channels.
+            PlayerUtils.pushChannels(src, chanIds);
+        }
+
+        
+        if (DataHash.hasDataProperty('autoIdle', nameLower)) {
+            if (DataHash.autoIdle[nameLower].welcomeMessage !== "") {
+                Bot.sendAll(DataHash.autoIdle[nameLower].welcomeMessage, 0);
+            }
+            
+            sys.changeAway(src, true);
+        }
+        
+        // TODO: This needs work.
+/*
+        ify.afterLogIn(src);
+        script.afterChangeTeam(src, true);*/
     },
 
     afterPlayerAway: function (src, mode) {
@@ -1346,111 +1452,6 @@ if (message === "The description of the server was changed.") {
         }
     },
 
-    afterBattleEnded: function (winner, loser, result, battle_id) {
-        if (result != "tie" && sys.ip(winner) != sys.ip(loser)) {
-            var winMoney = sys.rand(50, 81),
-                loseMoney = sys.rand(13, 36),
-                winnerName = sys.name(winner).toLowerCase(),
-                loserName = sys.name(loser).toLowerCase(),
-                money = DataHash.money;
-
-            if (typeof money[loserName] === "undefined") {
-                money[loserName] = 0;
-            }
-            if (typeof money[winnerName] === "undefined") {
-                money[winnerName] = 0;
-            }
-
-            money[winnerName] += winMoney;
-            money[loserName] -= loseMoney;
-
-            botMessage(winner, 'You won ' + winMoney + ' battle points!');
-            botMessage(loser, 'You lost ' + loseMoney + ' battle points!');
-
-            cache.write("money", JSON.stringify(DataHash.money));
-        }
-
-        var c = sys.channelIds(),
-            b, c_chan;
-
-        for (b in c) {
-            c_chan = JSESSION.channels(c[b]);
-            if (c_chan.toursEnabled) {
-                c_chan.tour.afterBattleEnded(winner, loser, result);
-            }
-        }
-    },
-
-    afterBattleStarted: function (src, dest, clauses, rated, srcteam, destteam) {
-        var c = sys.channelIds(),
-            b, c_chan;
-
-        for (b in c) {
-            c_chan = JSESSION.channels(c[b]);
-            if (c_chan.toursEnabled) {
-                c_chan.tour.afterBattleStarted(src, dest, clauses, rated, srcteam, destteam);
-            }
-        }
-    },
-
-    beforeBattleMatchup: function (src) {
-        if (!BattlesAllowed) {
-            botMessage(src, "Battles are currently disabled.");
-            return sys.stopEvent();
-        }
-    },
-    
-    beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier) {
-        if (Config.FixChallenges) {
-            return sys.stopEvent();
-        }
-        
-        if (!BattlesAllowed) {
-            botMessage(src, "Battles are currently disabled.");
-            return sys.stopEvent();
-        }
-
-        var poUser = JSESSION.users(src);
-        if (poUser == undefined) {
-            JSESSION.createUser(src);
-            poUser = JSESSION.users(src);
-        }
-
-        var time = sys.time() * 1;
-        if (poUser.lastChallenge + 15 - time > 0 && sys.auth(src) < 2 && poUser.lastChallenge != 0) {
-            botMessage(src, "Please wait " + getTimeString(poUser.lastChallenge + 15 - time) + " before challenging.");
-            return sys.stopEvent();
-        }
-
-        poUser.lastChallenge = time;
-
-        var isChallengeCup = sys.getClauses(destTier) % 32 >= 16,
-            hasChallengeCupClause = (clauses % 32) >= 16;
-
-        if (isChallengeCup && !hasChallengeCupClause) {
-            botMessage(src, "Challenge Cup must be enabled in the challenge window for a CC battle");
-            sys.stopEvent();
-            return;
-        }
-
-        if ((clauses % 32) >= 16) {
-            return;
-        }
-
-        if (!Config.NoCrash) {
-            if (sys.tier(src, team).contains("Doubles") && destTier.contains("Doubles") && mode != 1) {
-                botMessage(src, "To fight in doubles, enable doubles in the challenge window!");
-                sys.stopEvent();
-                return;
-            }
-            if (sys.tier(src, team).contains("Triples") && destTier.contains("Triples") && mode != 2) {
-                botMessage(src, "To fight in triples, enable triples in the challenge window!");
-                sys.stopEvent();
-                return;
-            }
-        }
-    },
-
     beforeChangeTier: function (src, team, oldtier, newtier) {
         if (!TierBans.isLegalTeam(src, team, newtier)) {
             sys.stopEvent();
@@ -1532,6 +1533,7 @@ if (message === "The description of the server was changed.") {
         ban(theirName);
     },
 
+    // TODO: Remove this and put them into modules.
     testName: function (src, nomessage) {
         var name = sys.name(src),
             ip = sys.ip(src),
