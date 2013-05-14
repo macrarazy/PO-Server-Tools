@@ -48,6 +48,9 @@ var Config = {
     /* If channels can be created by players. Default channels (and those created with the 'eval' command) can be created regardless. */
     ChannelsEnabled: true,
     
+    /* If battles can be started by players. */
+    BattlesEnabled: true,
+    
     /* File to save channel data in. It's recommended to keep this as-is, unless if you want to reset
         all channel data stored or want to import a file. Note that v3 (this version) is not compatible with v2 channel data. */
     ChannelDataFile: "channel-data.json",
@@ -707,7 +710,7 @@ if (message === "The description of the server was changed.") {
         }
 
         if (UseIcons) {
-            var namestr = '<font color=' + script.namecolor(src) + '><timestamp/><b>' + rankico + Utils.escapeHtml(srcname) + ':</font></b> ' + format(src, html_escape(message));
+            var namestr = '<font color=' + script.namecolor(src) + '><timestamp/><b>' + rankico + Utils.escapeHtml(playerName) + ':</font></b> ' + format(src, html_escape(message));
         }
 
         if (chatcolor) {
@@ -738,7 +741,7 @@ if (message === "The description of the server was changed.") {
             return;
         }
 
-        if (poUser.capsMute(message, chan)) {
+        if (userObject.capsMute(message, chan)) {
             sys.stopEvent();
             return;
         }
@@ -1078,7 +1081,7 @@ if (message === "The description of the server was changed.") {
         var Bot = require('bot'),
             Utils = require('utils'),
             Tours = require('tours').Tours,
-            JSESSION = require('jsession');
+            JSESSION = require('jsession').JSESSION;
         
         var channelIds = sys.channelIds(),
             length = channelIds.length,
@@ -1101,76 +1104,88 @@ if (message === "The description of the server was changed.") {
         }
     },
     
+    // Event: beforeBattleMatchup
+    // Called when: A find battle pair is selected.
+    // Prevents the battle if they are disabled.
     beforeBattleMatchup: function (src) {
-        if (!BattlesAllowed) {
-            botMessage(src, "Battles are currently disabled.");
-            return sys.stopEvent();
+        var Bot = require('bot');
+        
+        if (!Config.BattlesEnabled) {
+            Bot.sendMessage(src, "Battles are currently disabled.");
+            sys.stopEvent();
+            return;
         }
     },
     
+    // Event: beforeChallengeIssued
+    // Called when: A player issues a challenge.
+    // Prevents challenge spam and ensures the battle is Doubles/Triples if the tier is.
     beforeChallengeIssued: function (src, dest, clauses, rated, mode, team, destTier) {
-        if (Config.FixChallenges) {
-            return sys.stopEvent();
-        }
+        var JSESSION = require('jsession').JSESSION,
+            Utils = require('utils'),
+            Bot = require('bot');
         
-        if (!BattlesAllowed) {
-            botMessage(src, "Battles are currently disabled.");
-            return sys.stopEvent();
-        }
-
-        var poUser = JSESSION.users(src);
-        if (poUser == undefined) {
-            JSESSION.createUser(src);
-            poUser = JSESSION.users(src);
-        }
-
-        var time = sys.time() * 1;
-        if (poUser.lastChallenge + 15 - time > 0 && sys.auth(src) < 2 && poUser.lastChallenge != 0) {
-            botMessage(src, "Please wait " + getTimeString(poUser.lastChallenge + 15 - time) + " before challenging.");
-            return sys.stopEvent();
-        }
-
-        poUser.lastChallenge = time;
-
-        var isChallengeCup = sys.getClauses(destTier) % 32 >= 16,
-            hasChallengeCupClause = (clauses % 32) >= 16;
-
-        if (isChallengeCup && !hasChallengeCupClause) {
-            botMessage(src, "Challenge Cup must be enabled in the challenge window for a CC battle");
+        var userObject = JSESSION.users(src),
+            time = (+sys.time());
+        
+        if (!Config.BattlesEnabled) {
+            Bot.sendMessage(src, "Battles are currently disabled.");
             sys.stopEvent();
             return;
         }
 
+        if (sys.auth(src) < 2 && userObject.lastChallenge !== 0 && (userObject.lastChallenge + 15 - time) > 0) {
+            Bot.sendMessage(src, "Please wait " + Utils.timeToString(userObject.lastChallenge + 15 - time) + " before challenging again.");
+            sys.stopEvent();
+            return;
+        }
+
+        userObject.lastChallenge = time;
+        
+        if ((sys.getClauses(destTier) % 32 >= 16) && !((clauses % 32) >= 16)) {
+            Bot.sendMessage(src, "Challenge Cup must be enabled in the challenge window for a CC battle");
+            sys.stopEvent();
+            return;
+        }
+
+        // Ignore this if challenge cup is enabled.
         if ((clauses % 32) >= 16) {
             return;
         }
 
         if (!Config.NoCrash) {
-            if (sys.tier(src, team).contains("Doubles") && destTier.contains("Doubles") && mode != 1) {
-                botMessage(src, "To fight in doubles, enable doubles in the challenge window!");
+            if (mode !== 1 && sys.tier(src, team).indexOf("Doubles") !== -1 && destTier.indexOf("Doubles") !== -1) {
+                Bot.sendMessage(src, "To fight in doubles, enable doubles in the challenge window!");
                 sys.stopEvent();
                 return;
             }
-            if (sys.tier(src, team).contains("Triples") && destTier.contains("Triples") && mode != 2) {
-                botMessage(src, "To fight in triples, enable triples in the challenge window!");
+            if (mode !== 2 && sys.tier(src, team).indexOf("Triples") !== -1 && destTier.indexOf("Triples") !== -1) {
+                Bot.sendMessage(src, "To fight in triples, enable triples in the challenge window!");
                 sys.stopEvent();
                 return;
             }
         }
     },
     
+    // Event: afterBattleStarted
+    // Called when: Once a battle has started.
+    // Makes tours work.
     afterBattleStarted: function (src, dest, clauses, rated, srcteam, destteam) {
-        var c = sys.channelIds(),
-            b, c_chan;
+        var JSESSION = require('jsession'),
+            Tours = require('tours').Tours;
+        
+        var channelIds = sys.channelIds(),
+            len = channelIds.length,
+            i;
 
-        for (b in c) {
-            c_chan = JSESSION.channels(c[b]);
-            if (c_chan.toursEnabled) {
-                c_chan.tour.afterBattleStarted(src, dest, clauses, rated, srcteam, destteam);
-            }
+        for (i = 0; i < len; ++i) {
+            Tours.events.afterBattleStarted(src, dest, clauses, rated, srcteam, destteam, JSESSION.channels(channelIds[i]).tour);
         }
     },
     
+    // Event: afterBattleEnded
+    // Called when: A player issues a challenge.
+    // Gives the players battle points, makes tours work.
     afterBattleEnded: function (winner, loser, result, battle_id) {
         if (result != "tie" && sys.ip(winner) != sys.ip(loser)) {
             var winMoney = sys.rand(50, 81),
@@ -1325,13 +1340,13 @@ if (message === "The description of the server was changed.") {
         script.afterChangeTeam(src, true);*/
     },
 
+    // Event: afterPlayerAway
+    // Called when: Once a player triggers their away status.
+    // Logs the player's away status to Guardtower.
     afterPlayerAway: function (src, mode) {
-        var m = "Now active and ready for battles.";
-        if (mode) {
-            m = "Now idling.";
-        }
-
-        WatchEvent(src, m);
+        var WatchUtils = require('watch-utils');
+        
+        WatchUtils.logPlayerEvent(src, (mode ? "Now idling." : "Now active and ready for battles"));
     },
 
     afterChangeTeam: function (src, logging) {
