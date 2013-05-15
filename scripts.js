@@ -1018,25 +1018,6 @@ if (message === "The description of the server was changed.") {
         
         WatchUtils.logPlayerEvent(src, "Left channel " + sys.channel(chan) + " (ID: " + chan + ")");
     },
-    
-    beforeLogOut: function (src) {
-        var func = function (id, name, color, autoKicked) {
-            if (typeof autoKicked !== 'number') {
-                WatchEvent(id, "Log Out");
-
-                if (Config.WelcomeMessages) {
-                    botAll("Goodbye, " + name + "!", 0);
-                }
-            }
-        };
-
-        sys.callQuickly("func('" + src + "', '" + sys.name(src) + "', '" + typeof testNameKickedPlayer == 'number' + "');", 200);
-
-        delete testNameKickedPlayer;
-
-        ify.beforeLogOut(src);
-        JSESSION.destroyUser(src);
-    },
 
     // Event: beforeChannelDestroyed
     // Called when: Before a channel is deleted
@@ -1272,6 +1253,7 @@ if (message === "The description of the server was changed.") {
             Tours = require('tours'),
             Cache = require('cache').Cache,
             JSESSION = require('jsession').JSESSION,
+            User = require('user'),
             DataHash = require('datahash');
         
         var name = PlayerUtils.formatName(src),
@@ -1335,11 +1317,31 @@ if (message === "The description of the server was changed.") {
         }
         
         // TODO: This needs work.
-/*
-        ify.afterLogIn(src);
-        script.afterChangeTeam(src, true);*/
+        
+        // This gets called in afterChangeTeam as well.
+        User.shared();
+        //ify.afterLogIn(src);
     },
 
+    
+    // Event: beforeLogOut
+    // Called when: Before a player logs out.
+    // Logs the player leaving the server, and destroys their JSESSION object.
+    beforeLogOut: function (src) {
+        var JSESSION = require('JSESSION').JSESSION,
+            Bot = require('bot'),
+            WatchUtils = require('watch-utils');
+        
+        WatchUtils.logPlayerEvent(src, "Logged out.");
+        
+        if (Config.WelcomeMessages) {
+            Bot.sendAll("Goodbye, " + sys.name(src) + "!", 0);
+        }
+        
+        //ify.beforeLogOut(src);
+        JSESSION.destroyUser(src);
+    },
+    
     // Event: afterPlayerAway
     // Called when: Once a player triggers their away status.
     // Logs the player's away status to Guardtower.
@@ -1421,47 +1423,6 @@ if (message === "The description of the server was changed.") {
             }
         } /* END OF LOGGING */
 
-        var myMail = DataHash.mail[lc];
-        if (myMail != undefined) {
-            if (myMail.length > 0) {
-                var p, count = 0;
-                for (p in myMail) {
-                    if (!myMail[p].read) {
-                        count++;
-                    }
-                }
-
-                if (count > 0) {
-                    botMessage(src, "You have " + count + " new mails! Type <font color='green'><b>/readmail</b></font> to view!");
-                }
-            }
-        }
-
-        var team, i, j, k;
-        for (team = 0; team < sys.teamCount(src); team++) {
-            if (sys.gen(src, team) === 2) {
-                pokes: for (i = 0; i <= 6; i++) {
-                    for (j = 0; j < bannedGSCSleep.length; ++j)
-                    if (sys.hasTeamPokeMove(src, team, i, bannedGSCSleep[j])) {
-                        for (k = 0; k < bannedGSCTrap.length; ++k) {
-                            if (sys.hasTeamPokeMove(src, team, i, bannedGSCTrap[k])) {
-                                teamAlert(src, team, "SleepTrapping is banned in GSC. Pokemon " + sys.pokemon(sys.teamPoke(src, team, i)) + "  removed from your team.");
-                                sys.changePokeNum(src, team, i, 0);
-                                continue pokes;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!Config.NoCrash) {
-                if (!TierBans.isLegalTeam(src, team, sys.tier(src, team))) {
-                    TierBans.findGoodTier(src, team);
-                }
-            }
-
-        }
-
         if (!logging) {
             ify.afterChangeTeam(src);
         }
@@ -1494,15 +1455,6 @@ if (message === "The description of the server was changed.") {
                 time = "Muted forever";
             }
 
-            var by = dhm.by + "</i>",
-                why = dhm.why,
-                lastChar = why[why.length - 1],
-                lastChars = [".", "?", "!"];
-
-            if (lastChars.indexOf(lastChar) == -1) {
-                why += ".";
-            }
-
             botMessage(src, "You are muted by " + by + ". Reason: " + why + " " + time + "!");
             return;
         }
@@ -1528,15 +1480,6 @@ if (message === "The description of the server was changed.") {
                 time = "Muted for " + getTimeString(dhm.time - sys.time() * 1);
             } else {
                 time = "Muted forever";
-            }
-
-            var by = dhm.by + "</i>",
-                why = dhm.why,
-                lastChar = why[why.length - 1],
-                lastChars = [".", "?", "!"];
-
-            if (lastChars.indexOf(lastChar) == -1) {
-                why += ".";
             }
 
             botMessage(src, "You are muted by " + by + ". Reason: " + why + " " + time + "!");

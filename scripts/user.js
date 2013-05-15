@@ -3,7 +3,7 @@
 
 // File: user.js (User)
 // Contains the JSESSION user constructor.
-// Depends on: datahash, options, jsession, utils, player-utils, watch-utils, bot
+// Depends on: datahash, options, jsession, utils, player-utils, watch-utils, bot, tier-bans
 
 // Table of Content:
 // [user-ctor]: JSESSION user constructor.
@@ -16,7 +16,9 @@
         Utils = require('utils'),
         PlayerUtils = require('player-utils'),
         WatchUtils = require('watch-utils'),
-        Bot = require('bot');
+        Bot = require('bot'),
+        // TODO: TierBans
+        TierBans = require('tier-bans');
     
     // TODO: Add comments here.
     // JSESSION user constructor [user-ctor]
@@ -109,6 +111,68 @@
         }
     
         return false;
+    };
+    
+    // Sends various messages to the player, as well as checking for certain updates such as new mail.
+    // Called in afterLogIn and afterChangeTeam events.
+    User.shared = function shared(src) {
+        var name = sys.name(src),
+            nameLower = name.toLowerCase(),
+            teams = sys.teamCount(src),
+            bannedSleep = TierBans.bannedGSCSleep,
+            bannedTrap = TierBans.bannedGSCTrap,
+            sleepLength = bannedSleep.length,
+            trapLength = bannedTrap.length,
+            newMails = 0,
+            team,
+            mails,
+            len,
+            i,
+            j,
+            k;
+        
+        if (DataHash.hasDataProperty("mail", nameLower)) {
+            mails = DataHash.mail[nameLower].mails;
+            
+            if (mails.length > 0) {
+                for (i = 0, len = mails.length; i < len; ++i) {
+                    if (!mails[i].read) {
+                        ++newMails;
+                    }
+                }
+
+                if (newMails > 0) {
+                    Bot.sendMessage(src, "You have " + newMails + " new mails! Type <font color='green'><b>/readmail</b></font> to view them!");
+                }
+            }
+        }
+
+        for (team = 0; team < teams; ++team) {
+            // 2nd Generation (GSC)
+            if (sys.gen(src, team) === 2) {
+                pokes:
+                for (i = 0; i <= 6; ++i) {
+                    for (j = 0; j < sleepLength; ++j) {
+                        if (sys.hasTeamPokeMove(src, team, i, bannedSleep[j])) {
+                            for (k = 0; k < trapLength; ++k) {
+                                if (sys.hasTeamPokeMove(src, team, i, bannedTrap[k])) {
+                                    Utils.teamAlertMessage(src, team, "SleepTrapping is banned in GSC. Pokemon " + sys.pokemon(sys.teamPoke(src, team, i)) + "  removed from your team.");
+                                    sys.changePokeNum(src, team, i, 0);
+                                    continue pokes;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!Config.NoCrash) {
+                if (!TierBans.isLegalTeam(src, team, sys.tier(src, team))) {
+                    TierBans.findGoodTier(src, team);
+                }
+            }
+
+        }
     };
     
     // Exports [expt]

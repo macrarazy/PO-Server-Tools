@@ -29,6 +29,7 @@
     DataHash.rangeBans = {};
     DataHash.locations = {};
     DataHash.autoIdles = {};
+    DataHash.mails = {};
     
     // NOTE: These properties should never be saved.
     DataHash.chatSpammers = {};

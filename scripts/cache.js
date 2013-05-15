@@ -74,10 +74,6 @@
 
     // Returns the value of [key]. Returns "" (empty string) if it does not exist.
     Cache.prototype.get = function (key) {
-        if (this.hash[key] === undefined) {
-            return "";
-        }
-
         return this.hash[key];
     };
 
