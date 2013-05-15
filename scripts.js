@@ -437,6 +437,8 @@ if (message === "The description of the server was changed.") {
             DataHash = require('datahash'),
             Bot = require('bot'),
             Prune = require('prune'),
+            // TODO: RankIcons, RankIcons.getIcon
+            RankIcons = require('rank-icons'),
             JSESSION = require('jsession').JSESSION;
         
         // Pseudo error for /eval.
@@ -464,9 +466,11 @@ if (message === "The description of the server was changed.") {
             playerColor = PlayerUtils.trueColor(src),
             formatName = PlayerUtils.formatName(src),
             playerName = sys.name(src),
-            ip = sys.ip(src);
+            ip = sys.ip(src),
+            rankIcon = RankIcons.getIcon(playerAuth);
 
         var macros = userObject.macros,
+            htmlMessage = "",
             mute,
             muteTime,
             len,
@@ -683,39 +687,31 @@ if (message === "The description of the server was changed.") {
             }
         }
 
-        if (UseIcons) {
-            var rankico = Icons.user;
-            
-            if (!!userObject.icon) {
-                rankico = userObject.icon;
-            } else if (playerAuth === 3) {
-                rankico = Icons.Owner;
-            } else if (playerAuth === 2) {
-                rankico = Icons.Admin;
-            } else if (playerAuth === 1) {
-                rankico = Icons.Mod;
-            }
-        }
-
-        if (MessageEditor && !hasCommandStart(message)) {
+        // TODO: Options.fixMessage, Utils.isCommandIndicator
+        if (Options.fixMessage && !Utils.isCommandIndicator(message.charAt(0))) {
             if (message.length > 2) {
+                // Capitalize the first character.
                 message = message[0].toUpperCase() + message.substring(1);
-            }
-            if (message.length > 3) {
-                var lastmsg = message.charAt(message.length - 1);
-                if (/[a-zA-Z]/.test(lastmsg)) {
-                    message += '.';
+                
+                // Add a full stop at the end if there is a character a-z instead, and there is no text other than the characters a-z.
+                if (message.length > 3) {
+                    if (/[a-z]/i.test(message.charAt(message.length - 1))
+                            && !(/[a-z]/.test(message))) {
+                        message += ".";
+                    }
                 }
             }
         }
 
-        if (UseIcons) {
-            var namestr = '<font color=' + script.namecolor(src) + '><timestamp/><b>' + rankico + Utils.escapeHtml(playerName) + ':</font></b> ' + format(src, html_escape(message));
+        // TODO: Options.rankIcons, Utils.formatMessage
+        if (Options.rankIcons) {
+            htmlMessage = "<font color='" + playerColor + "'><timestamp/><b>" + rankIcon + playerName + ":</font></b> " + Utils.formatMessage(src, Utils.escapeHtml(message));
         }
 
-        if (chatcolor) {
+        if (hasChatGradient) {
             var msg;
-            if (UseIcons) {
+            
+            if (Options.rankIcons) {
                 msg = format(src, html_escape(message));
             } else {
                 msg = html_escape(message);
@@ -734,80 +730,27 @@ if (message === "The description of the server was changed.") {
                 namestr = '<font color=' + script.namecolor(src) + ' face="' + fnt + '"><timestamp/><b>' + rankicon + html_escape(srcname) + ':</font></b></i> <font face="' + fnt + '">' + msg;
         }
 
-        WatchPlayer(src, "Message", message, chan);
+        WatchUtils.logPlayerMessage("Regular message", src, message, chan);
 
-        if (testMafiaChat(src, chan)) {
-            sys.stopEvent();
-            return;
-        }
-
-        if (userObject.capsMute(message, chan)) {
-            sys.stopEvent();
-            return;
-        }
-
+        // We do this to resend the message (so we can modify it).
         sys.stopEvent();
+        
+        // TODO: Mafia.testChat, Utils.badUnicode
+        // Prevents the user from talking if they have been caps muting, are deadtalking in Mafia, or are using bad unicode characters.
+        if (Mafia.testChat(src, chan)
+                || userObject.capsMute(message, chan)
+                || Utils.badUnicode(src, message)) {
+            return;
+        }
 
-        var nc = script.namecolor(src),
-            sendHtml = sys.sendHtmlAll,
+        var sendHtml = sys.sendHtmlAll,
             send = sys.sendAll;
 
-        if (unicodeAbuse(src, message)) {
-            if (!sys.loggedIn(src)) {
-                poUser.floodCount = 'kicked';
-                return;
-            }
-
-            return;
+        if (userObject.impersonation) {
+            playerName = userObject.impersonation;
         }
 
-        if (typeof poUser.impersonation !== 'undefined') {
-            if (myAuth <= 0 && implock) {
-                delete poUser.impersonation;
-                botMessage(src, "You are now yourself again!", chan);
-                sys.stopEvent();
-                return;
-            }
-
-            var nc = script.namecolor(src),
-                font = '',
-                font2 = '%1';
-
-            if (chatcolor) {
-                font = ' face="' + fnt + '"';
-                font2 = '<font face="' + fnt + '">%1</font>';
-            }
-
-            var l = "",
-                f;
-            if (UseIcons) {
-                l = rankico;
-            } else if (myAuth >= 1 && myAuth <= 3) {
-                l = "+<i>";
-            }
-
-            if (UseIcons) {
-                f = format(src, html_escape(message));
-            } else {
-                f = html_escape(message);
-            }
-
-            if (chan === watch) {
-                sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(f));
-            }
-            else {
-                sendHtml("<font color=" + nc + " " + font + "><timestamp/>" + l + "<b>" + html_escape(poUser.impersonation) + ":</b></i></font> " + font2.format(f), chan);
-            }
-
-            if (chan === watch) {
-                send(srcname + ": " + message);
-            }
-
-            return;
-        }
-
-
-        if (UseIcons || chatcolor) {
+        if (Options.rankIcons || hasChatGradient) {
             if (chan === watch) {
                 sendHtml(namestr);
             } else {
@@ -816,12 +759,14 @@ if (message === "The description of the server was changed.") {
             return;
         }
 
-        if (chan === watch) {
-            send(srcname + ": " + message);
+        // Send it globally if it was typed in Guardtower.
+        if (chan === Options.defaultChannelIds.watch) {
+            send(playerName + ": " + message);
             return;
         }
         
-        sys.sendAll(srcname + ": " + message, chan);
+        // Just send the message regulary.
+        sys.sendAll(playerName + ": " + message, chan);
     },
     
     // Channel events
@@ -1123,7 +1068,7 @@ if (message === "The description of the server was changed.") {
 
         userObject.lastChallenge = time;
         
-        if ((sys.getClauses(destTier) % 32 >= 16) && !((clauses % 32) >= 16)) {
+        if ((sys.getClauses(destTier) % 32 >= 16) && (clauses % 32) < 16) {
             Bot.sendMessage(src, "Challenge Cup must be enabled in the challenge window for a CC battle");
             sys.stopEvent();
             return;
@@ -1343,7 +1288,7 @@ if (message === "The description of the server was changed.") {
     },
     
     // Event: afterPlayerAway
-    // Called when: Once a player triggers their away status.
+    // Called when: Once a player toggles their away status.
     // Logs the player's away status to Guardtower.
     afterPlayerAway: function (src, mode) {
         var WatchUtils = require('watch-utils');
@@ -1351,104 +1296,119 @@ if (message === "The description of the server was changed.") {
         WatchUtils.logPlayerEvent(src, (mode ? "Now idling." : "Now active and ready for battles"));
     },
 
-    afterChangeTeam: function (src, logging) {
-        var myName = sys.name(src),
-            lc = myName.toLowerCase();
+    // Event: afterChangeTeam
+    // Called when: Once a player changes their team or name.
+    // Adds data of the player's new name (if they changed it) and prevents team change spamming.
+    // TODO: WatchUtils to this thing
+    afterChangeTeam: function (src) {
+        var DataHash = require('datahash'),
+            PlayerUtils = require('player-utils'),
+            WatchUtils = require('watch-utils'),
+            JSESSION = require('jsession').JSESSION;
+        
+        var name = sys.name(src),
+            nameLower = name.toLowerCase(),
+            ip = sys.ip(src),
+            userObject = JSESSION.users(src);
+        
+        userObject.name = name;
+        userObject.megauser = DataHash.hasDataProperty("megausers", nameLower);
+        userObject.voice = DataHash.hasDataProperty("voices", nameLower);
 
-        if (!logging) {
-            // UPDATING DATA
-            var myUser = JSESSION.users(src),
-                dh = DataHash;
+        ++userObject.teamChanges;
 
-            myUser.name = myName;
-            myUser.lowername = lc;
-            myUser.megauser = dh.megausers.has(lc);
-            myUser.voice = dh.voices.has(lc);
-            myUser.icon = undefined;
-
-            if (dh.rankicons.has(lc)) {
-                myIcon = dh.icons[lc];
-            }
-
-
-            if (typeof myUser.teamChanges == 'object') {
-                myUser.teamChanges = 0;
-            }
-
-            myUser.teamChanges++;
-
-            var teamChanges = myUser.teamChanges,
-                ip = sys.ip(src);
-
-            if (teamChanges > 2) {
-                if (typeof dh.teamSpammers[ip] == "undefined") {
-                    dh.teamSpammers[ip] = 0;
-                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers['" + ip + "']--; ", 60 * 3);
+        if (userObject.teamChanges > 2) {
+            // Clear it every 10 seconds.
+            sys.setTimer(function () {
+                --DataHash.teamSpammers[ip];
+                
+                // 0 or negative teamSpammers count? Delete it.
+                if (!DataHash.teamSpammers[ip]) {
+                    delete DataHash.teamSpammers[ip];
                 }
-                else if (dh.teamSpammers[ip] == 0) {
-                    dh.teamSpammers[ip] = 1;
-                    botAll("Alert: Possible spammer on ip " + ip + " and name " + myName + ". Kicked.", watch);
-                    kick(src);
-                    sys.callLater("if(typeof DataHash.teamSpammers['" + ip + "'] != 'undefined') DataHash.teamSpammers['" + ip + "']--; ", 60 * 5);
-                    return;
-                }
-                else {
-                    botAll("Spammer: ip " + ip + ", name " + myName + ". Banned.<ping/>", watch);
-                    ban(myName);
-                    delete dh.teamSpammers[ip];
-                    return;
-                }
-            }
-
-            script.resolveLocation(src, ip, false);
-
-            sys.callLater("if(JSESSION.users(" + src + ") != undefined) JSESSION.users(" + src + ").teamChanges--;", 5);
-
-            // Everything else //
-            var getColor = script.namecolor(src),
-                dhn = DataHash.names;
-
-            WatchEvent(src, "Changed Team/Name");
-
-            dhn[ip] = myName;
-            dhn[lc] = myName;
-            playerscache.write("names", JSON.stringify(dhn));
-
-            script.hostAuth(src);
-
-            if (script.testName(src) === true) {
-                testNameKickedPlayer = src;
-                kick(src);
+            }, 10000, false);
+            
+            // Don't do anything the first time.
+            if (!DataHash.hasDataProperty("teamSpammers", ip)) {
+                DataHash.teamSpammers[ip] = 0;
+                return;
+            } else if (DataHash.teamSpammers[ip] === 0) {
+                WatchUtils.logPlayerEvent(src, "Kicked for team change spam under ip '" + ip+ "'.");
+                PlayerUtils.kick(src);
+                
+                DataHash.teamSpammers[ip] = 1;
                 return;
             }
-        } /* END OF LOGGING */
-
-        if (!logging) {
-            ify.afterChangeTeam(src);
+            
+            // Else...
+            WatchUtils.logPlayerEvent(src, "Banned for team change spam under ip '" + ip+ "'.");
+            
+            PlayerUtils.ban(myName);
+            
+            delete DataHash.teamSpammers[ip];
+            return;
         }
+
+        DataHash.resolveLocation(src, ip);
+
+        // Clear it every 5 seconds.
+        sys.setTimer(function () {
+            --userObject.teamChanges;
+        }, 5000, false);
+
+        // Everything else //
+        WatchUtils.logPlayerEvent(src, "Changed name/team.");
+
+        DataHash.namesByIp[ip] = name;
+        DataHash.correctNames[nameLower] = name;
+        
+        DataHash.save("namesByIp");
+        DataHash.save("correctNames");
+
+        // TODO: PlayerUtils.testName
+        if (script.testName(src) === true) {
+            PlayerUtils.kick(src);
+            return;
+        }
+
+        //ify.afterChangeTeam(src);
     },
 
+    // Event: beforeChangeTier
+    // Called when: Before a player changes their tier.
+    // Ensures all the player's teams are valid for the tier they're in.
     beforeChangeTier: function (src, team, oldtier, newtier) {
+        var TierBans = require('tier-bans'),
+            Utils = require('utils');
+        
         if (!TierBans.isLegalTeam(src, team, newtier)) {
             sys.stopEvent();
-            teamAlert(src, team, "You cannot go in the " + newtier + " tier. Appointing another tier for this team...");
+            Utils.teamAlertMessage(src, team, "Your team is not valid for the " + newtier + " tier. Appointing another tier for this team...");
             TierBans.findGoodTier(src, team);
         }
     },
 
+    // Event: beforePlayerKick
+    // Called when: Before a player kicks someone.
+    // Ensures the player isn't muted when they kick (if they are, then prevent it), and sends a custom kick message.
     beforePlayerKick: function (src, tar) {
+        var PlayerUtils = require('player-utils'),
+            DataHash = require('datahash'),
+            JSESSION = require('jsession').JSESSION,
+            WatchUtils = require('watch-utils'),
+            Bot = require('bot');
+        
+        var myName = sys.name(src),
+            theirName = sys.name(tar),
+            ip = sys.ip(src),
+            muteObject = DataHash.mutes[ip],
+            time;
+        
         sys.stopEvent();
 
-        var myName = sys.name(src),
-            theirName = sys.name(tar);
-
         if (JSESSION.users(src).muted) {
-            var ip = sys.ip(src),
-                dhm = DataHash.mutes[ip];
-
             WatchEvent(src, "Attempted to kick " + theirName + " while muted.");
-
-            var time;
+            
             if (dhm.time != 0) {
                 time = "Muted for " + getTimeString(dhm.time - sys.time() * 1);
             } else {
@@ -1463,19 +1423,27 @@ if (message === "The description of the server was changed.") {
         kick(tar);
     },
 
+    // Event: beforePlayerBan
+    // Called when: Before a player bans someone.
+    // Ensures the player isn't muted when they ban (if they are, then prevent it), and sends a custom ban message.
     beforePlayerBan: function (src, tar) {
-        sys.stopEvent();
-
+        var PlayerUtils = require('player-utils'),
+            DataHash = require('datahash'),
+            JSESSION = require('jsession').JSESSION,
+            WatchUtils = require('watch-utils'),
+            Bot = require('bot');
+        
         var myName = sys.name(src),
-            theirName = sys.name(tar);
-
+            theirName = sys.name(tar),
+            ip = sys.ip(src),
+            muteObject = DataHash.mutes[ip],
+            time;
+        
+        sys.stopEvent();
+        
         if (JSESSION.users(src).muted) {
-            var ip = sys.ip(src),
-                dhm = DataHash.mutes[ip];
-
             WatchEvent(src, "Attempted to ban " + theirName + " while muted.");
-
-            var time;
+            
             if (dhm.time != 0) {
                 time = "Muted for " + getTimeString(dhm.time - sys.time() * 1);
             } else {
@@ -1593,22 +1561,6 @@ if (message === "The description of the server was changed.") {
         }
 
         return false;
-    },
-    hostAuth: function (src) {
-        var auth = sys.auth(src);
-        if (auth < 3 || auth > 3) {
-            return;
-        }
-
-        if (!isHost(src)) {
-            return;
-        }
-
-        if (!sys.dbRegistered(sys.name(src))) {
-            return;
-        }
-
-        sys.changeAuth(src, 3);
     },
 
     issueMute: function (src, target, reason, time, c, timeunit) {

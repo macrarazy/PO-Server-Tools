@@ -50,7 +50,6 @@
         this.muted = DataHash.hasDataProperty('mutes', this.ip);
         this.megauser = DataHash.hasDataProperty('megausers', nameToLower);
         this.voice = DataHash.hasDataProperty('voices', nameToLower);
-        this.icon = DataHash.icons[nameToLower] || "";
         this.macro = DataHash.hasDataProperty('macros', nameToLower)
             ? DataHash.macros[nameToLower]
             : ["%m1", "%m2", "%m3", "%m4", "%m5"];

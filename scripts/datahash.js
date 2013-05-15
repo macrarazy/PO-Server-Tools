@@ -19,7 +19,6 @@
     DataHash.mutes = {};
     DataHash.megausers = {};
     DataHash.voices = {};
-    DataHash.icons = {};
     DataHash.macros = {};
     DataHash.correctNames = {};
     DataHash.namesByIp = {};
