@@ -433,6 +433,7 @@ if (message === "The description of the server was changed.") {
             ChatGradient = require('chat-gradient'),
             Utils = require('utils'),
             PlayerUtils = require('player-utils'),
+            ChannelUtils = require('channel-utils'),
             WatchUtils = require('watch-utils'),
             DataHash = require('datahash'),
             Bot = require('bot'),
@@ -621,42 +622,34 @@ if (message === "The description of the server was changed.") {
         }
 
         if (!userObject.voice) {
-            // TODO: silence
-            if (silence.level > playerAuth) {
+            // TODO: Options.silence
+            if (Options.silence.level > playerAuth) {
                 // TODO: Bot.sendSTFUTruck
                 Bot.sendSTFUTruck(src, chan);
-                Bot.sendMessage(src, "Respect the almighty silence issued by " + silence.issuer + "!");
+                Bot.sendMessage(src, "Respect the almighty silence issued by " + Options.silence.issuer + "!", chan);
                 
                 WatchUtils.logPlayerMessage("Silenced message", src, message, chan);
                 
                 sys.stopEvent();
                 return;
-            }/*
-            if (!poChan.isChanMod(src) && poChan.silence == 1 && !voice) {
+            }
+            // TODO: ChannelUtils.channelAuth(src, chan)
+            if (channelObject.silence.level > ChannelUtils.channelAuth(src, chan)) {
+                Bot.sendSTFUTruck(src, chan);
+                Bot.sendMessage(src, "Respect the almighty silence issued by " + channelObject.silence.issuer + "!", chan);
+                
+                WatchUtils.logPlayerMessage("Channel silenced message", src, message, chan);
+                
                 sys.stopEvent();
-                sendSTFUTruck(src, chan);
-                WatchPlayer(src, "Channel Silence Message", message, chan);
                 return;
             }
-            if (!poChan.isChanAdmin(src) && poChan.silence == 2 && !voice) {
-                sys.stopEvent();
-                sendSTFUTruck(src, chan);
-                WatchPlayer(src, "Channel Silence Message", message, chan);
-                return;
-            }
-    
-            if (!poChan.isChanOwner(src) && poChan.silence == 3 && !voice) {
-                sys.stopEvent();
-                sendSTFUTruck(src, chan);
-                WatchPlayer(src, "Channel Silence Message", message, chan);
-                return;
-            }*/
         }
 
+        // Server mute.
         if (!isServerHost && userObject.muted) {
             Prune.mutes();
             
-            if (!DataHash.mutes.has(ip)) {
+            if (!DataHash.hasDataProperty("mutes", ip)) {
                 Bot.sendMessage(src, "You are no longer muted.", chan);
             } else {
                 WatchUtils.logPlayerMessage("Muted message", src, message, chan);
@@ -670,6 +663,7 @@ if (message === "The description of the server was changed.") {
             }
         }
 
+        // Channel mute.
         if (!isServerHost && channelObject.isMuted(ip)) {
             Prune.channelMutes(chan);
             
@@ -705,29 +699,12 @@ if (message === "The description of the server was changed.") {
 
         // TODO: Options.rankIcons, Utils.formatMessage
         if (Options.rankIcons) {
-            htmlMessage = "<font color='" + playerColor + "'><timestamp/><b>" + rankIcon + playerName + ":</font></b> " + Utils.formatMessage(src, Utils.escapeHtml(message));
+            htmlMessage = "<font color='" + (hasChatGradient ? ChatGradient.randomHexColor() : playerColor) + "'" + (hasChatGradient ? " face='" + ChatGradient.randomFont() : "") + "'" + "><timestamp/><b>" + rankIcon + playerName + ":</font></b> " + Utils.formatMessage(src, Utils.escapeHtml(message));
         }
 
-        if (hasChatGradient) {
-            var msg;
-            
-            if (Options.rankIcons) {
-                msg = format(src, html_escape(message));
-            } else {
-                msg = html_escape(message);
-            }
-
-            var rankicon = "";
-            if (rankico !== undefined) {
-                rankicon = rankico;
-            } else {
-                if (myAuth > 0 && myAuth < 4) {
-                    rankicon = "+<i>";
-                }
-            }
-
-            var fnt = RandFont(),
-                namestr = '<font color=' + script.namecolor(src) + ' face="' + fnt + '"><timestamp/><b>' + rankicon + html_escape(srcname) + ':</font></b></i> <font face="' + fnt + '">' + msg;
+        // Change the name if there's an impersonation.
+        if (userObject.impersonation) {
+            playerName = userObject.impersonation;
         }
 
         WatchUtils.logPlayerMessage("Regular message", src, message, chan);
@@ -743,25 +720,20 @@ if (message === "The description of the server was changed.") {
             return;
         }
 
-        var sendHtml = sys.sendHtmlAll,
-            send = sys.sendAll;
-
-        if (userObject.impersonation) {
-            playerName = userObject.impersonation;
-        }
-
-        if (Options.rankIcons || hasChatGradient) {
-            if (chan === watch) {
-                sendHtml(namestr);
+        // Send it globally if it was typed in Guardtower.
+        if (chan === Options.defaultChannelIds.watch) {
+            // If rank icons or chat gradient is on, send the message with html and bbcode formatting.
+            if (Options.rankIcons || hasChatGradient) {
+                sys.sendHtmlAll(htmlMessage);
             } else {
-                sendHtml(namestr, chan);
+                sys.sendAll(playerName + ": " + message);
             }
             return;
         }
-
-        // Send it globally if it was typed in Guardtower.
-        if (chan === Options.defaultChannelIds.watch) {
-            send(playerName + ": " + message);
+        
+        // If rank icons or chat gradient is on, send the message with html and bbcode formatting.
+        if (Options.rankIcons || hasChatGradient) {
+            sys.sendHtmlAll(htmlMessage, chan);
             return;
         }
         
@@ -1112,38 +1084,52 @@ if (message === "The description of the server was changed.") {
     // Event: afterBattleEnded
     // Called when: A player issues a challenge.
     // Gives the players battle points, makes tours work.
-    afterBattleEnded: function (winner, loser, result, battle_id) {
-        if (result != "tie" && sys.ip(winner) != sys.ip(loser)) {
+    afterBattleEnded: function (winner, loser, result, battleId) {
+        var Bot = require('bot'),
+            DataHash = require('datahash'),
+            JSESSION = require('jsession').JSESSION,
+            Tours = require('tours').Tours;
+        
+        var winnerName = sys.name(winner),
+            loserName = sys.name(loser),
+            winnerLower = winnerName.toLowerCase(),
+            loserLower = loserName.toLowerCase(),
+            winnerMoney = 0,
+            loserMoney = 0,
+            channelIds = sys.channelIds(),
+            len = channelIds.length,
+            i;
+
+        // If the battle wasn't a tie, give/take bp to/from them.
+        // Also don't give/take anything from them if they are the same person.
+        if (result !== "tie" && sys.ip(winner) !== sys.ip(loser)) {
             var winMoney = sys.rand(50, 81),
-                loseMoney = sys.rand(13, 36),
-                winnerName = sys.name(winner).toLowerCase(),
-                loserName = sys.name(loser).toLowerCase(),
-                money = DataHash.money;
+                loseMoney = sys.rand(13, 36);
 
-            if (typeof money[loserName] === "undefined") {
-                money[loserName] = 0;
+            if (!DataHash.hasDataProperty("battlePoints", winnerLower)) {
+                DataHash.battlePoints[winnerLower] = 0;
             }
-            if (typeof money[winnerName] === "undefined") {
-                money[winnerName] = 0;
+            
+            if (!DataHash.hasDataProperty("battlePoints", loserLower)) {
+                DataHash.battlePoints[loserLower] = 0;
             }
 
-            money[winnerName] += winMoney;
-            money[loserName] -= loseMoney;
+            DataHash.battlePoints[winnerLower] += winnerMoney;
+            DataHash.battlePoints[loserLower] -= loserMoney;
 
-            botMessage(winner, 'You won ' + winMoney + ' battle points!');
-            botMessage(loser, 'You lost ' + loseMoney + ' battle points!');
-
-            cache.write("money", JSON.stringify(DataHash.money));
+            if (DataHash.battlePoints[loserLower] < 0) {
+                DataHash.battlePoints[loserLower] = 0;
+            }
+            
+            DataHash.save("battlePoints");
+            
+            Bot.sendMessage(winner, "You won " + winnerMoney + " battle points!");
+            Bot.sendMessage(loser, "You lost " + loserMoney + " battle points!");
         }
 
-        var c = sys.channelIds(),
-            b, c_chan;
-
-        for (b in c) {
-            c_chan = JSESSION.channels(c[b]);
-            if (c_chan.toursEnabled) {
-                c_chan.tour.afterBattleEnded(winner, loser, result);
-            }
+        
+        for (i = 0; i < len; ++i) {
+            Tours.events.afterBattleStarted(winner, loser, result, JSESSION.channels(channelIds[i]).tour);
         }
     },
     
@@ -1333,7 +1319,7 @@ if (message === "The description of the server was changed.") {
                 DataHash.teamSpammers[ip] = 0;
                 return;
             } else if (DataHash.teamSpammers[ip] === 0) {
-                WatchUtils.logPlayerEvent(src, "Kicked for team change spam under ip '" + ip+ "'.");
+                WatchUtils.logPlayerEvent(src, "Kicked for team change spam under ip '" + ip + "'.");
                 PlayerUtils.kick(src);
                 
                 DataHash.teamSpammers[ip] = 1;
@@ -1341,9 +1327,8 @@ if (message === "The description of the server was changed.") {
             }
             
             // Else...
-            WatchUtils.logPlayerEvent(src, "Banned for team change spam under ip '" + ip+ "'.");
-            
-            PlayerUtils.ban(myName);
+            WatchUtils.logPlayerEvent(src, "Banned for team change spam under ip '" + ip + "'.");
+            PlayerUtils.ban(name);
             
             delete DataHash.teamSpammers[ip];
             return;
@@ -1395,68 +1380,61 @@ if (message === "The description of the server was changed.") {
         var PlayerUtils = require('player-utils'),
             DataHash = require('datahash'),
             JSESSION = require('jsession').JSESSION,
+            Utils = require('utils'),
             WatchUtils = require('watch-utils'),
             Bot = require('bot');
         
-        var myName = sys.name(src),
-            theirName = sys.name(tar),
+        var playerName = sys.name(src),
+            targetName = sys.name(tar),
             ip = sys.ip(src),
-            muteObject = DataHash.mutes[ip],
-            time;
+            mute = DataHash.mutes[ip],
+            muteTime;
         
         sys.stopEvent();
 
-        if (JSESSION.users(src).muted) {
-            WatchEvent(src, "Attempted to kick " + theirName + " while muted.");
+        // If the player is muted, prevent them from kicking.
+        if (mute) {
+            WatchUtils.logPlayerEvent(src, "Attempted to kick " + targetName + " while muted.");
             
-            if (dhm.time != 0) {
-                time = "Muted for " + getTimeString(dhm.time - sys.time() * 1);
-            } else {
-                time = "Muted forever";
-            }
-
-            botMessage(src, "You are muted by " + by + ". Reason: " + why + " " + time + "!");
+            muteTime = mute.time !== 0 ? Utils.timeToString(mute.time - (+sys.time())) : "forever";
+            Bot.sendMessage(src, "You are muted by " + mute.by + " for '" + mute.reason + "'. Your mute lasts for " + muteTime + ".");
             return;
         }
 
-        sys.sendHtmlAll("<font color='midnightblue'><timestamp/><b> " + myName + " kicked " + theirName + "!</b></font>");
-        kick(tar);
+        sys.sendHtmlAll("<font color='midnightblue'><timestamp/><b> " + playerName + " kicked " + targetName + "!</b></font>");
+        PlayerUtils.kick(tar);
     },
 
     // Event: beforePlayerBan
     // Called when: Before a player bans someone.
     // Ensures the player isn't muted when they ban (if they are, then prevent it), and sends a custom ban message.
-    beforePlayerBan: function (src, tar) {
+    beforePlayerBan: function (src, tar, time) {
         var PlayerUtils = require('player-utils'),
             DataHash = require('datahash'),
             JSESSION = require('jsession').JSESSION,
+            Utils = require('utils'),
             WatchUtils = require('watch-utils'),
             Bot = require('bot');
         
-        var myName = sys.name(src),
-            theirName = sys.name(tar),
+        var playerName = sys.name(src),
+            targetName = sys.name(tar),
             ip = sys.ip(src),
-            muteObject = DataHash.mutes[ip],
-            time;
+            mute = DataHash.mutes[ip],
+            muteTime;
         
         sys.stopEvent();
-        
-        if (JSESSION.users(src).muted) {
-            WatchEvent(src, "Attempted to ban " + theirName + " while muted.");
-            
-            if (dhm.time != 0) {
-                time = "Muted for " + getTimeString(dhm.time - sys.time() * 1);
-            } else {
-                time = "Muted forever";
-            }
 
-            botMessage(src, "You are muted by " + by + ". Reason: " + why + " " + time + "!");
+        // If the player is muted, prevent them from kicking.
+        if (mute) {
+            WatchUtils.logPlayerEvent(src, "Attempted to kick " + targetName + " while muted.");
+            
+            muteTime = mute.time !== 0 ? Utils.timeToString(mute.time - (+sys.time())) : "forever";
+            Bot.sendMessage(src, "You are muted by " + mute.by + " for '" + mute.reason + "'. Your mute lasts for " + muteTime + ".");
             return;
         }
 
-
-        sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + sys.name(src) + " banned " + sys.name(tar) + "!</b></font>");
-        ban(theirName);
+        sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + playerName + " banned " + targetName + "!</b></font>");
+        PlayerUtils.ban(targetName);
     },
 
     // TODO: Remove this and put them into modules.

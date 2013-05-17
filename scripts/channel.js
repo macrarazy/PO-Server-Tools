@@ -43,7 +43,10 @@
     
         this.private = false;
         this.defaultTopic = true;
-        this.silence = 0;
+        this.silence = {
+            level: 0,
+            issuer: ""
+        };
     
         // TODO: Rename banlist -> banList; mutelist -> muteList
         this.banList = {};

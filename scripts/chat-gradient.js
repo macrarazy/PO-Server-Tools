@@ -82,6 +82,7 @@
     };
     
     // Returns an HTML span (without closing tag or content) with a random background color.
+    // Note: Currently unused.
     ChatGradient.randomColorSpan = function () {
         var color1 = sys.rand(0, 256),
             color2 = sys.rand(0, 256),
