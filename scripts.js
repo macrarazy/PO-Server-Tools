@@ -1408,6 +1408,21 @@ if (message === "The description of the server was changed.") {
     // Event: beforePlayerBan
     // Called when: Before a player bans someone.
     // Ensures the player isn't muted when they ban (if they are, then prevent it), and sends a custom ban message.
+    /* Experiment: tempBan behavior
+        To ban: sys.tempBan(name, time_in_minutes);
+        To find ban time: sys.dbTempBanTime(name) => time_in_seconds
+        To unban: sys.unban(name);
+        
+        beforePlayerBan(..., ..., time) is a time in minutes.
+        
+        sys.dbTempBanTime(name) is very unreliable. Only use it if you're sure they're banned (check with sys.banList).
+        
+        It returns the time in seconds, but only if the player has been banned. Otherwise it returns large numbers such as 4294967206.
+        
+        tempBan should not use floating point numbers. This can cause weird behavior as well. So, no second bans.
+        
+        time (in beforePlayerBan) is undefined if the ban isn't a tempBan.
+    */
     beforePlayerBan: function (src, tar, time) {
         var PlayerUtils = require('player-utils'),
             DataHash = require('datahash'),
@@ -1424,17 +1439,25 @@ if (message === "The description of the server was changed.") {
         
         sys.stopEvent();
 
-        // If the player is muted, prevent them from kicking.
+        // If the player is muted, prevent them from banning.
         if (mute) {
-            WatchUtils.logPlayerEvent(src, "Attempted to kick " + targetName + " while muted.");
+            WatchUtils.logPlayerEvent(src, "Attempted to ban " + targetName + " while muted.");
             
             muteTime = mute.time !== 0 ? Utils.timeToString(mute.time - (+sys.time())) : "forever";
             Bot.sendMessage(src, "You are muted by " + mute.by + " for '" + mute.reason + "'. Your mute lasts for " + muteTime + ".");
             return;
         }
 
-        sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + playerName + " banned " + targetName + "!</b></font>");
-        PlayerUtils.ban(targetName);
+        if (time) {
+            // Temporary ban.
+            // Time is in minutes, and timeToString expects seconds.
+            sys.sendHtmlAll("<font color='darkgreen'><timestamp/><b> " + playerName + " banned " + targetName + " for " + Utils.timeToString(time * 60) + "!</b></font>");
+            PlayerUtils.tempBan(targetName, time);
+        } else {
+            // Permanent ban.
+            sys.sendHtmlAll("<font color='darkorange'><timestamp/><b> " + playerName + " banned " + targetName + "!</b></font>");
+            PlayerUtils.ban(targetName);
+        }
     },
 
     // TODO: Remove this and put them into modules.

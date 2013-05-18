@@ -5,7 +5,8 @@
 // Contains player utilities (such as easily getting player and team information).
 // Dependencies: datahash, jsession, utils
 
-// No Table of Content.
+// Table of Content:
+// [mod]: Moderation utilities.
 
 (function () {
     var JSESSION = require('jsession').JSESSION,
@@ -132,42 +133,6 @@
         return ids;
     };
     
-    // opts is an array with these values:
-    // ip: The ip to mute.
-    // by: The player who issued the mute.
-    // reason: The reason of the mute.
-    // time: Time the mute lasts in seconds.
-    exports.mute = function mute(opts) {
-        if (!opts.ip) {
-            Utils.panic("scripts/player-utils.js", "mute", "IP is not specified.", opts, Utils.panic.warning);
-            return;
-        }
-        
-        if (!opts.by) {
-            Utils.panic("scripts/player-utils.js", "mute", "By is not specified.", opts, Utils.panic.warning);
-            return;
-        }
-        
-        if (typeof opts.time !== 'number') {
-            Utils.panic("scripts/player-utils.js", "mute", "Time is not specified or isn't a number.", opts, Utils.panic.warning);
-            return;
-        }
-        
-        // add the current time since epoch to the mute, as that is what we use to check if the mute has expired.
-        opts.time += +(sys.time());
-        
-        if (!opts.reason) {
-            opts.reason = "";
-        }
-
-        DataHash.mutes[opts.ip] = opts;
-        
-        // mute all of [opts.ip]'s names that are currently online.
-        ipIds(opts.ip).forEach(function (id) {
-            JSESSION.users(id).muted = true;
-        });
-    };
-    
     // Returns the string name of the auth level [auth].
     // If img is true (PlayerUtils.authToString.imageIdentifier), returns the image identifier (the one used in po's default theme files)
     // of that auth level.
@@ -222,5 +187,149 @@
     // If the player is on localhost (127.0.0.1)
     exports.isServerHost = function isServerHost(idOrNameOrIp) {
         return ip(idOrNameOrIp) === "127.0.0.1";
+    };
+    
+    // Moderation utilities [mod]
+    // TODO: Make these log with WatchUtils
+    
+    // Kicks a player.
+    exports.kick = function kick(id) {
+        // They have already been kicked..
+        if (!sys.loggedIn(id)) {
+            return;
+        }
+        
+        // Silently kick them.
+        sys.kick(id);
+    };
+    
+    // Kicks all of player's ids.
+    exports.kickAll = function kickAll(playerIp) {
+        // Get the IP. This allows us to accept ids, names, and regular ips as well.
+        var ip = ip(playerIp);
+        
+        // Get all their alts.
+        ipIds(ip).forEach(function (id) {
+            // They have already been kicked..
+            if (!sys.loggedIn(id)) {
+                return;
+            }
+            
+            // Silently kick them.
+            sys.kick(id);
+        });
+    };
+    
+    // Disconnects (kick but allow them to reconnect with their data) a player.
+    exports.disconnect = function disconnect(id) {
+        // They have already been disconnected..
+        if (!sys.loggedIn(id)) {
+            return;
+        }
+        
+        // Silently disconnect them.
+        sys.disconnect(id);
+    };
+    
+    // Disconnects (kick but allow them to reconnect with their data) all of player's ids.
+    exports.disconnectAll = function disconnectAll(playerIp) {
+        // Get the IP. This allows us to accept ids, names, and regular ips as well.
+        var ip = ip(playerIp);
+        
+        // Get all their alts.
+        ipIds(ip).forEach(function (id) {
+            // They have already been disconnected..
+            if (!sys.loggedIn(id)) {
+                return;
+            }
+            
+            // Silently disconnect them.
+            sys.disconnect(id);
+        });
+    };
+    
+    // Mutes a player.
+    // opts is an array with these values:
+    // ip: The ip to mute.
+    // by: The player who issued the mute.
+    // reason: The reason of the mute.
+    // time: Time the mute lasts in seconds.
+    exports.mute = function mute(opts) {
+        if (!opts.ip) {
+            Utils.panic("scripts/player-utils.js", "mute", "IP is not specified.", opts, Utils.panic.warning);
+            return;
+        }
+        
+        if (!opts.by) {
+            Utils.panic("scripts/player-utils.js", "mute", "By is not specified.", opts, Utils.panic.warning);
+            return;
+        }
+        
+        if (typeof opts.time !== 'number') {
+            Utils.panic("scripts/player-utils.js", "mute", "Time is not specified or isn't a number.", opts, Utils.panic.warning);
+            return;
+        }
+        
+        // add the current time since epoch to the mute, as that is what we use to check if the mute has expired.
+        opts.time += +(sys.time());
+        
+        if (!opts.reason) {
+            opts.reason = "";
+        }
+
+        DataHash.mutes[opts.ip] = opts;
+        
+        // mute all of [opts.ip]'s names that are currently online.
+        // note that we only have to set .muted (this prevents them from talking, until their mute has expired). This value is set after the log back in (because we mute their ip) automatically (if they're still muted), so we don't have to do any mumbo jumbo.
+        ipIds(opts.ip).forEach(function (id) {
+            JSESSION.users(id).muted = true;
+        });
+    };
+    
+    // Permanently bans a player (and kick them).
+    // NOTE: This is done quietly.
+    exports.ban = function ban(name) {
+        // Since there is basically nothing to customise atm, this is simply a small wrapper (though it does kick players under the same alt.)
+        sys.ban(name);
+        
+        kickAll(sys.ip(name));
+    };
+    
+    // Temporarly bans a player.
+    // NOTE: Time is in minutes.
+    // NOTE: This is done quietly.
+    exports.tempBan = function tempBan(name, time) {
+        // Since there is basically nothing to customise atm (kick is done automatically), this is simply a small wrapper (though it does kick players under the same alt.)
+        // Ensure time is an integer.
+        time = Math.round(time);
+        
+        sys.tempBan(name, time);
+        
+        kickAll(sys.ip(name));
+    };
+    
+    // If a player is banned.
+    exports.isBanned = function isBanned(playerName) {
+        // Return their name. This allows us to accept ids as well.
+        var name = name(playerName).toLowerCase(),
+            bans = sys.banList();
+        
+        return bans.indexOf(name) !== -1;
+    };
+    
+    // Returns the amount of seconds name is temporary banned for.
+    // This > sys.dbTempBanTime.
+    // NOTE: Unlike sys.dbTempBanTime, this returns 0 if the player isn't banned.
+    exports.tempBanTime = function tempBanTime(playerName) {
+        // Return their name. This allows us to accept ids as well.
+        var name = name(playerName).toLowerCase();
+        
+        // If they aren't banned, return 0.
+        if (!isBanned(name)) {
+            return 0;
+        }
+        
+        // Otherwise, return for how long they are banned.
+        return sys.dbTempBanTime(name);
     };
 }());
