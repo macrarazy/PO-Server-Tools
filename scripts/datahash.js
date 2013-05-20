@@ -32,6 +32,11 @@
     DataHash.mails = {};
     // TODO: money -> battlePoints
     DataHash.battlePoints = {};
+    // TODO: PointerCommands -> DataHash.pointerCommands
+    DataHash.pointerCommands = {
+        "normal": {},
+        "reverse": {}
+    };
     
     // NOTE: These properties should never be saved.
     DataHash.chatSpammers = {};
