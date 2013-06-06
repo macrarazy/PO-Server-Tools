@@ -71,7 +71,7 @@
     // TODO / NOTE: Types/syntax changed.
     commandTemplate.prototype.format = function (str) {
         return str
-            .replace(/\?(.*?)/g, "<i>$1</i>")
+            .replace(/\?(.*?)\?/g, "<i>$1</i>")
             .replace(/\[onlinePlayer (.*?)\]/gi, '<b><font color="red">$1</font></b>')
             .replace(/\[databasePlayer (.*?)\]/gi, '<b><font color="orangered">$1</font></b>')
             .replace(/\[tournamentPlayer (.*?)\]/gi, '<b><font color="green">$1</font></b>')
@@ -110,7 +110,7 @@
         }
     
         // Three arguments
-        // .register("commands", ["?[choice Choice]", "?[number Repeat]"], "Displays the command list. Search for a term with the optional ?[choice Choice]. ?[number Repeat] can be used to repeat the list.");
+        // .register("commands", ["?[choice Choice]?", "?[number Repeat]?"], "Displays the command list. Search for a term with the optional ?[choice Choice]?. ?[number Repeat]? can be used to repeat the list.");
     
         for (i = 0, len = args.length; i < len; ++i) {
             argsList += this.format(args[i]) + format[1] + ":" + format[0];
