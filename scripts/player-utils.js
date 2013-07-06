@@ -244,6 +244,32 @@
     
     exports.authToString.imageIdentifier = true;
     
+    exports.statusImage = function statusImage(src) {
+        var status = "Away",
+            isAway,
+            authIdentifier;
+        
+        // The player is most likely online if this is the case.
+        if (typeof src === "string") {
+            // This gets the player's auth's image identifier.
+            return "<img src='Themes/Classic/Client/" + authToString(sys.dbAuth(src), true) + "Away.png'>";
+        }
+        
+        isAway = sys.away(src);
+        authIdentifier = authToString(sys.auth(src), true);
+        
+        if (sys.battling(src)) {
+            status = "Battle";
+        } else if (!isAway) {
+            status = "Available";
+        } else {
+            // Pretty much useless, but w/e.
+            status = "Away";
+        }
+
+        return "<img src='Themes/Classic/Client/" + authIdentifier + status + ".png'>";
+    };
+    
     // Puts a player in multiple channels.
     exports.pushChannels = function pushChannels(src, channels) {
         var len = channels.length,
@@ -591,5 +617,25 @@
         }
 
         return importable;
+    };
+    
+    // Kicks everyone on the server, with the exception of those caught by the filter.
+    // The filter should return true if a player shouldn't be kicked. It gets the player's id as argument.
+    exports.massKick = function (filter) {
+        var ids = sys.playerIds(),
+            len = ids.length,
+            i;
+        
+        if (typeof filter !== "function") {
+            filter = function () {
+                return false;
+            };
+        }
+
+        for (i = 0; i < len; i += 1) {
+            if (!filter(ids[i])) {
+                sys.kick(ids[i]);
+            }
+        }
     };
 }());

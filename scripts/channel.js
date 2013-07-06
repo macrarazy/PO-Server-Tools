@@ -28,7 +28,7 @@
         this.tourAuth = {};
         this.creator = "~Unknown~";
         this.topic = 'Welcome to ' + this.name + '!';
-        // TODO: Rename topicsetter -> topicSetter
+        // topicsetter -> topicSetter
         this.topicSetter = '';
         
         this.tour = new Tours.ToursChannelConfig(id);

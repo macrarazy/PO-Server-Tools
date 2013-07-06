@@ -65,4 +65,19 @@
     
     // Expose escapeHtml (also in utils)
     exports.escapeHtml = escapeHtml;
+    
+    // Why not!
+    exports.stfuTruck = function (src, chan) {
+        exports.sendMessage(src, '|^^^^^^^^^^^\\||____', chan);
+        exports.sendMessage(src, '| The STFU Truck  |||""\'|""\\__,_', chan);
+        exports.sendMessage(src, '| _____________ l||__|__|__|)', chan);
+        exports.sendMessage(src, '...|(@)@)"""""""**|(@)(@)**|(@)', chan);
+    };
+    
+    exports.failWhale = function (src, chan) {
+        exports.sendMessage(src, "▄██████████████▄▐█▄▄▄▄█▌", chan);
+        exports.sendMessage(src, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
+        exports.sendMessage(src, "████▄█▌▄▌▄▐▐▌▀███▄▄█▌", chan);
+        exports.sendMessage(src, "▄▄▄▄▄██████████████▀", chan);
+    };
 }());

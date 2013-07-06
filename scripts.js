@@ -361,8 +361,8 @@ function Mail(sender, text, title) {
         // Don't post any messages from Guardtower here.
         // Guardtower is index 3.
         // Also take out empty messages.
-        if (message.substring(0, "[#" + Options.defaultChannels[3] + "]") === "[#" + Options.defaultChannels[3] + "]"
-                || message.replace(/\[#(.*?)\]/, "") === " ") {
+        if (message.substring(0, "[#" + Options.defaultChannelIds.watch + "]".length) === "[#" + Options.defaultChannelIds.watch + "]"
+                || message.replace(/^\[#(.*?)\]/, "") === " ") {
             sys.stopEvent();
             return;
         }
@@ -624,8 +624,7 @@ if (message === "The description of the server was changed.") {
         if (!userObject.voice) {
             // TODO: Options.silence
             if (Options.silence.level > playerAuth) {
-                // TODO: Bot.sendSTFUTruck
-                Bot.sendSTFUTruck(src, chan);
+                Bot.stfuTruck(src, chan);
                 Bot.sendMessage(src, "Respect the almighty silence issued by " + Options.silence.issuer + "!", chan);
                 
                 WatchUtils.logPlayerMessage("Silenced message", src, message, chan);
@@ -635,7 +634,7 @@ if (message === "The description of the server was changed.") {
             }
             // TODO: ChannelUtils.channelAuth(src, chan)
             if (channelObject.silence.level > ChannelUtils.channelAuth(src, chan)) {
-                Bot.sendSTFUTruck(src, chan);
+                Bot.stfuTruck(src, chan);
                 Bot.sendMessage(src, "Respect the almighty silence issued by " + channelObject.silence.issuer + "!", chan);
                 
                 WatchUtils.logPlayerMessage("Channel silenced message", src, message, chan);
@@ -1751,14 +1750,9 @@ if (message === "The description of the server was changed.") {
 
     // NOTE: script.resolveLocation -> DataHash.resolveLocation
     loadUtilities: function () {
-        if (typeof fonts == 'undefined') {
-            // Windows 7 Fonts //
-            // Note: Some fonts MIGHT not work/look too much like default font
-            // so they won't be noticed.
-        }
-
+        // TODO: Change for the next version.
+/*
         checkForUpdates = function (noresume) {
-            return; // TODO: Modify.
             var commitData = "";
             try {
                 commitData = JSON.parse(cache.get("LastCommitData"));
@@ -1790,242 +1784,27 @@ if (message === "The description of the server was changed.") {
         }
 
         if (typeof updateChecking == 'undefined') {
-            sys.callLater("checkForUpdates();", 1800); /* 60*30 */
+            sys.callLater("checkForUpdates();", 1800); // 60*30
             updateChecking = true;
-        }
+        }*/
 
         // ScriptUpdateMessage -> Utils.scriptUpdateMessage
 
+        // AuthIMG -> PlayerUtils.statusImage
 
-        removespaces = function (string) {
-            return string.split(' ').join('');
-        }
+        // sendSTFUTruck -> Bot.stfuTruck
+        // sendFailWhale -> Bot.failWhale
 
-        authToString = function (auth, img) {
-            if (!img) {
-                if (auth == 0) {
-                    return UserName;
-                } else if (auth == 1) {
-                    return ModName;
-                } else if (auth == 2) {
-                    return AdminName;
-                } else if (auth == 3) {
-                    return OwnerName;
-                } else {
-                    return InvisName;
-                }
-            }
-            else {
-                if (auth == 1) {
-                    return 'M';
-                } else if (auth == 2) {
-                    return 'A';
-                } else if (auth == 3) {
-                    return 'O';
-                } else {
-                    return 'U';
-                }
-            }
-        }
+        // sortHash -> Utils.sortObject
+        
 
-        putInAuthChan = function (name, type, channel) {
-            var src = sys.id(name),
-                putIn = function (id, chan) {
-                    if (!sys.isInChannel(id, chan)) {
-                        sys.putInChannel(id, chan);
-                    }
-                }
-
-                if (src == undefined) {
-                    return;
-                }
-
-                if (type == "mu") {
-                    put(src, staffchannel);
-                }
-                if (type == "evalop" || type == "admin") {
-                    putIn(src, scriptchannel);
-                }
-                if (type == "mod" || type == "admin") {
-                    putIn(src, staffchannel);
-                    putIn(src, watch);
-                }
-                if (type == "cauth") {
-                    putIn(src, channel);
-                }
-        }
-
-        kickFromChannel = function (name, chan) {
-            var ownTL = name.toLowerCase(),
-                cObj = JSESSION.channels(chan),
-                isMU = DataHash.megausers.has(ownTL),
-                isOp = DataHash.evalops.has(ownTL);
-
-            if (cObj.chanAuth.has(ownTL) && cObj.chanAuth[ownTL] > 0) {
-                return;
-            }
-
-            if (chan == staffchannel && isMU) {
-                return;
-            }
-
-            if (chan == scriptchannel && isOp) {
-                return;
-            }
-
-            var id = sys.id(name);
-            if (id != undefined) {
-                sys.kick(id, chan);
-                if (sys.channelsOfPlayer(id).length == 0) {
-                    sys.putInChannel(id, 0);
-                }
-            }
-        }
-
-        AuthIMG = function (x) {
-            if (typeof x == 'string') {
-                var ats = authToString(sys.dbAuth(x), true);
-                return "<img src='Themes/Classic/Client/" + ats + "Away.png'>";
-            }
-
-            var status, ats = authToString(sys.auth(x), true),
-                n, away = sys.away(x);
-
-            if (away) {
-                status = 'Away';
-            }
-            else if (!away) {
-                status = 'Available';
-            }
-            else if (sys.battling(x)) {
-                status = 'Battle';
-            }
-
-            n = ats + status + ".png";
-            return '<img src="Themes/Classic/Client/' + n + '">';
-        }
-
-        sendSTFUTruck = function (src, chan) {
-            var name = "",
-                message = "The chat is silenced";
-            if (silence.by) {
-                name = " by " + silence.by + "!";
-            }
-            if (!silence.level) {
-                name = ". STFU!";
-            }
-            botMessage(src, '|^^^^^^^^^^^\||____', chan);
-            botMessage(src, '| The STFU Truck  |||""\'|""\__,_', chan);
-            botMessage(src, '| _____________ l||__|__|__|)', chan);
-            botMessage(src, '...|(@)@)"""""""**|(@)(@)**|(@)', chan);
-            botMessage(src, message + name, chan);
-        }
-
-        sendFailWhale = function (id, chan) {
-            botMessage(id, "▄██████████████▄▐█▄▄▄▄█▌", chan);
-            botMessage(id, "██████▌▄▌▄▐▐▌███▌▀▀██▀▀", chan);
-            botMessage(id, "████▄█▌▄▌▄▐▐▌▀███▄▄█▌", chan);
-            botMessage(id, "▄▄▄▄▄██████████████▀", chan);
-            botMessage(id, "Fail!", chan);
-        }
-
-        sortHash = function (object, method) {
-            var objs = Object.keys(object),
-                y, newobj = {},
-                x, n;
-
-            if (typeof method == 'function') {
-                objs.sort(method);
-            }
-            else {
-                objs.sort();
-            }
-
-            for (x in objs) {
-                n = objs[x];
-                newobj[n] = object[n];
-            }
-
-            return newobj;
-        }
-
-        if (typeof silence == "undefined") {
-            silence = {
-                "by": "",
-                "level": 0
-            };
-        }
-
-        ban = function (name) {
-            sys.ban(name);
-
-            var id = sys.id(name);
-            if (id != undefined) {
-                kick(id);
-            }
-            else {
-                aliasKick(sys.dbIp(name));
-            }
-        }
-
-        disconnectAll = function (src) {
-            var xlist, c, ip = sys.ip(src),
-                playerIdList = sys.playerIds();
-
-            for (xlist in playerIdList) {
-                c = playerIdList[xlist];
-                if (ip == sys.ip(c)) {
-                    sys.disconnect(c);
-                }
-            }
-        }
-
-        kick = function (src) {
-            var xlist, c, ip = sys.ip(src),
-                playerIdList = sys.playerIds(),
-                addIp = false;
-            for (xlist in playerIdList) {
-                c = playerIdList[xlist];
-                if (ip == sys.ip(c)) {
-                    sys.callQuickly('sys.kick(' + c + ');', 20);
-                    addIp = true;
-                }
-            }
-
-            if (addIp) {
-                DataHash.reconnect[ip] = true;
-                sys.callLater("delete DataHash.reconnect['" + ip + "'];", 5);
-            }
-        }
-
-        aliasKick = function (ip) {
-            var aliases = sys.aliases(ip),
-                alias, id, addIp = false;
-            for (alias in aliases) {
-                id = sys.id(aliases[alias]);
-                if (id != undefined) {
-                    sys.callQuickly('sys.kick(' + id + ');', 20);
-                    addIp = true;
-                }
-            }
-
-            if (!addIp) {
-                DataHash.reconnect[ip] = true;
-                sys.callLater("delete DataHash.reconnect['" + ip + "'];", 5);
-            }
-        }
-
-        massKick = function () {
-            var x, ids = sys.playerIds(),
-                current;
-
-            for (x in ids) {
-                current = ids[x];
-                if (hpAuth(current) <= 0 && !JSESSION.users(current).megauser) {
-                    sys.kick(current);
-                }
-            }
-        }
+        // silence -> Options.silence
+        
+        // ban -> PlayerUtils.ban
+        // disconnectAll -> PlayerUtils.disconnectAll
+        // kick -> PlayerUtils.kickAll
+        
+        // massKick -> PlayerUtils.massKick
 
         rangeIP = function (name) {
             var ips = sys.dbIp(name).split('.');
@@ -2193,52 +1972,6 @@ if (message === "The description of the server was changed.") {
 
 
         BORDER = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
-
-        Grammar = {
-            "an": function (thingy, u) {
-                var thing = thingy.toString();
-
-                if (/[aeiouAEIOU]/.test(thing[0])) {
-                    if (u) {
-                        return 'An ' + thingy;
-                    }
-
-                    return 'an ' + thingy;
-                }
-
-                if (u) {
-                    return 'A ' + thingy;
-                }
-
-                return 'a ' + thingy;
-            },
-            "es": function (thingy) {
-                if (/[sS]/.test(thingy[thingy.length - 1])) {
-                    return thingy + 'es';
-                }
-
-                return thingy + 's';
-            },
-            "s": function (word, number) {
-                if (number != 1) {
-                    word += "s";
-                }
-
-                return word;
-            },
-            "a": function (thing, capfirst) {
-                var use = ["a ", "an "];
-                if (capfirst) {
-                    use = ["A ", "An "];
-                }
-
-                if (/[aeuio]/.test(thing[0].toLowerCase())) {
-                    return use[1] + thing;
-                }
-
-                return use[0] + thing;
-            }
-        };
 
         sendAuthLength = function (src) {
             var auths = sys.dbAuths();

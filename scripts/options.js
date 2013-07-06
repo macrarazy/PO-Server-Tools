@@ -37,6 +37,13 @@
         setter: ""
     };
     
+    // Global silence.
+    // Cache field used: globalSilence
+    exports.silence = {
+        issuer: "",
+        level: 0
+    };
+    
     // If players should be punished for flooding the chat.
     // Cache field used: floodCheck
     exports.floodCheck = true;

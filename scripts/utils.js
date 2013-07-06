@@ -331,7 +331,7 @@
         return condition1 === condition2; // safety
     };
     
-    // Turns [time] into a string (for example, 60 becomes "Minute"
+    // Turns [time] into a string (for example, 60 becomes "Minute")
     // TODO: Comments
     exports.timeToString = function timeToString(time) {
         var ret = [],
@@ -504,5 +504,24 @@
     // Removes all spaces from a string.
     exports.removeSpaces = function removeSpaces(str) {
         return str.split(" ").join("");
+    };
+    
+    // Sorts an object alphabetically.
+    // NOTE: Doesn't copy over non-enumerable objects and doesn't copy deep.
+    exports.sortObject = function (obj) {
+        var keys = Object.keys(obj),
+            sortedObject = {},
+            key,
+            len = keys.length,
+            i;
+
+        keys.sort();
+
+        for (i = 0; i < len; i += 1) {
+            key = keys[i];
+            sortedObject[key] = obj[key];
+        }
+
+        return sortedObject;
     };
 }());
