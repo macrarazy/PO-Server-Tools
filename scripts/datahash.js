@@ -25,6 +25,8 @@
     DataHash.tempAuth = {};
     // TODO: tempbans -> ipBans. tempbans are replaced by po's new tempban system.
     DataHash.ipBans = {};
+    // Structure:
+    // ip -> {time: number, reason: string, ip: string, by: string}
     DataHash.rangeBans = {};
     DataHash.locations = {};
     DataHash.autoIdles = {};

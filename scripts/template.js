@@ -128,7 +128,6 @@
         this.template.push("<br/>" + Style.span.replace(/\{\{Name\}\}/gi, name) + "<br/>");
     };
     
-    // TODO: pointerCommands.normal, .reverse
     commandTemplate.prototype.formattedAliases = function (command) {
         var pointerCommands = DataHash.pointerCommands.reverse,
             aliases;

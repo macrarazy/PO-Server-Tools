@@ -488,9 +488,8 @@ if (message === "The description of the server was changed.") {
         if (userObject.floodCount === "ignore") {
             sys.stopEvent();
 
-            // TODO: PlayerUtils.kick
             if (sys.loggedIn(src)) {
-                PlayerUtils.kick(src);
+                PlayerUtils.kickAll(src);
             }
 
             return "Error: Player kicked.";
@@ -541,14 +540,12 @@ if (message === "The description of the server was changed.") {
                     WatchUtils.logPlayerEvent(src, "Banned for 1 hour for receiving 5 flood violations.");
                     Bot.sendAll(playerName + " got banned for 1 hour by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
                     
-                    // TODO: PlayerUtils.tempBan
                     PlayerUtils.tempBan({
                         ip: ip,
                         time: 60 * 60
                     });
                     
-                    // TODO: PlayerUtils.kick
-                    PlayerUtils.kick(src);
+                    PlayerUtils.kickAll(src);
                     
                     // Remove all their violations.
                     delete DataHash.spammersHash[ip];
@@ -573,7 +570,7 @@ if (message === "The description of the server was changed.") {
                     WatchUtils.logPlayerEvent(src, "Disconnected for receiving 1 flood violation.");
                                               
                     Bot.sendAll(playerName + " got disconnected by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
-                    sys.disconnect(src);
+                    PlayerUtils.disconnectAll(src);
                     return;
                 }
                     
@@ -603,7 +600,6 @@ if (message === "The description of the server was changed.") {
             }
         }
         
-        // TODO: Utils.removeSpaces
         if (userObject.autoAFKTime === -1 && !sys.away(src) &&
                 (/bbl|brb|berightback|bebacklater|afk|bbs|bebacksoon/i).test(Utils.removeSpaces(message))) {
             Bot.sendMessage(src, "We hope you see you soon, " + formatName + "!", chan);
@@ -1144,7 +1140,8 @@ if (message === "The description of the server was changed.") {
     // Adds a player's correct name to DataHash, resolves their location, ensures they don't instantly reconnect after being kicked,
     // and that their name doesn't contain characters such as those which make it easy to impersonate a player (cyrillic, greek).
     beforeLogIn: function (src) {
-        var DataHash = require('datahash');
+        var User = require('user'),
+            DataHash = require('datahash');
         
         var name = sys.name(src),
             ip = sys.ip(src);
@@ -1163,17 +1160,13 @@ if (message === "The description of the server was changed.") {
         DataHash.resolveLocation(src, ip);
 
         // Players will only be in autoReconnectBlock if they were kicked.
-        if (DataHash.hasDataProperty("autoReconnectBlock", ip)) {
+        // User.isValid checks for bad unicode characters and the like, as well as ban checking.
+        
+        if (DataHash.hasDataProperty("autoReconnectBlock", ip)
+                || User.isValid(src) !== "fine") {
             sys.stopEvent();
             return;
         }
-
-        // TODO: testName
-        /*
-        if (script.testName(src)) {
-            sys.stopEvent();
-            return;
-        }*/
     },
 
     // Event: afterLogIn
@@ -1291,7 +1284,8 @@ if (message === "The description of the server was changed.") {
     // Adds data of the player's new name (if they changed it) and prevents team change spamming.
     // TODO: WatchUtils to this thing
     afterChangeTeam: function (src) {
-        var DataHash = require('datahash'),
+        var User = require('user'),
+            DataHash = require('datahash'),
             PlayerUtils = require('player-utils'),
             WatchUtils = require('watch-utils'),
             JSESSION = require('jsession').JSESSION;
@@ -1354,8 +1348,7 @@ if (message === "The description of the server was changed.") {
         DataHash.save("namesByIp");
         DataHash.save("correctNames");
 
-        // TODO: PlayerUtils.testName
-        if (PlayerUtils.testName(src)) {
+        if (User.isValid(src) !== "fine") {
             PlayerUtils.kick(src);
             return;
         }
@@ -1463,111 +1456,8 @@ if (message === "The description of the server was changed.") {
             PlayerUtils.ban(targetName);
         }
     },
-
-    // TODO: Remove this and put them into modules.
-    testName: function (src, nomessage) {
-        var name = sys.name(src),
-            ip = sys.ip(src),
-            dh = DataHash,
-            auth = sys.maxAuth(ip);
-
-        Prune.bans();
-        Prune.rangeBans();
-
-        if (auth <= 0) {
-            var rb = dh.rangebans,
-                i, i_l = 0,
-                xT, c_rb;
-            for (i in rb) {
-                i_l = i.length;
-                for (xT = 0; xT < i_l; xT++) {
-                    if (i == sys.ip(src).substring(0, xT)) {
-                        if (!nomessage) {
-                            c_rb = rb[i];
-                            var time;
-                            if (c_rb.time != 0) {
-                                time = 'Banned for ' + getTimeString(c_rb.time - sys.time() * 1);
-                            } else {
-                                time = "Banned forever";
-                            }
-
-                            var by = c_rb.by,
-                                why = c_rb.why,
-                                lastChar = why[why.length - 1],
-                                lastChars = [".", "?", "!"];
-
-                            if (lastChars.indexOf(lastChar) == -1) {
-                                why += ".";
-                            }
-
-                            sendFailWhale(src, 0);
-                            botMessage(src, 'Your ip range ' + i + ' is banned by ' + by + '. Reason: ' + why + ' ' + time + '.', 0);
-                            botAll('Player ' + name + ' with range IP ' + i + ' has attempted to enter the server and failed. [Reason: Rangebanned]', watch);
-                        }
-                        return true;
-                    }
-                }
-            }
-        }
-
-        var tb = DataHash.tempbans[ip];
-        if (tb != undefined && auth < 1) {
-            if (!nomessage) {
-                var time;
-
-                if (tb.time != 0) {
-                    time = "for " + getTimeString(tb.time - sys.time() * 1);
-                } else {
-                    time = "forever";
-                }
-
-                var reason = tb.why,
-                    by = tb.by,
-                    lastChar = reason[reason.length - 1],
-                    lastChars = [".", "?", "!"];
-
-                if (lastChars.indexOf(lastChar) == -1) {
-                    reason += ".";
-                }
-
-                sendFailWhale(src, 0);
-                botMessage(src, "You are banned! By " + by + ". Reason " + why + " " + time + "!", 0);
-                botAll('Player ' + name + ' (' + ip + ') has attempted to enter the server and failed. [Reason: Tempbanned]', watch);
-            }
-            return true;
-        }
-
-        var cyrillic = /\u0408|\u03a1|\u0430|\u0410|\u0412|\u0435|\u0415|\u041c|\u041d|\u043e|\u041e|\u0440|\u0420|\u0441|\u0421|\u0422|\u0443|\u0445|\u0425|\u0456|\u0406/,
-            space = /\u0009-\u000D|\u0085|\u00A0|\u1680|\u180E|\u2000-\u200A|\u2028|\u2029|\u2029|\u202F|\u205F|\u3000/,
-            dash = /\u058A|\u05BE|\u1400|\u1806|\u2010-\u2015|\u2053|\u207B|\u208B|\u2212|\u2E17|\u2E1A|\u301C|\u3030|\u30A0|\uFE31-\uFE32|\uFE58|\uFE63|\uFF0D/,
-            greek = /\u03F3|\u0391|\u0392|\u0395|\u0396|\u0397|\u0399|\u039A|\u039C|\u039D|\u039F|\u03A1|\u03A4|\u03A5|\u03A7/,
-            armenian = /\u0555|\u0585/,
-            creek = /[\u0370-\u03ff]/,
-            special = /[\ufff0-\uffff]/,
-            other = /\u3061|\u65532/,
-            zalgo = /[\u0300-\u036F]/,
-            thai = /[\u0E00-\u0E7F]/,
-            fakei = /\xA1/;
-
-        if (fakei.test(name) || creek.test(name) || armenian.test(name) || dash.test(name) || space.test(name) || cyrillic.test(name) || greek.test(name) || special.test(name) || other.test(name) || zalgo.test(name) || thai.test(name)) {
-            if (!nomessage) {
-                sendFailWhale(src, 0);
-                botMessage(src, "You are using bad characters in your name.");
-                botAll('Player ' + name + ' (' + ip + ') has failed to log in. [Reason: Unicode characters]', watch);
-            }
-            return true;
-        }
-
-        if (name[0] == "S" && name[1] == "E" && name[2] == "N" && name[3] == "T" && name[4] == "_") {
-            if (!nomessage) {
-                sendFailWhale(src, 0);
-            }
-            return true;
-        }
-
-        return false;
-    },
-
+    // Will be added as a command later.
+    /*
     issueMute: function (src, target, reason, time, c, timeunit) {
         var time = parseInt(time),
             theIP = sys.dbIp(target),
@@ -1856,193 +1746,8 @@ if (message === "The description of the server was changed.") {
         };
         cache.write("tempauth", JSON.stringify(DataHash.tempauth));
     },
+    */
 
-    importable: function (src, tar, chan, simple) {
-        var natureNames = {
-            24: "Quirky</font></b> Nature",
-            23: "Careful</font></b> Nature (+SDef, -SAtk)",
-            22: "Sassy</font></b> Nature (+SDef, -Spd)",
-            21: "Gentle</font></b> Nature (+SDef, -Def)",
-            20: "Calm</font></b> Nature (+SDef, -Atk)",
-            19: "Rash</font></b> Nature (+SAtk, -SDef)",
-            18: "Bashful</font></b> Nature",
-            17: "Quiet</font></b> Nature (+SAtk, -Spd)",
-            16: "Mild</font></b> Nature (+SAtk, -Def)",
-            15: "Modest</font></b> Nature (+SAtk, -Atk)",
-            14: "Naive</font></b> Nature (+Spd, -SDef)",
-            13: "Jolly</font></b> Nature (+Spd, -SAtk)",
-            12: "Serious</font></b> Nature",
-            11: "Hasty</font></b> Nature (+Spd, -Def)",
-            10: "Timid</font></b> Nature (+Spd, -Atk)",
-            9: "Lax</font></b> Nature (+Def, -SDef)",
-            8: "Impish</font></b> Nature (+Def, -SAtk)",
-            7: "Relaxed</font></b> Nature (+Def, -Spd)",
-            6: "Docile</font></b> Nature",
-            5: "Bold</font></b> Nature (+Def, -Atk)",
-            4: "Naughty</font></b> Nature (+Atk, -SDef)",
-            3: "Adamant</font></b> Nature (+Atk, -SAtk)",
-            2: "Brave</font></b> Nature (+Atk, -Spd)",
-            1: "Lonely</font></b> Nature (+Atk, -Def)",
-            0: "Hardy</font></b> Nature"
-        },
-            colorNames = {
-                0: "#a8a878",
-                1: "#c03028",
-                2: "#a890f0",
-                3: "#a040a0",
-                4: "#e0c068",
-                5: "#b8a038",
-                6: "#a8b820",
-                7: "#705898",
-                8: "#b8b8d0",
-                9: "#f08030",
-                10: "#6890f0",
-                11: "#78c850",
-                12: "#f8d030",
-                13: "#f85888",
-                14: "#98d8d8",
-                15: "#7038f8",
-                16: "#705848"
-            },
-            genderNames = {
-                2: "female",
-                1: "male",
-                0: "neutral"
-            },
-            evNames = {
-                0: "HP",
-                1: "Atk",
-                2: "Def",
-                3: "SAtk",
-                4: "SDef",
-                5: "Spd"
-            },
-            hiddenPowerNum = 237,
-            t = new Template(),
-            teamno, gen, fullgen, n, numteams = sys.teamCount(tar);
-
-        t.register(style.header);
-        t.register("<font color=" + script.namecolor(tar) + "><b>" + sys.name(tar) + "</b></font>'s Teams<br/>");
-
-        for (n = 0; n < numteams; n++) {
-            teamno = n + 1;
-            gen = sys.gen(tar, n);
-            fullgen = sys.generation(gen, sys.subgen(tar, n));
-
-            if (n != 0) {
-                t.register("");
-            }
-
-            t.register("#" + teamno + ": Gen " + gen + " (" + fullgen + ")<br/>");
-
-            var i, color, gender, pokeId, nick, item, level, evstr, w, evtable, dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs, hp, movetype, hptype;
-
-            for (i = 0; i < 6; i++) {
-                color = colorNames[sys.pokeType1(sys.teamPoke(tar, n, i), gen)];
-                pokeId = sys.teamPoke(tar, n, i);
-
-                if (pokeId === 0) {
-                    continue;
-                }
-
-                gender = genderNames[sys.teamPokeGender(tar, n, i)];
-                shinyPoke = false; // sys.teamPokeShine(tar, n, i); = bugged in v2
-                if (!simple) {
-                    t.register("<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=false&shiny=" + shinyPoke + "&gender=" + gender + "'><img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=true&shiny=" + shinyPoke + "&gender=" + gender + "'>");
-                }
-
-                nick = sys.teamPokeNick(tar, n, i) + "</b></font> (<b><font color=" + color + ">" + sys.pokemon(sys.teamPoke(tar, n, i)) + "</b></font>)"
-                if (sys.teamPokeNick(tar, n, i) == sys.pokemon(sys.teamPoke(tar, n, i))) {
-                    nick = sys.pokemon(sys.teamPoke(tar, n, i)) + "</b></font>";
-                }
-
-                item = "<img src='item:" + sys.teamPokeItem(tar, n, i) + "'>";
-                if (sys.item(sys.teamPokeItem(tar, n, i)) == "(No Item)") {
-                    item = "";
-                }
-
-                if (!simple) {
-                    t.register("<font color=" + color + "><b> " + nick + " " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "<img src='Themes/Classic/genders/gender2.png'> (F)").replace(/male/g, "<img src='Themes/Classic/genders/gender1.png'> (M)").replace(/genderless/g, "<img src='Themes/Classic/genders/gender0.png'>") + " @ " + item + " " + sys.item(sys.teamPokeItem(tar, n, i)));
-                } else {
-                    t.register("<font color=" + color + "><b> " + nick + " " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "(F)").replace(/male/g, "(M)").replace(/genderless/g, "") + " @ " + sys.item(sys.teamPokeItem(tar, n, i)));                
-                }
-
-                if (gen > 2) {
-                    t.register("<font color=" + color + "><b>Trait:</b></font> " + sys.ability(sys.teamPokeAbility(tar, n, i)));
-                }
-
-                level = sys.teamPokeLevel(tar, n, i);
-
-                if (level != 100) {
-                    t.register('<b><font color=' + color + '>Level:</b></font> ' + level);
-                }
-
-                evstr = [];
-
-                for (w = 0; w < 6; w++) {
-                    evtable = evNames[w];
-                    if (sys.teamPokeEV(tar, n, i, w) != 0 || gen == 2 && sys.teamPokeEV(tar, n, i, q) != 255) {
-                        evstr.push(sys.teamPokeEV(tar, n, i, w) + " " + evtable);
-                    }
-                }
-
-                if (evstr.length != 0) {
-                    t.register("<font color=" + color + "><b>EVs:</b></font> " + evstr.join(" / "));
-                }
-
-                dvstr = [];
-                for (w = 0; w < 6; w++) {
-                    dvtable = evNames[w];
-                    if (sys.teamPokeDV(tar, n, i, w) != 31 || gen == 2 && sys.teamPokeDV(tar, n, i, w) != 15) {
-                        dvstr.push(sys.teamPokeDV(tar, n, i, w) + " " + dvtable);
-                    }
-                }
-
-                if (dvstr.length != 0) {
-                    t.register("<font color=" + color + "><b>IVs:</b></font> " + dvstr.join(" / "));
-                }
-
-                if (gen > 2) {
-                    nature = natureNames[sys.teamPokeNature(tar, n, i)];
-                    t.register("<b><font color=" + color + ">" + nature + "</font></b>");
-                }
-
-                for (j = 0; j < 4; j++) {
-                    moveNum = sys.teamPokeMove(tar, n, i, j);
-                    moveName = sys.move(moveNum);
-                    moveStr = "<b><font color=" + colorNames[sys.moveType(moveNum)] + ">" + moveName + "</font></b>";
-
-                    if (moveNum == 0) {
-                        continue;
-                    }
-
-                    if (moveNum == hiddenPowerNum) {
-                        hpdvs = [];
-
-                        for (w = 0; w < 6; w++) {
-                            hpdvs.push(sys.teamPokeDV(src, n, i, w));
-                        }
-
-                        hp = sys.hiddenPowerType.apply(sys, [gen].concat(hpdvs));
-                        movetype = sys.type(hp);
-
-                        hptype = "<font color=" + colorNames[hp] + "><b>" + movetype + "</b></font>";
-                        moveStr = "<font color=" + colorNames[hp] + "><b>Hidden Power</b></font> [" + hptype + "]";
-                    }
-
-                    t.register("-" + moveStr);
-                }
-                
-                t.register("");
-
-                if (teamno != numteams) {
-                    t.register("<hr/>");
-                }
-            }
-        }
-
-        t.render(src, chan, "<br/>");
-    },
 
     // NOTE: script.resolveLocation -> DataHash.resolveLocation
     loadUtilities: function () {

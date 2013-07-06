@@ -500,4 +500,9 @@
             ChatGradient.refresh(0);
         }
     };
+    
+    // Removes all spaces from a string.
+    exports.removeSpaces = function removeSpaces(str) {
+        return str.split(" ").join("");
+    };
 }());

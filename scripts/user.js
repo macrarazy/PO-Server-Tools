@@ -17,8 +17,8 @@
         PlayerUtils = require('player-utils'),
         WatchUtils = require('watch-utils'),
         Bot = require('bot'),
-        // TODO: TierBans
-        TierBans = require('tier-bans');
+        TierBans = require('tier-bans'),
+        Prune = require('prune');
     
     // TODO: Add comments here.
     // JSESSION user constructor [user-ctor]
@@ -172,6 +172,59 @@
             }
 
         }
+    };
+    
+    // If a player is valid. Returns one of the following:
+    // "rangebanned": The player is rangebanned.
+    // "ipbanned": The player is ipbanned.
+    // "badunicode": The player has bad unicode characters in their name.
+    // "fine": Their name is fine.
+    User.isValid = function (src) {
+        var name = sys.name(src),
+            ip = sys.ip(src),
+            auth = sys.maxAuth(ip);
+        
+        var len,
+            i;
+
+        Prune.bans();
+        Prune.rangeBans();
+
+        // If they don't have auth, possibly kick them because their name is invalid or they're banned some way or another.
+        if (auth <= 0) {
+            if (DataHash.hasDataProperty("ipBans", ip)) {
+                return "ipbanned";
+            }
+            
+            for (i in DataHash.rangeBans) {
+                if (ip.substring(0, i.length) === i) {
+                    return "rangebanned";
+                }
+            }
+        }
+
+        // Kick them for bad characters, even as auth.
+        var banned = [
+            /\u0408|\u03a1|\u0430|\u0410|\u0412|\u0435|\u0415|\u041c|\u041d|\u043e|\u041e|\u0440|\u0420|\u0441|\u0421|\u0422|\u0443|\u0445|\u0425|\u0456|\u0406/, // cyrillic
+            /\u0009-\u000D|\u0085|\u00A0|\u1680|\u180E|\u2000-\u200A|\u2028|\u2029|\u2029|\u202F|\u205F|\u3000/, // space
+            /\u058A|\u05BE|\u1400|\u1806|\u2010-\u2015|\u2053|\u207B|\u208B|\u2212|\u2E17|\u2E1A|\u301C|\u3030|\u30A0|\uFE31-\uFE32|\uFE58|\uFE63|\uFF0D/, // dash
+            /\u03F3|\u0391|\u0392|\u0395|\u0396|\u0397|\u0399|\u039A|\u039C|\u039D|\u039F|\u03A1|\u03A4|\u03A5|\u03A7/, // greek
+            /\u0555|\u0585/, // armenian
+            /[\u0370-\u03ff]/, // creek
+            /[\ufff0-\uffff]/, // special
+            /\u3061|\u65532/, // other
+            /[\u0300-\u036F]/, // zalgo
+            /[\u0E00-\u0E7F]/, // thai
+            /\xA1/ // fakei
+        ];
+
+        for (i = 0, len = banned.length; i < len; ++i) {
+            if (banned[i].test(name)) {
+                return "badunicode";
+            }
+        }
+        
+        return "fine";
     };
     
     // Exports [expt]
