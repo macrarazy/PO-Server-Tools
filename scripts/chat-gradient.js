@@ -1,5 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, print, gc, version, Config, require, module, exports: true*/
+/*global sys, SESSION, script, Qt, print, gc, version,
+    Config: true, require: false, module: true, exports: true*/
 
 // File: chat-gradient.js (ChatGradient)
 // ChatGradients, previously known as ChatColorRandomizers. This is a 'fun' component and isn't required (however, stuff will break as-is).

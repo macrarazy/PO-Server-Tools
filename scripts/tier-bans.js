@@ -1,5 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, print, gc, version, Config, require, module, exports*/
+/*global sys, SESSION, script, Qt, print, gc, version,
+    Config: true, require: false, module: true, exports: true*/
 
 // File: tier-bans.js (TierBans)
 // Contains pokemon bans used by the Pokémon Online tiers. This module can be disabled by setting Config.TierBans to false.
