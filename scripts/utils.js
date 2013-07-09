@@ -71,7 +71,7 @@
         print(message);
         
         if (dump) {
-            // turns arrays/objects into strings (doesn't like functions/numbers/etc., though).
+            // turns arrays/objects/numbers into strings (doesn't like functions/etc., though).
             try {
                 dump = JSON.stringify(dump);
             } catch (e) {}
@@ -84,7 +84,7 @@
         if (isWarning) {
             print("Please note that this is a warning. The script should work fine, and reporting it is completely optional. In certain cases, reports might even be ignored.");
         } else {
-            print("Please report this at GitHub ( https://github.com/TheUnknownOne/PO-Server-Tools/issues ) or PM ( http://pokemon-online.eu/forums/private.php?do=newpm&u=15094 ). In certain cases, features might cease to function or you might have to restart the server (don't do this right away though, unless if the error message states so).");
+            print("Please report this on GitHub ( https://github.com/TheUnknownOne/PO-Server-Tools/issues ) or PM ( http://pokemon-online.eu/forums/private.php?do=newpm&u=15094 ). In certain cases, features might cease to function or you might have to restart the server (don't do this right away though, unless if the error message states so).");
         }
     };
     

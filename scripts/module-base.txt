@@ -1,0 +1,13 @@
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script, Qt, print, gc, version,
+    Config: true, require: false, module: true, exports: true*/
+
+// File: name.js
+// Description
+// No dependencies / Depends on: modulename, module2
+
+// Table of Content:
+// [id]: Description
+
+(function () {
+}());

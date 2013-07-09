@@ -19,6 +19,7 @@
     - motdSettings (Object)
     - scriptRecentLoadDate (String)
     - scriptRegisteredDate (String)
+    - activeStyle (String)
 */
 
 (function () {
@@ -124,7 +125,8 @@
             },
             floodCheck: true,
             mostPlayersOnline: 0,
-            messageCharacterLimit: 300
+            messageCharacterLimit: 300,
+            activeStyle: "default"
         });
         
         // Sets the Option.xxx values.

@@ -147,6 +147,7 @@ if (typeof require === 'undefined') {
             }
             
             try {
+                // This can access require, content, identifier, module(.exports, .path), exports, and path, aswell as anything in the global namespace.
                 eval(content);
             } catch (e) {
                 print("Fatal Error: Couldn't load module " + identifier + " (scripts/" + path + "): " + e.toString() + " on line " + e.lineNumber);
@@ -623,7 +624,6 @@ if (message === "The description of the server was changed.") {
         }
 
         if (!userObject.voice) {
-            // TODO: Options.silence
             if (Options.silence.level > playerAuth) {
                 Bot.stfuTruck(src, chan);
                 Bot.sendMessage(src, "Respect the almighty silence issued by " + Options.silence.issuer + "!", chan);
@@ -2417,129 +2417,6 @@ if (message === "The description of the server was changed.") {
             ify.ifyName = old.ifyName;
             ify.inIfy = old.inIfy;
         }
-    },
-
-    loadStyles: function () {
-        var Styles = [{
-            "name": "default",
-            "author": "Lutra",
-            "header": "<font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
-            "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
-            "pre-command": "",
-            "command-icon": "\u2022 ",
-            "command-style": ["<b>", "</b>"],
-            "command-color": "green",
-            "help": "<b><font color='orangered'>The following commands need to be entered into a channel's main chat:</font></b>",
-            "span": "<br><font size=5><B>{{Name}}</b></font>"
-        },
-        {
-            "name": "Solid",
-            "author": "TheUnknownOne",
-            "header": "<hr/><br/>",
-            "footer": "<br/><hr/>",
-            "pre-command": "",
-            "command-icon": "/",
-            "command-style": ["<b>", "</b>"],
-            "command-color": "midnightblue",
-            "help": "Enter the following commands into a channel of choice:",
-            "span": "<font size=5><b>{{Name}}</b></font>"
-        },
-        {
-            "name": "PO",
-            "author": "TheUnknownOne",
-            "header": "",
-            "footer": "",
-            "pre-command": "<font color='mediumseagreen'><timestamp/></font>",
-            "command-icon": "/",
-            "command-style": ["<b>", "</b>"],
-            "command-color": "mediumseagreen",
-            "help": "",
-            "span": "<font color=magenta><timestamp/> *** {{Name}} ***</font>"
-        },
-        {
-            "name": "New Age",
-            "author": "TheUnknownOne",
-            "header": "<br/><b><font color='darkred'>/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/</font></b><br/>",
-            "footer": "<br/><b><font color='darkred'>/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/</font></b><br/>",
-            "pre-command": "<font color=darkred><timestamp/>",
-            "command-icon": "/",
-            "command-style": ["<b>", "</b></font>"],
-            "command-color": "darkred",
-            "help": "<",
-            "span": "<font size=5 color='darkred'><b>{{Name}}</b></font>"
-        }];
-
-        StyleManager = new(function () {
-            this.styles = {};
-
-            this.loadAll = function () {
-                var x, curr, stylesCache = this.styles;
-                for (x in Styles) {
-                    curr = Styles[x];
-
-                    curr.active = false;
-                    stylesCache[curr.name.toLowerCase()] = curr; /* Correct case is stored in the style. */
-                }
-
-                var current_style = cache.get("Current_Style");
-
-                if (!stylesCache.has(current_style)) {
-                    current_style = "default";
-                }
-
-                stylesCache[current_style].active = true;
-                style = stylesCache[current_style];
-            }
-
-            this.setActiveStyle = function (src, name, chan) {
-                var m_styles = this.styles,
-                    dataToLower = name.toLowerCase();
-
-                if (!m_styles.has(dataToLower)) {
-                    botEscapeMessage(src, "The style " + name + " doesn't exist.", chan);
-                    return;
-                }
-
-                var selectedStyle = m_styles[dataToLower];
-                if (selectedStyle.active) {
-                    botMessage(src, "This style is already active.", chan);
-                    return;
-                }
-
-                style.active = false; /* the old style */
-                selectedStyle.active = true;
-
-                cache.write("Current_Style", dataToLower);
-                botEscapeAll("The style " + selectedStyle.name + " is now the active style.", 0);
-
-                style = selectedStyle;
-            }
-
-            this.styleInfo = function (src, chan) {
-                var tt = new Table_Templater("Styles", "green", "3");
-                tt.register(["Name", "Author", "Active"], true);
-
-                var m_styles = this.styles,
-                    x, curr, isActive;
-                for (x in m_styles) {
-                    curr = m_styles[x];
-
-                    if (curr.active) {
-                        isActive = "yes";
-                    } else {
-                        isActive = "no";
-                    }
-
-                    tt.register([curr.name, curr.author, isActive]);
-                }
-
-
-                tt.render(src, chan);
-            }
-
-        })();
-
-        StyleManager.loadAll();
     },
 
     loadRankIcons: function () {
