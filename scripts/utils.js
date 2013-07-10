@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+    Config: true, Script: true, require: false, module: true, exports: true*/
 
 // File: utils.js (Utils)
 // Contains utilities not specificly for players, channels, and logging.
@@ -14,30 +14,39 @@
         ChatGradient = require('chat-gradient');
     
     // Team alert shortcut
-    exports.teamAlertMessage = function teamAlertMessage(src, team, message) {
+    exports.teamAlertMessage = function (src, team, message) {
         Bot.sendMessage(src, "Team #" + (team + 1) + ": " + message);
     };
         
     // Invalid command shortcut
-    exports.invalidCommand = function invalidCommand(src, command, chan) {
+    exports.invalidCommand = function (src, command, chan) {
         Bot.escapeMessage(src, "The command " + command + " doesn't exist.", chan);
     };
         
     // No permission shortcut
-    exports.noPermissionMessage = function noPermissionMessage(src, command, chan) {
+    exports.noPermissionMessage = function (src, command, chan) {
         Bot.escapeMessage(src, "You may not use the " + command + " command.", chan);
     };
     
+    // If the character can be used to start a command.
+    exports.isCommandIndicator = function (chr) {
+        return chr === "/" || chr === "!";
+    };
+    
+    // If the character can be used to start a command that isn't stopped, meaning the message still displays.
+    // e.g. 'Name: !command' is still messaged to all players.
+    exports.isGlobalCommandIndicator = function (chr) {
+        return chr === "!";
+    };
+    
     // Escapes a string's html
-    exports.escapeHtml = function escapeHtml(msg) {
-        return (sys.escapeHtml || function (str) {
-            return str.replace(/\&/g, "&amp;").replace(/</g, "&lt;").replace(/\>/g, "&gt;");
-        })(msg);
+    exports.escapeHtml = function (msg) {
+        return msg.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     };
     
     // Formats errors nicely.
     // Message is optional.
-    exports.formatError = function formatError(message, error) {
+    exports.formatError = function (message, error) {
         var line = "";
         
         if (typeof error === "undefined") {
@@ -60,7 +69,7 @@
     // Prints a dump, a message, and the file the error originates from.
     // dump is optional and can be an object/array as well.
     // isWarning is to indicate that this is a warning, and not an error.
-    exports.panic = function panic(fileName, functionName, message, dump, isWarning) {
+    exports.panic = function (fileName, functionName, message, dump, isWarning) {
         // don't do anything if warnings are disabled and this is a warning.
         if (!Config.Warnings && isWarning) {
             return;
@@ -93,24 +102,24 @@
     exports.panic.error = false;
     
     // If the given letter is capitalized
-    exports.isCapitalLetter = function isCapitalLetter(letter) {
+    exports.isCapitalLetter = function (letter) {
         return (/[QWERTYUIOPASDFGHJKLZXCVBNM]/).test(letter);
     };
     
     // If the given letter isn't capitalized
-    exports.isNormalLetter = function isNormalLetter(letter) {
+    exports.isNormalLetter = function (letter) {
         return (/[qwertyuiopasdfghjklzxcvbnm]/).test(letter);
     };
     
-    // Returns the length of a file
-    exports.fileLength = function fileLength(file) {
+    // Returns the length of a file (in # of characters).
+    exports.fileLength = function (file) {
         return (sys.getFileContent(file) || "").length;
     };
     
     // Cuts an array starting from [entry], turning it into an array.
     // Then .join is called using [join] as argument. The result is returned (an array).
     // If the [array] isn't an array, then simply returns it back.
-    exports.cut = function cut(array, entry, join) {
+    exports.cut = function (array, entry, join) {
         if (!join) {
             join = "";
         }
@@ -123,12 +132,12 @@
     };
     
     // Returns the amount of keys in an object.
-    exports.objectLength = function objectLength(obj) {
+    exports.objectLength = function (obj) {
         return Object.keys(obj).length;
     };
     
     // Copies all values in [otherObj] to [obj]
-    exports.extend = function extend(obj, otherObj) {
+    exports.extend = function (obj, otherObj) {
         var x;
     
         for (x in otherObj) {
@@ -140,7 +149,7 @@
     
     // Checks if [name] is a valid tier and returns it with proper casing (if it does).
     // Otherwise returns false
-    exports.isValidTier = function isValidTier(name) {
+    exports.isValidTier = function (name) {
         var tiers = sys.getTierList(),
             length = tiers.length,
             cur,
@@ -162,28 +171,26 @@
     };
     
     // If [n] isn't NaN, negative, or 0
-    exports.isPositive = function isPositive(number) {
+    exports.isPositive = function (number) {
         return !isNaN(number) && number >= 0;
     };
     
     // If [n] isn't NaN, is negative, or is 0
-    exports.isNegative = function isNegative(number) {
-        return !isNaN(number) && !isPositive(number);
+    exports.isNegative = function (number) {
+        return !isNaN(number) && !exports.isPositive(number);
     };
     
     // Checks if [value] is empty.
-    exports.isEmpty = function isEmpty(value) {
+    exports.isEmpty = function (value) {
         var type = typeof value;
         
-        // don't check this strictly
-        if (value == undefined
-                || value === " ") {
+        if (!value || value === " ") {
             return true;
         }
 
         // check if it's negative or 0
         if (type === "number") {
-            return isNegative(value);
+            return exports.isNegative(value);
         }
 
         // check if there are no values
@@ -194,7 +201,7 @@
         // check if there are no keys
         // note that we already checked for null and array, so this is guaranteed to be an object
         if (type === "object") {
-            return objectLength(value) === 0;
+            return exports.objectLength(value) === 0;
         }
 
         return false;
@@ -202,13 +209,13 @@
     
     // Returns "on" if bool is true,
     // "off" if false
-    exports.toOnString = function toOnString(bool) {
+    exports.toOnString = function (bool) {
         return bool ? "on" : "off";
     };
     
     // Checks if 2 values are equal.
     // From Flight/flight.js: https://github.com/TheUnknownOne/Flight/blob/master/flight.js
-    exports.isEqual = function deepEqual(condition1, condition2) {
+    exports.isEqual = function (condition1, condition2) {
         var type1,
             type2,
             i,
@@ -291,7 +298,7 @@
             // ugh..
             
             for (i = 0; i < len; ++i) { // we already verified that they're of the same length
-                if (!deepEqual(condition1[i], condition2[i])) {
+                if (!exports.deepEqual(condition1[i], condition2[i])) {
                     return false;
                 }
             }
@@ -311,7 +318,7 @@
                     return false;
                 }
                 
-                if (!deepEqual(condition1[i], condition2[i])) {
+                if (!exports.deepEqual(condition1[i], condition2[i])) {
                     return false;
                 }
             }
@@ -321,7 +328,7 @@
                     return false;
                 }
                 
-                if (!deepEqual(condition2[i], condition1[i])) {
+                if (!exports.deepEqual(condition2[i], condition1[i])) {
                     return false;
                 }
             }
@@ -332,9 +339,9 @@
         return condition1 === condition2; // safety
     };
     
-    // Turns [time] into a string (for example, 60 becomes "Minute")
+    // Turns [time] into a string (for example, 60 becomes "1 Minute")
     // TODO: Comments
-    exports.timeToString = function timeToString(time) {
+    exports.timeToString = function (time) {
         var ret = [],
             times = [
                 [2629744, "Month"],
@@ -364,12 +371,12 @@
             return "1 Second";
         }
 
-        return fancyJoin(ret);
+        return exports.fancyJoin(ret);
     };
     
     // A more fancy looking version than the default .join
     // TODO: Comments
-    exports.fancyJoin = function fancyJoin(array) {
+    exports.fancyJoin = function (array) {
         var retstr = "",
             arrlen = array.length - 1;
 
@@ -389,7 +396,7 @@
         return retstr;
     };
     
-    exports.callEvent = function callEvent(name, args) {
+    exports.callEvent = function (name, args) {
         // this is quite rare..
         if (!script) {
             print("Runtime Error (from scripts/utils.js:callEvent): script doesn't exist.");
@@ -407,13 +414,13 @@
             // properly set the scope.
             script[name].apply(script[name], [].slice.call(arguments, 1));
         } catch (e) {
-            print("Runtime Error (from scripts/utils.js:callEvent): script." + name + " returned an error: " + formatError(e));
+            print("Runtime Error (from scripts/utils.js:callEvent): script." + name + " returned an error: " + exports.formatError(e));
         }
     };
     
     // Calls multiple events.
     // Array should be as follows: [["eventName", "eventArgument1", "eventArgumentEtc"], ["etc"]]
-    exports.callEvents = function callEvents(events) {
+    exports.callEvents = function (events) {
         var length = events.length,
             event,
             i;
@@ -421,19 +428,19 @@
         for (i = 0; i < length; ++i) {
             event = events[i];
             // defined at "exports.callEvent = function callEvent"
-            callEvent.apply(this, [event[0], [].slice.call(arguments, 1)]);
+            exports.callEvent.apply(this, [event[0], [].slice.call(arguments, 1)]);
         }
     };
     
     // Updates an object's prototype (adding/removing functions)
-    exports.updatePrototype = function updatePrototype(object, proto) {
+    exports.updatePrototype = function (object, proto) {
         if (object.prototype !== proto.prototype) {
             object.prototype = proto.prototype;
         }
     };
     
     // Finishes a sentence by adding '.' to it if the last character isn't '.', '?', '!', or ';'.
-    exports.finishSentence = function finishSentence(string) {
+    exports.finishSentence = function (string) {
         var lastCharacter = string[string.length - 1];
         
         if (!lastCharacter) {
@@ -450,7 +457,7 @@
     
     // Ensures the file [fileName] exists, and writes [defaultContent] to it if it doesn't.
     // defaultContent is optional; nothing will be written regardless if the file exists or not if it isn't passed.
-    exports.createFile = function createFile(fileName, defaultContent) {
+    exports.createFile = function (fileName, defaultContent) {
         sys.appendToFile(fileName, "");
         
         if (defaultContent && sys.getFileContent(fileName) === "") {
@@ -470,7 +477,7 @@
         but the string is, for example, "%1 %2 %3", %3 will remain untouched ("TheUnknownOne Hope you had a nice time! %3", it will be called the same way
         as illustrated above, but with the example string given in this section).
     */
-    exports.format = function format(string) {
+    exports.format = function (string) {
         var argsLength = arguments.length,
             i;
         
@@ -483,7 +490,7 @@
     };
     
     // Displays the script update message to every player.
-    exports.scriptUpdateMessage = function scriptUpdateMessage() {
+    exports.scriptUpdateMessage = function () {
         var timeToRun = (new Date()).getTime() - Script.EVAL_TIME_START,
             took = "Runtime: " + timeToRun / 1000 + " seconds.";
 
@@ -503,7 +510,7 @@
     };
     
     // Removes all spaces from a string.
-    exports.removeSpaces = function removeSpaces(str) {
+    exports.removeSpaces = function (str) {
         return str.split(" ").join("");
     };
     

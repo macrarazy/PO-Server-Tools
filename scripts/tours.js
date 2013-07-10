@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+    Config: true, require: false, module: true, exports: true, Tours: true*/
 
 // File: tours.js (Tours)
 // Contains most tournament logic, including commands.
@@ -18,9 +18,8 @@
 (function () {
     var PlayerUtils = require('player-utils'),
         Utils = require('utils'),
-        ChannelData = require('channel-data'),
+        ChannelData = require('channel-data').ChannelData,
         Bot = require('bot'),
-        // TODO: Style. Very important!
         // NOTE: Style is require('style').style, not .manager or both
         Style = require('style').style,
         DataHash = require('datahash'),
@@ -36,7 +35,7 @@
         sys.sendHtmlMessage(src, Tours.border, chan);
     }
     
-    // Table for channels with ToursChannelConfig#display === Tours.displays.clean
+    // Table for channels with ToursChannelConfig.display === Tours.displays.clean
     function tourBox(message, chan) {
         sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
     }

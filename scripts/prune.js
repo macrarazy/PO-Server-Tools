@@ -11,8 +11,8 @@
 // [expt]: Exports
 
 (function () {
-    var JSESSION = require('jsession'),
-        ChannelData = require('channel-data'),
+    var JSESSION = require('jsession').JSESSION,
+        ChannelData = require('channel-data').ChannelData,
         DataHash = require('datahash'),
         PlayerUtils = require('player-utils'),
         Bot = require('bot');

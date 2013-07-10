@@ -178,8 +178,8 @@
             auth = sys.maxAuth(sys.dbIp(trueName)) || 0;
         
         // check for PlayerPermissions (which is the main purpose of this function)
-        if ((Config.PlayerPermissions[trueNameToLower] || auth) > auth) {
-            auth = Config.PlayerPermissions[trueNameToLower];
+        if ((Config.PlayerPermissions[trueNameToLower] || -1) > auth) {
+            auth = Config.PlayerPermissions[trueNameToLower] || 0;
         }
         
         return auth;

@@ -13,7 +13,6 @@
 
 (function () {
     var ChannelData = require('channel-data').ChannelData,
-        ChannelUtils = require('channel-utils'),
         PlayerUtils = require('player-utils'),
         Utils = require('utils'),
         Tours = require('tours'),

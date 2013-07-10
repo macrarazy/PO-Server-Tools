@@ -4,13 +4,16 @@
 
 // File: channel-utils.js (ChannelUtils)
 // Contains various utilities that are for/have to do with channels
-// No dependencies.
+// Depends on: jsession, player-utils
 
 // No Table of Content.
 
 (function () {
+    var JSESSION = require('jsession').JSESSION,
+        PlayerUtils = require('player-utils');
+    
     // Creates a clickable channel link
-    exports.channelLink = function channelLink(channel) {
+    exports.channelLink = function (channel) {
         if (sys.channelId(channel) === undefined) {
             return "";
         }
@@ -19,7 +22,7 @@
     };
     
     // Returns an array of channel names.
-    exports.channelNames = function channelNames() {
+    exports.channelNames = function () {
         var channelIds = sys.channelIds(),
             chanNames = [],
             length = channelIds.length,
@@ -32,9 +35,9 @@
         return chanNames;
     };
     
-    // Adds channel links to a message
-    exports.addChannelLinks = function addChannelLinks(str) {
-        var chanNames = channelNames(),
+    // Adds channel links to a message.
+    exports.addChannelLinks = function (str) {
+        var chanNames = exports.channelNames(),
             length = chanNames.length,
             chanName,
             i;
@@ -49,5 +52,33 @@
         }
     
         return str;
+    };
+
+    // Returns a player's channel auth. If their true auth level is higher than their channel auth, that is used instead.
+    // Name can also be an id, as PlayerUtils.name is called.    
+    exports.channelAuth = function (name, chan) {
+        var channel = JSESSION.channels(chan),
+            chanAuth,
+            trueAuth,
+            preferredAuth;
+        
+        name = PlayerUtils.name(name);
+        
+        if (!channel || !channel.chanAuth) {
+            return 0;
+        }
+        
+        chanAuth = channel.chanAuth[name] || 0;
+        trueAuth = PlayerUtils.trueAuth(name);
+        
+        if (chanAuth >= trueAuth) {
+            preferredAuth = chanAuth;
+        } else if (trueAuth >= chanAuth) {
+            preferredAuth = trueAuth;
+        } else { // What?
+            preferredAuth = 0;
+        }
+        
+        return preferredAuth || 0;
     };
 }());
