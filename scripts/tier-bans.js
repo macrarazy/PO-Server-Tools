@@ -11,6 +11,7 @@
 
 (function () {
     var Utils = require('utils');
+    
     var TierBans = {},
         beasts = {
             // Raikou

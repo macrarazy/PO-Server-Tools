@@ -4,14 +4,14 @@
 
 // File: channel-data.js (ChannelData)
 // Contains ChannelData, which stores data (chan auth, etc.) of channels even after the server has shut down.
-// Depends on: utils, jsession
+// Depends on: jsession, utils
 
 // Table of Content:
 // [expt]: Exports
 
 (function () {
-    var Utils = require('utils'),
-        JSESSION = require('jsession').JSESSION;
+    var JSESSION = require('jsession').JSESSION,
+        Utils = require('utils');
     
     // ChannelData constructor
     function ChannelData(file) {

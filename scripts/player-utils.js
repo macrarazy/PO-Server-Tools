@@ -10,8 +10,8 @@
 // [mod]: Moderation utilities.
 
 (function () {
-    var JSESSION = require('jsession').JSESSION,
-        DataHash = require('datahash'),
+    var DataHash = require('datahash'),
+        JSESSION = require('jsession').JSESSION,
         Utils = require('utils');
     
     // list of default colors, used when a player doesn't have one (by the client)

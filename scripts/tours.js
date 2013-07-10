@@ -4,7 +4,7 @@
 
 // File: tours.js (Tours)
 // Contains most tournament logic, including commands.
-// Depends on: player-utils, utils, channel-data, bot, style, datahash, jsession
+// Depends on: bot, channel-data, datahash, jsession, player-utils, style, utils
 
 // Table of Content:
 // [t-c-c]: ToursChannelConfig
@@ -16,14 +16,14 @@
 // [expt]: Exports
 
 (function () {
-    var PlayerUtils = require('player-utils'),
-        Utils = require('utils'),
+    var Bot = require('bot'),
         ChannelData = require('channel-data').ChannelData,
-        Bot = require('bot'),
+        DataHash = require('datahash'),
+        JSESSION = require('jsession').JSESSION,
+        PlayerUtils = require('player-utils'),
         // NOTE: Style is require('style').style, not .manager or both
         Style = require('style').style,
-        DataHash = require('datahash'),
-        JSESSION = require('jsession').JSESSION;
+        Utils = require('utils');
     
     // Sends a line of whitespace to [src].
     function white(src, chan) {

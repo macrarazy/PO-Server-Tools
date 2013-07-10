@@ -4,7 +4,7 @@
 
 // File: channel.js (Channel)
 // Contains the JSESSION channel constructor.
-// Depends on: channel-data, channel-utils, player-utils, utils, tours, bot, options
+// Depends on: bot, channel-data, player-utils, options, tours, utils
 
 // Table of Content:
 // [chan-ctor]: JSESSION channel constructor.
@@ -12,12 +12,12 @@
 // [expt]: Exports
 
 (function () {
-    var ChannelData = require('channel-data').ChannelData,
+    var Bot = require('bot'),
+        ChannelData = require('channel-data').ChannelData,
         PlayerUtils = require('player-utils'),
-        Utils = require('utils'),
+        Options = require('options'),
         Tours = require('tours'),
-        Bot = require('bot'),
-        Options = require('options');
+        Utils = require('utils');
     
     // JSESSION channel constructor [chan-ctor]
     function Channel(id) {

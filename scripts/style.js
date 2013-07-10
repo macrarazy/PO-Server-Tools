@@ -4,15 +4,15 @@
 
 // File: style.js
 // Styles for templates, (command) lists, and various other stuff.
-// Depends on: cache
+// Depends on: cache, utils
 
 // Table of Content:
 // [smgr]: Style manager
 // [expt]: Exports
 
 (function () {
-    var Utils = require('utils'),
-        Cache = require('cache');
+    var Cache = require('cache'),
+        Utils = require('utils');
     
     // TODO: Change the default styles to something more original.
     var defaultStyles = [

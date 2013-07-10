@@ -4,15 +4,15 @@
 
 // File: template.js (Template)
 // Contains templates, used in various displays, such as command lists and tables.
-// Depends on: datahash, style, chat-gradient
+// Depends on: chat-gradient, datahash, style
 
 // Table of Content:
 // [expt]: Exports
 
 (function () {
-    var DataHash = require('datahash'),
-        Style = require('style').style,
-        ChatGradient = require('chat-gradient');
+    var ChatGradient = require('chat-gradient'),
+        DataHash = require('datahash'),
+        Style = require('style').style;
     
     var templates = {};
     

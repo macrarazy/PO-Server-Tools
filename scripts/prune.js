@@ -4,18 +4,18 @@
 
 // File: prune.js (Prune)
 // Contains utilities used to prune mutes, bans, and temp auth.
-// Depends on: jsession, channel-data, datahash, player-utils, bot
+// Depends on: bot, channel-data, datahash, jsession, player-utils
 
 // Table of Content:
 // [prune-ctor]: Prune constructor
 // [expt]: Exports
 
 (function () {
-    var JSESSION = require('jsession').JSESSION,
+    var Bot = require('bot'),
         ChannelData = require('channel-data').ChannelData,
         DataHash = require('datahash'),
-        PlayerUtils = require('player-utils'),
-        Bot = require('bot');
+        JSESSION = require('jsession').JSESSION,
+        PlayerUtils = require('player-utils');
     
     // Prune constructor [prune-ctor]
     // This constructor is empty and its only use is to be able to update the Prune prototype.

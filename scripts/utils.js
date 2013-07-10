@@ -4,14 +4,14 @@
 
 // File: utils.js (Utils)
 // Contains utilities not specificly for players, channels, and logging.
-// Depends on: bot, options, chat-gradient
+// Depends on: bot, chat-gradient, options
 
 // No Table of Content.
 
 (function () {
     var Bot = require('bot'),
-        Options = require('options'),
-        ChatGradient = require('chat-gradient');
+        ChatGradient = require('chat-gradient'),
+        Options = require('options');
     
     // Team alert shortcut
     exports.teamAlertMessage = function (src, team, message) {

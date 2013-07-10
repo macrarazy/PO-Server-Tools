@@ -4,7 +4,7 @@
 
 // File: events.js
 // Defines all events passed to the PO script engine.
-// Depends on: options, utils,
+// Depends on: bot, cache, channel-data, channel-utils, chat-gradient, datahash, jsession, options, player-utils, prune, tier-bans, tours, user, utils, watch-utils, rank-icons, mafia
 
 // Table of Content:
 
@@ -46,24 +46,26 @@
 
 (function () {
     // TODO: Mafia, RankIcons [RankIcons.getIcon]
-    var Options = require('options'),
-        Utils = require('utils'),
+    var Bot = require('bot'),
         Cache = require('cache').Cache,
         ChannelData = require('channel-data').ChannelData,
-        Prune = require('prune'),
-        JSESSION = require('jsession'),
-        WatchUtils = require('watch-utils'),
-        ChatGradient = require('chat-gradient'),
-        PlayerUtils = require('player-utils'),
         ChannelUtils = require('channel-utils'),
-        Bot = require('bot'),
+        ChatGradient = require('chat-gradient'),
         DataHash = require('datahash'),
-        RankIcons = require('rank-icons'),
-        Mafia = require('mafia'),
+        JSESSION = require('jsession'),
+        Options = require('options'),
+        PlayerUtils = require('player-utils'),
+        Prune = require('prune'),
+        TierBans = require('tier-bans'),
         Tours = require('tours').Tours,
-        tourNotification = require('tours').tourNotification,
         User = require('user'),
-        TierBans = require('tier-bans');
+        Utils = require('utils'),
+        WatchUtils = require('watch-utils'),
+        // Incomplete
+        RankIcons = require('rank-icons'),
+        Mafia = require('mafia');
+    
+    var tourNotification = require('tours').tourNotification;
     
     var Events = {};
     

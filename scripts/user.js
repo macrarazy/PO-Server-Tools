@@ -4,22 +4,22 @@
 
 // File: user.js (User)
 // Contains the JSESSION user constructor.
-// Depends on: datahash, options, jsession, utils, player-utils, watch-utils, bot, tier-bans
+// Depends on: bot, datahash, jsession, options, player-utils, prune, tier-bans, utils, watch-utils
 
 // Table of Content:
 // [user-ctor]: JSESSION user constructor.
 // [expt]: Exports
 
 (function () {
-    var DataHash = require('datahash'),
-        Options = require('options'),
+    var Bot = require('bot'),
+        DataHash = require('datahash'),
         JSESSION = require('jsession'),
-        Utils = require('utils'),
+        Options = require('options'),
         PlayerUtils = require('player-utils'),
-        WatchUtils = require('watch-utils'),
-        Bot = require('bot'),
+        Prune = require('prune'),
         TierBans = require('tier-bans'),
-        Prune = require('prune');
+        Utils = require('utils'),
+        WatchUtils = require('watch-utils');
     
     // TODO: Add comments here.
     // JSESSION user constructor [user-ctor]
