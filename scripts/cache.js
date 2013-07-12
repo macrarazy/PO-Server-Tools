@@ -20,6 +20,7 @@
     - scriptRecentLoadDate (String)
     - scriptRegisteredDate (String)
     - activeStyle (String)
+    - activeIcons (String)
 */
 
 (function () {
@@ -126,7 +127,8 @@
             floodCheck: true,
             mostPlayersOnline: 0,
             messageCharacterLimit: 300,
-            activeStyle: "default"
+            activeStyle: "default",
+            activeIcons: "default"
         });
         
         // Sets the Option.xxx values.

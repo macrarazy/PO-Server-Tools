@@ -45,7 +45,7 @@
 // [evt-beforePlayerBan] beforePlayerBan event
 
 (function () {
-    // TODO: Mafia, RankIcons [RankIcons.getIcon]
+    // TODO: Mafia
     var Bot = require('bot'),
         Cache = require('cache').Cache,
         ChannelData = require('channel-data').ChannelData,
@@ -56,13 +56,13 @@
         Options = require('options'),
         PlayerUtils = require('player-utils'),
         Prune = require('prune'),
+        RankIcons = require('rank-icons'),
         TierBans = require('tier-bans'),
         Tours = require('tours').Tours,
         User = require('user'),
         Utils = require('utils'),
         WatchUtils = require('watch-utils'),
         // Incomplete
-        RankIcons = require('rank-icons'),
         Mafia = require('mafia');
     
     var tourNotification = require('tours').tourNotification;
@@ -626,6 +626,7 @@
             return;
         }
         
+        // TODO: Add this
 /*        if ( DataHash.megausers.has(srcname) && c == staffchannel || DataHash.evalops.has(srcname) && c == scriptchannel) {
             return;
         }
@@ -2148,123 +2149,6 @@
             ify.inIfy = old.inIfy;
         }
     },
-
-    loadRankIcons: function () {
-        var RankIcons = [{
-            "name": "default",
-            "author": "Astruvis",
-            "User": "@",
-            "Mod": "+",
-            "Admin": "~",
-            "Owner": "\u2248"
-        },
-        {
-            "name": "Pokémon Online",
-            "author": "TheUnknownOne",
-            "User": "",
-            "Mod": "</b>+<i><b>",
-            "Admin": "</b>+<i><b>",
-            "Owner": "</b>+<i><b>"
-        },
-        {
-            "name": "PO Advanced",
-            "author": "TheUnknownOne",
-            "User": "",
-            "Mod": "</b>\xBB<i><b>",
-            "Admin": "</b>\xBB<i><b>",
-            "Owner": "</b>\xBB<i><b>"
-        },
-        {
-            "name": "Pokeballs",
-            "author": "TheUnknownOne",
-            "User": "<img src='Themes/Classic/Client/uAvailable.png' width='15'>",
-            "Mod": "<img src='Themes/Classic/Client/mAvailable.png' width='15'>",
-            "Admin": "<img src='Themes/Classic/Client/aAvailable.png' width='15'>",
-            "Owner": "<img src='Themes/Classic/Client/oAvailable.png' width='15'>"
-        },
-        {
-            "name": "IRC",
-            "author": "TheUnknownOne",
-            "User": "",
-            "Mod": "@",
-            "Admin": "%",
-            "Owner": "~"
-        }];
-
-
-        IconManager = new(function () {
-            this.icons = {};
-
-            this.loadAll = function () {
-                var x, curr, iconCache = this.icons;
-                for (x in RankIcons) {
-                    curr = RankIcons[x];
-
-                    curr.active = false;
-                    iconCache[curr.name.toLowerCase()] = curr; // Correct case is stored in the rank icon pack.
-                }
-
-                var current_icons = cache.get("Current_Icons");
-
-                if (!iconCache.has(current_icons)) {
-                    current_icons = "default";
-                }
-
-                iconCache[current_icons].active = true;
-                Icons = iconCache[current_icons];
-            }
-
-            this.setActiveIcons = function (src, name, chan) {
-                var m_icons = this.icons,
-                    dataToLower = name.toLowerCase();
-
-                if (!m_icons.has(dataToLower)) {
-                    botEscapeMessage(src, "The rank icon pack " + name + " doesn't exist.", chan);
-                    return;
-                }
-
-                var selectedIcons = m_icons[dataToLower];
-                if (selectedIcons.active) {
-                    botMessage(src, "This rank icon pack is already active.", chan);
-                    return;
-                }
-
-                Icons.active = false; // the old rank icon pack
-                selectedIcons.active = true;
-
-                cache.write("Current_Icons", dataToLower);
-                botEscapeAll("The rank icon pack " + selectedIcons.name + " is now the active rank pack.", 0);
-
-                Icons = selectedIcons;
-            }
-
-            this.iconInfo = function (src, chan) {
-                var tt = new Table_Templater("Rank Icons", "green", "3");
-                tt.register(["Name", "Author", "Active"], true);
-
-                var m_icons = this.icons,
-                    x, curr, isActive;
-                for (x in m_icons) {
-                    curr = m_icons[x];
-
-                    if (curr.active) {
-                        isActive = "yes";
-                    } else {
-                        isActive = "no";
-                    }
-
-                    tt.register([curr.name, curr.author, isActive]);
-                }
-
-
-                tt.render(src, chan);
-            }
-
-        })();
-
-        IconManager.loadAll();
-    },
-
     loadPokemonStats: function () {
         try {
             if (typeof Poke_Data == 'undefined') { // Only do this once! Takes too much time!
