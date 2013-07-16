@@ -262,6 +262,7 @@
     
     exports.authToString.imageIdentifier = true;
     
+    // Returns a player's status image (which can be battle, available, or away).
     exports.statusImage = function (src) {
         var status = "Away",
             isAway,
@@ -288,6 +289,51 @@
         return "<img src='Themes/Classic/Client/" + authIdentifier + status + ".png'>";
     };
     
+    (function () {
+        // Helper functions for playerStatus
+        function offline() {
+            return "<small style='color: red; font-weight: bold;'>Offline</small>";
+        }
+
+        function online() {
+            return "<small style='color: green; font-weight: bold;'>Online</small>";
+        }
+        
+        function lastOn(name) {
+            var lastOnline = sys.dbLastOn(name);
+
+            if (!lastOnline) {
+                lastOnline = "Unknown";
+            }
+
+            return "<small style='color: blue; font-weight: bold; font-style: italic;'>Last Online:</small> " + lastOnline;
+        }
+        
+        function player(id, name) {
+            return "<b style='color: " + exports.trueColor(id) + "'>" + Utils.escapeHtml(name) + "</b>";
+        }
+            
+        // Return's a player's status (when they were last online, if they are even online, their name, and the status image).
+        exports.playerStatus = function (name) {
+            // Allows us to accept ids.
+            name = exports.name(name);
+            
+            var id = sys.id(name) || -1,
+                auth = sys.dbAuth(name),
+                ip = sys.dbIp(name);
+            
+            if (!ip) {
+                return "<img src='Themes/Classic/Client/UAway.png'>" + player(-1, name) + " " + offline() + " " + lastOn(name);
+            }
+    
+            if (!id) {
+                return exports.statusImage(name) + " " + player(-1, name) + " " + offline() + " " + lastOn(name);
+            }
+            
+            return exports.statusImage(id) + " " + player(id, name) + " " + online() + " <small>(<b style='color: blue'>Player ID: " + id + "</b>)</small>";
+        };
+    }());
+    
     // Puts a player in multiple channels.
     exports.pushChannels = function (src, channels) {
         var len = channels.length,
@@ -299,8 +345,14 @@
     };
     
     // If the player is on localhost (127.0.0.1)
-    exports.isServerHost = function isServerHost(idOrNameOrIp) {
+    exports.isServerHost = function (idOrNameOrIp) {
         return exports.ip(idOrNameOrIp) === "127.0.0.1";
+    };
+    
+    // If tar is the same player as src (checks with IPs).
+    exports.isSamePlayer = function (src, tar) {
+        // Allows us to accept ids and names.
+        return exports.ip(src) === exports.ip(tar);
     };
     
     // Returns the amount of authorities on the server.
@@ -326,6 +378,26 @@
         }
 
         return count;
+    };
+    
+    // Returns a list of online players' ids that have authority.
+    // Doesn't check for PlayerPermission players (on purpose).
+    exports.authIds = function () {
+        var auths = sys.dbAuths(),
+            ids = [],
+            id,
+            len,
+            i;
+        
+        for (i = 0, len = auths.length; i < len; i += 1) {
+            id = sys.id(auths[i]);
+            
+            if (id) {
+                ids.push(id);
+            }
+        }
+        
+        return ids;
     };
     
     // Moderation utilities [mod]

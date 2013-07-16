@@ -234,7 +234,7 @@
         
     // [evt-beforeNewMessage] beforeNewMessage event
     // Called when: A message is outputted to stdout.
-    // Logs script warnings, errors, gives the server host an eval command, and calls script.init if the scripts were (re)loaded.
+    // Logs script warnings, errors, gives the server host an eval command, and calls Events.init if the scripts were (re)loaded.
     Events.beforeNewMessage = function (message) {
         var result,
             mainChan;
@@ -298,7 +298,7 @@
         }
 
         if (message === "Script Check: OK") {
-            script.init();
+            Events.init();
             Utils.scriptUpdateMessage();
             return;
         }
@@ -648,7 +648,7 @@
 
         // Bail and panic if the channel doesn't exist.
         if (channel === undefined) {
-            Utils.panic("scripts.js", "event[afterChannelCreated]", "JSESSION does not contain channel " + chan + " (" + name + ").", JSESSION.ChannelData, Utils.panic.error);
+            Utils.panic("events.js", "Events.afterChannelCreated", "JSESSION does not contain channel " + chan + " (" + name + ").", JSESSION.ChannelData, Utils.panic.error);
             return;
         }
         
@@ -992,11 +992,6 @@
     // Allows [src] to watch [battler1]'s and [battler2]'s battle if they are currently playing
     // a tournament finals match (even when Disallow Spectators is on).
     Events.attemptToSpectateBattle = function (src, battler1, battler2) {
-        var Bot = require('bot'),
-            Utils = require('utils'),
-            Tours = require('tours').Tours,
-            JSESSION = require('jsession').JSESSION;
-        
         var channelIds = sys.channelIds(),
             length = channelIds.length,
             tour,
@@ -1004,10 +999,10 @@
 
         for (i = 0; i < length; ++i) {
             // ensure we have an object
-            tour = (JSESSION.channels(channelIds[i]) || {tour: "NoTour"}).tour || {tour: "NoTour"};
+            tour = JSESSION.channels(channelIds[i]).tour || "NoTour";
             
             if (tour === "NoTour") {
-                Utils.panic("scripts.js", "event[attemptToSpectateBattle]", "No tour object exists for channel " + sys.channel(channelIds[i]) + " (" + channelIds[i] + ").", JSESSION.channels(channelIds[i]), Utils.panic.warning);
+                Utils.panic("events.js", "Events.attemptToSpectateBattle", "No tour object exists for channel " + sys.channel(channelIds[i]) + " (" + channelIds[i] + ").", JSESSION.channels(channelIds[i]), Utils.panic.warning);
                 continue;
             }
             
@@ -1199,8 +1194,6 @@
     // Called when: A player toggles their away status.
     // Logs the player's away status to Guardtower.
     Events.afterPlayerAway = function (src, mode) {
-        var WatchUtils = require('watch-utils');
-        
         WatchUtils.logPlayerEvent(src, (mode ? "Now idling." : "Now active and ready for battles"));
     };
     
@@ -1733,10 +1726,6 @@
         // kick -> PlayerUtils.kickAll
         
         // massKick -> PlayerUtils.massKick
-        self = function (src, tarname) {
-            return sys.ip(src) == sys.dbIp(tarname);
-        }
-
         function clink($1) {
             return ChannelLink(sys.channel($1));
         }
@@ -1832,22 +1821,7 @@
                 return true;
             }
         }
-
-        auths = function () {
-            var ids = [],
-                list = sys.dbAuths(),
-                i, id;
-
-            for (i in list) {
-                id = sys.id(list[i]);
-                if (id !== undefined) {
-                    ids.push(id);
-                }
-            }
-
-            return ids;
-        }
-
+        
         authByLevel = function () {
             var hash = {},
                 list = sys.dbAuths(),
@@ -1904,101 +1878,8 @@
 
             return false;
         }
-
-        function offline() {
-            return "<small>Offline</small>".fontcolor("red").bold();
-        }
-
-        function online() {
-            return "<small>Online</small>".fontcolor("green").bold();
-        }
-
-        function lastOn(name) {
-            var lastOnline = sys.dbLastOn(name);
-
-            if (lastOnline == undefined) {
-                lastOnline = "Unknown";
-            }
-
-            return "<b><font color='blue' size='2'>Last Online:</font></b> " + lastOnline.italics();
-        }
-
-        player = function (user) {
-            if (typeof user == "string") {
-                return "<b><font color='" + script.namecolor(sys.id(user)) + "'>" + html_escape(user.name()) + "</font></b>";
-            }
-
-            return "<b><font color='" + script.namecolor(user) + "'>" + html_escape(sys.name(user)) + "</font></b>";
-        }
-
-        playerInfo = function (name) {
-            var id = sys.id(name),
-                auth = sys.dbAuth(name);
-
-            if (sys.dbIp(name) == undefined) {
-                var status = online(),
-                    icon = AuthIMG(id);
-                if (id == undefined) {
-                    status = offline();
-                }
-                return "<img src='Themes/Classic/Client/" + icon + ".png'> " + player(name) + " " + status + " " + lastOn(name);
-            }
-
-            if (id == undefined) {
-                return AuthIMG(name) + " " + player(name) + " " + offline() + " " + lastOn(name);
-            }
-
-            return AuthIMG(id) + " " + player(name) + " " + online() + " <small>(<font color='blue'><b>Player ID: " + id + "</b></font>)</small>";
-        }
-
-        formatPoke = function (num, isShiny, fromBack, Gender, generation) {
-            if (!isNonNegative(num)) {
-                if (sys.pokeNum(num) == undefined) {
-                    return "<img src='pokemon:0'>";
-                }
-                else {
-                    num = sys.pokeNum(num);
-                }
-            }
-
-            var shiny = false,
-                back = false,
-                gender = "neutral",
-                gen = 5;
-
-            if (isShiny) {
-                shiny = true;
-            }
-
-            if (fromBack) {
-                back = true;
-            }
-
-            if (Gender != undefined) {
-                Gender = Number(Gender);
-
-                gender = {
-                    0: "neutral",
-                    1: "male",
-                    2: "female"
-                }[Gender] || "neutral";
-            }
-
-
-            if (generation == 2 && pokenum > 151 && pokenum < 252) {
-                gen = 2;
-            }
-
-            if (generation == 3 && pokenum > 251 && pokenum < 387) {
-                gen = 3;
-            }
-
-            if (generation == 3 && pokenum > 386 && pokemon < 494) {
-                gen = 4;
-            }
-
-            return "<img src='pokemon:" + num + "&shiny=" + shiny + "&back=" + back + "&gender=" + gender + "&gen=" + gen + "'>";
-        }
+        
+        
 
         stringToTime = function (str, time) {
             if (time == "") {

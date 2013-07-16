@@ -605,4 +605,43 @@
 
         return tierClauses;
     };
+    
+    // Returns a pokemon's sprite (HTML).
+    exports.pokemonSprite = function (num, shiny, back, genderId, gen) {
+        // Allows us to accept pokemon names too.
+        if (typeof num === "string") {
+            // Unknown pokemon.
+            if (!sys.pokeNum(num)) {
+                return "<img src='pokemon:0'>";
+            }
+            
+            num = sys.pokeNum(num);
+        }
+
+        var gender = "neutral";
+        
+        // Defaults the gen to 5.
+        gen = gen || 5;
+        
+        if (gen < 1 || gen > 5) {
+            gen = 5;
+        }
+        
+        if (genderId) {
+            gender = {
+                0: "neutral",
+                1: "male",
+                2: "female"
+            }[parseInt(genderId, 10)] || "neutral";
+        }
+
+        // Makes sure the gen and pokemon is in boundaries.
+        if ((gen === 2 && num > 251)
+                || (gen === 3 && num > 386)
+                || (gen === 4 && num > 493)) {
+            gen = 5;
+        }
+
+        return "<img src='pokemon:" + num + "&shiny=" + shiny + "&back=" + back + "&gender=" + gender + "&gen=" + gen + "'>";
+    };
 }());

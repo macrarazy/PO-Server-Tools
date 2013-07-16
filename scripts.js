@@ -219,7 +219,7 @@ if (typeof require === 'undefined') {
     });
     */
     
-    JSESSION.identifyScriptAs("TheUnknownOne's Server Script " + Script.SCRIPT_VERSION);
+    JSESSION.identifyScriptAs("TheUnknownOne's Server Script " + Script.version);
     JSESSION.registerUser(POUser);
     JSESSION.registerChannel(POChannel);
     JSESSION.refill();
