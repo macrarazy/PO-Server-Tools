@@ -90,7 +90,7 @@
     // IMPORTANT: Returns a team id, not a team object (or anything cool like that).
     // Returns 0 (the first team) if Config.NoCrash is true.
     // Returns -1 if a player doesn't have a team for that tier.
-    exports.firstTeamForTier = function firstTeamForTier(id, tier) {
+    exports.firstTeamForTier = function (id, tier) {
         var tierToLower = (tier || "").toLowerCase(),
             teamCount = sys.teamCount(id),
             i;
@@ -111,7 +111,7 @@
     
     // If the given player has a team for the specific tier.
     // If tier is not specified, then if the player has any teams at all will be returned.
-    exports.hasTeamForTier = function hasTeamForTier(id, tier) {
+    exports.hasTeamForTier = function (id, tier) {
         if (!tier) {
             return sys.teamCount(id) !== 0;
         }
@@ -121,7 +121,7 @@
     
     // Returns a player's true color
     // So it doesn't appear to be black if the player has none (in html messages)
-    exports.trueColor = function trueColor(src) {
+    exports.trueColor = function (src) {
         var defaultColor = sys.getColor(src);
         
         // when the player hasn't set their own color
@@ -133,7 +133,7 @@
     };
     
     // Capitalizes a name (even when the player is offline), or returns it (id).
-    exports.name = function name(nameOrId) {
+    exports.name = function (nameOrId) {
         if (typeof nameOrId === 'string') {
             return DataHash.correctNames[nameOrId.toLowerCase()] || sys.name(nameOrId) || nameOrId;
         } else if (typeof nameOrId === 'number') {
@@ -147,16 +147,16 @@
     };
     
     // Formats a player's name with html. Quite fancy.
-    exports.formatName = function formatName(nameOrId) {
+    exports.formatName = function (nameOrId) {
         // fixes the case, and lets us accept ids
-        var trueName = name(nameOrId);
+        var trueName = exports.name(nameOrId);
         
         // simply return a string. still a pain to write manually though.
-        return "<b style='color: " + trueColor(trueName) + "'>" + trueName + "</b>";
+        return "<b style='color: " + exports.trueColor(trueName) + "'>" + trueName + "</b>";
     };
     
     // Returns a player's name. Accepts an id, name, or the ip itself (if passed)
-    exports.ip = function ip(idOrNameOrIp) {
+    exports.ip = function (idOrNameOrIp) {
         // since both names and ips are strings, return idOrNameOrIp if sys.dbIp returns undefined
         if (typeof idOrNameOrIp === 'string') {
             return sys.dbIp(idOrNameOrIp) || idOrNameOrIp;
@@ -170,10 +170,27 @@
         return "0.0.0.0";
     };
     
+    exports.rangeIp = function (ip, parts) {
+        // We use exports.ip to let us accept ids, names, or an actual ip.
+        var rangeIp = exports.ip(ip).split(".");
+        
+        // by default, we use 2 parts (for example): [x.xx].xxx.xxx
+        parts = parts || 2;
+        
+        if (parts < 1 || parts > 4) {
+            parts = 2;
+        }
+        
+        // Cut off any part after the wanted amount of parts/subaddresses.
+        rangeIp.splice(parts, 4);
+        return rangeIp.join(".");
+    };
+    
+    
     // Returns the true authority level of a player (takes PlayerPermissions and maxAuth in account)
-    exports.trueAuth = function trueAuth(nameOrId) {
+    exports.trueAuth = function (nameOrId) {
         // fixes the case, and lets us accept ids
-        var trueName = name(nameOrId),
+        var trueName = exports.name(nameOrId),
             trueNameToLower = trueName.toLowerCase(),
             auth = sys.maxAuth(sys.dbIp(trueName)) || 0;
         
@@ -186,7 +203,7 @@
     };
     
     // returns an array of all ids of [ip] (everyone logged in with [ip])
-    exports.ipIds = function ipIds(ip) {
+    exports.ipIds = function (ip) {
         var playerIds = sys.playerIds(),
             ids = [],
             length = playerIds.length,
@@ -207,7 +224,7 @@
     // Returns the string name of the auth level [auth].
     // If img is true (PlayerUtils.authToString.imageIdentifier), returns the image identifier (the one used in po's default theme files)
     // of that auth level.
-    exports.authToString = function authToString(auth, img) {
+    exports.authToString = function (auth, img) {
         var auths = {
             'true': {
                 0: "User",
@@ -245,7 +262,7 @@
     
     exports.authToString.imageIdentifier = true;
     
-    exports.statusImage = function statusImage(src) {
+    exports.statusImage = function (src) {
         var status = "Away",
             isAway,
             authIdentifier;
@@ -253,11 +270,11 @@
         // The player is most likely online if this is the case.
         if (typeof src === "string") {
             // This gets the player's auth's image identifier.
-            return "<img src='Themes/Classic/Client/" + authToString(sys.dbAuth(src), true) + "Away.png'>";
+            return "<img src='Themes/Classic/Client/" + exports.authToString(sys.dbAuth(src), true) + "Away.png'>";
         }
         
         isAway = sys.away(src);
-        authIdentifier = authToString(sys.auth(src), true);
+        authIdentifier = exports.authToString(sys.auth(src), true);
         
         if (sys.battling(src)) {
             status = "Battle";
@@ -272,7 +289,7 @@
     };
     
     // Puts a player in multiple channels.
-    exports.pushChannels = function pushChannels(src, channels) {
+    exports.pushChannels = function (src, channels) {
         var len = channels.length,
             i;
 
@@ -283,14 +300,39 @@
     
     // If the player is on localhost (127.0.0.1)
     exports.isServerHost = function isServerHost(idOrNameOrIp) {
-        return ip(idOrNameOrIp) === "127.0.0.1";
+        return exports.ip(idOrNameOrIp) === "127.0.0.1";
+    };
+    
+    // Returns the amount of authorities on the server.
+    // src is optional. If specified, the player will be checked if they're owner or above.
+    // if they are, they're allowed to know how many invisible auth are there as well.
+    // This does not include PlayerPermission auths on purpose.
+    exports.authCount = function (src) {
+        var auths = sys.dbAuths(),
+            count = 0,
+            len,
+            i;
+        
+        // Just return the complete amount of auths if they're owner or above, or if the argument isn't specified.
+        if (!src || (src && exports.trueAuth(src) > 2)) {
+            return auths.length;
+        }
+        
+        for (i = 0, len = auths.length; i < len; i += 1) {
+            // If they're owner or below (visible), add them.
+            if (sys.dbAuth(auths[i]) <= 3) {
+                count += 1;
+            }
+        }
+
+        return count;
     };
     
     // Moderation utilities [mod]
     // TODO: Make these log with WatchUtils
     
     // Kicks a player.
-    exports.kick = function kick(id) {
+    exports.kick = function (id) {
         // They have already been kicked..
         if (!sys.loggedIn(id)) {
             return;
@@ -301,12 +343,12 @@
     };
     
     // Kicks all of player's ids.
-    exports.kickAll = function kickAll(playerIp) {
+    exports.kickAll = function (playerIp) {
         // Get the IP. This allows us to accept ids, names, and regular ips as well.
-        var trueIp = ip(playerIp);
+        var trueIp = exports.ip(playerIp);
         
         // Get all their alts.
-        ipIds(trueIp).forEach(function (id) {
+        exports.ipIds(trueIp).forEach(function (id) {
             // They have already been kicked..
             if (!sys.loggedIn(id)) {
                 return;
@@ -318,7 +360,7 @@
     };
     
     // Disconnects (kick but allow them to reconnect with their data) a player.
-    exports.disconnect = function disconnect(id) {
+    exports.disconnect = function (id) {
         // They have already been disconnected..
         if (!sys.loggedIn(id)) {
             return;
@@ -329,12 +371,12 @@
     };
     
     // Disconnects (kick but allow them to reconnect with their data) all of player's ids.
-    exports.disconnectAll = function disconnectAll(playerIp) {
+    exports.disconnectAll = function (playerIp) {
         // Get the IP. This allows us to accept ids, names, and regular ips as well.
-        var trueIp = ip(playerIp);
+        var trueIp = exports.ip(playerIp);
         
         // Get all their alts.
-        ipIds(trueIp).forEach(function (id) {
+        exports.ipIds(trueIp).forEach(function (id) {
             // They have already been disconnected..
             if (!sys.loggedIn(id)) {
                 return;
@@ -351,7 +393,7 @@
     // by: The player who issued the mute.
     // reason: The reason of the mute.
     // time: Time the mute lasts in seconds.
-    exports.mute = function mute(opts) {
+    exports.mute = function (opts) {
         if (!opts.ip) {
             Utils.panic("scripts/player-utils.js", "mute", "IP is not specified.", opts, Utils.panic.warning);
             return;
@@ -378,37 +420,37 @@
         
         // mute all of [opts.ip]'s names that are currently online.
         // note that we only have to set .muted (this prevents them from talking, until their mute has expired). This value is set after the log back in (because we mute their ip) automatically (if they're still muted), so we don't have to do any mumbo jumbo.
-        ipIds(opts.ip).forEach(function (id) {
+        exports.ipIds(opts.ip).forEach(function (id) {
             JSESSION.users(id).muted = true;
         });
     };
     
     // Permanently bans a player (and kick them).
     // NOTE: This is done quietly.
-    exports.ban = function ban(name) {
+    exports.ban = function (name) {
         // Since there is basically nothing to customise atm, this is simply a small wrapper (though it does kick players under the same alt.)
         sys.ban(name);
         
-        kickAll(sys.ip(name));
+        exports.kickAll(sys.ip(name));
     };
     
     // Temporarly bans a player.
     // NOTE: Time is in minutes.
     // NOTE: This is done quietly.
-    exports.tempBan = function tempBan(name, time) {
+    exports.tempBan = function (name, time) {
         // Since there is basically nothing to customise atm (kick is done automatically), this is simply a small wrapper (though it does kick players under the same alt.)
         // Ensure time is an integer.
         time = Math.round(time);
         
         sys.tempBan(name, time);
         
-        kickAll(sys.ip(name));
+        exports.kickAll(sys.ip(name));
     };
     
     // If a player is banned.
-    exports.isBanned = function isBanned(playerName) {
+    exports.isBanned = function (playerName) {
         // Return their name. This allows us to accept ids as well.
-        var trueName = name(playerName).toLowerCase(),
+        var trueName = exports.name(playerName).toLowerCase(),
             bans = sys.banList();
         
         return bans.indexOf(trueName) !== -1;
@@ -417,12 +459,12 @@
     // Returns the amount of seconds name is temporary banned for.
     // This > sys.dbTempBanTime.
     // NOTE: Unlike sys.dbTempBanTime, this returns 0 if the player isn't banned.
-    exports.tempBanTime = function tempBanTime(playerName) {
+    exports.tempBanTime = function (playerName) {
         // Return their name. This allows us to accept ids as well.
-        var trueName = name(playerName).toLowerCase();
+        var trueName = exports.name(playerName).toLowerCase();
         
         // If they aren't banned, return 0.
-        if (!isBanned(trueName)) {
+        if (!exports.isBanned(trueName)) {
             return 0;
         }
         
@@ -432,7 +474,7 @@
     
     // Creates an importable [array] for src's team, teamId.
     // Importables will have some goodies that will break them for use with PO, disable this with a third argument that is true.
-    exports.teamImportable = function teamImportable(src, teamId, compatible) {
+    exports.teamImportable = function (src, teamId, compatible) {
         var importable = [],
             maxTeamPokemon = 6,
             pokemonStatsCount = 6,

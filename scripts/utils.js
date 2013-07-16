@@ -13,6 +13,18 @@
         ChatGradient = require('chat-gradient'),
         Options = require('options');
     
+    var battleClauses = [
+        [256, "Self-KO Clause"],
+        [128, "Wifi Clause"],
+        [64, "Species Clause"],
+        [32, "No Timeout"],
+        [16, "Challenge Cup"],
+        [8, "Item Clause"],
+        [4, "Disallow Spects"],
+        [2, "Freeze Clause"],
+        [1, "Sleep Clause"]
+    ];
+            
     // Team alert shortcut
     exports.teamAlertMessage = function (src, team, message) {
         Bot.sendMessage(src, "Team #" + (team + 1) + ": " + message);
@@ -34,14 +46,36 @@
     };
     
     // If the character can be used to start a command that isn't stopped, meaning the message still displays.
-    // e.g. 'Name: !command' is still messaged to all players.
+    // e.g. 'Name: !command' is still sent to all players.
     exports.isGlobalCommandIndicator = function (chr) {
         return chr === "!";
+    };
+    
+    // If the message shouldn't trigger a command.
+    exports.shouldIgnoreIndicator = function (message) {
+        // It isn't a command if it's just, say, "!".
+        if (!exports.isCommandIndicator(message.charAt(0))
+                || message.length === 1) {
+            return true;
+        }
+        
+        // "//", "!!", "/*", "!*"
+        return ["/", "!", "*"].indexOf(message.charAt(1)) !== -1;
     };
     
     // Escapes a string's html
     exports.escapeHtml = function (msg) {
         return msg.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    };
+    
+    // Strips HTML tags from a message.
+    exports.stripHtml = function (str) {
+        return str.replace(/<\/?[^>]*>/g, "");
+    };
+
+    // Escapes a string for usage in regular expressions (constructed with the RegExp constructor).
+    exports.escapeRegExp = function (str) {
+        return str.replace(/([\.\\\+\*\?\[\^\]\$\(\)])/g, '\\$1');
     };
     
     // Formats errors nicely.
@@ -100,6 +134,11 @@
     // Makes the isWarning argument more readable.
     exports.panic.warning = true;
     exports.panic.error = false;
+    
+    // Capitalizes a message.
+    exports.capitalize = function (message) {
+        return message.charAt(0).toUpperCase() + message.substr(1);
+    };
     
     // If the given letter is capitalized
     exports.isCapitalLetter = function (letter) {
@@ -211,6 +250,13 @@
     // "off" if false
     exports.toOnString = function (bool) {
         return bool ? "on" : "off";
+    };
+    
+    // If something is on.
+    exports.isOn = function (string) {
+        var check = string.toLowerCase().indexOf;
+        
+        return check("yes") !== -1 || check("true") !== -1 || check("on") !== -1;
     };
     
     // Checks if 2 values are equal.
@@ -491,17 +537,17 @@
     
     // Displays the script update message to every player.
     exports.scriptUpdateMessage = function () {
-        var timeToRun = (new Date()).getTime() - Script.EVAL_TIME_START,
-            took = "Runtime: " + timeToRun / 1000 + " seconds.";
+        var timeToRun = ((new Date()).getTime() - Script.loadStart),
+            took = "Load time: " + timeToRun / 1000 + " seconds.";
 
-        Script.EVAL_TIME_START = (new Date()).getTime();
+        Script.loadStart = (new Date()).getTime();
 
         if (Options.isStartingUp) {
             print("\t\tServer Script has been loaded.\t\t\n\t\tEvaluation Time: " + timeToRun / 1000 + " seconds.\t\t");
             return;
         }
         
-        sys.sendHtmlAll('<center><table border="1" width="50%" style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><td align="center"><img src="pokemon:493&back=true" align="left"><img src="pokemon:385&back=false" align="right"><font size="4"><b><br/> ' + Options.serverName + ' - Scripts <br/></b></font> Scripts have been updated! <br/> ' + took + ' <br/> ~ ' + Script.SCRIPT_VERSION + ' ~ <br/></td></tr></table></center>', 0);
+        sys.sendHtmlAll('<center><table border="1" width="50%" style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><td align="center"><img src="pokemon:493&back=true" align="left"><img src="pokemon:385&back=false" align="right"><font size="4"><b><br/> ' + Options.serverName + ' - Scripts <br/></b></font> Scripts have been updated! <br/> ' + took + ' <br/> ~ ' + Script.version + ' ~ <br/></td></tr></table></center>', 0);
         
         // Refresh the gradient in the main channel, if it uses one.
         if (ChatGradient.hasChannel(0)) {
@@ -514,9 +560,9 @@
         return str.split(" ").join("");
     };
     
-    // Sorts an object alphabetically.
-    // NOTE: Doesn't copy over non-enumerable objects and doesn't copy deep.
-    exports.sortObject = function (obj) {
+    // Sorts an object alphabetically. sortArrays is an option that also sorts the arrays in the object (optional).
+    // NOTE: Doesn't copy over non-enumerable objects.
+    exports.sortObject = function (obj, sortArrays) {
         var keys = Object.keys(obj),
             sortedObject = {},
             key,
@@ -527,9 +573,36 @@
 
         for (i = 0; i < len; i += 1) {
             key = keys[i];
+            
+            if (typeof obj[key] === 'object' && !Array.isArray(obj[key]) && obj[key] !== null) {
+                obj[key] = exports.sortObject(obj[key]);
+            } else if (sortArrays && Array.isArray(obj[key])) {
+                obj[key].sort();
+            }
+            
             sortedObject[key] = obj[key];
         }
 
         return sortedObject;
+    };
+    
+    // Returns a human readable list of clauses returned by sys.getClauses(tier)
+    // NOTE: The array isn't pretty printed.
+    exports.clauseList = function (clauses) {
+        var tierClauses,
+            clause,
+            len,
+            i;
+        
+        for (i = 0, len = battleClauses.length; i < len; i += 1) {
+            clause = battleClauses[i];
+            
+            if (clauses >= clause[0]) {
+                tierClauses.push(clause[1]);
+                clauses -= clause[0];
+            }
+        }
+
+        return tierClauses;
     };
 }());

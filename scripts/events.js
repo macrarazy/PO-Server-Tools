@@ -3,12 +3,16 @@
     global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: events.js
-// Defines all events passed to the PO script engine.
+// Defines all events passed to the PO script engine, along with some custom ones.
 // Depends on: bot, cache, channel-data, channel-utils, chat-gradient, datahash, jsession, options, player-utils, prune, tier-bans, tours, user, utils, watch-utils, rank-icons, mafia
 
 // Table of Content:
 
 // [sys-evts]: System events
+// [evt-loadScript]: loadScript event
+// [evt-unloadScript]: loadScript event
+// [evt-switchError]: switchError event
+// [evt-warning]: warning event
 // [evt-serverStartUp]: serverStartUp event
 // [evt-serverShutDown]: serverShutDown event
 // [evt-init] init event
@@ -16,7 +20,9 @@
 
 // [msg-evts] Message events
 // [evt-beforeNewMessage] beforeNewMessage event
+// [evt-afterNewMessage] afterNewMessage event
 // [evt-beforeChatMessage] beforeChatMessage event
+// [evt-afterChatMessage] afterChatMessage event
 
 // [chan-evts]: Channel events
 // [evt-beforeChannelCreated]: beforeChannelCreated event
@@ -24,25 +30,47 @@
 // [evt-beforeChannelJoin]: beforeChannelJoin event
 // [evt-afterChannelJoin] afterChannelJoin event
 // [evt-beforeChannelLeave] beforeChannelLeave event
+// [evt-afterChannelLeave] afterChannelLeave event
 // [evt-beforeChannelDestroyed] beforeChannelDestroyed event
+// [evt-afterChannelDestroyed] afterChannelDestroyed event
 
 // [bat-evts]: Battle events
 // [evt-beforeFindBattle] beforeFindBattle event
-// [evt-attemptToSpectateBattle] attemptToSpectateBattle event
+// [evt-afterFindBattle] afterFindBattle event
 // [evt-beforeBattleMatchup] beforeBattleMatchup event
+// [evt-afterBattleMatchup] afterBattleMatchup event
 // [evt-beforeChallengeIssued] beforeChallengeIssued event
+// [evt-afterChallengeIssued] afterChallengeIssued event
+// [evt-battleSetup] battleSetup event
+// [evt-beforeBattleStarted] beforeBattleStarted event
 // [evt-afterBattleStarted] afterBattleStarted event
+// [evt-beforeBattleEnded] beforeBattleEnded event
 // [evt-afterBattleEnded] afterBattleEnded event
+// [evt-attemptToSpectateBattle] attemptToSpectateBattle event
+// [evt-beforeSpectateBattle] beforeSpectateBattle event
+// [evt-afterSpectateBattle] afterSpectateBattle event
 
 // [plyr-evts]: Player events
+// [evt-beforeIPConnected] beforeIPConnected event
+// [evt-afterIPConnected] afterIPConnected event
 // [evt-beforeLogIn] beforeLogIn event
 // [evt-afterLogIn] afterLogIn event
 // [evt-beforeLogOut] beforeLogOut event
+// [evt-afterLogOut] afterLogOut event
+// [evt-beforePlayerRegister] beforePlayerRegister event
+// [evt-afterPlayerRegister] afterPlayerRegister event
+// [evt-beforeNewPM] beforeNewPM event
+// [evt-afterNewPM] afterNewPM event
+// [evt-beforePlayerAway] beforePlayerAway event
 // [evt-afterPlayerAway] afterPlayerAway event
+// [evt-beforeChangeTeam] beforeChangeTeam event
 // [evt-afterChangeTeam] afterChangeTeam event
 // [evt-beforeChangeTier] beforeChangeTier event
+// [evt-afterChangeTier] afterChangeTier event
 // [evt-beforePlayerKick] beforePlayerKick event
+// [evt-afterPlayerKick] afterPlayerKick event
 // [evt-beforePlayerBan] beforePlayerBan event
+// [evt-afterPlayerBan] afterPlayerBan event
 
 (function () {
     // TODO: Mafia
@@ -71,6 +99,30 @@
     
     // [sys-evts] System events
     
+    // [evt-loadScript] loadScript event
+    // Called when: Script is loaded.
+    // Currently unused.
+    Events.loadScript = function () {
+    };
+    
+    // [evt-unloadScript] unloadScript event
+    // Called when: Script is unloaded (changed/updated).
+    // Currently unused.
+    Events.unloadScript = function () {
+    };
+    
+    // [evt-switchError] switchError event
+    // Called when: An error occured when loading updating the scripts.
+    // Currently unused.
+    Events.switchError = function (scr) {
+    };
+    
+     // [evt-warning] warning event
+    // Called when: A warning is triggered by a sys function.
+    // Currently unused.
+    Events.warning = function (message) {
+    };
+    
     // [evt-serverStartUp] serverStartUp event
     // Called when: Server starts up.
     // Sets start up variables and calls event beforeNewMessage.
@@ -85,7 +137,7 @@
 
     // [evt-serverShutDown] serverShutDown event
     // Called when: Server shuts down.
-    // Currently does nothing.
+    // Currently unused.
     Events.serverShutDown = function () {
     };
 
@@ -256,9 +308,15 @@
             return;
         }
     };
-
+    
+    // [evt-afterNewMessage] afterNewMessage event
+    // Called when: A message is outputted to stdout.
+    // Currently unused.
+    Events.afterNewMessage = function (message) {
+    };
+    
     // [evt-beforeChatMessage] beforeChatMessage event
-    // Called when: Before a player sends a chat message.
+    // Called when: A player sends a chat message.
     // Runs macros, flood checks, commands, silences, mutes, rank icons, chat gradients.
     Events.beforeChatMessage = function (src, message, chan) {
         // Pseudo error for /eval.
@@ -347,7 +405,7 @@
                         delete DataHash.spammers[ip];
                     }
                     
-                    WatchUtils.logSystemEvent("Violation removed", "A flood violation for '" + ip + "' was removed.");
+                    WatchUtils.logSystemEvent("Flood violation removed", "A flood violation for '" + ip + "' was removed.");
                 }, 60 * 30);
                 
                 // After 5 violations, ban them for 1 hour.
@@ -429,7 +487,7 @@
         if (Options.messageCharacterLimit !== -1 && playerAuth <= 0) {
             if (Options.messageCharacterLimit < message.length) {
                 Bot.sendMessage(src, "You have " + (message.length - Options.messageCharacterLimit) + " too many characters in your message. Please decrease its size and then try again.", chan);
-                
+                Bot.sendMessage(src, "This would be allowed: " + message.substr(0, Options.messageCharacterLimit), chan);
                 WatchUtils.logPlayerMessage("Message too long", src, message, chan);
                 sys.stopEvent();
                 return;
@@ -499,7 +557,7 @@
                 // Capitalize the first character.
                 message = message[0].toUpperCase() + message.substring(1);
                 
-                // Add a full stop at the end if there is a character a-z instead, and there is no text other than the characters a-z.
+                // Add a full stop/period at the end if there is a character a-z instead, and there is no text other than the characters a-z.
                 if (message.length > 3) {
                     if (/[a-z]/i.test(message.charAt(message.length - 1))
                             && !(/[a-z]/.test(message))) {
@@ -551,6 +609,12 @@
         
         // Just send the message regulary.
         sys.sendAll(playerName + ": " + message, chan);
+    };
+    
+    // [evt-afterChatMessage] afterChatMessage event
+    // Called when: A player sends a chat message.
+    // Currently unused.
+    Events.afterChatMessage = function (src, message, chan) {
     };
     
     // [chan-evts] Channel events
@@ -722,14 +786,20 @@
     };
     
     // [evt-beforeChannelLeave] beforeChannelLeave event
-    // Called when: Before a player leaves a channel.
+    // Called when: A player leaves a channel.
     // Logs the player leaving a channel.
     Events.beforeChannelLeave = function (src, chan) {
         WatchUtils.logPlayerEvent(src, "Left channel " + sys.channel(chan) + " (ID: " + chan + ")");
     };
 
+    // [evt-afterChannelLeave] afterChannelLeave event
+    // Called when: A player leaves a channel.
+    // Currently unused.
+    Events.afterChannelLeave = function (src, chan) {
+    };
+    
     // [evt-beforeChannelDestroyed] beforeChannelDestroyed event
-    // Called when: Before a channel is deleted
+    // Called when: A channel is deleted.
     // Stops perm/default channels from being destroyed.
     Events.beforeChannelDestroyed = function (chan) {
         var defaultIds = Options.defaultChannelIds;
@@ -749,6 +819,12 @@
         JSESSION.destroyChannel(chan);
     };
     
+    // [evt-afterChannelDestroyed] afterChannelDestroyed event
+    // Called when: A channel is deleted.
+    // Currently unused.
+    Events.afterChannelDestroyed = function (chan) {
+    };
+    
     // [bat-evts] Battle events
 
     // [evt-beforeFindBattle] beforeFindBattle event
@@ -758,35 +834,10 @@
         WatchUtils.logPlayerEvent(src, "Initiated a Find Battle search.");
     };
     
-    // [evt-attemptToSpectateBattle] attemptToSpectateBattle event
-    // Called when: [src] tries to spectate a battle between [battler1] and [battler2].
-    // Allows [src] to watch [battler1]'s and [battler2]'s battle if they are currently playing
-    // a tournament finals match (even when Disallow Spectators is on).
-    Events.attemptToSpectateBattle = function (src, battler1, battler2) {
-        var Bot = require('bot'),
-            Utils = require('utils'),
-            Tours = require('tours').Tours,
-            JSESSION = require('jsession').JSESSION;
-        
-        var channelIds = sys.channelIds(),
-            length = channelIds.length,
-            tour,
-            i;
-
-        for (i = 0; i < length; ++i) {
-            // ensure we have an object
-            tour = (JSESSION.channels(channelIds[i]) || {tour: "NoTour"}).tour || {tour: "NoTour"};
-            
-            if (tour === "NoTour") {
-                Utils.panic("scripts.js", "event[attemptToSpectateBattle]", "No tour object exists for channel " + sys.channel(channelIds[i]) + " (" + channelIds[i] + ").", JSESSION.channels(channelIds[i]), Utils.panic.warning);
-                continue;
-            }
-            
-            if (tour.finals && Tours.isInTourneyId(battler1, tour) && Tours.isInTourneyId(battler2, tour)) {
-                Bot.sendMessage(src, "Enjoy the final match!", tour.id);
-                return "allow";
-            }
-        }
+    // [evt-afterFindBattle] afterFindBattle event
+    // Called when: [src] tries to find a battle via the "Find Battle" button.
+    // Currently unused.
+    Events.afterFindBattle = function (src) {
     };
     
     // [evt-beforeBattleMatchup] beforeBattleMatchup event
@@ -798,6 +849,12 @@
             sys.stopEvent();
             return;
         }
+    };
+    
+    // [evt-afterBattleMatchup] afterBattleMatchup event
+    // Called when: A find battle pair is selected.
+    // Currently unused.
+    Events.afterBattleMatchup = function (src) {
     };
     
     // [evt-beforeChallengeIssued] beforeChallengeIssued event
@@ -846,17 +903,41 @@
         }
     };
     
+    // [evt-afterChallengeIssued] afterChallengeIssued event
+    // Called when: A player issues a challenge.
+    // Currently unused.
+    Events.afterChallengeIssued = function () {
+    };
+    
+    // [evt-battleSetup] battleSetup event
+    // Called when: A battle is started (used to set up battle effects).
+    // Currently unused.
+    Events.battleSetup = function (src, tar, battleId) {
+    };
+    
+    // [evt-beforeBattleStarted] beforeBattleStarted event
+    // Called when: A battle has started.
+    // Currently unused.
+    Events.beforeBattleStarted = function () {
+    };
+    
     // [evt-afterBattleStarted] afterBattleStarted event
-    // Called when: Once a battle has started.
+    // Called when: A battle has started.
     // Makes tours work properly.
-    Events.afterBattleStarted = function (src, dest, clauses, rated, srcteam, destteam) {
+    Events.afterBattleStarted = function (src, tar, clauses, rated, srcteam, tarteam) {
         var channelIds = sys.channelIds(),
             len = channelIds.length,
             i;
 
         for (i = 0; i < len; ++i) {
-            Tours.events.afterBattleStarted(src, dest, clauses, rated, srcteam, destteam, JSESSION.channels(channelIds[i]).tour);
+            Tours.events.afterBattleStarted(src, tar, clauses, rated, srcteam, tarteam, JSESSION.channels(channelIds[i]).tour);
         }
+    };
+    
+    // [evt-beforeBattleEnded] beforeBattleEnded event
+    // Called when: A player issues a challenge.
+    // Currently unused.
+    Events.beforeBattleEnded = function () {
     };
     
     // [evt-afterBattleEnded] afterBattleEnded event
@@ -906,7 +987,62 @@
         }
     };
     
+    // [evt-attemptToSpectateBattle] attemptToSpectateBattle event
+    // Called when: [src] tries to spectate a battle between [battler1] and [battler2].
+    // Allows [src] to watch [battler1]'s and [battler2]'s battle if they are currently playing
+    // a tournament finals match (even when Disallow Spectators is on).
+    Events.attemptToSpectateBattle = function (src, battler1, battler2) {
+        var Bot = require('bot'),
+            Utils = require('utils'),
+            Tours = require('tours').Tours,
+            JSESSION = require('jsession').JSESSION;
+        
+        var channelIds = sys.channelIds(),
+            length = channelIds.length,
+            tour,
+            i;
+
+        for (i = 0; i < length; ++i) {
+            // ensure we have an object
+            tour = (JSESSION.channels(channelIds[i]) || {tour: "NoTour"}).tour || {tour: "NoTour"};
+            
+            if (tour === "NoTour") {
+                Utils.panic("scripts.js", "event[attemptToSpectateBattle]", "No tour object exists for channel " + sys.channel(channelIds[i]) + " (" + channelIds[i] + ").", JSESSION.channels(channelIds[i]), Utils.panic.warning);
+                continue;
+            }
+            
+            if (tour.finals && Tours.isInTourneyId(battler1, tour) && Tours.isInTourneyId(battler2, tour)) {
+                Bot.sendMessage(src, "Enjoy the final match!", tour.id);
+                return "allow";
+            }
+        }
+    };
+    
+    // [evt-beforeSpectateBattle] beforeSpectateBattle event
+    // Called when: A player spectates a battle.
+    // Currently unused.
+    Events.beforeSpectateBattle = function (src, battler1, battler2) {
+    };
+    
+    // [evt-afterSpectateBattle] afterSpectateBattle event
+    // Called when: A player spectates a battle.
+    // Currently unused.
+    Events.afterSpectateBattle = function (src, battler1, battler2) {
+    };
+    
     // [plyr-evts] Player Events
+    
+    // [evt-beforeIPConnected] beforeIPConnected event
+    // Called when: An ip tries to send information to the server (before name, etc. is sent).
+    // Currently unused.
+    Events.beforeIPConnected = function (ip) {
+    };
+    
+    // [evt-afterIPConnected] afterIPConnected event
+    // Called when: An ip tries to send information to the server (before name, etc. is sent).
+    // Currently unused.
+    Events.afterIPConnected = function (ip) {
+    };
     
     // [evt-beforeLogIn] beforeLogIn event
     // Called when: Before a player logs in.
@@ -1010,7 +1146,7 @@
     };
     
     // [evt-beforeLogOut] beforeLogOut event
-    // Called when: Before a player logs out.
+    // Called when: A player logs out.
     // Logs the player leaving the server, and destroys their JSESSION object.
     Events.beforeLogOut = function (src) {
         WatchUtils.logPlayerEvent(src, "Logged out.");
@@ -1023,17 +1159,59 @@
         JSESSION.destroyUser(src);
     };
     
+    // [evt-afterLogOut] afterLogOut event
+    // Called when: A player logs out.
+    // Currently unused.
+    Events.afterLogOut = function (src) {
+    };
+    
+    // [evt-beforePlayerRegister] beforePlayerRegister event
+    // Called when: A player registers.
+    // Currently unused.
+    Events.beforePlayerRegister = function (src) {
+    };
+    
+    // [evt-afterPlayerRegister] afterPlayerRegister event
+    // Called when: A player registers.
+    // Currently unused.
+    Events.afterPlayerRegister = function (src) {
+    };
+    
+    // [evt-beforeNewPM] beforeNewPM event
+    // Called when: A player starts a conversation with someone else via Private Messaging.
+    // Currently unused.
+    Events.beforeNewPM = function (src) {
+    };
+    
+    // [evt-afterNewPM] afterNewPM event
+    // Called when: A player starts a conversation with someone else via Private Messaging.
+    // Currently unused.
+    Events.afterNewPM = function (src) {
+    };
+    
+    // [evt-beforePlayerAway] beforePlayerAway event
+	// Called when: A player toggles their away status.
+	// Currently unused.
+	Events.beforePlayerAway = function (src, mode) {
+	};
+    
     // [evt-afterPlayerAway] afterPlayerAway event
-    // Called when: Once a player toggles their away status.
+    // Called when: A player toggles their away status.
     // Logs the player's away status to Guardtower.
     Events.afterPlayerAway = function (src, mode) {
         var WatchUtils = require('watch-utils');
         
         WatchUtils.logPlayerEvent(src, (mode ? "Now idling." : "Now active and ready for battles"));
     };
-
+    
+    // [evt-beforeChangeTeam] beforeChangeTeam event
+	// Called when: A player changes their team and/or name.
+	// Currently unused.
+	Events.beforeChangeTeam = function (src) {
+	};
+    
     // [evt-afterChangeTeam] afterChangeTeam event
-    // Called when: Once a player changes their team or name.
+    // Called when: A player changes their team and/or name.
     // Adds data of the player's new name (if they changed it) and prevents team change spamming.
     // TODO: Add WatchUtils to afterChangeTeam
     Events.afterChangeTeam = function (src) {
@@ -1104,7 +1282,7 @@
     };
 
     // [evt-beforeChangeTier] beforeChangeTier event
-    // Called when: Before a player changes their tier.
+    // Called when: A player changes one of their teams' tier.
     // Ensures all the player's teams are valid for the tier they're in.
     Events.beforeChangeTier = function (src, team, oldtier, newtier) {
         if (!TierBans.isLegalTeam(src, team, newtier)) {
@@ -1114,8 +1292,14 @@
         }
     };
 
+    // [evt-afterChangeTier] afterChangeTier event
+	// Called when: A player changes one of their teams' tier.
+	// Currently unused.
+	Events.afterChangeTier = function (src, team, oldtier, newtier) {
+	};
+    
     // [evt-beforePlayerKick] beforePlayerKick event
-    // Called when: Before a player kicks someone.
+    // Called when: A player kicks someone.
     // Ensures the player isn't muted when they kick (if they are, then prevent it), and sends a custom kick message.
     Events.beforePlayerKick = function (src, tar) {
         var playerName = sys.name(src),
@@ -1138,9 +1322,15 @@
         sys.sendHtmlAll("<font color='midnightblue'><timestamp/><b> " + playerName + " kicked " + targetName + "!</b></font>");
         PlayerUtils.kick(tar);
     };
-
+    
+    // [evt-afterPlayerKick] afterPlayerKick event
+	// Called when: A player kicks someone.
+	// Currently unused.
+	Events.afterPlayerKick = function (src, tar) {
+	};
+    
     // [evt-beforePlayerBan] beforePlayerBan event
-    // Called when: Before a player bans someone.
+    // Called when: A player bans someone.
     // Ensures the player isn't muted when they ban (if they are, then prevent it), and sends a custom ban message.
     /* Experiment: tempBan behavior
         To ban: sys.tempBan(name, time_in_minutes);
@@ -1186,6 +1376,12 @@
             PlayerUtils.ban(targetName);
         }
     };
+    
+    // [evt-afterPlayerBan] afterPlayerBan event
+	// Called when: A player bans someone.
+	// Currently unused.
+	Events.afterPlayerBan = function (src, tar, time) {
+	};
     
     // Will be added as a command later.
     /*
@@ -1537,16 +1733,6 @@
         // kick -> PlayerUtils.kickAll
         
         // massKick -> PlayerUtils.massKick
-
-        rangeIP = function (name) {
-            var ips = sys.dbIp(name).split('.');
-            return ips[0] + '.' + ips[1] + '.';
-        }
-
-        isHost = function (src) {
-            return sys.ip(src) === "127.0.0.1";
-        }
-
         self = function (src, tarname) {
             return sys.ip(src) == sys.dbIp(tarname);
         }
@@ -1640,14 +1826,6 @@
             return str;
         }
 
-        permission = function (id, auth) {
-            return hpAuth(id) >= auth;
-        }
-
-        noPermission = function (id, auth) {
-            return !permission(id, auth);
-        }
-
         testMafiaChat = function (src, chan) {
             if (chan == mafiachan && mafia.ticks > 0 && mafia.state != "blank" && mafia.state != "voting" && !mafia.isInGame(sys.name(src)) && hpAuth(src) <= 0) {
                 sys.sendMessage(src, "±Game: You're not playing, so shush! Go in another channel to play!", mafiachan);
@@ -1696,30 +1874,10 @@
 
             print("[#" + sys.channel(0) + "] " + Bot.bot + ": " + message);
         }
-
-        millitime = function () {
-            var now = new Date().getTime();
-            return now;
-        }
-
-
+        
         BORDER = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
 
-        sendAuthLength = function (src) {
-            var auths = sys.dbAuths();
-            if (sys.auth(src) > 2) {
-                return auths.length;
-            }
-
-            var x, leng = 0;
-            for (x in auths) {
-                if (sys.dbAuth(auths[x]) <= 3) {
-                    leng++;
-                }
-            }
-
-            return leng;
-        }
+        
 
         unicodeAbuse = function (src, m) {
             if (typeof m != 'string') {
@@ -1881,73 +2039,7 @@
 
             return 60 * time;
         }
-
-        startUpTime = function () {
-            var n, s = [],
-                d = [
-                    [2629744, "<b>Month</b>"],
-                    [604800, "<b>Week</b>"],
-                    [86400, "<b>Day</b>"],
-                    [3600, "<b>Hour</b>"],
-                    [60, "<b>Minute</b>"],
-                    [1, "<b>Second</b>"]
-                ],
-                sec = sys.time() * 1 - startupTime,
-                j, n, sL, len = d.length;
-
-            for (j = 0; j < d.length; ++j) {
-                n = parseInt(sec / d[j][0]);
-                if (n > 0) {
-                    sL = "";
-                    if (n > 1) {
-                        sL = "<b>s</b>";
-                    }
-
-                    s.push((n + " " + d[j][1] + sL));
-                    sec -= n * d[j][0];
-
-                    if (s.length >= len) {
-                        break;
-                    }
-                }
-            }
-            if (s.length == 0) {
-                return "1 <b>Second</b>";
-            }
-
-            return fancyJoin(s) + "</b>";
-        }
-
-        clauseList = function (clauses) {
-            var clause_list = [
-                [256, "Self-KO Clause"],
-                [128, "Wifi Clause"],
-                [64, "Species Clause"],
-                [32, "No Timeout"],
-                [16, "Challenge Cup"],
-                [8, "Item Clause"],
-                [4, "Disallow Spects"],
-                [2, "Freeze Clause"],
-                [1, "Sleep Clause"]
-            ],
-                ret_list = [],
-                x, y;
-
-            for (x in clause_list) {
-                y = clause_list[x];
-                if (clauses >= y[0]) {
-                    ret_list.push(y[1]);
-                    clauses -= y[0];
-                }
-            }
-
-            return ret_list;
-        }
-
-        cap = function (string) {
-            return string[0].toUpperCase() + string.substr(1);
-        }
-
+        
         lastName = function (ip) {
             var name = DataHash.names[ip];
             if (name == undefined) { // Unknown Player :/
@@ -1955,34 +2047,6 @@
             }
 
             return name;
-        }
-
-        html_escape = function (str) {
-            if (typeof str != "string") {
-                str = String(str);
-            }
-
-            return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
-        }
-
-        html_strip = function (str) {
-            return str.replace(/<\/?[^>]*>/g, "");
-        }
-
-        regexp_escape = function (str) {
-            return str.replace(/([\.\\\+\*\?\[\^\]\$\(\)])/g, '\\$1');
-        }
-        
-        hasCommandStart = function (message) {
-            return message[0] == '/' || message[0] == '!';
-        }
-
-        ignoreCommandStart = function (message) {
-            if (!hasCommandStart(message)) {
-                return true;
-            }
-
-            return message[1] == "/" || message[1] == "!" || message[1] == "*";
         }
 
         sendChanError = function (src, chan, mchan) {
@@ -2043,9 +2107,6 @@
             current = DefaultChannels[y];
             cData.loadDataFor(current);
         }
-    },
-
-    loadPrune: function () {
     },
 
     loadIfyUtility: function () {
@@ -2149,590 +2210,14 @@
             ify.inIfy = old.inIfy;
         }
     },
+    
+    // Now in scripts/pokedex.js
     loadPokemonStats: function () {
-        try {
-            if (typeof Poke_Data == 'undefined') { // Only do this once! Takes too much time!
-                var parseFile = function (file) {
-                    var res = sys.getFileContent("db/pokes/" + file + ".txt");
-
-                    if (!res) {
-                        return [];
-                    }
-
-                    return res.split("\n");
-                },
-                    parseMoveFile = function (file) {
-                        return parseFile("5G/" + file + "_moves");
-                    };
-
-                var Files = {
-                    'stats': parseFile("stats"),
-                    'weight': parseFile("weight"),
-                    'height': parseFile("height"),
-                    'evos': parseFile("evos"),
-                    'evolevels': parseFile("5G/minlevels"),
-                    'genders': parseFile("gender"),
-                    'cc': parseFile("level_balance"),
-
-                    'egggroup1': parseFile("egg_group_1"),
-                    'egggroup2': parseFile("egg_group_2"),
-
-                    'moves': {
-                        'dw': parseMoveFile("dw"),
-                        'egg': parseMoveFile("egg"),
-                        'level': parseMoveFile("level"),
-                        'evo': parseMoveFile("pre_evo"),
-                        'event': parseMoveFile("special"),
-                        'tms': parseMoveFile("tm_and_hm"),
-                        'tutor': parseMoveFile("tutor")
-                    }
-                };
-
-                Poke_Data = {};
-
-                var x, curr_stats, curr_poke_stats, poke, spl, fstats = Files.stats,
-                    pMF, fweigh = Files.weight,
-                    fheigh = Files.height,
-                    fevol = Files.evolevels,
-                    fgen = Files.genders,
-                    fcc = Files.cc,
-                    oldCurrStat, fegg1 = Files.egggroup1,
-                    fegg2 = Files.egggroup2,
-                    fmoves = Files.moves,
-                    pokeId = 0,
-                    hasFegg2;
-
-                fevo = Files.evos.map(function (pokeIds) {
-                    return pokeIds.split(" ");
-                });
-
-                var moveObj = {},
-                    fdw = fmoves.dw,
-                    fegg = fmoves.dw,
-                    fevent = fmoves.event,
-                    flevel = fmoves.level,
-                    fevom = fmoves.evo,
-                    ftms = fmoves.tms,
-                    ftutor = fmoves.tutor,
-                    current_move, c_m_spl, c_m_space, c_poke, dwMoves = {},
-                    eggMoves = {},
-                    eventMoves = {},
-                    levelMoves = {},
-                    evoMoves = {},
-                    tmMoves = {},
-                    tutorMoves = {},
-                    i = 1;
-
-                //Lets begin with moves.
-                var importMoves = function (moveArray, Obj) {
-                    for (x in moveArray) {
-                        current_move = moveArray[x];
-
-                        c_m_spl = current_move.split(":");
-                        c_m_space = current_move.split(" ");
-                        c_poke = Number(c_m_spl[0]);
-
-                        if (current_move === "" || current_move === " ") {
-                            continue;
-                        }
-
-                        if (c_m_spl[1].charAt(0) !== "0") { // A forme.
-                            continue;
-                        }
-
-                        c_m_space.splice(0, 1);
-                        Obj[c_poke] = c_m_space.join(" ");
-                    }
-                }
-
-                importMoves(fdw, dwMoves);
-                importMoves(fegg, eggMoves);
-                importMoves(fevent, eventMoves);
-                importMoves(flevel, levelMoves);
-                importMoves(fevom, evoMoves);
-                importMoves(ftms, tmMoves);
-                importMoves(ftutor, tutorMoves);
-
-                while (i != 650) {
-                    c_poke = i, current_move = "";
-
-                    current_move += levelMoves[c_poke];
-
-                    if (c_poke in dwMoves) {
-                        current_move += " " + dwMoves[c_poke];
-                    }
-
-                    if (c_poke in eggMoves) {
-                        current_move += " " + eggMoves[c_poke];
-                    }
-
-                    if (c_poke in eventMoves) {
-                        current_move += " " + eventMoves[c_poke];
-                    }
-
-                    if (c_poke in evoMoves) {
-                        current_move += " " + evoMoves[c_poke];
-                    }
-
-                    if (c_poke in tutorMoves) {
-                        current_move += " " + tutorMoves[c_poke];
-                    }
-
-                    if (c_poke in tmMoves) {
-                        current_move += " " + tmMoves[c_poke];
-                    }
-
-                    moveObj[sys.pokemon(c_poke)] = current_move;
-                    i++;
-                }
-
-                // Double checks for multiple moves
-                var mTA, doneMoves, c_mTA;
-                for (x in moveObj) {
-                    doneMoves = [];
-                    current_move = moveObj[x];
-                    mTA = current_move.split(" ");
-
-                    for (i in mTA) {
-                        c_mTA = sys.move(Number(mTA[i]));
-                        if (doneMoves.has(c_mTA)) {
-                            mTA.splice(i, 3);
-                            continue;
-                        }
-
-                        doneMoves.push(c_mTA);
-                    }
-
-                    moveObj[x] = mTA.join(" ");
-                }
-
-
-//We check CC later, as it's a little messy.
-//We also will check evos later as some pokes don't have one.
-
-                var fEgg2Pokes = {},
-                    curr_fegg2, hasFegg1;
-                for (x in fegg2) {
-                    curr_fegg2 = fegg2[x].split(" ");
-                    if (curr_fegg2 == "0") {
-                        continue;
-                    }
-
-                    fEgg2Pokes[curr_fegg2[0]] = curr_fegg2[1];
-                }
-
-                for (x in fstats) {
-                    x = Number(x);
-                    pokeId++;
-
-                    //Put stuff into an array here.
-
-                    curr_stats = [fstats[x].split(" ")];
-                    oldCurrStat = curr_stats[0];
-                    spl = fstats[x].split(":");
-
-                    if (spl[1] == undefined) {
-                        break;
-                    }
-
-                    //First is for formes. Second is missingno check.
-                    if (spl[1][0] != "0" || spl[0] == "0") {
-                        pokeId--;
-                        continue;
-                    }
-
-                    curr_stats = [oldCurrStat, fweigh[pokeId].split(" "), fheigh[pokeId].split(" "), fgen[pokeId].split(" "), fevol[pokeId].split(" ")];
-
-                    if (fegg1[pokeId] != undefined) {
-                        hasFegg1 = true;
-                        curr_stats.push(fegg1[pokeId].split(" "));
-                    } else {
-                        hasFegg1 = false;
-                        curr_stats.push(" ");
-                    }
-
-                    if (fEgg2Pokes[pokeId] != undefined) {
-                        hasFegg2 = true;
-                        curr_stats.push([pokeId, fEgg2Pokes[pokeId]]);
-                    } else {
-                        hasFegg2 = false;
-                        curr_stats.push(" ");
-                    }
-
-                    poke = sys.pokemon(spl[0]);
-                    curr_poke_stats = curr_stats[0]; //Egg Groups
-                    if (hasFegg1) {
-                        curr_stats[5][1] = cut(curr_stats[5], 1, ' ');
-                    }
-                    if (hasFegg2) {
-                        curr_stats[6][1] = cut(curr_stats[6], 1, ' ');
-                    }
-
-                    Poke_Data[poke] = {
-                        "stats": {
-                            'HP': curr_poke_stats[1],
-                            'ATK': curr_poke_stats[2],
-                            'DEF': curr_poke_stats[3],
-                            'SPATK': curr_poke_stats[4],
-                            'SPDEF': curr_poke_stats[5],
-                            'SPD': curr_poke_stats[6]
-                        },
-
-                        "weight": curr_stats[1][1],
-                        "height": curr_stats[2][1],
-                        "minlvl": Number(curr_stats[4][1].split("/")[0]),
-                        "genders": curr_stats[3][1],
-                        "egg": [curr_stats[5][1], curr_stats[6][1]],
-                        "moves": moveObj[poke]
-                    };
-
-                    // Done!
-                }
-
-                //Parsing evos
-                var pArr = Files.evos.map(function (a) {
-                    return a.split(" ");
-                }),
-                    c_entry, next_entry, c_poke;
-
-                for (x in pArr) {
-                    c_entry = pArr[x];
-                    next_entry = pArr[Number(x) + 1];
-                    c_poke = sys.pokemon(c_entry[0]);
-
-                    if (next_entry !== undefined && Number(c_entry[1]) == Number(next_entry[0])) {
-                        Poke_Data[c_poke].evos = [c_entry[1], next_entry[1]];
-                    }
-                    else if (c_entry.length === 3 && c_entry[1] === c_entry[2]) { // Feebas evo bug.
-                        Poke_Data[c_poke].evos = [c_entry[1]];
-                    }
-                    else if (c_entry.length !== 2) {
-                        c_entry.splice(0, 1);
-                        Poke_Data[c_poke].evos = c_entry;
-                    }
-                    else if (Number(c_entry[0]) + 1 === Number(c_entry[1])) {
-                        Poke_Data[c_poke].evos = [c_entry[1]];
-                    }
-                }
-
-                // Done!
-
-                // Checking CC levels
-                for (x in fcc) {
-                    c_entry = fcc[x];
-                    spl = c_entry.split(":");
-                    c_m_space = c_entry.split(" ");
-                    c_poke = sys.pokemon(Number(spl[0]));
-
-                    if (c_poke == undefined || c_poke == "Missingno" || spl[1][0] !== "0") { // Formes. Missingno.
-                        continue;
-                    }
-
-                    Poke_Data[c_poke].cc = Number(c_m_space[1]);
-                }
-            }
-
-            formatStat = function (poke, stat) {
-                var stat = Poke_Data[poke].stats[stat];
-                var string = stat.bold(),
-                    y;
-                var ranges = [30, 50, 60, 70, 80, 90, 100, 200, 300];
-                var colors = ["#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"];
-
-                for (y in ranges) {
-                    if (stat <= ranges[y]) {
-                        return string.fontcolor(colors[y]);
-                    }
-                }
-
-                return string.fontcolor(colors[colors.length - 1]);
-            }
-
-            statsOf = function (poke) {
-                var stat = Poke_Data[poke].stats;
-                var ret = [],
-                    z;
-                for (z in stat) {
-                    ret.push(stat[z]);
-                }
-                return ret;
-            }
-
-            formatStatsOf = function (poke) {
-                var stats = ["HP", "ATK", "DEF", "SPATK", "SPDEF", "SPD"];
-                var ret = "",
-                    z, stt;
-                for (z in stats) {
-                    stt = stats[z];
-                    if (stt != "SPD") {
-                        ret += stt + ": " + formatStat(poke, stt) + " | ";
-                    }
-                    else {
-                        ret += stt + ": " + formatStat(poke, stt);
-                    }
-                }
-
-                return ret;
-            }
-
-            movesOf = function (poke) {
-                var moves = Poke_Data[poke].moves.split(" ").map(function (move) {
-                    return Number(move);
-                }).sort(function (a, b) {
-                    return sys.moveType(b) - sys.moveType(a);
-                });
-
-                return moves;
-            }
-
-            evosOf = function (poke) {
-                var PD = Poke_Data[poke];
-                if (PD.evos === undefined) {
-                    return [];
-                }
-
-                return PD.evos;
-            }
-
-            var moveColours = {
-                0: "#a8a878",
-                1: "#c03028",
-                2: "#a890f0",
-                3: "#a040a0",
-                4: "#e0c068",
-                5: "#b8a038",
-                6: "#a8b820",
-                7: "#705898",
-                8: "#b8b8d0",
-                9: "#f08030",
-                10: "#6890f0",
-                11: "#78c850",
-                12: "#f8d030",
-                13: "#f85888",
-                14: "#98d8d8",
-                15: "#7038f8",
-                16: "#705848"
-            };
-
-            formatEvosOf = function (poke) {
-                var evos = evosOf(poke),
-                    y, retString = [];
-
-                for (y in evos) {
-                    retString.push(sys.pokemon(evos[y]).fontcolor(moveColours[sys.pokeType1(evos[y])]).bold());
-                }
-
-                return fancyJoin(retString);
-            }
-
-            formatMovesOf = function (poke) {
-                var moves = movesOf(poke),
-                    y, retString = "",
-                    ml = moves.length - 1;
-
-                for (y in moves) {
-                    retString += sys.move(moves[y]).fontcolor(moveColours[sys.moveType(moves[y])]).bold().fontsize(2);
-                    if (ml != y) {
-                        retString += ", ";
-                    }
-                }
-
-                return retString + ".";
-            }
-
-            baseStatTotal = function (poke) {
-                var poke = Poke_Data[poke].stats;
-                var retnum = 0,
-                    y;
-
-                for (y in poke) {
-                    retnum += Number(poke[y]);
-                }
-                return retnum;
-            }
-
-            formatBaseStatTotal = function (poke) {
-                var stat = baseStatTotal(poke);
-                var string = String(stat).bold(),
-                    y;
-                var ranges = [180, 300, 360, 420, 480, 540, 600, 1200, 1800];
-                var colors = ["#ff0505", "#fd5300", "#ff7c49", "#ffaf49", "#ffd749", "#b9d749", "#5ee70a", "#3093ff", "#6c92bd"];
-
-                for (y in ranges) {
-                    if (stat <= ranges[y]) {
-                        return string.fontcolor(colors[y]);
-                    }
-                }
-                return string;
-            }
-
-            pokeType = function (poke) {
-                var poke_num = sys.pokeNum(poke);
-                var type = sys.pokeType1(poke_num);
-                var ret = "";
-                var type2 = sys.pokeType2(poke_num);
-
-                var type_name = sys.type(type).bold().fontcolor(moveColours[type]);
-
-                ret += type_name;
-
-                if (type2 != 17) {
-                    var type_name2 = sys.type(type2).bold().fontcolor(moveColours[type2]);
-                    ret += " & " + type_name2;
-                }
-
-                return ret;
-            }
-
-            firstGen = function (poke) {
-                poke = sys.pokeNum(poke);
-
-                if (poke < 152) {
-                    return 1;
-                }
-
-                else if (poke < 252) {
-                    return 2;
-                }
-
-                else if (poke < 387) {
-                    return 3;
-                }
-
-                else if (poke < 494) {
-                    return 4;
-                }
-
-                return 5;
-            }
-
-            pokeAbilities = function (poke) {
-                poke = sys.pokeNum(poke);
-                var ret = "";
-                var abil = [sys.pokeAbility(poke, 0), sys.pokeAbility(poke, 1), sys.pokeAbility(poke, 2)];
-
-                ret += sys.ability(abil[0]).bold();
-
-                if (abil[1] != 0) {
-                    ret += " | " + sys.ability(abil[1]).bold();
-                }
-                if (abil[2] != 0) {
-                    ret += " | " + sys.ability(abil[2]).bold() + " (<u>Dream World Ability</u>)";
-                }
-                return ret;
-            }
-
-            pokeGender = function (poke) {
-                var pD = Number(Poke_Data[poke].genders);
-
-                if (pD === 3) {
-                    return "<img src='Themes/Classic/genders/gender1.png'> <img src='Themes/Classic/genders/gender2.png'>";
-                }
-
-                else if (pD === 2) {
-                    return "<img src='Themes/Classic/genders/gender2.png'>";
-                }
-
-                else if (pD === 1) {
-                    return "<img src='Themes/Classic/genders/gender1.png'>";
-                }
-
-                return "<img src='Themes/Classic/genders/gender0.png'>";
-            }
-
-            pokedex = function (src, chan, pokemon, source) {
-                var t = new Templater("Pokedex - " + pokemon.fontcolor(moveColours[sys.pokeType1(sys.pokeNum(pokemon))]));
-
-                var n = sys.pokeNum(pokemon),
-                    PD = Poke_Data[pokemon],
-                    s = sys.pokeType2(n) == 17 ? '' : 's',
-                    s2 = sys.pokeAbility(n, 1) == 0 && sys.pokeAbility(n, 2) == 0 ? 'y' : 'ies',
-                    gender = pokeGender(pokemon),
-                    eggs = PD.egg,
-                    eggstr = "",
-                    evoS = "";
-
-                t.register("<img src='pokemon:num=" + n + "'> <img src='pokemon:num=" + n + "&back=true'> <img src='pokemon:num=" + n + "&shiny=true'> <img src='pokemon:num=" + n + "&shiny=true&back=true'><br/>");
-                t.register("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + gender);
-                t.register("National Dex Number: " + String(n).bold() + ".");
-                t.register("Generation " + String(firstGen(pokemon)).bold() + " Pokemon. ");
-
-                if ((PD.evos !== undefined || (PD.minlvl !== 1 && PD.minlvl !== 100))) {
-                    t.register("");
-                }
-
-                if (PD.evos !== undefined) {
-                    if (PD.evos.length !== 1) {
-                        evoS = "s";
-                    }
-                    t.register("Evolution" + evoS + ": " + formatEvosOf(pokemon));
-                }
-
-                if (PD.minlvl !== 1 && PD.minlvl !== 100) {
-                    t.register("Minimum Level: <b>" + PD.minlvl + "</b>");
-                }
-
-                t.register("Level in Challenge Cup: <b>" + PD.cc + "</b><br/>");
-
-                if (!isEmpty(PD.egg[0])) {
-                    eggstr += PD.egg[0].bold();
-                }
-
-                if (!isEmpty(PD.egg[1])) {
-                    eggstr += " and " + PD.egg[1].bold();
-                }
-
-                t.register("Type" + s + ": " + pokeType(pokemon));
-
-                if (eggstr != "") {
-                    if (!eggstr.contains("and ")) {
-                        t.register("Egg Group: " + eggstr);
-                    } else {
-                        t.register("Egg Groups: " + eggstr);
-                    }
-                }
-
-                t.register("Abilit" + s2 + ": " + pokeAbilities(pokemon) + "<br/>");
-
-                t.register("Weight: <b>" + PD.weight + " kg</b>");
-                t.register("Height <b>" + PD.height + " m</b><br/>");
-
-                t.register(formatStatsOf(pokemon));
-                t.register("Base Stat Total: " + formatBaseStatTotal(pokemon));
-
-                if (pokemon.toLowerCase() !== "smeargle") { // Smeargle crashes.
-                    t.register("<br/> " + formatMovesOf(pokemon));
-                } else {
-                    t.register("<br/> Smeargle learns all moves except Chatter and Transform.");
-                }
-
-                if (!source) {
-                    t.render(src, chan);
-                    return;
-                }
-
-                sys.sendHtmlMessage(src, html_escape(t.template.join("<br/>")), chan);
-
-            }
-        } catch (e) {
-            print(FormatError("", e));
-        }
-
+        
     },
 
+    // See scripts/utils.js
     loadRequiredUtilities: function () {
-        on = function (str) {
-            var onArray = ["yes", "true", "on"],
-                x, strToLower = str.toLowerCase();
-
-            for (x in onArray) {
-                if (strToLower.contains(onArray[x])) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
     },
 
     loadCache: function () {
@@ -2741,9 +2226,6 @@
         }
         if (typeof playerscache == "undefined") {
             playerscache = new CacheInst("Players");
-        }
-        if (typeof TrivCache == "undefined") {
-            TrivCache = new CacheInst("Trivia");
         }
 
         cache.ensure("ClanTag", "None");
@@ -3046,116 +2528,8 @@
         }
 
     },
-
-    loadCommandStatsUtility: function () {
-        if (typeof CommandStats != "undefined") {
-            sys.stopTimer(CommandStats.timer);
-        }
-
-        CommandStats = new(function () {
-            var file = "CommandStats.json";
-            createFile(file, "{}");
-
-            this.timer = sys.intervalCall(function () {
-                CommandStats.save();
-            }, 30000); //30 seconds
-
-            this.stats = {};
-            try {
-                this.stats = JSON.parse(sys.getFileContent(file));
-            } catch (e) {
-                var time = sys.time() * 1;
-                this.stats = {
-                    commands: {}
-                };
-
-                this.stats.startTime = time;
-                this.stats.lastCommandTime = time;
-                this.save();
-            }
-
-            this.save = function () {
-                sys.writeToFile(file, JSON.stringify(this.stats));
-            }
-
-            this.write = function (command, user) {
-                var stats = this.stats;
-                if (!stats.has("commands")) {
-                    stats.commands = {};
-                }
-
-                if (!stats.commands.has(command)) {
-                    stats.commands[command] = {
-                        used: 0,
-                        last: ""
-                    };
-                }
-
-                var query = stats.commands[command];
-                query.used += 1;
-                query.last = user;
-
-                if (command != "commandstats") {
-                    this.stats.lastCommandTime = sys.time() * 1;
-                }
-            }
-
-            this.display = function (src, chan, limit) {
-                var statsArray = [],
-                    name, totalstats = 0,
-                    commandStats = this.stats.commands,
-                    lim = -1,
-                    current, at, time = sys.time() * 1,
-                    statsLen = commandStats.length();
-
-                if (limit != undefined && limit != 0 && limit != -1) {
-                    lim = limit;
-                }
-
-                for (name in commandStats) {
-                    current = commandStats[name];
-                    if (lim != -1 && lim < at) {
-                        break;
-                    }
-
-                    at++;
-
-                    statsArray.push([name, current.used, current.last]);
-                }
-
-                statsArray.sort(function (used_A, used_B) {
-                    return used_B[1] - used_A[1];
-                });
-
-                var msg_footer = "%1 commands used in total",
-                    msg_header = "Command usage statistics for " + servername + ":";
-
-                if (lim != -1 && lim <= statsLen) {
-                    msg_footer = lim + " commands were used %1 times.", msg_header = "Command usage statistics for " + lim + " commands:";
-                }
-
-                botMessage(src, msg_header, chan);
-
-                var num = 0,
-                    u;
-
-                for (u in statsArray) {
-                    num++;
-                    if (num > lim) {
-                        break;
-                    }
-                    current = statsArray[u];
-
-                    botEscapeMessage(src, "#" + num + ". Command " + cap(current[0]) + ": " + current[1] + ", last used by " + current[2], chan);
-                    total += current[1];
-                }
-
-                botEscapeMessage(src, msg_footer.format(total), chan);
-                botMessage(src, "Started counting command usage " + getTimeString(time - this.stats.startTime) + " ago. Last command used " + getTimeString(time - this.stats.lastCommandTime) + " ago.", chan);
-            }
-        })();
-    },
-
+    
+    // NOTE: Command stats are no longer available.
     // TODO: add mafia
     loadMafia: function () {
     }*/

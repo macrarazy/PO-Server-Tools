@@ -63,7 +63,7 @@
             
             sys.setTimer(function () {
                 --JSESSION.users(this.id).floodCount;
-            }, Config.AutoFloodTime * 1000, false);
+            }, Config.FloodClearTime * 1000, false);
         }
     };
     
