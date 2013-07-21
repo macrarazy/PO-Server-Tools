@@ -80,7 +80,7 @@
  **/
 
 EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to calculate load speed! **/
-Version = "2.6.0s";
+Version = "2.6.1";
 ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
@@ -5137,6 +5137,7 @@ if(message == "Maximum Players Changed.") {
                             ct.register("destroychannel", "To destory this channel.");
                         }
 
+                        ct.register("cclearchat", "To clear the channel's chat.");
                         ct.register("installtour", "To install tournaments in this channel.");
                         ct.register("uninstalltour", "To uninstall tournaments in this channel.");
 
@@ -5371,6 +5372,22 @@ if(message == "Maximum Players Changed.") {
                     tt.render(src, chan);
                 },
 
+                cclearchat: function () {
+                    if (!poChan.isChanAdmin(src) && noPermission(src, 2)) {
+                        noPermissionMessage(src, fullCommand, chan);
+                        return;
+                    }
+                    
+                    var me = player(src),
+                        y;
+
+                    for (y = 0; y < 2999; y++) {
+                        sys.sendAll("", chan);
+                    }
+
+                    botAll(me + " cleared the chat!", chan);
+                },
+                
                 channelhtmlwall: function () {
                     if (!poChan.isChanMod(src) && noPermission(src, 1)) {
                         noPermissionMessage(src, fullCommand, chan);
