@@ -1,3 +1,7 @@
+/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    Config: true*/
+
 /*===========================================================*\
 || #               -Script Information-                    # ||
 || ######################################################### ||
@@ -12,7 +16,7 @@
 || # Lamperi, Mystra                                       # ||
 || #                                                       # ||
 || # Script Version:                                       # ||
-|| # 2.2.60                                                # ||
+|| # 2.2.61                                                # ||
 || #                                                       # ||
 || # Server Requirements:                                  # ||
 || # 2.0.02 (2.0.05 recommended)                           # ||
@@ -72,20 +76,7 @@
 || Format: [AuthLvlOfReceiver, AuthLvlReceived]              ||
 \*===========================================================*/
 
-/**
- Release: https://github.com/TheUnknownOne/PO-Server-Tools/master/
- Beta: https://github.com/TheUnknownOne/PO-Server-Tools/beta/
- Alpha: https://github.com/TheUnknownOne/PO-Server-Tools/alpha/
- Development: https://github.com/TheUnknownOne/PO-Server-Tools/devel/
- **/
-
-EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to calculate load speed! **/
-Version = "2.6.1";
-ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
-CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
-IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
-
-Config = {
+var Config = {
     Mafia: {
         norepeat: 3,
         stats_file: "MafiaStats.txt",
@@ -107,17 +98,32 @@ Config = {
 };
 
 /** Beyond this, you should not edit anything if you don't know what you're doing! **/
-/** RECOVERY **/
-RECOVERY_BACKUP = {};
 
-if (typeof script != "undefined") {
-    for (var x in script) {
-        RECOVERY_BACKUP[x] = script[x];
+
+var EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to calculate load speed! **/
+var Version = "2.6.1";
+var ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
+var CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
+var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
+
+/** RECOVERY **/
+var RECOVERY_BACKUP = {};
+
+// Script globals
+var Bot, html_escape, DataHash, hpAuth, AutoMute, WatchPlayer, cache, DefaultChannels, Tours, cData, isEmpty, player, JSESSIONInst, JSESSION, updateProto, hasTeam, TOUR_BORDER, getTimeString, toOn, Grammar, objLength, style, validTier, cmp, startupTime, StartUp, run, servername, poGlobal, loadOldPoll, Poll, WatchEvent, scriptchannel, staffchannel, Clantag, ClanTag, removespaces, ScriptLength, Prune, watch, mafiachan, WatchChannelEvent, RECOVERY, stepCounter, AutoStartTours;
+
+(function () {
+    var x;
+    
+    if (typeof script !== "undefined") {
+        for (x in script) {
+            RECOVERY_BACKUP[x] = script[x];
+        }
     }
-}
+}());
 
 /** DEFAULT VALUES **/
-if (typeof Bot == "undefined") {
+if (typeof Bot === "undefined") {
     Bot = {
         bot: "~Server~",
         botcolor: "red"
@@ -125,61 +131,59 @@ if (typeof Bot == "undefined") {
 }
 
 /** BOTS **/
-botMessage = function (src, message, channel) {
-    if (typeof Bot == "undefined") {
+function botMessage(src, message, channel) {
+    if (typeof Bot === "undefined") {
         return;
     }
 
     var color = Bot.botcolor,
         name = Bot.bot;
 
-    if (typeof channel != "undefined") {
+    if (typeof channel !== "undefined") {
         sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
-    }
-    else {
+    } else {
         sys.sendHtmlMessage(src, "<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message);
     }
-};
+}
 
-botEscapeMessage = function (src, message, channel) {
+function botEscapeMessage(src, message, channel) {
     botMessage(src, html_escape(message), channel);
-};
+}
 
-botAll = function (message, channel) {
-    if (typeof Bot == 'undefined') {
+function botAll(message, channel) {
+    if (typeof Bot === 'undefined') {
         return;
     }
 
     var color = Bot.botcolor,
         name = Bot.bot;
 
-    if (typeof channel != "undefined") {
+    if (typeof channel !== "undefined") {
         sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message, channel);
-    }
-    else {
+    } else {
         sys.sendHtmlAll("<font color='" + color + "'><timestamp/><b>" + name + ":</i></b></font> " + message);
     }
-};
+}
 
-botEscapeAll = function (message, channel) {
+function botEscapeAll(message, channel) {
     botAll(html_escape(message), channel);
-};
+}
 
-teamAlert = function (src, team, message) {
+function teamAlert(src, team, message) {
     botMessage(src, "Team #" + (team + 1) + ": " + message);
-};
+}
 
 /** Invalid Command Messages **/
-invalidCommandMessage = function (src, command, chan) {
+function invalidCommandMessage(src, command, chan) {
     botEscapeMessage(src, "The command " + command + " doesn't exist.", chan);
-};
+}
 
-noPermissionMessage = function (src, command, chan) {
+function noPermissionMessage(src, command, chan) {
     botEscapeMessage(src, "You may not use the " + command + " command.", chan);
-};
+}
 
-FormatError = function (mess, e) {
-    if (typeof mess != "string") {
+function FormatError(mess, e) {
+    if (typeof mess !== "string") {
         mess = "";
     }
 
@@ -193,7 +197,7 @@ FormatError = function (mess, e) {
         return mess + " Custom Error: " + e;
     }
 
-    if (e.lineNumber != 1) {
+    if (e.lineNumber !== 1) {
         lineData = " on line " + e.lineNumber;
     }
 
@@ -208,17 +212,17 @@ FormatError = function (mess, e) {
     }
 
     return mess + " " + str;
-};
+}
 
-ChannelLink = function (channel) {
-    if (sys.channelId(channel) == undefined) {
+function ChannelLink(channel) {
+    if (sys.channelId(channel) === undefined) {
         return "";
     }
 
     return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
-};
+}
 
-ChannelNames = function () {
+function ChannelNames() {
     var channelIds = sys.channelIds(),
         channelNames = [],
         x;
@@ -228,11 +232,13 @@ ChannelNames = function () {
     }
 
     return channelNames;
-};
+}
 
-addChannelLinks = function (str) {
+function addChannelLinks(str) {
     var channelNames = ChannelNames(),
-        exp, i, nameslength = channelNames.length;
+        exp,
+        i,
+        nameslength = channelNames.length;
 
     for (i = 0; i < nameslength; i++) {
         exp = new RegExp("#" + channelNames[i], "gi");
@@ -240,60 +246,38 @@ addChannelLinks = function (str) {
     }
 
     return str;
-};
+}
 
-capsMessage = function (mess) {
-    return /[QWERTYUIOPASDFGHJKLZXCVBNM]/.test(mess);
-};
+function capsMessage(mess) {
+    return (/[QWERTYUIOPASDFGHJKLZXCVBNM]/).test(mess);
+}
 
-normalLetter = function (l) {
-    return /[qwertyuiopasdfghjklzxcvbnm]/.test(l);
-};
+function normalLetter(l) {
+    return (/[qwertyuiopasdfghjklzxcvbnm]/).test(l);
+}
 
-fileLen = function (file) {
+function fileLen(file) {
     return sys.getFileContent(file).length;
-};
+}
 
-sTB = function (bytes) {
+function sTB(bytes) {
     var sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
         i;
-    if (bytes == 0) {
+    if (bytes === 0) {
         return '0 bytes';
     }
-    i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-    if (i == 0) {
+    i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+    if (i === 0) {
         return (bytes / Math.pow(1024, i)) + ' ' + sizes[i];
     }
     return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
-};
-
-clearlogs = function () {
-    return; /** No longer works on PO v2 **/
-    var l = Config.ClearLogsAt,
-        len;
-    if (l == 0) {
-        return;
-    }
-
-    try {
-        len = fileLen("logs.txt");
-    }
-    catch (e) { /** Weird OS X and GNU/Linux behavior **/
-        Config.ClearLogsAt = 0;
-        return;
-    }
-
-    if (len > l) {
-        botAll("Clearing logs.txt", 0);
-        sys.writeToFile("logs.txt", "");
-    }
 }
 
 function POUser(id) {
     var my_name = sys.name(id),
         mn_lc = my_name.toLowerCase(),
-        date = sys.time() * 1;
-    if (my_name == undefined) {
+        date = +sys.time();
+    if (my_name === undefined) {
         return;
     }
 
@@ -311,7 +295,7 @@ function POUser(id) {
     this.isAutoAFK = false;
     this.teamChanges = 0;
 
-    if (typeof DataHash == "undefined" || typeof DataHash.voices === "undefined") { /* Shouldn't matter. */
+    if (typeof DataHash === "undefined" || typeof DataHash.voices === "undefined") { /* Shouldn't matter. */
         return;
     }
 
@@ -340,18 +324,18 @@ function POUser(id) {
 }
 
 POUser.prototype.addFlood = function () {
-    if (typeof hpAuth == 'undefined' || hpAuth(this.id) < 1) {
+    if (typeof hpAuth === 'undefined' || hpAuth(this.id) < 1) {
         this.floodCount++;
         sys.callLater('JSESSION.users(' + this.id + ').floodCount--', 6);
     }
-}
+};
 
 POUser.prototype.capsMute = function (message, channel) {
-    if (typeof hpAuth != 'undefined' && hpAuth(this.id) > 0) {
+    if (typeof hpAuth !== 'undefined' && hpAuth(this.id) > 0) {
         return false;
     }
 
-    if (typeof AutoMute != 'undefined' && !AutoMute) {
+    if (typeof AutoMute !== 'undefined' && !AutoMute) {
         return false;
     }
 
@@ -360,8 +344,7 @@ POUser.prototype.capsMute = function (message, channel) {
     for (z in message) {
         if (capsMessage(message[z])) {
             newCapsAmount += 1;
-        }
-        else {
+        } else {
             newCapsAmount -= 1;
         }
         if (newCapsAmount < 0) {
@@ -374,7 +357,7 @@ POUser.prototype.capsMute = function (message, channel) {
         botAll(this.name + " was muted for 5 minutes for spamming caps!", channel);
 
         var bantime = 60 * 5;
-        var thetime = sys.time() * 1 + bantime;
+        var thetime = +sys.time() + bantime;
 
         DataHash.mutes[this.ip] = {
             by: Bot.bot + "</i>",
@@ -390,7 +373,7 @@ POUser.prototype.capsMute = function (message, channel) {
     }
 
     return false;
-}
+};
 
 function POChannel(id) {
     this.name = sys.channel(id);
@@ -403,12 +386,11 @@ function POChannel(id) {
     this.topicsetter = '';
     this.toursEnabled = false;
 
-    if (typeof DefaultChannels != "undefined" && DefaultChannels.indexOf(id) != -1 || typeof DefaultChannels == "undefined") {
+    if ((typeof DefaultChannels !== "undefined" && DefaultChannels.indexOf(id) !== -1) || typeof DefaultChannels === "undefined") {
         this.perm = true;
         this.tour = new Tours(this.id);
         this.toursEnabled = true;
-    }
-    else {
+    } else {
         this.perm = false;
     }
 
@@ -432,12 +414,12 @@ POChannel.prototype.giveTourAuth = function (name) {
         'name': name.name()
     };
 
-    if (typeof cData == 'undefined') {
+    if (typeof cData === 'undefined') {
         return;
     }
 
     cData.changeTourAuth(this.id, this.tourAuth);
-}
+};
 
 POChannel.prototype.takeTourAuth = function (name) {
     var toLower = name.toLowerCase();
@@ -448,24 +430,24 @@ POChannel.prototype.takeTourAuth = function (name) {
 
     delete this.tourAuth[toLower];
 
-    if (typeof cData == 'undefined') {
+    if (typeof cData === 'undefined') {
         return;
     }
 
     cData.changeTourAuth(this.id, this.tourAuth);
-}
+};
 
 POChannel.prototype.changeTopic = function (src, topic, fullCommand) {
     if (isEmpty(topic)) {
-        if (this.topic == '') {
+        if (this.topic === '') {
             botMessage(src, "There is no topic.", this.id);
             return;
         }
 
         botEscapeMessage(src, "Topic: " + this.topic, this.id);
 
-        if (this.topicsetter != '') {
-            botEscapeMessage(src, "Set by: " + this.topicsetter, this.id)
+        if (this.topicsetter !== '') {
+            botEscapeMessage(src, "Set by: " + this.topicsetter, this.id);
         }
 
         if (this.defaultTopic) {
@@ -483,7 +465,7 @@ POChannel.prototype.changeTopic = function (src, topic, fullCommand) {
     var me = sys.name(src),
         mePlayer = player(me);
 
-    if (topic.toLowerCase() == "default") {
+    if (topic.toLowerCase() === "default") {
         this.topic = "Welcome to " + this.name + "!";
         this.defaultTopic = true;
         this.topicsetter = '';
@@ -495,26 +477,26 @@ POChannel.prototype.changeTopic = function (src, topic, fullCommand) {
 
     botAll("The topic was changed by " + mePlayer + " to: " + this.topic, this.id);
     return;
-}
+};
 
 POChannel.prototype.changeAuth = function (name, newauth) {
     var nh;
-    if (typeof name == "number") {
+    if (typeof name === "number") {
         nh = sys.name(name).toLowerCase();
     } else {
         nh = name.toLowerCase();
     }
 
-    if (newauth == 0 && this.chanAuth.has(name)) {
+    if (newauth === 0 && this.chanAuth.has(name)) {
         delete this.chanAuth[nh];
         return;
     }
 
     this.chanAuth[nh] = newauth;
-}
+};
 
 POChannel.prototype.canIssue = function (src, tar) {
-    if (typeof hpAuth == 'undefined') {
+    if (typeof hpAuth === 'undefined') {
         return false;
     }
 
@@ -522,57 +504,55 @@ POChannel.prototype.canIssue = function (src, tar) {
         targetName = sys.name(tar),
         srcID = src;
 
-    if (typeof src == 'string') {
+    if (typeof src === 'string') {
         selfName = src.toLowerCase();
         srcID = sys.id(src);
-    }
-    else {
+    } else {
         selfName = selfName.toLowerCase();
     }
 
-    if (typeof tar == 'string') {
+    if (typeof tar === 'string') {
         targetName = tar.toLowerCase();
-    }
-    else {
+    } else {
         targetName = targetName.toLowerCase();
     }
 
-    if (sys.dbIp(targetName) == undefined || sys.dbIp(selfName) == undefined) {
+    if (sys.dbIp(targetName) === undefined || sys.dbIp(selfName) === undefined) {
         return false;
     }
 
-    if (hpAuth(src) <= hpAuth(tar) || srcID == undefined || this.chanAuth[selfName] <= this.chanAuth[targetName] && !this.isChanOwner(src)) {
+    if (hpAuth(src) <= hpAuth(tar) || srcID === undefined || ((this.chanAuth[selfName] <= this.chanAuth[targetName]) && !this.isChanOwner(src))) {
         return false;
     }
 
     return true;
-}
+};
 
 POChannel.prototype.isBannedInChannel = function (ip) {
     return this.banlist.has(ip);
-}
+};
 
 POChannel.prototype.isMutedInChannel = function (ip) {
     return this.mutelist.has(ip);
-}
+};
 
 POChannel.prototype.isChanMod = function (src) {
     var toLower = sys.name(src).toLowerCase();
 
     return this.chanAuth[toLower] >= 1 || hpAuth(src) >= 1;
-}
+};
 
 POChannel.prototype.isChanAdmin = function (src) {
     var toLower = sys.name(src).toLowerCase();
 
     return this.chanAuth[toLower] >= 2 || hpAuth(src) >= 2;
-}
+};
 
 POChannel.prototype.isChanOwner = function (src) {
     var toLower = sys.name(src).toLowerCase();
 
     return this.chanAuth[toLower] >= 3 || hpAuth(src) >= 3;
-}
+};
 
 function POGlobal(id) {
     this.mafiaVersion = "";
@@ -583,16 +563,16 @@ JSESSIONInst = function () {
     this.ChannelData = {};
     this.GlobalData = {};
 
-    this.UserFunc = function () {}
-    this.ChannelFunc = function () {}
-    this.GlobalFunc = function () {}
+    this.UserFunc = function () {};
+    this.ChannelFunc = function () {};
+    this.GlobalFunc = function () {};
 
     this.UsesUser = false;
     this.UsesChannel = false;
     this.UsesGlobal = false;
 
     this.ScriptID = undefined;
-}
+};
 
 JSESSIONInst.prototype.refill = function () {
     var x, users = sys.playerIds(),
@@ -600,7 +580,7 @@ JSESSIONInst.prototype.refill = function () {
 
     if (this.UsesUser) {
         for (x in users) {
-            if (this.users(users[x]) == undefined) {
+            if (this.users(users[x]) === undefined) {
                 this.createUser(users[x]);
             }
         }
@@ -608,182 +588,182 @@ JSESSIONInst.prototype.refill = function () {
 
     if (this.UsesChannel) {
         for (x in channels) {
-            if (this.channels(channels[x]) == undefined) {
+            if (this.channels(channels[x]) === undefined) {
                 this.createChannel(channels[x]);
             }
         }
     }
 
     if (this.UsesGlobal) {
-        if (this.global() == undefined) {
+        if (this.global() === undefined) {
             this.GlobalData = new this.GlobalFunc();
         }
     }
-}
+};
 
 JSESSIONInst.prototype.users = function (id) {
     if (!this.UsesUser) {
         return;
     }
 
-    if (typeof this.UserData[id] == 'undefined') {
+    if (typeof this.UserData[id] === 'undefined') {
         return;
     }
 
     return this.UserData[id];
-}
+};
 
 JSESSIONInst.prototype.channels = function (id) {
     if (!this.UsesChannel) {
         return;
     }
 
-    if (typeof this.ChannelData[id] == 'undefined') {
+    if (typeof this.ChannelData[id] === 'undefined') {
         return;
     }
 
     return this.ChannelData[id];
-}
+};
 
 JSESSIONInst.prototype.global = function () {
     if (!this.UsesGlobal) {
         return;
     }
 
-    if (typeof this.GlobalData == 'undefined') {
+    if (typeof this.GlobalData === 'undefined') {
         return;
     }
 
     return this.GlobalData;
-}
+};
 
 JSESSIONInst.prototype.identifyScriptAs = function (script) {
-    if (this.ScriptID == undefined || this.ScriptID != script) {
+    if (this.ScriptID === undefined || this.ScriptID !== script) {
         this.clearAll();
     }
 
     this.ScriptID = script;
     this.refill();
-}
+};
 
 JSESSIONInst.prototype.registerUser = function (func) {
-    if (typeof func != "function") {
+    if (typeof func !== "function") {
         return;
     }
 
     this.UserFunc = func;
     this.UsesUser = true;
-}
+};
 
 JSESSIONInst.prototype.registerChannel = function (func) {
-    if (typeof func != "function") {
+    if (typeof func !== "function") {
         return;
     }
 
     this.ChannelFunc = func;
     this.UsesChannel = true;
-}
+};
 
 JSESSIONInst.prototype.registerGlobal = function (func) {
-    if (typeof func != "function") {
+    if (typeof func !== "function") {
         return;
     }
 
     this.GlobalFunc = func;
     this.UsesGlobal = true;
     this.GlobalData = new func();
-}
+};
 
 JSESSIONInst.prototype.createChannel = function (id) {
     if (!this.UsesChannel) {
         return false;
     }
 
-    if (typeof this.ChannelData[id] != "undefined") {
+    if (typeof this.ChannelData[id] !== "undefined") {
         return false;
     }
 
-    if (sys.channel(id) == undefined) {
+    if (sys.channel(id) === undefined) {
         return false;
     }
 
     this.ChannelData[id] = new this.ChannelFunc(id);
     return true;
-}
+};
 
 JSESSIONInst.prototype.destroyChannel = function (id) {
     if (!this.UsesChannel) {
         return false;
     }
-    if (id == 0) {
+    if (id === 0) {
         return false;
     }
 
-    if (typeof this.ChannelData[id] == "undefined") {
+    if (typeof this.ChannelData[id] === "undefined") {
         return false;
     }
 
     delete this.ChannelData[id];
     return true;
-}
+};
 
 JSESSIONInst.prototype.createUser = function (id) {
     if (!this.UsesUser) {
         return false;
     }
 
-    if (typeof this.UserData[id] != "undefined") {
+    if (typeof this.UserData[id] !== "undefined") {
         return false;
     }
 
-    if (sys.name(id) == undefined) {
+    if (sys.name(id) === undefined) {
         return false;
     }
 
     this.UserData[id] = new this.UserFunc(id);
     return true;
-}
+};
 
 JSESSIONInst.prototype.destroyUser = function (id) {
     if (!this.UsesUser) {
         return false;
     }
-    if (typeof this.UserData[id] == "undefined") {
+    if (typeof this.UserData[id] === "undefined") {
         return false;
     }
-    if (sys.name(id) == undefined) {
+    if (sys.name(id) === undefined) {
         return false;
     }
 
     delete this.UserData[id];
     return true;
-}
+};
 
 JSESSIONInst.prototype.hasUser = function (src) {
     return this.UserData.has(src);
-}
+};
 
 JSESSIONInst.prototype.hasChannel = function (channel) {
     return this.ChannelData.has(channel);
-}
+};
 
 JSESSIONInst.prototype.clearAll = function () {
     this.UserData = {};
     this.ChannelData = {};
     this.GlobalData = {};
 
-    this.UserFunc = function () {}
-    this.ChannelFunc = function () {}
-    this.GlobalFunc = function () {}
+    this.UserFunc = function () {};
+    this.ChannelFunc = function () {};
+    this.GlobalFunc = function () {};
 
     this.UsesUser = false;
     this.UsesChannel = false;
     this.UsesGlobal = false;
 
     this.ScriptID = undefined;
-}
+};
 
-if (typeof JSESSION == "undefined") {
+if (typeof JSESSION === "undefined") {
     // Otherwise will reset user/channel data every script load.
     JSESSION = new JSESSIONInst();
 }
@@ -792,7 +772,7 @@ if (typeof updateProto !== "undefined") {
     updateProto(JSESSION, JSESSIONInst);
 }
 
-cut = function (array, entry, join) {
+function cut(array, entry, join) {
     if (!join) {
         join = "";
     }
@@ -804,7 +784,7 @@ cut = function (array, entry, join) {
     return array.splice(entry).join(join);
 }
 
-firstTeamForTier = function (id, tier) {
+function firstTeamForTier(id, tier) {
     if (Config.NoCrash) {
         return 0;
     }
@@ -813,7 +793,7 @@ firstTeamForTier = function (id, tier) {
         x;
 
     for (x = 0; x < sys.teamCount(id); x++) {
-        if (sys.tier(id, x).toLowerCase() == ttl) {
+        if (sys.tier(id, x).toLowerCase() === ttl) {
             return x;
         }
     }
@@ -821,24 +801,24 @@ firstTeamForTier = function (id, tier) {
     return -1;
 }
 
-hasTeam = function (id, tier) {
+function hasTeam(id, tier) {
     if (!tier) {
-        return sys.teamCount(id) != 0;
+        return sys.teamCount(id) !== 0;
     }
 
     return sys.hasTier(id, tier);
 }
 
-TourBox = function (message, chan) {
+function TourBox(message, chan) {
     sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
 }
 
-TourNotification = function (src, chan, info) { // info is an object
+function TourNotification(src, chan, info) { // info is an object
     var tour = JSESSION.channels(chan).tour,
         mode = tour.tourmode;
 
-    if (src != 0) {
-        if (mode == 0) {
+    if (src !== 0) {
+        if (mode === 0) {
             return;
         }
 
@@ -848,7 +828,7 @@ TourNotification = function (src, chan, info) { // info is an object
             border = function () {
                 sys.sendHtmlMessage(src, TOUR_BORDER, chan);
             },
-            startTime = getTimeString(sys.time() * 1 - tour.startTime);
+            startTime = getTimeString(+sys.time() - tour.startTime);
 
         white();
         border();
@@ -864,10 +844,9 @@ TourNotification = function (src, chan, info) { // info is an object
 
         border();
 
-        if (mode == 1) {
+        if (mode === 1) {
             sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
-        }
-        else if (mode == 2) {
+        } else if (mode === 2) {
             var finalsStr = "";
             if (tour.finals) {
                 finalsStr = " (<B>Finals</B>)";
@@ -880,8 +859,8 @@ TourNotification = function (src, chan, info) { // info is an object
         border();
         white();
     } else {
-        if (tour.TourDisplay == tour.Displays.Normal) {
-            tour.white()
+        if (tour.TourDisplay === tour.Displays.Normal) {
+            tour.white();
             tour.border();
             // TODO: Implement color support for bot.
             sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + player(info.starter) + "! </b></font>", chan);
@@ -894,9 +873,8 @@ TourNotification = function (src, chan, info) { // info is an object
             tour.border();
             sys.sendHtmlAll("<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
             tour.border();
-            tour.white()
-        }
-        else {
+            tour.white();
+        } else {
             var prize = '';
 
             if (!isEmpty(tour.prize)) {
@@ -943,61 +921,54 @@ function Tours(id) {
 
 Tours.prototype.border = function () {
     sys.sendHtmlAll(TOUR_BORDER, this.id);
-}
+};
 
 Tours.prototype.white = function () {
     sys.sendAll("", this.id);
-}
+};
 
 Tours.prototype.hasTourAuth = function (id) {
     var poUser = JSESSION.users(id),
-        poChannel = JSESSION.channels(this.id),
+        poChannel = JSESSION.channels(this.id);
 
-        return poChannel.tourAuth[poUser.lowername] != undefined || poUser.megauser || poChannel.isChanMod(id);
-}
+    return poChannel.tourAuth[poUser.lowername] !== undefined || poUser.megauser || poChannel.isChanMod(id);
+};
 
 Tours.prototype.identify = function (test) {
-    if (test == null) {
+    if (test === null) {
         test = this.battlemode;
     }
     if (test === 0) {
         return "No tournament is running.";
-    }
-    else if (test === 1) {
+    } else if (test === 1) {
         return "Single Elimination";
-    }
-    else if (test === 2) {
+    } else if (test === 2) {
         return "Double Elimination";
-    }
-    else if (test === 3) {
+    } else if (test === 3) {
         return "Triple Elimination";
-    }
-    else if (test === 4) {
+    } else if (test === 4) {
         return "Tag Team Single Elimination";
-    }
-    else if (test === 5) {
+    } else if (test === 5) {
         return "Tag Team Double Elimination";
-    }
-    else if (test === 6) {
+    } else if (test === 6) {
         return "Tag Team Triple Elimination";
-    }
-    else {
+    } else {
         return "Unknown Mode";
     }
-}
+};
 
 Tours.prototype.sendAll = function (message) {
     botAll(message, this.id);
-}
+};
 
 Tours.prototype.sendPM = function (src, message) {
     botMessage(src, message, this.id);
-}
+};
 
 Tours.prototype.TourBox = function (message, Display) {
     var x, curr;
 
-    if (typeof message == "string") {
+    if (typeof message === "string") {
         message = [message]; // Make it an array.
     }
 
@@ -1005,7 +976,7 @@ Tours.prototype.TourBox = function (message, Display) {
         Display = this.TourDisplay;
     }
 
-    if (Display == this.Displays.Normal) {
+    if (Display === this.Displays.Normal) {
         this.white();
         this.border();
         this.white();
@@ -1025,11 +996,12 @@ Tours.prototype.TourBox = function (message, Display) {
     } else { // this.Displays.Clean
         TourBox(message.join("<br/>"), this.id);
     }
-}
+};
 
 Tours.prototype.idleBattler = function (name) {
     var hash = this.roundStatus.idleBattles,
-        x, chash;
+        x,
+        chash;
 
     for (x in hash) {
         chash = hash[x];
@@ -1039,11 +1011,12 @@ Tours.prototype.idleBattler = function (name) {
     }
 
     return false;
-}
+};
 
 Tours.prototype.isBattling = function (name) {
     var hash = this.roundStatus.ongoingBattles,
-        x, chash;
+        x,
+        chash;
 
     for (x in hash) {
         chash = hash[x];
@@ -1053,7 +1026,7 @@ Tours.prototype.isBattling = function (name) {
     }
 
     return false;
-}
+};
 
 Tours.prototype.command_display = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
@@ -1061,7 +1034,7 @@ Tours.prototype.command_display = function (src, commandData, fullCommand) {
         return;
     }
 
-    var num = parseInt(commandData);
+    var num = parseInt(commandData, 10);
     if (num !== 1 && num !== 2) {
         this.sendPM(src, "Valid tournament display modes are 1 (Normal) and 2 (Clean).");
         return;
@@ -1083,7 +1056,7 @@ Tours.prototype.command_display = function (src, commandData, fullCommand) {
     this.TourDisplay = num;
 
     cData.changeTourOptions(this.id, num, this.AutoStartBattles);
-}
+};
 
 Tours.prototype.command_autostartbattles = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
@@ -1098,10 +1071,10 @@ Tours.prototype.command_autostartbattles = function (src, commandData, fullComma
     this.TourBox(me + " turned auto start battles " + to_on + ".");
 
     cData.changeTourOptions(this.id, this.TourDisplay, this.AutoStartBattles);
-}
+};
 
 Tours.prototype.command_tourprize = function (src, commandData, fullCommand) {
-    if (this.tourmode == 0) {
+    if (this.tourmode === 0) {
         this.sendPM(src, "There is currently no tournament.");
         return;
     }
@@ -1111,10 +1084,10 @@ Tours.prototype.command_tourprize = function (src, commandData, fullCommand) {
     }
 
     this.sendPM(src, "The tournament prize is: " + this.prize);
-}
+};
 
 Tours.prototype.command_join = function (src, commandData, fullCommand) {
-    if (this.tourmode != 1) {
+    if (this.tourmode !== 1) {
         botMessage(src, "You are unable to join because a tournament is not currently running or has passed the signups phase.", this.id);
         return;
     }
@@ -1145,7 +1118,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         }
 
 
-        if (spots == 0) {
+        if (spots === 0) {
             this.tourmode = 2;
             this.roundnumber = 0;
             this.roundPairing();
@@ -1154,10 +1127,10 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
     }
 
     botMessage(src, "There are no spots remaining.", this.id);
-}
+};
 
 Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
-    if (this.tourmode == 0) {
+    if (this.tourmode === 0) {
         botMessage(src, "Wait untill the tournament has started.", this.id);
         return;
     }
@@ -1168,7 +1141,7 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
         return;
     }
 
-    if (this.tourmode == 2) {
+    if (this.tourmode === 2) {
         this.remaining--;
     }
 
@@ -1177,19 +1150,19 @@ Tours.prototype.command_unjoin = function (src, commandData, fullCommand) {
 
     this.TourBox(me + " left the tournament! <b>" + spotsNow + "</b> spots left!");
 
-    if (this.tourmode == 2 && this.players[self].couplesid != -1) {
+    if (this.tourmode === 2 && this.players[self].couplesid !== -1) {
         this.tourBattleEnd(this.tourOpponent(self.name()), self.name(), true);
     }
 
     delete this.players[self];
 
-    if (objLength(this.couples) == 0 && this.tourmode == 2) {
+    if (objLength(this.couples) === 0 && this.tourmode === 2) {
         this.roundPairing();
     }
-}
+};
 
 Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
-    if (this.tourmode != 2) {
+    if (this.tourmode !== 2) {
         botMessage(src, "You are unable to view the round because a tournament is not currently running or is in signing up phase.", this.id);
         return;
     }
@@ -1205,7 +1178,8 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
         ongoingBattles = battleHash.ongoingBattles,
         winLose = battleHash.winLose,
         anyFinishedBattles = !winLose.isEmpty(),
-        x, curr;
+        x,
+        curr;
 
     var roundInfoStr = "Round " + this.roundnumber;
     if (this.finals) {
@@ -1266,7 +1240,7 @@ Tours.prototype.command_viewround = function (src, commandData, fullCommand) {
 
     sys.sendMessage(src, "", chan);
     sys.sendHtmlMessage(src, style.footer, chan);
-}
+};
 
 Tours.prototype.command_dq = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
@@ -1274,7 +1248,7 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
         return;
     }
 
-    if (this.tourmode == 0) {
+    if (this.tourmode === 0) {
         botMessage(src, "Wait until the tournament has started.", this.id);
         return;
     }
@@ -1285,19 +1259,19 @@ Tours.prototype.command_dq = function (src, commandData, fullCommand) {
         return;
     }
 
-    if (this.tourmode == 2) {
+    if (this.tourmode === 2) {
         this.remaining--;
     }
 
     this.TourBox(player(target) + " was removed from the tournament by " + player(src) + "!");
 
 
-    if (this.tourmode == 2 && this.players[target].couplesid != -1) {
+    if (this.tourmode === 2 && this.players[target].couplesid !== -1) {
         this.tourBattleEnd(this.tourOpponent(target.name()), target.name(), true);
     }
 
     delete this.players[target];
-}
+};
 
 Tours.prototype.command_switch = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
@@ -1308,7 +1282,7 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
     var parts = commandData.split(':');
     parts[1] = parts[1].toLowerCase();
 
-    if (!this.isInTourney(parts[0]) || sys.id(parts[1]) == undefined) {
+    if (!this.isInTourney(parts[0]) || sys.id(parts[1]) === undefined) {
         botMessage(src, "The players need to exist!", this.id);
         return;
     }
@@ -1321,16 +1295,16 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
         playerN = parts[0].name(),
         switchN = parts[1].name(),
         indexOfIdle = this.idleBattler(playerN),
-        indexThingy, pNum;
+        indexThingy,
+        pNum;
 
     if (indexOfIdle !== false) {
         indexThingy = this.roundStatus.idleBattles[indexOfIdle];
-        pNum = indexThingy[0] == playerN;
+        pNum = indexThingy[0] === playerN;
         delete this.roundStatus.idleBattlers[indexOfIdle];
         if (pNum) {
-            this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [swittchN, indexThingy[1]];
-        }
-        else {
+            this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [switchN, indexThingy[1]];
+        } else {
             this.roundStatus.idleBattlers[objLength(this.roundStatus.idleBattlers)] = [indexThingy[0], switchN];
         }
     }
@@ -1342,29 +1316,29 @@ Tours.prototype.command_switch = function (src, commandData, fullCommand) {
     var spots = this.tourSpots(),
         message = [player(parts[0]) + " was switched with " + player(parts[1]) + " by " + player(src) + "!"];
 
-    if (this.tourmode == 1) {
-        message.push("<b>" + spots + "</b> more " + s("spot", spots) + " left!");
+    if (this.tourmode === 1) {
+        message.push("<b>" + spots + "</b> more " + Grammar.s("spot", spots) + " left!");
     }
 
     this.TourBox(message);
-}
+};
 
 Tours.prototype.command_push = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
         noPermissionMessage(src, fullCommand, this.id);
         return;
     }
-    if (this.tourmode == 0) {
+    if (this.tourmode === 0) {
         botMessage(src, "Wait until the tournament has started.", this.id);
         return;
     }
 
-    if (sys.dbIp(commandData) == undefined) {
+    if (sys.dbIp(commandData) === undefined) {
         botMessage(src, "This person doesn't exist.", this.id);
         return;
     }
 
-    if (this.tourmode == 2 && this.tagteam_tour()) {
+    if (this.tourmode === 2 && this.tagteam_tour()) {
         botMessage(src, "You cannot add players to a running tag team tour!", this.id);
         return;
     }
@@ -1375,7 +1349,7 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
         return;
     }
 
-    if (this.tourmode == 2) {
+    if (this.tourmode === 2) {
         this.remaining++;
     }
 
@@ -1386,27 +1360,27 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
 
     this.buildHash(name);
 
-    if (this.tourmode == 1) {
-        message.push("<b>" + spots + "</b> more " + s("spot", spots) + " left!");
+    if (this.tourmode === 1) {
+        message.push("<b>" + spots + "</b> more " + Grammar.s("spot", spots) + " left!");
     }
 
     this.TourBox(message);
 
-    if (this.tourmode == 1 && spots == 0) {
+    if (this.tourmode === 1 && spots === 0) {
         this.tourmode = 2;
         this.roundnumber = 0;
         this.roundPairing();
     }
 
     return;
-}
+};
 
 Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
         noPermissionMessage(src, fullCommand, this.id);
         return;
     }
-    if (this.tourmode != 2) {
+    if (this.tourmode !== 2) {
         botMessage(src, "Wait until a tournament starts", this.id);
         return;
     }
@@ -1429,7 +1403,7 @@ Tours.prototype.command_cancelbattle = function (src, commandData, fullCommand) 
     var target = player(startername);
     this.TourBox(target + " can forfeit their battle and rematch now.");
     return;
-}
+};
 
 Tours.prototype.command_tour = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
@@ -1444,10 +1418,10 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
     this.clearVariables();
 
     var mcmd = commandData.split(':');
-    this.tournumber = parseInt(mcmd[1]);
+    this.tournumber = parseInt(mcmd[1], 10);
 
-    var cp = parseInt(mcmd[2]);
-    if (this.identify(cp) == "Unknown Mode") {
+    var cp = parseInt(mcmd[2], 10);
+    if (this.identify(cp) === "Unknown Mode") {
         cp = 1; /* set to Single Elimination */
     }
 
@@ -1458,14 +1432,13 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
             botMessage(src, "You must specify a tournament size of 3 or more.", this.id);
             return;
         }
-    }
-    else {
+    } else {
         if (isNaN(this.tournumber) || this.tournumber <= 3) {
             botMessage(src, "You must specify a tournament size of 4 or more.", this.id);
             return;
         }
 
-        if (this.tournumber % 2 != 0) {
+        if (this.tournumber % 2 !== 0) {
             botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12, ..]", this.id);
             return;
         }
@@ -1494,14 +1467,14 @@ Tours.prototype.command_tour = function (src, commandData, fullCommand) {
 
     this.remaining = this.tournumber;
     this.tourmode = 1;
-    this.startTime = sys.time() * 1;
+    this.startTime = +sys.time();
     this.tourstarter = m_name;
 
     TourNotification(0, this.id, {
         "starter": m_name,
         "color": script.namecolor(src)
     });
-}
+};
 
 Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
@@ -1509,26 +1482,25 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
         return;
     }
 
-    if (this.tourmode != 1) {
+    if (this.tourmode !== 1) {
         botMessage(src, "You cannot change the number of spots because the tournament has passed the sign-up phase.", this.id);
         return;
     }
 
-    var count = parseInt(commandData);
+    var count = parseInt(commandData, 10);
     if (!this.tagteam_tour()) {
         if (isNaN(count) || count < 3) {
             botMessage(src, "You must specify a size of 3 or more.", this.id);
             return;
         }
-    }
-    else {
+    } else {
         if (isNaN(count) || count <= 3) {
             botMessage(src, "You must specify a size of 4 or more.", this.id);
             return;
         }
 
-        if (count % 2 != 0) {
-            botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12]", this.id)
+        if (count % 2 !== 0) {
+            botMessage(src, "You must specify an even number of players for tag team tours. [4, 8, 12]", this.id);
             return;
         }
     }
@@ -1543,17 +1515,17 @@ Tours.prototype.command_changespots = function (src, commandData, fullCommand) {
 
     var spots = this.tourSpots(),
         me = player(src),
-        message = [me + " changed the numbers of entrants to " + count + "!", "<b>" + spots + "</b> more " + s("spot", spots) + " left!"];
+        message = [me + " changed the numbers of entrants to " + count + "!", "<b>" + spots + "</b> more " + Grammar.s("spot", spots) + " left!"];
 
     this.TourBox(message);
 
-    if (spots == 0) {
+    if (spots === 0) {
         this.tourmode = 2;
         this.roundnumber = 0;
         this.roundPairing();
     }
 
-}
+};
 
 Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
     if (!this.hasTourAuth(src)) {
@@ -1561,7 +1533,7 @@ Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
         return;
     }
 
-    if (this.tourmode != 0) {
+    if (this.tourmode !== 0) {
         this.clearVariables();
 
         var me = player(src);
@@ -1570,7 +1542,7 @@ Tours.prototype.command_endtour = function (src, commandData, fullCommand) {
     }
 
     botMessage(src, "No tournament is running.", this.id);
-}
+};
 
 Tours.prototype.clearVariables = function () {
     this.tourmode = 0;
@@ -1595,7 +1567,7 @@ Tours.prototype.clearVariables = function () {
     this.players = {};
     this.roundplayers = 0;
     this.startTime = 0;
-}
+};
 
 Tours.prototype.cleanRoundVariables = function () {
     this.roundStatus = {
@@ -1605,19 +1577,19 @@ Tours.prototype.cleanRoundVariables = function () {
     };
 
     this.roundplayers = 0;
-}
+};
 
 Tours.prototype.playerName = function (hash, hashno) {
     var x, now = 0;
     for (x in hash) {
-        if (now == hashno) {
+        if (now === hashno) {
             return hash[x].name;
         }
         now++;
     }
 
     return "";
-}
+};
 
 Tours.prototype.teamWin = function () {
     var b = this.Blue,
@@ -1626,12 +1598,11 @@ Tours.prototype.teamWin = function () {
         winners = [],
         loseteam = -1;
 
-    if (this.playersOfTeam(b) == 0) {
+    if (this.playersOfTeam(b) === 0) {
         loser = "Team Blue";
         winners = this.namesOfTeam(r);
         loseteam = b;
-    }
-    else if (this.playersOfTeam(r) == 0) {
+    } else if (this.playersOfTeam(r) === 0) {
         loser = "Team Red";
         winners = this.namesOfTeam(b);
         loseteam = r;
@@ -1642,10 +1613,16 @@ Tours.prototype.teamWin = function () {
         'loser': loser,
         'losingteam': loseteam
     };
-}
+};
 
 Tours.prototype.roundPairing = function () {
-    if (this.roundnumber == 0 && this.tagteam_tour()) {
+    var message,
+        name,
+        nameId,
+        money = DataHash.money,
+        randNum;
+    
+    if (this.roundnumber === 0 && this.tagteam_tour()) {
         this.buildTeams();
     }
 
@@ -1653,30 +1630,30 @@ Tours.prototype.roundPairing = function () {
     this.cleanRoundVariables();
 
     if (this.players.length() === 1) {
-        var winner = this.players.first().name,
-            message = ["The winner of the " + this.tourtier + " tournament is " + winner + "!", "Congratulations, " + winner + ", on your success!"];
+        var winner = this.players.first().name;
+        
+        message = ["The winner of the " + this.tourtier + " tournament is " + winner + "!", "Congratulations, " + winner + ", on your success!"];
         if (!isEmpty(this.prize)) {
             message.push("", winner + " will receive the tournament prize: " + this.prize + "!");
         }
 
         this.TourBox(message);
 
-        if (this.id == 0) {
-            var name = winner.toLowerCase();
-            if (sys.dbIp(name) == undefined) {
+        if (this.id === 0) {
+            name = winner.toLowerCase();
+            if (sys.dbIp(name) === undefined) {
                 this.clearVariables();
                 return;
             }
-            var nameId = sys.id(name),
-                money = DataHash.money;
+            nameId = sys.id(name);
             if (!money.has(name)) {
                 money[name] = 0;
             }
-            var randNum = sys.rand(500, 1001);
+            randNum = sys.rand(500, 1001);
             money[name] += randNum;
             cache.write("money", JSON.stringify(DataHash.money));
 
-            if (nameId != undefined) {
+            if (nameId !== undefined) {
                 botMessage(nameId, "You won " + randNum + " battle points!", this.id);
             }
         }
@@ -1685,12 +1662,13 @@ Tours.prototype.roundPairing = function () {
         return;
     }
 
-    if (this.tagteam_tour()) { // TODO: Improve in 3.0
+    if (this.tagteam_tour()) {
         var winners = this.teamWin();
-        if (winners.winners.length != 0 && winners.loser != "" && winners.losingteam != -1) {
+        if (winners.winners.length !== 0 && winners.loser !== "" && winners.losingteam !== -1) {
             // We have winners!
-            var win = winners.winners.join(" and "),
-                message = ["The winners of the " + this.tourtier + " tournament are " + win + "!", "Congratulations, " + win + ", on your success!"];
+            var win = winners.winners.join(" and ");
+            
+            message = ["The winners of the " + this.tourtier + " tournament are " + win + "!", "Congratulations, " + win + ", on your success!"];
 
             if (!isEmpty(this.prize)) {
                 message.push("", win + " will receive the tournament prize: " + this.prize + "!");
@@ -1698,21 +1676,21 @@ Tours.prototype.roundPairing = function () {
 
             this.TourBox(message);
 
-            if (this.id == 0) {
-                var z, ww = winners.winners,
-                    name;
+            if (this.id === 0) {
+                var z, ww = winners.winners;
+                
                 for (z in ww) {
                     name = ww[z];
-                    if (sys.dbIp(name) == undefined) {
+                    if (sys.dbIp(name) === undefined) {
                         continue;
                     }
 
-                    var nameId = sys.id(name),
-                        money = DataHash.money;
-                    if (money[name] == undefined) {
+                    nameId = sys.id(name);
+                    if (money[name] === undefined) {
                         money[name] = 0;
                     }
-                    var randNum = sys.rand(320, 751);
+                    
+                    randNum = sys.rand(320, 751);
 
                     if (randNum < 350) {
                         randNum = sys.rand(330, 380); // Give some more points (most of the time)
@@ -1721,7 +1699,7 @@ Tours.prototype.roundPairing = function () {
                     money[name] += randNum;
                     cache.write("money", JSON.stringify(DataHash.money));
 
-                    if (nameId != undefined) {
+                    if (nameId !== undefined) {
                         botMessage(nameId, "You won " + randNum + " battle points!", this.id);
                     }
                 }
@@ -1733,9 +1711,10 @@ Tours.prototype.roundPairing = function () {
     }
 
     var plr = this.players,
-        x, message = [];
+        x;
+    
     for (x in plr) {
-        if (plr[x] == "") {
+        if (plr[x] === "") {
             delete plr[x];
         }
     }
@@ -1743,22 +1722,29 @@ Tours.prototype.roundPairing = function () {
     this.finals = this.players.length() === 2;
     if (!this.finals) {
         message.push("Round " + this.roundnumber + " of the " + this.tourtier + " tournament:", "");
-    }
-    else {
+    } else {
         message.push("Finals of the " + this.tourtier + " tournament:", "");
     }
 
     var i = 0,
-        x, p = this.players,
-        tempplayers = new Object().extend(p),
-        x1, name1, n1tl, x2, name2, n2tl, a, team1, team2;
+        p = this.players,
+        tempplayers = ({}).extend(p),
+        x1,
+        name1,
+        n1tl,
+        x2,
+        name2,
+        n2tl,
+        a,
+        team,
+        team2;
 
     if (this.tagteam_tour()) {
-        team = "<b><font color=blue>[Team Blue]</font></b>", team2 = "<b><font color=red>[Team Red]</font></b>";
-    }
-
-    else {
-        team = "", team2 = "";
+        team = "<b><font color=blue>[Team Blue]</font></b>";
+        team2 = "<b><font color=red>[Team Red]</font></b>";
+    } else {
+        team = "";
+        team2 = "";
     }
 
     for (a in tempplayers) {
@@ -1777,8 +1763,7 @@ Tours.prototype.roundPairing = function () {
             n2tl = name2.toLowerCase();
             delete tempplayers[n2tl];
 
-        }
-        else {
+        } else {
             x1 = this.randomPlayer(tempplayers, 0);
             name1 = this.playerName(tempplayers, x1);
             n1tl = name1.toLowerCase();
@@ -1803,8 +1788,7 @@ Tours.prototype.roundPairing = function () {
 
         if (!this.finals) {
             message.push(i + ". " + team + name1 + " VS " + team2 + name2);
-        }
-        else {
+        } else {
             message.push(team + name1 + " VS " + team2 + name2);
         }
     }
@@ -1821,13 +1805,19 @@ Tours.prototype.roundPairing = function () {
         var tourInst = this;
         sys.quickCall(function () {
             var tour = tourInst,
-                t, p, op, meteams, oppteams, couples = tour.couples;
+                t,
+                p,
+                op,
+                meteams,
+                oppteams,
+                couples = tour.couples;
             for (t in couples) {
-                p = couples[t][0].toLowerCase(), op = couples[t][1].toLowerCase();
+                p = couples[t][0].toLowerCase();
+                op = couples[t][1].toLowerCase();
                 if (sys.id(p) !== undefined && sys.id(op) !== undefined) {
                     meteams = firstTeamForTier(sys.id(p), tour.tourtier);
                     oppteams = firstTeamForTier(sys.id(op), tour.tourtier);
-                    if (meteams != -1 && oppteams != -1) {
+                    if (meteams !== -1 && oppteams !== -1) {
                         if (!tour.ongoingTourneyBattle(p) && !tour.ongoingTourneyBattle(op)) {
                             sys.forceBattle(sys.id(p), sys.id(op), meteams, oppteams, sys.getClauses(tour.tourtier), 0, false);
                             tour.roundStatus.ongoingBattles[tour.roundStatus.ongoingBattles.length()] = [p.name(), op.name()];
@@ -1837,63 +1827,64 @@ Tours.prototype.roundPairing = function () {
             }
         }, 2500);
     }
-}
+};
 
 Tours.prototype.isInTourney = function (name) {
     var name2 = name.toLowerCase();
     return this.players.has(name2);
-}
+};
 
 Tours.prototype.isInTourneyId = function (id) {
     var name = sys.name(id).toLowerCase();
     return this.players.has(name);
-}
+};
 
 Tours.prototype.tourOpponent = function (nam) {
     var name = nam.toLowerCase();
-    if (this.players[name].couplesid == -1) {
+    if (this.players[name].couplesid === -1) {
         return "";
     }
     var namenum = this.players[name].couplenum,
         id = this.players[name].couplesid;
 
-    if (namenum == 0) {
+    if (namenum === 0) {
         namenum = 1;
     } else {
         namenum = 0;
     }
 
     return this.couples[id][namenum];
-}
+};
 
 Tours.prototype.areOpponentsForTourBattle = function (src, dest) {
-    return this.isInTourney(sys.name(src)) && this.isInTourney(sys.name(dest)) && this.tourOpponent(sys.name(src)).toLowerCase() == sys.name(dest).toLowerCase();
-}
+    return this.isInTourney(sys.name(src)) && this.isInTourney(sys.name(dest)) && this.tourOpponent(sys.name(src)).toLowerCase() === sys.name(dest).toLowerCase();
+};
 
 Tours.prototype.areOpponentsForTourBattle2 = function (src, dest) {
-    return this.isInTourney(src) && this.isInTourney(dest) && this.tourOpponent(src).toLowerCase() == dest.toLowerCase();
-}
+    return this.isInTourney(src) && this.isInTourney(dest) && this.tourOpponent(src).toLowerCase() === dest.toLowerCase();
+};
 
 Tours.prototype.ongoingTourneyBattle = function (name) {
     return this.isBattling(name.name());
-}
+};
 
 Tours.prototype.afterBattleStarted = function (src, dest, clauses, rated, srcteam, destteam) {
-    if (this.tourmode == 2) {
+    var idleBattleIndex;
+    
+    if (this.tourmode === 2) {
         if (this.areOpponentsForTourBattle(src, dest)) {
             var n1 = sys.name(src),
                 n2 = sys.name(dest);
             if (Config.NoCrash) {
-                if (sys.tier(src, srcteam) == sys.tier(dest, destteam) && cmp(sys.tier(src, srcteam), this.tourtier)) {
-                    var idleBattleIndex = this.idleBattler(n1);
-                    if (this.roundStatus.idleBattles[idleBattleIndex] != undefined) {
+                if (sys.tier(src, srcteam) === sys.tier(dest, destteam) && cmp(sys.tier(src, srcteam), this.tourtier)) {
+                    idleBattleIndex = this.idleBattler(n1);
+                    if (this.roundStatus.idleBattles[idleBattleIndex] !== undefined) {
                         delete this.roundStatus.idleBattles[idleBattleIndex];
                         this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [n1, n2];
                     }
                     if (!this.finals) {
                         botAll("Round " + this.roundnumber + " tournament match between " + n1 + " and " + n2 + " has started!", this.id);
-                    }
-                    else {
+                    } else {
                         botAll("Final round tournament match between " + n1 + " and " + n2 + " has started!", this.id);
                     }
                 } else {
@@ -1901,21 +1892,20 @@ Tours.prototype.afterBattleStarted = function (src, dest, clauses, rated, srctea
                     botMessage(dest, "Your or your opponents team does not match the tournament tier (the match is not official).");
                 }
             } else {
-                var idleBattleIndex = this.idleBattler(n1);
-                if (this.roundStatus.idleBattles[idleBattleIndex] != undefined) {
+                idleBattleIndex = this.idleBattler(n1);
+                if (this.roundStatus.idleBattles[idleBattleIndex] !== undefined) {
                     delete this.roundStatus.idleBattles[idleBattleIndex];
                     this.roundStatus.ongoingBattles[objLength(this.roundStatus.ongoingBattles)] = [n1, n2];
                 }
                 if (!this.finals) {
                     botAll("Round " + this.roundnumber + " tournament match between " + n1 + " and " + n2 + " has started!", this.id);
-                }
-                else {
+                } else {
                     botAll("Final round tournament match between " + n1 + " and " + n2 + " has started!", this.id);
                 }
             }
         }
     }
-}
+};
 
 Tours.prototype.tie = function (src, dest) {
     var s = sys.name(src),
@@ -1929,28 +1919,27 @@ Tours.prototype.tie = function (src, dest) {
 
     if (this.AutoStartBattles) {
         sys.forceBattle(src, dest, sys.getClauses(this.tourtier), 0, false);
-    }
-    else {
+    } else {
         var startedBattleIndex = this.isBattling(s);
-        if (startedBattleIndex != false) {
+        if (startedBattleIndex !== false) {
             delete this.roundStatus.startedBattles[startedBattleIndex];
             this.roundStatus.idleBattles[objLength(this.roundStatus.idleBattles)] = [s, d];
         }
     }
-}
+};
 
 Tours.prototype.afterBattleEnded = function (src, dest, desc) {
-    if (this.tourmode != 2 || this.players.length() === 1) {
+    if (this.tourmode !== 2 || this.players.length() === 1) {
         return;
     }
 
-    if (desc == "tie") {
+    if (desc === "tie") {
         this.tie(src, dest);
         return;
     }
 
     this.tourBattleEnd(sys.name(src), sys.name(dest));
-}
+};
 
 Tours.prototype.tourBattleEnd = function (src, dest, rush) {
     if ((!this.areOpponentsForTourBattle2(src, dest) || !this.ongoingTourneyBattle(src)) && !rush) {
@@ -1959,11 +1948,14 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
 
     var srcTL = src.toLowerCase(),
         destTL = dest.toLowerCase(),
+        couplesLen,
+        stuff,
+        stuffSBIndex,
         message = [];
 
-    if (this.battlemode == 1 || this.battlemode == 4 || rush) {
-        var stuff = this.roundStatus,
-            stuffSBIndex = this.isBattling(src);
+    if (this.battlemode === 1 || this.battlemode === 4 || rush) {
+        stuff = this.roundStatus;
+        stuffSBIndex = this.isBattling(src);
 
         stuff.winLose[objLength(stuff.winLose)] = [src, dest];
         if (stuffSBIndex !== false) {
@@ -1979,14 +1971,13 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
 
         message.push(src + " advances to the next round of the tournament.", dest + " is out of the tournament.");
 
-        var couplesLen = this.couples.length();
+        couplesLen = this.couples.length();
         if (couplesLen > 0) {
             message.push("", couplesLen + " " + Grammar.s("battle", couplesLen) + " remaining.");
         } else {
             this.roundPairing();
         }
-    }
-    else if (this.battlemode == 2 || this.battlemode == 3 || this.battlemode == 5 || this.battlemode == 6) {
+    } else if (this.battlemode === 2 || this.battlemode === 3 || this.battlemode === 5 || this.battlemode === 6) {
         this.players[srcTL].roundwins++;
 
         var winnums = this.players[srcTL].roundwins + this.players[destTL].roundwins,
@@ -1999,7 +1990,7 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
             tln = this.battlemode - winnums;
 
         if (winnums >= this.battlemode) {
-            if (srcwin == destwin) {
+            if (srcwin === destwin) {
                 this.tie();
                 return;
             }
@@ -2009,17 +2000,16 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
                 winnerTL = src.toLowerCase();
                 loser = dest;
                 loserTL = dest.toLowerCase();
-            }
-            else {
+            } else {
                 winner = dest;
                 winnerTL = dest.toLowerCase();
                 loser = src;
-                loserTL = src.toLowerCase()
+                loserTL = src.toLowerCase();
             }
 
-            var stuff = this.roundStatus,
-                stuffSBIndex = this.isBattling(src),
-                winner = this.players[winnerTL];
+            stuff = this.roundStatus;
+            stuffSBIndex = this.isBattling(src);
+            winner = this.players[winnerTL];
 
             stuff.winLose[stuff.winLose.length()] = [src, dest];
             if (stuffSBIndex !== false) {
@@ -2035,14 +2025,13 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
 
             message.push(winner + " advances to the next round of the tournament.", loser + " is out of the tournament.");
 
-            var couplesLen = this.couples.length();
+            couplesLen = this.couples.length();
             if (couplesLen > 0) {
                 message.push("", couplesLen + " " + Grammar.s("battle", couplesLen) + " remaining.");
             } else {
                 this.roundPairing();
             }
-        }
-        else {
+        } else {
             var sid = sys.id(src),
                 did = sys.id(dest);
 
@@ -2053,18 +2042,18 @@ Tours.prototype.tourBattleEnd = function (src, dest, rush) {
     }
 
     this.TourBox(message);
-}
+};
 
 Tours.prototype.tourSpots = function () {
     return this.tournumber - objLength(this.players);
-}
+};
 
 Tours.prototype.randomPlayer = function (hash, team) {
     var ol = objLength(hash);
-    if (ol == 1 || ol == 0) {
+    if (ol === 1 || ol === 0) {
         return 0;
     }
-    if (ol == 2) {
+    if (ol === 2) {
         return sys.rand(0, 2);
     }
     var rand = sys.rand(0, ol);
@@ -2074,21 +2063,21 @@ Tours.prototype.randomPlayer = function (hash, team) {
     }
 
     var h = this.hashOf(hash, rand);
-    if (h == undefined) {
+    if (h === undefined) {
         return "";
     }
 
-    while (h.team != team) {
+    while (h.team !== team) {
         rand = sys.rand(0, ol);
         h = this.hashOf(hash, rand);
     }
 
     return rand;
-}
+};
 
 Tours.prototype.buildHash = function (src) {
     var name = sys.name(src);
-    if (name == undefined) {
+    if (name === undefined) {
         name = src;
     }
 
@@ -2100,74 +2089,74 @@ Tours.prototype.buildHash = function (src) {
         'roundwins': 0,
         'team': -1
     };
-}
+};
 
 Tours.prototype.tagteam_tour = function () {
     var b = this.battlemode;
     return b > 3 && b < 7;
-}
+};
 
 Tours.prototype.buildTeams = function () {
     var p = this.players,
-        y, team = 0,
+        y,
+        team = 0,
         id;
     for (y in p) {
         p[y].team = team;
         id = sys.id(p[y].name);
-        if (team == 0) {
-            if (id != undefined) {
+        if (team === 0) {
+            if (id !== undefined) {
                 botMessage(id, "You are in Team Blue.", this.id);
             }
 
             team++;
-        }
-        else {
-            if (id != undefined) {
+        } else {
+            if (id !== undefined) {
                 botMessage(id, "You are in Team Red.", this.id);
             }
 
             team--;
         }
     }
-}
+};
 
 Tours.prototype.playersOfTeam = function (team) {
     var y, p = this.players,
         ret = 0;
     for (y in p) {
-        if (p[y].team == team) {
+        if (p[y].team === team) {
             ret++;
         }
     }
 
     return ret;
-}
+};
 
 Tours.prototype.namesOfTeam = function (team) {
     var y, p = this.players,
         ret = [];
     for (y in p) {
-        if (p[y].team == team) {
+        if (p[y].team === team) {
             ret.push(p[y].name);
         }
     }
 
     return ret;
-}
+};
 
 Tours.prototype.totalPlayers = function () {
     return objLength(this.players);
-}
+};
 
 Tours.prototype.hashOf = function (hash, num) {
     var y, i = 0;
     for (y in hash) {
-        if (i == num) {
+        if (i === num) {
             return hash[y];
         }
         i++;
     }
-}
+};
 
 Tours.prototype.Blue = 0;
 Tours.prototype.Red = 1;
@@ -2180,10 +2169,10 @@ function Mail(sender, text, title) {
     this.text = text;
     this.read = false;
     this.sendtime = String(date);
-    this.sendAgo = sys.time() * 1;
+    this.sendAgo = +sys.time();
 }
 
-defineCoreProperty = function (core, prop, func) {
+function defineCoreProperty(core, prop, func) {
     Object.defineProperty(core, prop, {
         "value": func,
 
@@ -2195,15 +2184,13 @@ defineCoreProperty = function (core, prop, func) {
 
 defineCoreProperty(String.prototype, "reverse", function () {
     var strThis = this;
-    strThisArr = strThis.split("").reverse().join("");
-
-    this = strThisArr;
-    return this;
+    
+    return strThis.split("").reverse().join("");
 });
 
 defineCoreProperty(String.prototype, "isEmpty", function () {
     var mess = this;
-    return mess == "" || mess.trim() == "";
+    return mess === "" || mess.trim() === "";
 });
 
 defineCoreProperty(String.prototype, "contains", function (string) {
@@ -2217,12 +2204,12 @@ defineCoreProperty(String.prototype, "has", function (string) {
 
 defineCoreProperty(String.prototype, "name", function () {
     var str = this;
-    if (typeof DataHash.names == "undefined") {
+    if (typeof DataHash.names === "undefined") {
         return str;
     }
 
     var tl = str.toLowerCase();
-    if (typeof DataHash.names[tl] != "undefined") {
+    if (typeof DataHash.names[tl] !== "undefined") {
         str = DataHash.names[tl];
     }
 
@@ -2231,8 +2218,11 @@ defineCoreProperty(String.prototype, "name", function () {
 
 defineCoreProperty(String.prototype, "format", function () {
     var str = this,
-        exp, i, args = arguments.length,
+        exp,
+        i,
+        args = arguments.length,
         icontainer = 0;
+    
     for (i = 0; i < args; i++) {
         icontainer++;
         exp = new RegExp("%" + icontainer, "");
@@ -2245,12 +2235,6 @@ defineCoreProperty(String.prototype, "fontsize", function (size) {
     var str = this;
 
     return "<font size='" + size + "'>" + str + "</font>";
-});
-
-defineCoreProperty(String.prototype, "scramble", function () {
-    var thisString = this.split("");
-    for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
-    return thisString.join("");
 });
 
 defineCoreProperty(String.prototype, "linkify", function () {
@@ -2335,7 +2319,7 @@ defineCoreProperty(Object.prototype, "length", function () {
 defineCoreProperty(Array.prototype, "has", function (prop) {
     var x;
     for (x in this) {
-        if (this[x] == prop) {
+        if (this[x] === prop) {
             return true;
         }
     }
@@ -2359,13 +2343,13 @@ JSESSION.refill();
 
 ({
     serverStartUp: function () {
-        startupTime = sys.time() * 1;
+        startupTime = +sys.time();
         StartUp = true;
 
         if (sys.getFileContent(".scriptsession") === "") {
             Config.NoCrash = true;
             sys.writeToFile("nocrash.txt", "Delete this file to turn NoCrash off (in case of a system crash or something similar).");
-        } else if (sys.getFileContent("nocrash.txt") != undefined) {
+        } else if (sys.getFileContent("nocrash.txt") !== undefined) {
             Config.NoCrash = true;
         }
 
@@ -2384,8 +2368,7 @@ JSESSION.refill();
             run = function (f) {
                 try {
                     script[f]();
-                }
-                catch (e) {
+                } catch (e) {
                     print(FormatError("Runtime Error: Could not call script." + f + "!", e));
                 }
             }
@@ -13725,681 +13708,6 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadTrivia: function () {
-        return;
-
-        if (typeof Trivia === 'undefined' || !Trivia.loaded) {
-            Trivia = new(function () {
-                var Flags = {
-                    "html": 1,
-                    "AutoGenerator": "Automatic Trivia Question Generator",
-                    "NoQuestionsAvailable": "No questions are available.",
-                };
-
-                this.questionNumber = this.freeId = function () {
-                    return this.questions.length();
-                }
-
-                function sendAll(msg, html) {
-                    if (html == Flags.html) {
-                        sys.sendHtmlAll(msg, trivia);
-                        return;
-                    }
-
-                    botAll(msg, trivia);
-                }
-
-                function sendMessage(id, msg, html) {
-                    if (html == Flags.html) {
-                        sys.sendHtmlMessage(id, msg, trivia);
-                        return;
-                    }
-
-                    botMessage(id, msg, trivia);
-                }
-
-                function escapeMessage(id, msg) {
-                    botEscapeMessage(id, msg, trivia);
-                }
-
-                this.questionInfo = function () { /* No escaping on purpose; admins should review well */
-                    var currentQuestion = this.currentQuestion,
-                        displayQuestion = currentQuestion.display;
-
-                    sendAll("<hr width='450'/><center><b>Category:</b> " + currentQuestion.category + " <br/> <b>Question</b>: " + displayQuestion + " </center><hr width='450'/>", Flags.html);
-                }
-
-                this.leaderboardDisplay = function (src, match) {
-                    var scores = this.leaderboard;
-                    if (scores.isEmpty()) {
-                        sendMessage(src, "No leaderboard available.");
-                        return;
-                    }
-
-                    var l = [],
-                        i, num, p;
-
-                    if (match.isEmpty()) {
-                        for (i in scores) {
-                            l.push([i, scores[i]]);
-                        }
-
-                        l.sort(function (a, b) {
-                            return b[1] - a[1];
-                        });
-
-                        sendMessage(src, "<font size='4'>Trivia Leaderboard</font>");
-
-                        p = player(l[i][0]);
-
-                        for (i in l) {
-                            num = Number(i) + 1;
-                            escapeMessage(src, num + ". Player " + p + " with " + l[i][1] + " game wins.");
-                        }
-                        return;
-                    }
-
-                    p = player(match);
-                    sendMessage(src, "<font size='4'>Leaderboard for " + p + "</font>");
-                    escapeMessage(src, "Player " + p + " with " + scores[match] + " game wins.");
-                }
-
-                this.clearVariables = function (inLoad) {
-                    if (inLoad && this.loaded) {
-                        return;
-                    }
-
-                    this.mode = -1;
-
-/* Modes:
-			-1: No game.
-			0: Signups. 60 Sec delay.
-			1: Question
-			2: Delay time between questions
-			*/
-
-                    this.currentQuestion = {}; /* Current Question data (for this.questionInfo()) */
-
-                    this.players = {};
-
-/* Struct players:
-				nameToLower => "name", "points", "actionTime" 
-				(Correct case, points earned, time (in millisecs) of the /a if q was correct)
-				defaults: null, 0, 0
-			*/
-
-                    this.gamePoints = -1;
-
-                    /* Amount of points required */
-
-                    this.roundWrongAnswers = []; /* Incorrect answers. */
-
-                    if (typeof this.questions === 'undefined') {
-                        this.questionsLoad();
-                    }
-                    if (typeof this.leaderboard === 'undefined') {
-                        this.leaderboardLoad();
-                    }
-
-                    if (typeof this.review == 'undefined') {
-                        this.reviewLoad();
-                    }
-
-                    this.loaded = true;
-                }
-
-                this.randomQ = function () {
-                    var list = this.questions.keys(),
-                        len = list.length;
-
-                    if (len == 0) {
-                        return Flags.NoQuestionsAvailable;
-                    }
-
-                    var rand = Math.floor(len * Math.random()),
-                        result = this.questions[list[rand]],
-                        resn = result.name;
-
-                    while (result === undefined) {
-                        rand = Math.floor(len * Math.random());
-                        result = this.questions[list[rand]], resn = result.name;
-                    }
-
-                    this.currentQuestion = result;
-                }
-
-                this.isQuestion = function (id) {
-                    var x, questions = this.questions,
-                        curr;
-                    for (x in questions) {
-                        curr = questions[x]
-                        if (curr != id) {
-                            continue;
-                        }
-                        return true;
-                    }
-
-                    return false;
-                }
-
-                this.addQuestion = function (info) {
-                    if (!info.display_question) {
-                        info.display_question = info.question;
-                    }
-
-                    this.questions[this.freeId()] = info;
-                }
-
-                this.questionsLoad = function () {
-                    try {
-                        this.questions = JSON.parse(TrivCache.get("Questions"));
-                    }
-                    catch (e) {
-                        this.questions = {};
-                    }
-
-                    if (TrivCache.get("init_pokes_done") == "") {
-                        var nums = 1,
-                            poke, randchance, scrambled;
-
-                        for (; nums < 650; nums++) {
-                            poke = sys.pokemon(nums);
-                            randchance = sys.rand(0, 3) == 1 ? '&shiny=true' : '';
-                            scrambled = poke.scrambled;
-
-                            this.addQuestion({
-                                'by': Flags.AutoGenerator,
-                                'answers': [poke],
-                                'question': 'Who is this Pokémon? <br/> <img src="pokemon:' + nums + randchance + '&gen=5">',
-                                'category': 'Pokémon'
-                            });
-                            this.addQuestion({
-                                'by': Flags.AutoGenerator,
-                                'answers': [poke],
-                                'question': 'Who is this Pokemon? - ' + poke,
-                                'display_question': 'What is the correct Pokémon name? <br/> ' + scrambled.bold(),
-                                'category': 'Pokémon'
-                            });
-                        };
-
-                        TrivCache.write("init_pokes_done", true);
-                        this.saveQuestions();
-                    }
-                }
-
-                this.leaderboardLoad = function () {
-                    try {
-                        this.leaderboard = JSON.parse(TrivCache.get("LeaderBoard"));
-                    }
-                    catch (e) {
-                        this.leaderboard = {};
-                    }
-                }
-
-                this.reviewLoad = function () {
-                    try {
-                        this.review = JSON.parse(TrivCache.get("Review"));
-                    }
-                    catch (e) {
-                        this.review = {};
-                    }
-
-                }
-
-                this.saveQuestions = function () {
-                    TrivCache.write("Questions", JSON.stringify(this.questions));
-                }
-
-                this.saveLeaderBoard = function () {
-                    TrivCache.write("LeaderBoard", JSON.stringify(this.leaderboard));
-                }
-
-                this.saveReview = function () {
-                    TrivCache.write("Reviews", JSON.stringify(this.review));
-                }
-
-                this.saveLeaderboard = function (user) {
-                    user = user.toLowerCase();
-
-                    var lbNum = 1,
-                        board = this.leaderboard;
-                    if (board.has(user)) {
-                        lbNum + board[user];
-                    }
-
-                    board[user] = lbNum;
-                    this.saveLeaderBoard();
-                }
-
-                this.command_start = function (src, points) {
-                    var name = sys.name(src),
-                        send = function (mess) {
-                            if (src) {
-                                sendMessage(src, mess);
-                            }
-                        };
-
-                    if (!src) {
-                        name = Bot.bot + "</i>";
-                    }
-
-                    if (this.isGameGoingOn()) {
-                        send("A Trivia game is already going on.");
-                        return;
-                    }
-                    if (this.questions.isEmpty()) {
-                        send("No questions exist.");
-                        return;
-                    }
-
-                    points = parseInt(points);
-
-                    if (points < 30) {
-                        send("Specify at least 30 points for this game.");
-                        return;
-                    }
-
-                    if (points > 200) {
-                        send("Specify less than 200 points for this game.");
-                        return;
-                    }
-
-                    this.mode = 0;
-                    this.gamePoints = points;
-
-                    var me = player(src);
-                    if (!src) {
-                        me = name;
-                    }
-
-                    botAll("A new trivia game was started by " + me + "! It will start in 60 seconds. Go to " + ChannelLink(sys.channel(trivia)) + " and type /join to join it! First to get " + points + " points or more wins!", 0);
-                    sendAll("A new trivia game was started by " + me + "! It will start in 60 seconds. Type /join to join the game! First to get " + points + " points or more wins! <ping/>");
-                    sys.callLater("Trivia.startGame();", 60);
-                }
-
-                this.isGameGoingOn = function () {
-                    return this.mode != -1;
-                }
-
-                this.durningGame_beforeChatMessage = function (src, message) {
-/* return value bool:
-				true = stop message from appearing
-				false = ignore this
-				
-				arg message string:
-				the message.
-				*/
-
-                    if (this.mode == 2 || this.mode == 0) {
-                        return false;
-                    }
-
-                    var myName = sys.name(src).toLowerCase();
-                    if (this.players.has(myName)) {
-                        this.command_join(src);
-                    }
-
-                    var myPlayer = this.players[myName];
-
-                    if (message.isEmpty()) {
-                        sendMessage(src, "Specify an answer.");
-                        return true;
-                    }
-
-                    var qList = this.currentQuestion.answers.map(function (q) {
-                        return q.toLowerCase();
-                    }),
-                        messageToLower = message.toLowerCase();
-
-                    if (qList.has(messageToLower)) {
-                        myPlayer.actionTime = new Date().getTime();
-                    }
-                    else {
-                        if (myPlayer.actionTime != -1) {
-                            myPlayer.actionTime = -1; // Wrong, reset.
-                            this.roundWrongAnswers.push(message + " (by " + sys.name(src) + ")");
-                        }
-                    }
-
-
-                    this.sendMessage(src, "Your answer was submitted.");
-                    return true;
-                }
-
-                this.endGame = function () {
-                    this.clearVariables(false);
-                }
-
-                this.startGame = function () {
-                    var pList = this.players.keys().map(function (n) {
-                        return player(n);
-                    });
-
-                    if (pList.length != 0) {
-                        sendAll(fancyJoin(pList) + " joined the game!");
-                    }
-
-                    this.displayQInfo();
-                    this.callNewRound();
-                }
-
-                this.sendToTrivReview = function (src, question) {
-                    if (sys.playersOfChannel(trivreview) != 0) {
-                        sys.sendHtmlAll("<timestamp/> <i><b>" + sys.name(src) + "</b> has submit a question.</i> <ping/>", trivreview);
-                        sys.sendHtmlAll("<timestamp/> <i>" + question.question + " | " + html_escape(question.category) + " | " + question.answers.join(" & ") + "</i>", trivreview);
-                        var questionContainHTML = html_strip(question.display_question) != question.display_question;
-                        var categoryContainHTML = html_strip(question.category) != question.category;
-                        sys.sendHtmlAll("<timestamp/> <i>Contains HTML in displayed question: " + questionContainHTML + " | Contains HTML in category: " + categoryContainHTML, trivreview);
-                    }
-                }
-
-                this.callNewRound = function () {
-                    if (this.mode === -1) { /* Game ended */
-                        return;
-                    }
-
-                    var longestAnswer = 0,
-                        x, q = this.currentQuestion.answers,
-                        curr;
-                    for (x in q) {
-                        curr = q[x].length;
-                        if (curr > longestAnswer) {
-                            longestAnswer = curr
-                        }
-                    }
-
-                    if (longestAnswer > 19) {
-                        longestAnswer = Math.round(longestAnswer / 2);
-                    }
-
-                    sys.callLater("Trivia.roundEnd(" + longestAnswer + ");", longestAnswer);
-                }
-
-                this.startWait = function () {
-                    var rand = sys.rand(13, 21);
-
-                    this.mode = 2;
-                    sendAll("Have a " + rand + " second break before the next question!");
-                    sys.callLater("Trivia.displayQInfo(); Trivia.callNewRound();", rand);
-                }
-
-                this.roundEnd = function (longestAnswerLength) {
-                    if (this.mode === -1) {
-                        return;
-                    } /* Game ended */
-
-                    var x, p = this.players,
-                        ctime = new Date().getTime(),
-                        correct = [],
-                        winners = {},
-                        cplayer, cplayertimediff, cplayeraddpoints;
-
-                    for (x in p) {
-                        cplayer = p[x];
-                        cplayertimediff = Math.round(ctime - cplayer.actionTime);
-                        if (cplayer.actionTime != -1) {
-                            cplayeraddpoints = longestAnswerLength;
-
-                            if (cplayertimediff > longestAnswerLength / 2) {
-                                cplayeraddpoints = Math.round(cplayeraddpoints / 2);
-                            }
-
-                            correct.push(cplayer.name);
-                            cplayer.points += Math.round(Math.tan(cplayertimediff)) + cplayeraddpoints + sys.rand(-1, 2);
-                            if (cplayer.points >= this.gamePoints) {
-                                winners[cplayer.name] = cplayer.points;
-                            }
-                        }
-                    }
-
-                    if (!winners.isEmpty()) {
-                        var winnersList = [],
-                            win = " is";
-
-                        for (x in winners) {
-                            winnersList.push(x.bold() + " (" + winners[x] + ")");
-                        }
-
-                        if (winnersList.length != 1) {
-                            win = "s are";
-                        }
-
-                        sendAll("The winner" + win + ": " + fancyJoin(winnersList));
-
-                        for (x in winnersList) {
-                            this.saveLeaderboard(winnersList[x]);
-                        }
-
-                        this.endGame();
-                        return;
-                    }
-
-                    this.sendAll("Time's up!");
-                    if (!correct.isEmpty()) {
-                        this.sendAll("Correct Answered: " + fancyJoin(correct));
-                    } else {
-                        this.sendAll("No one was correct!");
-                    }
-                    if (this.roundWrongAnswers.length != 0) {
-                        this.sendAll("Incorrect answers: " + this.roundWrongAnswers.join(", "));
-                    }
-
-                    var lbArr = [],
-                        lbStr = "",
-                        i = 0,
-                        c_pl;
-
-                    for (x in this.players) {
-                        c_pl = this.players[x];
-                        lbArr.push([c_pl.name, c_pl.points]);
-                        i++;
-
-                        c_pl.actionTime = 0; /* Do this while we can! */
-                    }
-
-                    lbArr = lbArr.sort(function (a, b) {
-                        return b[1] - a[1];
-                    });
-
-                    var lbArrLen = lbArr.length - 1;
-
-                    for (x in lbArr) {
-                        lbStr += lbArr[x][0].bold() + " (<b>" + lbArr[x][1] + "</b>)";
-                        if (x != lbArrLen) {
-                            lbStr += ", ";
-                        }
-                    }
-
-                    sendAll("Leaderboard:");
-                    sendAll(lbStr);
-
-                    this.roundWrongAnswers = [];
-                    this.startWait();
-                }
-
-                this.getCategories = function () {
-                    if (this.categoryCache !== undefined) {
-                        return this.categoryCache;
-                    }
-
-                    var x, quest = this.questions,
-                        catArr = [],
-                        c_quest;
-                    for (x in quest) {
-                        c_quest = quest[x].category;
-                        if (!catArr.has(c_quest)) {
-                            catArr.push(c_quest);
-                        }
-                    }
-
-                    this.categoryCache = catArr;
-                    return catArr;
-                }
-
-                this.displayQInfo = function () {
-                    if (this.mode === -1) { // Game ended.
-                        return;
-                    }
-
-                    this.randomQ();
-                    this.questionInfo();
-                }
-
-                this.end = function (src) {
-                    if (this.mode === -1) {
-                        sendMessage(src, "No game is going on.");
-                        return;
-                    }
-
-                    sendAll("Trivia game ended by " + player(src) + "!");
-                    this.endGame();
-                }
-
-                this.command_questions = function (src) {
-                    var len = this.questionsLength();
-                    if (len === 0) {
-                        sendMessage(src, "No questions exist.");
-                        return;
-                    }
-
-                    if (len > 2998) {
-                        sendMessage(src, "There are too many questions to display. You will not see them all.");
-                    }
-
-                    var q = this.questions,
-                        y, curr;
-                    for (y in q) {
-                        curr = q[y];
-                        escapeMessage(src, y + ": " + curr.question);
-                    }
-                }
-
-                this.command_categories = function (src) {
-                    if (this.questions.isEmpty()) {
-                        this.sendMessage(src, "No questions exist. There can't be any categories.");
-                        return;
-                    }
-
-                    var catArr = this.getCategories();
-                    sendMessage(src, "Question Categories: " + catArr.join(", "));
-                }
-
-                this.command_rmquestion = function (src, commandData) {
-                    if (this.questionNumber() === 0) {
-                        botMessage(src, "No questions exist.", trivreview);
-                        return;
-                    }
-                    if (!this.isQuestion()) {
-                        botMessage(src, "That question doesn't exist. For a list of questions, type /questions", trivreview);
-                        return;
-                    }
-                    if (!this.currentQuestion.isEmpty()) {
-                        if (this.currentQuestion.question == commandData) {
-                            botMessage(src, "A round is going on with this question. Use /skip first.", trivreview);
-                            return;
-                        }
-                    }
-
-                    delete this.questions[commandData];
-                    delete this.categoryCache;
-                    this.saveQuestions();
-                    botMessage(src, "Deleted question " + commandData + "!", trivreview);
-                }
-
-                this.command_skip = function (src) {
-                    if (!this.isGameGoingOn()) {
-                        sendMessage(src, "No trivia game is going on.");
-                        return;
-                    }
-                    if (this.mode === 2) {
-                        sendMessage(src, "You can't skip a round durning a break.");
-                        return;
-                    }
-                    sendAll(player(src) + " skipped this round!");
-                    this.startWait();
-                }
-
-                this.command_qdata = function (src, commandData) {
-                    if (this.questionNumber() === 0) {
-                        sendMessage(src, "No questions exist.");
-                        return;
-                    }
-                    if (!this.questions.has(commandData)) {
-                        sendMessage(src, "That question doesn't exist. For a list of questions, type /questions.");
-                        return;
-                    }
-
-                    var qData = this.questions[commandData],
-                        question = qData.question,
-                        by = qData.by,
-                        t = qData.category;
-
-                    sendMessage(src, "Question: " + html_escape(r));
-                    sendMessage(src, "Category: " + cat);
-
-                    if (by !== Flags.AutoGenerator) {
-                        sendMessage(src, "By: " + by);
-                    }
-
-                    if (hpAuth(src) > 0) {
-                        if (!this.currentQuestion.isEmpty() && this.currentQuestion.question != commandData) {
-                            var answers = qData.answers,
-                                s = answers.length == 1 ? " is" : "s are";
-
-                            sendMessage(src, "The answer" + s + ": " + answers.join(", "));
-                        }
-                    }
-                }
-
-                this.command_submit = function (src, mcmd) {
-                    if (isEmpty(mcmd[0]) || isEmpty(mcmd[1]) || isEmpty(mcmd[2])) {
-                        this.sendMessage(src, "Question name, category, or answers are missing.");
-                        return;
-                    }
-
-                    var q = this.questions[mcmd[0]],
-                        myName = sys.name(src);
-                    if (this.isQuestion(mcmd[0]) || this.isReview(mcmd[0])) {
-                        if (q.by.toLowerCase() !== myName.toLowerCase()) {
-                            this.sendMessage(src, "This question already exists!");
-                            return;
-                        }
-                    }
-
-                    var answers = cut(mcmd, 2, ':').split("").map(function (q) {
-                        return html_escape(q);
-                    }).split(",");
-                    if (answers.length == 0) {
-                        this.sendMessage(src, "Please specify answers.");
-                        return;
-                    }
-
-                    var questionHash = {
-                        "question": html_strip(mcmd[0]),
-                        "display_question": mcmd[0],
-                        "category": mcmd[1],
-                        "answers": answers,
-                        "by": myName
-                    };
-                    this.review[this.freeId()] = questionHash;
-                    delete this.categoryCache;
-
-                    this.sendMessage(src, "Submitted question!");
-                    this.questionsSave();
-                    this.sendToTrivReview(src, questionHash);
-                }
-
-                this.command_review = function (src, mcmd) {
-                    var qid = mcmd[0],
-                        keep = on(mcmd[1]);
-                    if (!keep) {
-                        delete this.review[qid];
-                        botAll("Removed question " + qid, trivreview);
-                    }
-                }
-            })();
-        }
-
-        Trivia.clearVariables(true);
     },
 
     loadMafia: function () {
