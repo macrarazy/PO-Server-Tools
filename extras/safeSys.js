@@ -383,23 +383,18 @@ safeSys = function () {
         },
         sendNetworkCommand: noop,
         sha1: function () {
-            // TODO: Get code to generate sha1 strings.
             return "";
         },
         md4: function () {
-            // TODO: Get code to generate md4 strings.
             return "";
         },
         md5: function () {
-            // TODO: Get code to generate md5 strings.
             return "";
         },
         validColor: function () {
-            // TODO: Possibly get code to validate this?
             return false;
         },
         hexColor: function () {
-            // TODO: Get code to generate hex colors.
             return "#000000";
         },
         saveVal: noop,

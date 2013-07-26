@@ -23,8 +23,6 @@
  Thanks for using this script! :)
  */
 
-// TODO: More comments. :]
-// TODO: Use the new events.
 /* Script Configuration */
 var Config = {
     // If teams should be checked for Dream World abilities.
@@ -74,9 +72,11 @@ var Config = {
     
     // List of players that can use the 'eval') command. Note that if the player isn't in this list, then they are simply not allowed to use the command,
     // even if they are Owner, with the exception of the server host (who has ip 127.0.0.1).
+    
+    // Note that it's important to write the player's name in lower case (so "theunknownone" instead of "TheUnknownOne").
     EvalAccess: [
-        "Example player with Config.EvalAccess",
-        "Another example player with Config.EvalAccess"
+        "example player with config.evalaccess",
+        "another example player with config.evalaccess"
     ],
     
     // Changes that player's authority to that level when performing an auth lookup (so an administrator with a PlayerPermission of 3 can use owner commands, 
@@ -125,7 +125,7 @@ var Script = {
 };
 
 
-/* Don't modify anything beyond this point if you don't know what you're doing. */
+// Don't modify anything beyond this point if you don't know what you're doing.
 var global = this;
 var GLOBAL = this;
 var require;
@@ -133,7 +133,8 @@ var require;
 if (typeof require === 'undefined') {
     // Includes a script.
     var require = (function () {
-        var require; // require function, see below.
+        var require, // require function, see below.
+            hookId = 0; // hook guid.
         
         // path: path to the file, no .js
         // nocache: if the cache for the file should be deleted
@@ -160,13 +161,64 @@ if (typeof require === 'undefined') {
                 // This can access require, content, identifier, module(.exports, .path), exports, and path, aswell as anything in the global namespace.
                 eval(content);
             } catch (e) {
-                print("Fatal Error: Couldn't load module " + identifier + " (scripts/" + path + "): " + e.toString() + " on line " + e.lineNumber);
+                print("Critical: Couldn't load module " + identifier + " (scripts/" + path + "): " + e.toString() + " (on line " + e.lineNumber + ").");
+                
+                if (e.backtracetext) {
+                    print("Backtrace:");
+                    print(e.backtracetext);
+                }
             }
             
             require.modules[identifier] = module.exports;
             return require.modules[identifier];
         };
         
+        require.hook = function (event, hook, hookId, force) {
+            if (!require.hooks[event]) {
+                require.hooks[event] = {};
+            }
+            
+            if (!hookId) {
+                hookId = event + " Hook #" + hookId;
+            }
+            
+            if (!force && require.hooks[event][hookId]) {
+                return false;
+            }
+            
+            require.hooks[event][hookId] = hook;
+            return true;
+        };
+        
+        require.provide = function (event, args) {
+            var ignoreEvent = false,
+                hookArgs = [].slice.call(arguments, 1),
+                hooks = require.hooks[event],
+                i;
+            
+            if (!hooks) {
+                return false;
+            }
+            
+            for (i in hooks) {
+                try {
+                    if (hooks[i].apply(null, hookArgs)) {
+                        ignoreEvent = true;
+                    }
+                } catch (e) {
+                    print("Error: Couldn't execute hook '" + i + "' for event '" + event + "': " + e.toString() + " (on line " + e.lineNumber + ").");
+                    
+                    if (e.backtracetext) {
+                        print("Backtrace:");
+                        print(e.backtracetext);
+                    }
+                }
+            }
+            
+            return ignoreEvent;
+        };
+        
+        require.hooks = require.hooks || {};
         require.modules = require.modules || {};
         return require;
     }());
@@ -218,11 +270,14 @@ if (typeof require === 'undefined') {
         });
     });
     */
-    
     JSESSION.identifyScriptAs("TheUnknownOne's Server Script " + Script.version);
     JSESSION.registerUser(POUser);
     JSESSION.registerChannel(POChannel);
     JSESSION.refill();
+    
+    // Load modules that have to define some hooks.
+    // We don't have to do anything else with them so creating a variable is pointless.
+    require('ify');
 }());
 /*
 function Mail(sender, text, title) {

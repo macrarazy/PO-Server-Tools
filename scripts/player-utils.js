@@ -401,7 +401,6 @@
     };
     
     // Moderation utilities [mod]
-    // TODO: Make these log with WatchUtils
     
     // Kicks a player.
     exports.kick = function (id) {

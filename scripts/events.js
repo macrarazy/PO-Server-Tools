@@ -103,42 +103,97 @@
     // Called when: Script is loaded.
     // Currently unused.
     Events.loadScript = function () {
+        if (require.provide("loadScript#start")) {
+            sys.stopEvent();
+            return;
+        }
+        
+        if (require.provide("loadScript#end")) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [evt-unloadScript] unloadScript event
     // Called when: Script is unloaded (changed/updated).
     // Currently unused.
     Events.unloadScript = function () {
+        if (require.provide("unloadScript#start")) {
+            sys.stopEvent();
+            return;
+        }
+        
+        if (require.provide("unloadScript#end")) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [evt-switchError] switchError event
     // Called when: An error occured when loading updating the scripts.
     // Currently unused.
     Events.switchError = function (scr) {
+        if (require.provide("switchError#start", scr)) {
+            sys.stopEvent();
+            return;
+        }
+        
+        if (require.provide("switchError#end", scr)) {
+            sys.stopEvent();
+            return;
+        }
     };
     
      // [evt-warning] warning event
     // Called when: A warning is triggered by a sys function.
     // Currently unused.
     Events.warning = function (message) {
+        if (require.provide("warning#start", message)) {
+            sys.stopEvent();
+            return;
+        }
+        
+        if (require.provide("warning#end", message)) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [evt-serverStartUp] serverStartUp event
     // Called when: Server starts up.
     // Sets start up variables and calls event beforeNewMessage.
     Events.serverStartUp = function () {
+        if (require.provide("serverStartUp#start")) {
+            sys.stopEvent();
+            return;
+        }
+        
         Options.isStartingUp = true;
         Options.startUpTime = +(sys.time());
         
         // Call beforeNewMessage with "Script Check: OK".
         // This is not done by the server itself in serverStartUp.
         Utils.callEvent("beforeNewMessage", "Script Check: OK");
+        
+        if (require.provide("serverStartUp#end")) {
+            sys.stopEvent();
+            return;
+        }
     };
 
     // [evt-serverShutDown] serverShutDown event
     // Called when: Server shuts down.
     // Currently unused.
     Events.serverShutDown = function () {
+        if (require.provide("serverShutDown#start")) {
+            sys.stopEvent();
+            return;
+        }
+        
+        if (require.provide("serverShutDown#end")) {
+            sys.stopEvent();
+            return;
+        }
     };
 
     // [evt-init] init event
@@ -201,13 +256,8 @@
 */
         // NOTE: DataHash.spammers -> chatSpammers
         // reconnect -> autoReconnectBlock
+        // TODO: Remove clantag
 /*
-        if (typeof Clantag === "undefined" || Clantag.full !== ClanTag) {
-            Clantag = {};
-            Clantag.full = ClanTag;
-            Clantag.fullText = removespaces(Clantag.full.replace(/[\[\]\{\}]/gi, ""));
-            Clantag.fullTextLower = Clantag.fullText.toLowerCase();
-        }
 
         ScriptLength = {};
 */
@@ -313,6 +363,15 @@
     // Called when: A message is outputted to stdout.
     // Currently unused.
     Events.afterNewMessage = function (message) {
+        if (require.provide("afterNewMessage#start", message)) {
+            sys.stopEvent();
+            return;
+        }
+        
+        if (require.provide("afterNewMessage#end", message)) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [evt-beforeChatMessage] beforeChatMessage event
@@ -615,6 +674,15 @@
     // Called when: A player sends a chat message.
     // Currently unused.
     Events.afterChatMessage = function (src, message, chan) {
+        if (require.provide("afterChatMessage#start", src, message, chan)) {
+            sys.stopEvent();
+            return;
+        }
+        
+        if (require.provide("afterChatMessage#end", src, message, chan)) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [chan-evts] Channel events
@@ -796,6 +864,15 @@
     // Called when: A player leaves a channel.
     // Currently unused.
     Events.afterChannelLeave = function (src, chan) {
+        if (require.provide("afterChannelLeave#start", src, chan)) {
+            sys.stopEvent();
+            return;
+        }
+        
+        if (require.provide("afterChannelLeave#end", src, chan)) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [evt-beforeChannelDestroyed] beforeChannelDestroyed event
@@ -1990,107 +2067,7 @@
         }
     },
 
-    loadIfyUtility: function () {
-        var old = -1;
-        if (typeof ify != "undefined") {
-            old = {
-                names: ify.names,
-                ifyName: ify.ifyName,
-                inIfy: ify.inIfy
-            };
-        }
-
-        ify = new(function () {
-            this.names = {};
-            this.ifyName = "";
-            this.inIfy = false;
-
-            this.afterLogIn = function (id) {
-                if (!this.inIfy) {
-                    return;
-                }
-
-                this.names[id] = sys.name(id);
-                sys.changeName(id, this.ifyName);
-            }
-
-            this.beforeLogOut = function (id) {
-                if (!this.inIfy) {
-                    return;
-                }
-
-                delete this.names[id];
-            }
-
-            this.afterChangeTeam = function (id) {
-                if (!this.inIfy) {
-                    return;
-                }
-
-                this.names[id] = sys.name(id);
-                sys.changeName(id, this.ifyName);
-            }
-
-            this.onChangeName = function () {
-                if (!this.inIfy) {
-                    return "allow";
-                }
-
-                return "disallow";
-            }
-
-            this.command_unify = function (src, commandData, chan) {
-                if (!this.inIfy) {
-                    botMessage(src, "Ify isn't on!", chan);
-                    return;
-                }
-
-                this.inIfy = false;
-                this.ifyName = "";
-
-                botAll(this.names[src] + " changed everyones name back!", 0);
-                var ids = sys.playerIds(),
-                    id;
-
-                for (id in ids) {
-                    sys.changeName(ids[id], this.names[ids[id]]);
-                }
-
-                this.names = {};
-            }
-
-            this.command_ify = function (src, commandData, chan) {
-                if (this.inIfy) {
-                    botMessage(src, "Ify is already on!", chan);
-                    return;
-                }
-                if (commandData.length > 25) { // Slightly longer name allowed.
-                    botMessage(src, "The ifyname must be under 26 characters.", chan);
-                    return;
-                }
-
-                this.inIfy = true;
-                this.ifyName = commandData;
-                this.names = {}; // Just to be sure.
-                botAll(sys.name(src) + " changed everyones name to " + commandData + "!", 0);
-                var ids = sys.playerIds(),
-                    x, id;
-
-                for (x in ids) {
-                    id = ids[x];
-                    this.names[id] = sys.name(id);
-                    sys.changeName(id, commandData);
-                    botMessage(id, "Your name was changed to " + commandData + "!");
-                }
-            }
-        })();
-
-        if (old != -1) {
-            ify.names = old.names;
-            ify.ifyName = old.ifyName;
-            ify.inIfy = old.inIfy;
-        }
-    },
+    
     
     // Now in scripts/pokedex.js
     loadPokemonStats: function () {

@@ -13,7 +13,7 @@ Licensed under [MIT](LICENSE).
 
 ### safeSys (extras/safeSys.js)
 
-This is a little script that ensures sys (and its methods) exists. Useful if you're testing your script in a browser/CommonJS.
+This is a little script that ensures sys (and its methods) exists. Useful if you're testing your script in a browser/CommonJS, or if your IDE can read files for methods to help autocomplete.
 
 It does **NOT** ensure that SESSION exists. That might be implemented later.
 

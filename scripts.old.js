@@ -883,7 +883,6 @@ TourNotification = function (src, chan, info) { // info is an object
         if (tour.TourDisplay == tour.Displays.Normal) {
             tour.white()
             tour.border();
-            // TODO: Implement color support for bot.
             sys.sendHtmlAll("<timestamp/><b><font color=green>A Tournament was started by " + player(info.starter) + "! </b></font>", chan);
             sys.sendHtmlAll("<timestamp/><b><font color=red>Players:</font></b> " + tour.tournumber, chan);
             sys.sendHtmlAll("<timestamp/><b><font color=blue>Type:</b></font> " + tour.identify(), chan);
@@ -1685,7 +1684,7 @@ Tours.prototype.roundPairing = function () {
         return;
     }
 
-    if (this.tagteam_tour()) { // TODO: Improve in 3.0
+    if (this.tagteam_tour()) {
         var winners = this.teamWin();
         if (winners.winners.length != 0 && winners.loser != "" && winners.losingteam != -1) {
             // We have winners!
@@ -10539,7 +10538,7 @@ if(message == "Maximum Players Changed.") {
         }
 
         checkForUpdates = function (noresume) {
-            return; // TODO: Modify.
+            return;
             var commitData = "";
             try {
                 commitData = JSON.parse(cache.get("LastCommitData"));
@@ -11021,7 +11020,7 @@ if(message == "Maximum Players Changed.") {
             }
         }
 
-        auths = function () { // TODO: Test if somewhat faster or equal to a playerIds loop.
+        auths = function () {
             var ids = [],
                 list = sys.dbAuths(),
                 i, id;
