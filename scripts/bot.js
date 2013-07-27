@@ -13,15 +13,11 @@
     var Options = require('options');
     
     function escapeHtml(msg) {
-        return (sys.escapeHtml || function (str) {
-            return str.replace(/\&/g, "&amp;").replace(/</g, "&lt;").replace(/\>/g, "&gt;");
-        })(msg);
+        return msg.replace(/\&/g, "&amp;").replace(/</g, "&lt;").replace(/\>/g, "&gt;");
     }
     
     // Sends a bot message to a player
     exports.sendMessage = function (src, message, channel) {
-        // we have to do this manually.
-        // PO APIs are silly.
         if (typeof channel === "undefined") {
             sys.sendHtmlMessage(
                 src,
@@ -44,8 +40,6 @@
     
     // Sends a bot message to everyone
     exports.sendAll = function (message, channel) {
-        // we have to do this manually.
-        // PO APIs are silly.
         if (typeof channel === "undefined") {
             sys.sendHtmlAll(
                 "<font color='" + Options.Bot.color + "'><timestamp/><b>" + Options.Bot.name + ":</b></font> " + message
