@@ -100,7 +100,7 @@
     // [sys-evts] System events
     
     // [evt-loadScript] loadScript event
-    // Called when: Script is loaded.
+    // [Stoppable] Called when: Script is loaded.
     // Currently unused.
     Events.loadScript = function () {
         if (require.provide("loadScript#start")) {
@@ -115,58 +115,41 @@
     };
     
     // [evt-unloadScript] unloadScript event
-    // Called when: Script is unloaded (changed/updated).
+    // [Unstoppable] Called when: Script is unloaded (changed/updated).
     // Currently unused.
     Events.unloadScript = function () {
-        if (require.provide("unloadScript#start")) {
-            sys.stopEvent();
-            return;
-        }
-        
-        if (require.provide("unloadScript#end")) {
-            sys.stopEvent();
-            return;
-        }
+        require.provide("unloadScript#start");
+        require.provide("unloadScript#end");
     };
     
     // [evt-switchError] switchError event
-    // Called when: An error occured when loading updating the scripts.
+    // [Unstoppable] Called when: An error occured when loading updating the scripts.
     // Currently unused.
     Events.switchError = function (scr) {
-        if (require.provide("switchError#start", scr)) {
-            sys.stopEvent();
-            return;
-        }
-        
-        if (require.provide("switchError#end", scr)) {
-            sys.stopEvent();
-            return;
-        }
+        require.provide("switchError#start", scr);
+        require.provide("switchError#end", scr);
     };
     
-     // [evt-warning] warning event
-    // Called when: A warning is triggered by a sys function.
+    // [evt-warning] warning event
+    // [Stoppable] Called when: A warning is triggered by a sys function.
     // Currently unused.
-    Events.warning = function (message) {
-        if (require.provide("warning#start", message)) {
+    Events.warning = function (func, message, backtrace) {
+        if (require.provide("warning#start", func, message, backtrace)) {
             sys.stopEvent();
             return;
         }
         
-        if (require.provide("warning#end", message)) {
+        if (require.provide("warning#end", func, message, backtrace)) {
             sys.stopEvent();
             return;
         }
     };
     
     // [evt-serverStartUp] serverStartUp event
-    // Called when: Server starts up.
+    // [Unstoppable] Called when: Server starts up.
     // Sets start up variables and calls event beforeNewMessage.
     Events.serverStartUp = function () {
-        if (require.provide("serverStartUp#start")) {
-            sys.stopEvent();
-            return;
-        }
+        require.provide("serverStartUp#start");
         
         Options.isStartingUp = true;
         Options.startUpTime = +(sys.time());
@@ -175,31 +158,23 @@
         // This is not done by the server itself in serverStartUp.
         Utils.callEvent("beforeNewMessage", "Script Check: OK");
         
-        if (require.provide("serverStartUp#end")) {
-            sys.stopEvent();
-            return;
-        }
+        require.provide("serverStartUp#end");
     };
 
     // [evt-serverShutDown] serverShutDown event
-    // Called when: Server shuts down.
+    // [Unstoppable] Called when: Server shuts down.
     // Currently unused.
     Events.serverShutDown = function () {
-        if (require.provide("serverShutDown#start")) {
-            sys.stopEvent();
-            return;
-        }
-        
-        if (require.provide("serverShutDown#end")) {
-            sys.stopEvent();
-            return;
-        }
+        require.provide("serverShutDown#start");
+        require.provide("serverShutDown#end");
     };
 
     // [evt-init] init event
-    // Called when: Custom.
+    // [Unstoppable] Called when: Custom.
     // Initializes certain values.
     Events.init = function () {
+        require.provide("init#start");
+        
         var serverLine = sys.getFileContent("config").split("\n")[30],
             defaultChannels = Options.defaultChannels,
             channelIdKeys = Object.keys(Options.defaultChannelIds),
@@ -264,11 +239,14 @@
         // Register script recent re-load and register dates.
         Cache.write("scriptRecentLoadDate", date);
         Cache.save("scriptRegisterDate", date);
+        
+        require.provide("init#end");
     };
 
     // [evt-step] step event
-    // Called when: Every second.
+    // [Unstoppable] Called when: Every second.
     // Handles temporary auth pruning and mafia's tick event.
+    // NOTE: Hooks are unavailable for this event.
     Events.step = function () {
         Options.stepCounter += 1;
         
@@ -283,8 +261,9 @@
     // [msg-evts] Message events.
         
     // [evt-beforeNewMessage] beforeNewMessage event
-    // Called when: A message is outputted to stdout.
+    // [Stoppable] Called when: A message is outputted to stdout.
     // Logs script warnings, errors, gives the server host an eval command, and calls Events.init if the scripts were (re)loaded.
+    // NOTE: Hooks are unavailable for this event.
     Events.beforeNewMessage = function (message) {
         var result,
             mainChan;
@@ -360,27 +339,23 @@
     };
     
     // [evt-afterNewMessage] afterNewMessage event
-    // Called when: A message is outputted to stdout.
+    // [Unstoppable] Called when: A message is outputted to stdout.
     // Currently unused.
+    // NOTE: Hooks are unavailable for this event.
     Events.afterNewMessage = function (message) {
-        if (require.provide("afterNewMessage#start", message)) {
+    };
+    
+    // [evt-beforeChatMessage] beforeChatMessage event
+    // [Stoppable] Called when: A player sends a chat message.
+    // Runs macros, flood checks, commands, silences, mutes, rank icons, chat gradients.
+    Events.beforeChatMessage = function (src, message, chan) {
+        if (require.provide("beforeChatMessage#start", src, message, chan)) {
             sys.stopEvent();
             return;
         }
         
-        if (require.provide("afterNewMessage#end", message)) {
-            sys.stopEvent();
-            return;
-        }
-    };
-    
-    // [evt-beforeChatMessage] beforeChatMessage event
-    // Called when: A player sends a chat message.
-    // Runs macros, flood checks, commands, silences, mutes, rank icons, chat gradients.
-    Events.beforeChatMessage = function (src, message, chan) {
         // Pseudo error for /eval.
         if (sys.channel(chan) === undefined) {
-            sys.stopEvent();
             return "Error: Unknown channel.";
         }
         
@@ -391,7 +366,6 @@
         
         // Pseudo error for /eval.
         if (!sys.isInChannel(src, chan)) {
-            sys.stopEvent();
             return "Error: Player not in channel.";
         }
 
@@ -668,30 +642,33 @@
         
         // Just send the message regulary.
         sys.sendAll(playerName + ": " + message, chan);
+        
+        if (require.provide("beforeChatMessage#end", src, message, chan)) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [evt-afterChatMessage] afterChatMessage event
-    // Called when: A player sends a chat message.
+    // [Unstoppable] Called when: A player sends a chat message.
     // Currently unused.
     Events.afterChatMessage = function (src, message, chan) {
-        if (require.provide("afterChatMessage#start", src, message, chan)) {
-            sys.stopEvent();
-            return;
-        }
-        
-        if (require.provide("afterChatMessage#end", src, message, chan)) {
-            sys.stopEvent();
-            return;
-        }
+        require.provide("afterChatMessage#start", src, message, chan);
+        require.provide("afterChatMessage#end", src, message, chan);
     };
     
     // [chan-evts] Channel events
     
     // [evt-beforeChannelCreated] beforeChannelCreated event
-    // Called when: Before a channel will be created.
+    // [Stoppable] Called when: Before a channel will be created.
     // Checks if channels are enabled and creates the JSESSION object of the channel.
     Events.beforeChannelCreated = function (chan, name, src) {
-        // prevent players from creating a channel if Config.ChannelsEnabled is false.
+        if (require.provide("beforeChannelCreated#start", chan, name, src)) {
+            sys.stopEvent();
+            return;
+        }
+        
+        // Prevent players from creating a channel if Config.ChannelsEnabled is false.
         if (!Config.ChannelsEnabled && sys.loggedIn(src)) {
             Bot.sendMessage(src, "The creation of channels by players is disabled.");
             sys.stopEvent();
@@ -706,12 +683,19 @@
         }*/
 
         JSESSION.createChannel(chan);
+    
+        if (require.provide("beforeChannelCreated#end", chan, name, src)) {
+            sys.stopEvent();
+            return;
+        }
     };
 
     // [evt-afterChannelCreated] afterChannelCreated event
-    // Called when: After a channel has been created.
+    // [Unstoppable] Called when: After a channel has been created.
     // Sets channel data stored in ChannelData, and gives creator/auth perms if the channel was created by a player.
     Events.afterChannelCreated = function (chan, name, src) {
+        require.provide("afterChannelCreated#start", chan, name, src);
+        
         var channel = JSESSION.channels(chan);
 
         // Bail and panic if the channel doesn't exist.
@@ -729,12 +713,19 @@
             // TODO: Channel#changeAuth -> ChannelUtils.changeAuth
             channel.changeAuth(src, 3);
         }
+        
+        require.provide("afterChannelCreated#end", chan, name, src);
     };
     
     // [evt-beforeChannelJoin] beforeChannelJoin event
-    // Called when: [src] joins the channel [chan].
+    // [Stoppable] Called when: [src] joins the channel [chan].
     // Checks if a player can join [chan] - handling bans, the channel being private, and the channel being restricted (default channels such as Ever Grande City (staff channel)).
     Events.beforeChannelJoin = function (src, chan) {
+        if (require.provide("beforeChannelJoin#start", src, chan)) {
+            sys.stopEvent();
+            return;
+        }
+        
         var channelIds = Options.defaultChannelIds,
             name = sys.name(src),
             user,
@@ -812,12 +803,19 @@
             sys.stopEvent();
             return;
         }
+        
+        if (require.provide("beforeChannelJoin#after", src, chan)) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [evt-afterChannelJoin] afterChannelJoin event
-    // Called when: After a player joins a channel.
+    // [Unstoppable] Called when: After a player joins a channel.
     // Logs the player joining a channel, creates a chatgradient (if the channel has one), and sends them the channel topic and server message of the day (if any).
     Events.afterChannelJoin = function (src, chan) {
+        require.provide("afterChannelJoin#start", src, chan);
+        
         var channel = JSESSION.channels(chan),
             name = sys.name(src),
             nameLower = name.toLowerCase(),
@@ -851,34 +849,44 @@
         if (channel !== 0) {
             tourNotification(src, channel);
         }
+        
+        require.provide("afterChannelJoin#end", src, chan);
     };
     
     // [evt-beforeChannelLeave] beforeChannelLeave event
-    // Called when: A player leaves a channel.
+    // [Stoppable] Called when: A player leaves a channel.
     // Logs the player leaving a channel.
     Events.beforeChannelLeave = function (src, chan) {
-        WatchUtils.logPlayerEvent(src, "Left channel " + sys.channel(chan) + " (ID: " + chan + ")");
-    };
-
-    // [evt-afterChannelLeave] afterChannelLeave event
-    // Called when: A player leaves a channel.
-    // Currently unused.
-    Events.afterChannelLeave = function (src, chan) {
-        if (require.provide("afterChannelLeave#start", src, chan)) {
+        if (require.provide("beforeChannelLeave#start", src, chan)) {
             sys.stopEvent();
             return;
         }
         
-        if (require.provide("afterChannelLeave#end", src, chan)) {
+        WatchUtils.logPlayerEvent(src, "Left channel " + sys.channel(chan) + " (ID: " + chan + ")");
+        
+        if (require.provide("beforeChannelLeave#end", src, chan)) {
             sys.stopEvent();
             return;
         }
     };
+
+    // [evt-afterChannelLeave] afterChannelLeave event
+    // [Unstoppable] Called when: A player leaves a channel.
+    // Currently unused.
+    Events.afterChannelLeave = function (src, chan) {
+        require.provide("afterChannelLeave#start", src, chan);
+        require.provide("afterChannelLeave#end", src, chan);
+    };
     
     // [evt-beforeChannelDestroyed] beforeChannelDestroyed event
-    // Called when: A channel is deleted.
+    // [Stoppable] Called when: A channel is deleted.
     // Stops perm/default channels from being destroyed.
     Events.beforeChannelDestroyed = function (chan) {
+        if (require.provide("beforeChannelDestroyed#start", chan)) {
+            sys.stopEvent();
+            return;
+        }
+        
         var defaultIds = Options.defaultChannelIds;
         
         if (chan === defaultIds.mafia
@@ -894,50 +902,81 @@
 
         WatchUtils.logChannelEvent(chan, "Destroyed");
         JSESSION.destroyChannel(chan);
+        
+        if (require.provide("beforeChannelDestroyed#end", chan)) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [evt-afterChannelDestroyed] afterChannelDestroyed event
-    // Called when: A channel is deleted.
+    // [Unstoppable] Called when: A channel is deleted.
     // Currently unused.
     Events.afterChannelDestroyed = function (chan) {
+        require.provide("afterChannelDestroyed#start", chan);
+        require.provide("afterChannelDestroyed#end", chan);
     };
     
     // [bat-evts] Battle events
 
     // [evt-beforeFindBattle] beforeFindBattle event
-    // Called when: [src] tries to find a battle via the "Find Battle" button.
+    // [Stoppable] Called when: [src] tries to find a battle via the "Find Battle" button.
     // Logs [src] pressing "Find Battle".
     Events.beforeFindBattle = function (src) {
+        if (require.provide("beforeFindBattle#start", src)) {
+            sys.stopEvent();
+            return;
+        }
+        
         WatchUtils.logPlayerEvent(src, "Initiated a Find Battle search.");
+        
+        if (require.provide("beforeFindBattle#end", src)) {
+            sys.stopEvent();
+            return;
+        }
     };
     
     // [evt-afterFindBattle] afterFindBattle event
-    // Called when: [src] tries to find a battle via the "Find Battle" button.
+    // [Unstoppable] Called when: [src] tries to find a battle via the "Find Battle" button.
     // Currently unused.
     Events.afterFindBattle = function (src) {
+        require.provide("afterFindBattle#start", src);
+        require.provide("afterFindBattle#end", src);
     };
     
     // [evt-beforeBattleMatchup] beforeBattleMatchup event
-    // Called when: A find battle pair is selected.
+    // [Stoppable] Called when: A find battle pair is selected.
     // Prevents the battle if they are disabled.
-    Events.beforeBattleMatchup = function (src) {
+    Events.beforeBattleMatchup = function (src, tar, clauses, rated, mode) {
+        if (require.provide("beforeBattleMatchup#start", src, tar, clauses, rated, mode)) {
+            sys.stopEvent();
+            return;
+        }
+        
         if (!Config.BattlesEnabled) {
             Bot.sendMessage(src, "Battles are currently disabled.");
+            sys.stopEvent();
+            return;
+        }
+        
+        if (require.provide("beforeBattleMatchup#end", src, tar, clauses, rated, mode)) {
             sys.stopEvent();
             return;
         }
     };
     
     // [evt-afterBattleMatchup] afterBattleMatchup event
-    // Called when: A find battle pair is selected.
+    // [Unstoppable] Called when: A find battle pair is selected.
     // Currently unused.
-    Events.afterBattleMatchup = function (src) {
+    Events.afterBattleMatchup = function (src, tar, clauses, rated, mode) {
+        require.provide("afterBattleMatchup#start", src, tar, clauses, rated, mode);
+        require.provide("afterBattleMatchup#end", src, tar, clauses, rated, mode);
     };
     
     // [evt-beforeChallengeIssued] beforeChallengeIssued event
     // Called when: A player issues a challenge.
     // Prevents challenge spam and ensures the battle is Doubles/Triples if the tier is.
-    Events.beforeChallengeIssued = function (src, dest, clauses, rated, mode, team, destTier) {
+    Events.beforeChallengeIssued = function (src, tar, clauses, rated, mode, srcTeam, tarTier) {
         var userObject = JSESSION.users(src),
             time = (+sys.time());
         
@@ -955,7 +994,7 @@
 
         userObject.lastChallenge = time;
         
-        if ((sys.getClauses(destTier) % 32 >= 16) && (clauses % 32) < 16) {
+        if ((sys.getClauses(tarTier) % 32 >= 16) && (clauses % 32) < 16) {
             Bot.sendMessage(src, "Challenge Cup must be enabled in the challenge window for a CC battle");
             sys.stopEvent();
             return;
@@ -967,12 +1006,12 @@
         }
 
         if (!Config.NoCrash) {
-            if (mode !== 1 && sys.tier(src, team).indexOf("Doubles") !== -1 && destTier.indexOf("Doubles") !== -1) {
+            if (mode !== 1 && sys.tier(src, srcTeam).indexOf("Doubles") !== -1 && tar.indexOf("Doubles") !== -1) {
                 Bot.sendMessage(src, "To fight in doubles, enable doubles in the challenge window!");
                 sys.stopEvent();
                 return;
             }
-            if (mode !== 2 && sys.tier(src, team).indexOf("Triples") !== -1 && destTier.indexOf("Triples") !== -1) {
+            if (mode !== 2 && sys.tier(src, srcTeam).indexOf("Triples") !== -1 && tar.indexOf("Triples") !== -1) {
                 Bot.sendMessage(src, "To fight in triples, enable triples in the challenge window!");
                 sys.stopEvent();
                 return;
@@ -981,44 +1020,53 @@
     };
     
     // [evt-afterChallengeIssued] afterChallengeIssued event
-    // Called when: A player issues a challenge.
+    // [Unstoppable] Called when: A player issues a challenge.
     // Currently unused.
-    Events.afterChallengeIssued = function () {
+    Events.afterChallengeIssued = function (src, tar, clauses, rated, mode, srcTeam, tarTier) {
     };
     
     // [evt-battleSetup] battleSetup event
-    // Called when: A battle is started (used to set up battle effects).
+    // [Unstoppable] Called when: A battle is started (used to set up battle effects).
     // Currently unused.
     Events.battleSetup = function (src, tar, battleId) {
+        require.provide("battleSetup#start", src, tar, battleId);
+        require.provide("battleSetup#end", src, tar, battleId);
     };
     
     // [evt-beforeBattleStarted] beforeBattleStarted event
-    // Called when: A battle has started.
+    // [Unstoppable] Called when: A battle has started.
     // Currently unused.
-    Events.beforeBattleStarted = function () {
+    Events.beforeBattleStarted = function (src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam) {
+        require.provide("beforeBattleStarted#start", src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam);
+        require.provide("beforeBattleStarted#end", src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam);
     };
     
     // [evt-afterBattleStarted] afterBattleStarted event
-    // Called when: A battle has started.
+    // [Unstoppable] Called when: A battle has started.
     // Makes tours work properly.
-    Events.afterBattleStarted = function (src, tar, clauses, rated, srcteam, tarteam) {
+    Events.afterBattleStarted = function (src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam) {
+        require.provide("afterBattleStarted#start", src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam);
+        
+        // TODO: Add this as a hook.
         var channelIds = sys.channelIds(),
             len = channelIds.length,
             i;
 
         for (i = 0; i < len; ++i) {
-            Tours.events.afterBattleStarted(src, tar, clauses, rated, srcteam, tarteam, JSESSION.channels(channelIds[i]).tour);
+            Tours.events.afterBattleStarted(src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam, JSESSION.channels(channelIds[i]).tour);
         }
+        
+        require.provide("afterBattleStarted#end", src, tar, clauses, rated, srcTeam, tarTeam);
     };
     
     // [evt-beforeBattleEnded] beforeBattleEnded event
-    // Called when: A player issues a challenge.
+    // [Stoppable] Called when: A player issues a challenge.
     // Currently unused.
-    Events.beforeBattleEnded = function () {
+    Events.beforeBattleEnded = function (winner, loser, result, battleId) {
     };
     
     // [evt-afterBattleEnded] afterBattleEnded event
-    // Called when: A player issues a challenge.
+    // [Unstoppable] Called when: A player issues a challenge.
     // Gives the players battle points, makes tours work.
     Events.afterBattleEnded = function (winner, loser, result, battleId) {
         var winnerName = sys.name(winner),

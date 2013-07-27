@@ -153,12 +153,12 @@ if (typeof require === 'undefined') {
             
             content = sys.getFileContent("scripts/" + path);
             
-            if (content === undefined) {
+            if (!content) {
                 return {};
             }
             
             try {
-                // This can access require, content, identifier, module(.exports, .path), exports, and path, aswell as anything in the global namespace.
+                // This can access require, content, identifier, module(.exports, .path), exports, and path, as well as anything in the global namespace.
                 eval(content);
             } catch (e) {
                 print("Critical: Couldn't load module " + identifier + " (scripts/" + path + "): " + e.toString() + " (on line " + e.lineNumber + ").");
@@ -246,30 +246,6 @@ if (typeof require === 'undefined') {
     // NOTE: script.namecolor -> PlayerUtils.trueColor
     // NOTE: script.loadAll -> script.init
     
-    // NOTE: These will not be used anymore as-is, but some of them (like linkify) will be merged with utils
-    /*
-    defineCoreProperty(String.prototype, "scramble", function () {
-        var thisString = this.split("");
-        for (var i = thisString.length, j, k; i; j = parseInt(Math.random() * i), k = thisString[--i], thisString[i] = thisString[j], thisString[j] = k) {}
-        return thisString.join("");
-    });
-    
-    defineCoreProperty(String.prototype, "linkify", function () {
-        var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
-            pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
-            emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
-            poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-    
-        return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>').replace(poPattern, function ($) {
-            var type = $.substring($.indexOf(":", $.indexOf("/"))),
-                thing = $.substring($.indexOf("/"));
-    
-            type = type[0].toUpperCase() + type.substring(1);
-    
-            return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
-        });
-    });
-    */
     JSESSION.identifyScriptAs("TheUnknownOne's Server Script " + Script.version);
     JSESSION.registerUser(POUser);
     JSESSION.registerChannel(POChannel);

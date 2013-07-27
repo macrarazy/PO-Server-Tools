@@ -921,14 +921,14 @@
     
     // After a battle has started.
     // Expects a ToursChannelConfig
-    Tours.events.afterBattleStarted = function (src, dest, clauses, rated, srcteam, destteam, tcc) {
+    Tours.events.afterBattleStarted = function (src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam, tcc) {
         var srcName = sys.name(src),
-            destName = sys.name(dest),
+            tarName = sys.name(tar),
             idleBattler;
         
         // e.g. when the tour has started
         if (tcc.mode === 2) {
-            if (Tours.areOpponentsForTourBattle(src, dest, tcc)) {
+            if (Tours.areOpponentsForTourBattle(src, tar, tcc)) {
                 // No crash safety guard
                 if (!Config.NoCrash) {
                     // don't check for tiers as we don't want to (possibly) crash.
@@ -940,12 +940,12 @@
                     }
                     
                     if (tcc.finals) {
-                        Bot.sendMessage("Final round tournament match between " + srcName + " and " + destName + " has started!", tcc.id);
+                        Bot.sendMessage("Final round tournament match between " + srcName + " and " + tarName + " has started!", tcc.id);
                     } else {
-                        Bot.sendMessage("Round " + tcc.round + " tournament match between " + srcName + " and " + destName + " has started!", tcc.id);
+                        Bot.sendMessage("Round " + tcc.round + " tournament match between " + srcName + " and " + tarName + " has started!", tcc.id);
                     }
                 } else {
-                    if (sys.tier(src, srcteam) === sys.tier(dest, destteam) && Utils.isEqual(sys.tier(src, srcteam), tcc.tier)) {
+                    if (sys.tier(src, srcTeam) === sys.tier(tar, tarTeam) && Utils.isEqual(sys.tier(src, srcTeam), tcc.tier)) {
                         idleBattler = Tours.idleBattler(srcName, tcc);
                         
                         if (tcc.roundStatus.idleBattles[idleBattler] !== undefined) {
@@ -955,13 +955,13 @@
                         }
                         
                         if (tcc.finals) {
-                            Bot.sendMessage("Final round tournament match between " + srcName + " and " + destName + " has started!", tcc.id);
+                            Bot.sendMessage("Final round tournament match between " + srcName + " and " + tarName + " has started!", tcc.id);
                         } else {
-                            Bot.sendMessage("Round " + tcc.round + " tournament match between " + srcName + " and " + destName + " has started!", tcc.id);
+                            Bot.sendMessage("Round " + tcc.round + " tournament match between " + srcName + " and " + tarName + " has started!", tcc.id);
                         }
                     } else {
                         Bot.sendMessage(src, "Your or your opponents team does not match the tournament tier (the match is not official).", tcc.id);
-                        Bot.sendMessage(dest, "Your or your opponents team does not match the tournament tier (the match is not official).", tcc.id);
+                        Bot.sendMessage(tar, "Your or your opponents team does not match the tournament tier (the match is not official).", tcc.id);
                     }
                 }
             }

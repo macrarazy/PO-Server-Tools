@@ -24,7 +24,18 @@
         [2, "Freeze Clause"],
         [1, "Sleep Clause"]
     ];
-            
+     
+    // Patterns for linkify
+    var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
+        pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
+        emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim;
+    
+    // Shortcut to Object.prototype.hasOwnProperty.call
+    // Allows us to use hasOwnProperty even if it has been overwritten (so exports.hasOwnProperty(exports, "hasOwnProperty") would work in this case).
+    exports.hasOwnProperty = function (obj, property) {
+        return Object.prototype.hasOwnProperty.call(obj, property);
+    };
+    
     // Team alert shortcut
     exports.teamAlertMessage = function (src, team, message) {
         Bot.sendMessage(src, "Team #" + (team + 1) + ": " + message);
@@ -360,7 +371,7 @@
             // didn't work :[
             
             for (i in condition1) {
-                if (!(i in condition2)) {
+                if (!exports.hasOwnProperty(condition2, i)) {
                     return false;
                 }
                 
@@ -370,7 +381,7 @@
             }
             
             for (i in condition2) {
-                if (!(i in condition1)) {
+                if (!exports.hasOwnProperty(condition1, i)) {
                     return false;
                 }
                 
@@ -643,5 +654,13 @@
         }
 
         return "<img src='pokemon:" + num + "&shiny=" + shiny + "&back=" + back + "&gender=" + gender + "&gen=" + gen + "'>";
+    };
+    
+    // Adds clickable links to a message for urls, pseudo urls, and email addresses.
+    exports.linkify = function (message) {
+        return message
+            .replace(urlPattern, '<a target="_blank" href="$&">$&</a>')
+            .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
+            .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>');
     };
 }());
