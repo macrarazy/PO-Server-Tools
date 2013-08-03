@@ -19,6 +19,7 @@
     
     // Hooks [hks]
     
+    // TODO: Implement this straight into events, Ify goes into Options
     require.hook("afterLogIn#start", function (src) {
         if (!Ify.active) {
             return;

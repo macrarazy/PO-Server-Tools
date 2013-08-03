@@ -1,7 +1,7 @@
 --- Hooks available (by default) ---
-* All events: They all have #start and #end, for example: beforeChatMessage#start, afterChangeTeam#end, serverStartUp#start, etc.
+* All events: They all have #start (called before any code) and #end (called after any code), for example: beforeChatMessage#start, afterChangeTeam#end, serverStartUp#start, etc.
   Look in scripts/events.js for a list of events.
-  Exceptions: step, beforeNewMessage, afterNewMessage
+  Exceptions: step, beforeNewMessage, afterNewMessage (for performance)
 
 --- Hook IDs used (by default) ---
 * ifyAfterLogIn#start

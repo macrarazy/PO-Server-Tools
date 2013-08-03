@@ -132,7 +132,7 @@ var require;
 
 if (typeof require === 'undefined') {
     // Includes a script.
-    var require = (function () {
+    require = (function () {
         var require, // require function, see below.
             hookId = 0; // hook guid.
         
@@ -233,6 +233,7 @@ if (typeof require === 'undefined') {
         POChannel = require('channel').Channel,
         JSESSION = require('jsession'),
         // these are only used to be updated with Utils.updatePrototype
+        // TODO: remove updatePrototype
         Cache = require('cache'),
         ChannelData = require('channel-data');
     

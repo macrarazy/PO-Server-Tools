@@ -1,0 +1,15 @@
+Experiment: tempBan behavior
+
+To ban: sys.tempBan(name, time_in_minutes);
+To find ban time: sys.dbTempBanTime(name) => time_in_seconds
+To unban: sys.unban(name);
+
+beforePlayerBan(..., ..., time) is a time in minutes.
+
+sys.dbTempBanTime(name) is very unreliable. Only use it if you're sure they're banned (check with sys.banList).
+
+It returns the time in seconds, but only if the player has been banned. Otherwise it returns large numbers such as 4294967206.
+
+tempBan should not use floating point numbers. This can cause weird behavior as well. So, no second bans.
+
+time (in beforePlayerBan) is undefined if the ban isn't a tempBan.
