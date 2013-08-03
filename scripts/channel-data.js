@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: channel-data.js (ChannelData)
 // Contains ChannelData, which stores data (chan auth, etc.) of channels even after the server has shut down.

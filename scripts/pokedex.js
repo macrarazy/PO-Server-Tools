@@ -1,4 +1,4 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
     global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
@@ -146,7 +146,7 @@
             }
 
             moveObj[sys.pokemon(c_poke)] = current_move;
-            i++;
+            i += 1;
         }
 
         // Double checks for multiple moves
@@ -186,7 +186,7 @@
 
         for (x in fstats) {
             x = Number(x);
-            pokeId++;
+            pokeId += 1;
 
             //Put stuff into an array here.
 
@@ -200,7 +200,7 @@
 
             //First is for formes. Second is missingno check.
             if (spl[1][0] != "0" || spl[0] == "0") {
-                pokeId--;
+                pokeId -= 1;
                 continue;
             }
 

@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true, Tours: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: tours.js (Tours)
 // Contains most tournament logic, including commands.
@@ -47,7 +47,6 @@
     
     // Sends a tournament notification to a player
     // Also called by bots to notify a new tournament has started
-    // ------
     // info is an object and only used when called by a bot
     // Contains these properties:
     // name: Name of the bot.
@@ -246,7 +245,7 @@
             Tours.border(tcc.id);
             Tours.white(tcc.id);
     
-            for (i = 0, length = message.length; i < length; ++i) {
+            for (i = 0, length = message.length; i < length; i += 1) {
                 msg = message[i];
                 if (Utils.isEmpty(msg)) {
                     sys.sendAll("", tcc.id);
@@ -412,7 +411,8 @@
             if (num === pos) {
                 return hash[i];
             }
-            ++num;
+            
+            num += 1;
         }
         
         return {};
@@ -546,7 +546,7 @@
         
         for (i in players) {
             if (players[i].team === team) {
-                ++numPlayers;
+                numPlayers += 1;
             }
         }
     
@@ -655,7 +655,7 @@
             Tours.buildTeams(tcc);
         }
     
-        ++this.round;
+        this.round += 1;
         Tours.cleanRoundVariables(tcc);
     
         if (Utils.objectLength(tcc.players) === 1) {
@@ -722,7 +722,7 @@
                 
                 if (tcc.id === 0) {
                     winners = winners.winners;
-                    for (i = 0, length = winners.length; i < length; ++i) {
+                    for (i = 0, length = winners.length; i < length; i += 1) {
                         // attempt to give money to the players
                         winner = winners[i].toLowerCase();
                         if (!PlayerUtils.ip(winner)) {
@@ -837,7 +837,7 @@
                 tcc.roundStatus.idleBattles[i] = [p1[1], p2[1]];
             }
             
-            ++i;
+            i += 1;
     
             if (tcc.finals) {
                 message.push(team1 + p1[1] + " VS " + team2 + p2[1]);
@@ -921,7 +921,7 @@
     
     // After a battle has started.
     // Expects a ToursChannelConfig
-    Tours.events.afterBattleStarted = function (src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam, tcc) {
+    Tours.events.afterBattleStarted = function afterBattleStarted(src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam, tcc) {
         var srcName = sys.name(src),
             tarName = sys.name(tar),
             idleBattler;
@@ -970,7 +970,7 @@
     
     // when the battles have ended
     // expects a ToursChannelConfig
-    Tours.events.afterBattleEnded = function (src, dest, desc, tcc) {
+    Tours.events.afterBattleEnded = function afterBattleEnded(src, dest, desc, tcc) {
         // bail if the tour hasn't started or we only have one player left.
         if (tcc.mode !== 2 || Utils.objectLength(tcc.players) === 1) {
             return;
@@ -990,7 +990,7 @@
     
     // When a two players tie
     // Expects a ToursChannelConfig
-    Tours.events.tie = function (src, dest, tcc) {
+    Tours.events.tie = function tie(src, dest, tcc) {
         // their teams
         var playerTeam = PlayerUtils.firstTeamForTier(src, tcc.tier),
             opponentTeam = PlayerUtils.firstTeamForTier(dest, tcc.tier),
@@ -1043,7 +1043,7 @@
     // After a battle has ended
     // [src] and [dest] are names
     // Expects a ToursChannelConfig
-    Tours.events.tourBattleEnd = function (src, dest, rush, tcc) {
+    Tours.events.tourBattleEnd = function tourBattleEnd(src, dest, rush, tcc) {
         var srcLower = src.toLowerCase(),
             destLower = dest.toLowerCase(),
             winner = '',
@@ -1089,7 +1089,7 @@
             srcPlayer.roundwins = 0;
             
             // one less remaining..
-            --tcc.remaining;
+            tcc.remaining -= 1;
     
             message.push(src + " advances to the next round of the tournament.", dest + " is out of the tournament.");
     
@@ -1107,7 +1107,7 @@
             destPlayer = tcc.players[destLower];
             
             // give [src] a round win
-            ++srcPlayer.roundwins;
+            srcPlayer.roundwins += 1;
     
             srcWins = srcPlayer.roundwins;
             destWins = destPlayer.roundwins;
@@ -1149,7 +1149,7 @@
                 winnerPlayer.roundwins = 0;
                 
                 // one less remaining..
-                --tcc.remaining;
+                tcc.remaining -= ;
         
                 message.push(winner + " advances to the next round of the tournament.", loser + " is out of the tournament.");
         
@@ -1243,7 +1243,7 @@
     
     // Displays the tournament prize
     // Permission: User
-    Tours.commands.tourprize = function (src, commandData, chan, tcc) {
+    Tours.commands.tourprize = function tourprize(src, commandData, chan, tcc) {
         if (tcc.mode === 0) {
             Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
@@ -1258,7 +1258,7 @@
     
     // To join the tournament.
     // Permission: User
-    Tours.commands.join = function (src, commandData, chan, tcc) {
+    Tours.commands.join = function join(src, commandData, chan, tcc) {
         var name = sys.name(src),
             nameToLower = name.toLowerCase(),
             message = PlayerUtils.formatName(src) + " joined the tournament! <b>" + Tours.tourSpots(tcc) - 1 + "</b> more spot(s) left!";
@@ -1301,7 +1301,7 @@
     
     // To leave the tournament.
     // Permission: User
-    Tours.commands.unjoin = function (src, commandData, chan, tcc) {
+    Tours.commands.unjoin = function unjoin(src, commandData, chan, tcc) {
         var name = sys.name(src),
             nameToLower = name.toLowerCase();
         
@@ -1319,7 +1319,7 @@
         // if there the tour has already started, lower the amount
         // of players still remaining
         if (tcc.mode === 2) {
-            --tcc.remaining;
+            tcc.remaining -= 1;
             
             if (tcc.players[nameToLower].couplesid !== -1) {
                 // forcefully end their battle
@@ -1341,14 +1341,14 @@
     
     // To view the status of the current round.
     // Permission: User
-    Tours.commands.viewround = function (src, commandData, chan, tcc) {
+    Tours.commands.viewround = function viewround(src, commandData, chan, tcc) {
         var idleBattles = tcc.roundStatus.idleBattles,
             ongoingBattles = tcc.roundStatus.ongoingBattles,
             winLose = tcc.roundStatus.winLose,
-            anyIdleBattles = Utils.objectLength(idleBattles) !== 0,
-            anyOngoingBattles = Utils.objectLength(ongoingBattles) !== 0,
-            anyFinishedBattles = Utils.objectLength(winLose) !== 0,
-            roundIdentifier = tcc.finals ? "Finals" : "Round " + tcc.round,
+            anyIdleBattles = (Utils.objectLength(idleBattles) !== 0),
+            anyOngoingBattles = (Utils.objectLength(ongoingBattles) !== 0),
+            anyFinishedBattles = (Utils.objectLength(winLose) !== 0),
+            roundIdentifier = (tcc.finals ? "Finals" : "Round " + tcc.round),
             cur,
             i;
         
@@ -1421,7 +1421,7 @@
     
     // Changes the display mode of a channel.
     // Permission: Operator
-    Tours.commands.display = function (src, commandData, chan, tcc) {
+    Tours.commands.display = function display(src, commandData, chan, tcc) {
         var mode = parseInt(commandData, 10),
             modeString = (mode === Tours.displays.normal ? "normal" : "clean");
         
@@ -1443,7 +1443,7 @@
     
     // Reverses auto start battle of a channel.
     // Permission: Operator
-    Tours.commands.autostartbattles = function (src, commandData, chan, tcc) {
+    Tours.commands.autostartbattles = function autostartbattles(src, commandData, chan, tcc) {
         var onString = Utils.toOnString(!tcc.autoStartBattles);
         
         tcc.autoStartBattles = !tcc.autoStartBattles;
@@ -1454,7 +1454,7 @@
     
     // Disqualifies a player from the tournament.
     // Permission: Operator
-    Tours.commands.dq = function (src, commandData, chan, tcc) {
+    Tours.commands.dq = function dq(src, commandData, chan, tcc) {
         var target = commandData.toLowerCase();
         
         if (tcc.mode === 0) {
@@ -1470,7 +1470,7 @@
         Tours.tourBox(PlayerUtils.formatName(target) + " was disqualified from the tournament by " + PlayerUtils.formatName(src) + "!", tcc);
     
         if (tcc.mode === 2) {
-            --tcc.remaining;
+            tcc.remaining -= 1;
             
             // forcefully dq them if they have a couple (e.g. not a bye)
             if (tcc.players[target].couplesid !== -1) {
@@ -1483,7 +1483,7 @@
     
     // Switches a player in the tournament (removing one from it and replacing them with another)
     // Permission: Operator
-    Tours.commands.switch = function (src, commandData, chan, tcc) {
+    Tours.commands.switch = function switch(src, commandData, chan, tcc) {
         var mcmd = commandData.split(':'),
             player1 = PlayerUtils.trueName(mcmd[0] || ""),
             player1ToLower = player1.toLowerCase(),
@@ -1546,7 +1546,7 @@
     
     // Adds a player to the tournament.
     // Permission: Operator
-    Tours.commands.push = function (src, commandData, chan, tcc) {
+    Tours.commands.push = function push(src, commandData, chan, tcc) {
         var target = PlayerUtils.trueName(commandData || ""),
             targetToLower = target.toLowerCase(),
             message = [];
@@ -1575,7 +1575,7 @@
         if (tcc.mode === 1) {
             message.push("<b>" + Tours.tourSpots(tcc) + "</b> more spot(s) left!");
         } else if (tcc.mode === 2) {
-            ++tcc.remaining;
+            tcc.remaining += 1;
         }
     
         Tours.tourBox(message, tcc);
@@ -1591,7 +1591,7 @@
     
     // Cancels a battle being official.
     // Permission: Operator
-    Tours.commands.cancelbattle = function (src, commandData, chan, tcc) {
+    Tours.commands.cancelbattle = function cancelbattle(src, commandData, chan, tcc) {
         var target = PlayerUtils.trueName(commandData || ""),
             targetToLower = target.toLowerCase(),
             battleIndex;
@@ -1627,7 +1627,7 @@
     
     // Starts a new tournament.
     // Permission: Operator
-    Tours.commands.tour = function (src, commandData, chan, tcc) {
+    Tours.commands.tour = function tour(src, commandData, chan, tcc) {
         // Player MCMD arguments:
         // 0: Tier name
         // 1: Amount of entrants
@@ -1716,7 +1716,7 @@
     
     // Changes the amount of entrants.
     // Permission: Operator
-    Tours.commands.changespots = function (src, commandData, chan, tcc) {
+    Tours.commands.changespots = function changespots(src, commandData, chan, tcc) {
         var newSpots = parseInt(commandData, 10);
         
         // if this isn't the signups.
@@ -1773,7 +1773,7 @@
     
     // Ends the running tournament.
     // Permission: Operator
-    Tours.commands.endtour = function (src, commandData, chan, tcc) {
+    Tours.commands.endtour = function endtour(src, commandData, chan, tcc) {
         if (tcc.mode === 0) {
             Bot.sendMessage("No tournament has started or is currently running.");
             return;

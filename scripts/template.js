@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: template.js (Template)
 // Contains templates, used in various displays, such as command lists and tables.
@@ -113,7 +113,7 @@
         // Three arguments
         // .register("commands", ["?[choice Choice]?", "?[number Repeat]?"], "Displays the command list. Search for a term with the optional ?[choice Choice]?. ?[number Repeat]? can be used to repeat the list.");
     
-        for (i = 0, len = args.length; i < len; ++i) {
+        for (i = 0, len = args.length; i < len; i += 1) {
             argsList += this.format(args[i]) + format[1] + ":" + format[0];
         }
         

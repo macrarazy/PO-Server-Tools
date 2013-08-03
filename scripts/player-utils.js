@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: player-utils.js (PlayerUtils)
 // Contains player utilities (such as easily getting player and team information).
@@ -99,7 +99,7 @@
             return 0;
         }
         
-        for (i = 0; i < teamCount; ++i) {
+        for (i = 0; i < teamCount; i += 1) {
             if (sys.tier(id, i).toLowerCase() === tierToLower) {
                 // returns the team id if the tiers match.
                 return i;
@@ -210,7 +210,7 @@
             player,
             i;
 
-        for (i = 0; i < length; ++i) {
+        for (i = 0; i < length; i += 1) {
             player = playerIds[i];
             
             if (ip === sys.ip(player)) {
@@ -339,7 +339,7 @@
         var len = channels.length,
             i;
 
-        for (i = 0; i < len; ++i) {
+        for (i = 0; i < len; i += 1) {
             sys.putInChannel(src, channels[i]);
         }
     };

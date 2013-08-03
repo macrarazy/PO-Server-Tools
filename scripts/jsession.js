@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: jsession.js
 // Contains JSESSION, which is a replacement for PO's in-built 'SESSION', which is pretty buggy.
@@ -29,7 +29,7 @@
     }
     
     // Refills everything, adding missing users, channels, and the global object
-    JSESSION.prototype.refill = function () {
+    JSESSION.prototype.refill = function refill() {
         var users = sys.playerIds(),
             channels = sys.channelIds(),
             i,
@@ -38,7 +38,7 @@
     
         if (this.UsesUser) {
             length = users.length;
-            for (i = 0; i < length; ++i) {
+            for (i = 0; i < length; i += 1) {
                 cur = users[i];
                 if (this.users(cur) === undefined) {
                     this.createUser(cur);
@@ -48,7 +48,7 @@
     
         if (this.UsesChannel) {
             length = channels.length;
-            for (i = 0; i < length; ++i) {
+            for (i = 0; i < length; i += 1) {
                 cur = channels[i];
                 if (this.channels(cur) === undefined) {
                     this.createChannel(cur);

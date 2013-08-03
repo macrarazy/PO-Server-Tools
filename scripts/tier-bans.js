@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: tier-bans.js (TierBans)
 // Contains pokemon bans used by the Pokémon Online tiers. This module can be disabled by setting Config.TierBans to false.
@@ -159,9 +159,9 @@
             i;
         
         for (beast in beasts) {
-            for (slot = 0; slot < 6; slot++) {
+            for (slot = 0; slot < 6; slot += 1) {
                 if (sys.teamPoke(player, team, slot) === beast) {
-                    for (i = 0; i < 4; i++) {
+                    for (i = 0; i < 4; i += 1) {
                         if (beasts[beast].has(sys.teamPokeMove(player, team, slot, i))) {
                             sys.changePokeShine(player, team, slot, true);
                         }
@@ -178,7 +178,7 @@
             ret = [],
             bans = DataHash.bannedAbilities,
             i, ability, lability, poke, lpoke;
-        for (i = 0; i < 6; ++i) {
+        for (i = 0; i < 6; i += 1) {
             ability = sys.ability(sys.teamPokeAbility(src, team, i)), lability = ability.toLowerCase(), poke = sys.pokemon(sys.teamPoke(src, team, i)), lpoke = poke.toLowerCase();
 
             if (bans[ltier] != undefined) {
@@ -201,7 +201,7 @@
             x,
             y;
         
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i += 1) {
             poke = sys.teamPoke(src, team, i);
             if (pokeNatures.has(poke)) {
                 for (x in pokeNatures[poke]) {
@@ -223,7 +223,7 @@
             x,
             i;
         
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i += 1) {
             x = sys.teamPoke(src, team, i);
             if (x !== 0 && sys.hasDreamWorldAbility(src, team, i) && lcpokemons.indexOf(x) !== -1) {
                 ret.push(sys.pokemon(x) + " is not allowed with a Dream World ability in the " + tier + " tier. Change it in the teambuilder.");
@@ -240,7 +240,7 @@
             i,
             item;
 
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i += 1) {
             x = sys.teamPoke(src, team, i);
             item = sys.teamPokeItem(src, team, i);
             
@@ -250,7 +250,9 @@
                 item = "";
             }
             
-            if (item === "Eviolite" && ++eviolites > evioliteLimit) {
+            eviolites += 1;
+            
+            if (item === "Eviolite" && eviolites > evioliteLimit) {
                 return ["Only 1 pokemon is allowed with eviolite in " + tier + " tier. Please remove extra evioites in teambuilder."];
             }
         }
@@ -265,7 +267,7 @@
             return;
         }
         
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i += 1) {
             x = sys.teamPoke(src, team, i);
             if (x !== 0 && sys.hasDreamWorldAbility(src, team, i) && (!(x in dwpokemons) || (breedingpokemons.indexOf(x) !== -1 && sys.compatibleAsDreamWorldEvent(src, team, i) !== true))) {
                 if (!(x in dwpokemons)) {
@@ -284,7 +286,7 @@
             x,
             i;
 
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i += 1) {
             x = sys.teamPoke(src, team, i);
             if (x !== 0 && sys.teamPokeAbility(src, team, i) === moody) {
                 ret.push(sys.pokemon(x) + " is not allowed with Moody in " + tier + ". Change it in the teambuilder.");
@@ -299,7 +301,7 @@
             tl,
             i;
         
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i += 1) {
             ability = sys.ability(sys.teamPokeAbility(src, team, i));
             tl = ability.toLowerCase();
 
@@ -319,7 +321,7 @@
             temptypeA,
             temptypeB;
         
-        for (i = 1; i < 6; i++) {
+        for (i = 1; i < 6; i += 1) {
             if (sys.teamPoke(src, team, i) === 0) {
                 continue;
             }
@@ -391,7 +393,7 @@
             pokenum,
             species;
         
-        for (i = 0; i < 6; ++i) {
+        for (i = 0; i < 6; i += 1) {
             pokenum = sys.teamPoke(src, team, i);
             species = pokenum % 65536; // remove alt formes
             
@@ -400,7 +402,7 @@
             }
             if (gen === 0) {
                 while (species > GEN_MAX[gen]) {
-                    ++gen; // Search for correct gen for first poke
+                    gen += 1; // Search for correct gen for first poke
                 }
             } else if (!(GEN_MAX[gen - 1] < species && species <= GEN_MAX[gen])) {
                 return [sys.pokemon(pokenum) + " is not from gen " + gen + "!"];
@@ -435,7 +437,8 @@
                 thecolour = colour;
             }
         }
-        for (i = 1; i < 6; ++i) {
+        
+        for (i = 1; i < 6; i += 1) {
             poke = sys.pokemon(sys.teamPoke(src, team, i));
             if (pokeColours[thecolour].indexOf(poke) === -1 && poke !== "Missingno") {
                 return [poke + " colour is not " + thecolour];
@@ -445,9 +448,9 @@
 
     TierBans.newBan(INCLUDING, ["Smogon OU", "Wifi OU", "No Preview OU"], function swiftSwimCheck(src, team, tier) {
         var i, j;
-        for (i = 0; i < 6; ++i) {
+        for (i = 0; i < 6; i += 1) {
             if (sys.ability(sys.teamPokeAbility(src, team, i)) === "Drizzle") {
-                for (j = 0; j < 6; ++j) {
+                for (j = 0; j < 6; j += 1) {
                     if (sys.ability(sys.teamPokeAbility(src, team, j)) === "Swift Swim") {
                         return ["You cannot have the combination of Swift Swim and Drizzle in " + tier];
                     }
@@ -458,7 +461,7 @@
 
     TierBans.newBan(INCLUDING, ["Smogon UU"], function droughtCheck(src, team, tier) {
         var i;
-        for (i = 0; i < 6; ++i) {
+        for (i = 0; i < 6; i += 1) {
             if (sys.ability(sys.teamPokeAbility(src, team, i)) === "Drought") {
                 return ["Drought is not allowed in Smogon UU"];
             }
@@ -467,7 +470,7 @@
 
     TierBans.newBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function sandStreamCheck(src, team, tier) {
         var i;
-        for (i = 0; i < 6; ++i) {
+        for (i = 0; i < 6; i += 1) {
             if (sys.ability(sys.teamPokeAbility(src, team, i)) === "Sand Stream") {
                 return ["Sand Stream is not allowed in " + tier + "."];
             }
@@ -476,7 +479,7 @@
 
     TierBans.newBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function snowWarningCheck(src, team, tier) {
         var i;
-        for (i = 0; i < 6; ++i) {
+        for (i = 0; i < 6; i += 1) {
             if (sys.ability(sys.teamPokeAbility(src, team, i)) === "Snow Warning") {
                 return ["Snow Warning is not allowed in " + tier + "."];
             }
@@ -506,7 +509,7 @@
             ret = [],
             ability, lability, poke, lpoke;
 
-        for (i = 0; i < 6; ++i) {
+        for (i = 0; i < 6; i += 1) {
             ability = sys.ability(sys.teamPokeAbility(src, team, i));
             lability = ability.toLowerCase();
             poke = sys.pokemon(sys.teamPoke(src, team, i));
@@ -521,9 +524,9 @@
 
     TierBans.newBan(EXCLUDING, cc, function hasOneUsablePokemon(player, team) {
         var slot, move;
-        for (slot = 0; slot < 6; slot++) {
+        for (slot = 0; slot < 6; slot += 1) {
             if (sys.teamPoke(player, team, slot) !== 0) {
-                for (move = 0; move < 4; move++) {
+                for (move = 0; move < 4; move += 1) {
                     if (sys.teamPokeMove(player, team, slot, move) !== 0) {
                         return;
                     }

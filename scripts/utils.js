@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, Script: true, require: false, module: true, exports: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: utils.js (Utils)
 // Contains utilities not specificly for players, channels, and logging.
@@ -207,7 +207,7 @@
         
         name = name.toLowerCase();
         
-        for (i = 0; i < length; ++i) {
+        for (i = 0; i < length; i += 1) {
             cur = tiers[i];
             
             if (cur.toLowerCase() === name) {
@@ -354,7 +354,7 @@
             
             // ugh..
             
-            for (i = 0; i < len; ++i) { // we already verified that they're of the same length
+            for (i = 0; i < len; i += 1) { // we already verified that they're of the same length
                 if (!exports.deepEqual(condition1[i], condition2[i])) {
                     return false;
                 }
@@ -482,7 +482,7 @@
             event,
             i;
         
-        for (i = 0; i < length; ++i) {
+        for (i = 0; i < length; i += 1) {
             event = events[i];
             // defined at "exports.callEvent = function callEvent"
             exports.callEvent.apply(this, [event[0], [].slice.call(arguments, 1)]);
@@ -539,7 +539,7 @@
             i;
         
         // start at the first argument, which is the string.
-        for (i = 1; i < argsLength; ++i) {
+        for (i = 1; i < argsLength; i += 1) {
             string = string.replace(new RegExp("%" + (i + 1), "gm"), arguments[i]);
         }
         

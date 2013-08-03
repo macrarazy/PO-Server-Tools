@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: options.js (Options)
 // Contains script options (mainly default and hardcoded values). If you're looking to change behavior,
@@ -68,6 +68,13 @@
     
     // Counter for the 'step' event, which increases every second.
     exports.stepCounter = 0;
+    
+    // Info for ify, which is a command to change everyone's names into something of choice, and back.
+    exports.ifyInfo = {
+        names: {},
+        name: "",
+        active: false
+    };
     
     // Hardcoded values [hcdval]
     

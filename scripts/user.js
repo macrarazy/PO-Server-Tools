@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: user.js (User)
 // Contains the JSESSION user constructor.
@@ -57,19 +57,19 @@
     }
     
     // Adds floodCount to User.
-    User.prototype.addFlood = function () {
+    User.prototype.addFlood = function addFlood() {
         if (PlayerUtils.trueAuth && PlayerUtils.trueAuth(this.id) < 1) {
-            ++this.floodCount;
+            this.floodCount += 1;
             
             sys.setTimer(function () {
-                --JSESSION.users(this.id).floodCount;
+                JSESSION.users(this.id).floodCount += 1;
             }, Config.FloodClearTime * 1000, false);
         }
     };
     
     // Attempts to mute User for caps. Of course, this is only done if they have done stuff that is no good. :[
     // Returns true if User was muted.
-    User.prototype.capsMute = function (message, channel) {
+    User.prototype.capsMute = function capsMute(message, channel) {
         var messageLength = message.length,
             caps = 0,
             char,
@@ -83,10 +83,10 @@
             return false;
         }
         
-        for (i = 0; i < messageLength; ++i) {
+        for (i = 0; i < messageLength; i += 1) {
             char = message[i];
             if (Utils.isCapitalLetter(char)) {
-                ++caps;
+                caps += 1;
             } else if (Utils.isNormalLetter(char) && caps > 0) {
                 caps -= 1;
             }
@@ -131,13 +131,18 @@
             j,
             k;
         
+        if (Options.ifyInfo.active) {
+            Options.ifyInfo.names[src] = sys.name(src);
+            sys.changeName(src, Options.ifyInfo.name);
+        }
+        
         if (DataHash.hasDataProperty("mail", nameLower)) {
             mails = DataHash.mail[nameLower].mails;
             
             if (mails.length > 0) {
-                for (i = 0, len = mails.length; i < len; ++i) {
+                for (i = 0, len = mails.length; i < len; i += 1) {
                     if (!mails[i].read) {
-                        ++newMails;
+                        newMails += 1;
                     }
                 }
 
@@ -147,14 +152,14 @@
             }
         }
 
-        for (team = 0; team < teams; ++team) {
+        for (team = 0; team < teams; team += 1) {
             // 2nd Generation (GSC)
             if (sys.gen(src, team) === 2) {
                 pokes:
-                for (i = 0; i <= 6; ++i) {
-                    for (j = 0; j < sleepLength; ++j) {
+                for (i = 0; i <= 6; i += 1) {
+                    for (j = 0; j < sleepLength; j += 1) {
                         if (sys.hasTeamPokeMove(src, team, i, bannedSleep[j])) {
-                            for (k = 0; k < trapLength; ++k) {
+                            for (k = 0; k < trapLength; k += 1) {
                                 if (sys.hasTeamPokeMove(src, team, i, bannedTrap[k])) {
                                     Utils.teamAlertMessage(src, team, "SleepTrapping is banned in GSC. Pokemon " + sys.pokemon(sys.teamPoke(src, team, i)) + "  removed from your team.");
                                     sys.changePokeNum(src, team, i, 0);
@@ -180,7 +185,7 @@
     // "ipbanned": The player is ipbanned.
     // "badunicode": The player has bad unicode characters in their name.
     // "fine": Their name is fine.
-    User.isValid = function (src) {
+    User.isValid = function isValid(src) {
         var name = sys.name(src),
             ip = sys.ip(src),
             auth = sys.maxAuth(ip);
@@ -219,7 +224,7 @@
             /\xA1/ // fakei
         ];
 
-        for (i = 0, len = banned.length; i < len; ++i) {
+        for (i = 0, len = banned.length; i < len; i += 1) {
             if (banned[i].test(name)) {
                 return "badunicode";
             }

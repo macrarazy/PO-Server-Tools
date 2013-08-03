@@ -4,6 +4,3 @@
   Exceptions: step, beforeNewMessage, afterNewMessage (for performance)
 
 --- Hook IDs used (by default) ---
-* ifyAfterLogIn#start
-* ifyBeforeLogIn#start
-* ifyAfterChangeTeam#end

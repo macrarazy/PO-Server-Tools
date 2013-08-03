@@ -1,4 +1,4 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
     global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
@@ -102,7 +102,7 @@
     // [evt-loadScript] loadScript event
     // [Stoppable] Called when: Script is loaded.
     // Currently unused.
-    Events.loadScript = function () {
+    Events.loadScript = function loadScript() {
         if (require.provide("loadScript#start")) {
             sys.stopEvent();
             return;
@@ -117,7 +117,7 @@
     // [evt-unloadScript] unloadScript event
     // [Unstoppable] Called when: Script is unloaded (changed/updated).
     // Currently unused.
-    Events.unloadScript = function () {
+    Events.unloadScript = function unloadScript() {
         require.provide("unloadScript#start");
         require.provide("unloadScript#end");
     };
@@ -125,7 +125,7 @@
     // [evt-switchError] switchError event
     // [Unstoppable] Called when: An error occured when loading updating the scripts.
     // Currently unused.
-    Events.switchError = function (scr) {
+    Events.switchError = function switchError(scr) {
         require.provide("switchError#start", scr);
         require.provide("switchError#end", scr);
     };
@@ -133,7 +133,7 @@
     // [evt-warning] warning event
     // [Stoppable] Called when: A warning is triggered by a sys function.
     // Currently unused.
-    Events.warning = function (func, message, backtrace) {
+    Events.warning = function warning(func, message, backtrace) {
         if (require.provide("warning#start", func, message, backtrace)) {
             sys.stopEvent();
             return;
@@ -148,7 +148,7 @@
     // [evt-serverStartUp] serverStartUp event
     // [Unstoppable] Called when: Server starts up.
     // Sets start up variables and calls event beforeNewMessage.
-    Events.serverStartUp = function () {
+    Events.serverStartUp = function serverStartUp() {
         require.provide("serverStartUp#start");
         
         Options.isStartingUp = true;
@@ -164,7 +164,7 @@
     // [evt-serverShutDown] serverShutDown event
     // [Unstoppable] Called when: Server shuts down.
     // Currently unused.
-    Events.serverShutDown = function () {
+    Events.serverShutDown = function serverShutDown() {
         require.provide("serverShutDown#start");
         require.provide("serverShutDown#end");
     };
@@ -172,7 +172,7 @@
     // [evt-init] init event
     // [Unstoppable] Called when: Custom.
     // Initializes certain values.
-    Events.init = function () {
+    Events.init = function init() {
         require.provide("init#start");
         
         var serverLine = sys.getFileContent("config").split("\n")[30],
@@ -189,7 +189,7 @@
         
         // Creates/gets the id of the default channels.
         // NOTE: Very important that this is done in init(). If this is done during (or before) serverStartUp, the server crashes.
-        for (i = 0; i < length; ++i) {
+        for (i = 0; i < length; i += 1) {
             Options.defaultChannelIds[channelIdKeys[i]] = sys.createChannel(defaultChannels[i]) || sys.channelId(defaultChannels[i]);
         }
         
@@ -247,7 +247,7 @@
     // [Unstoppable] Called when: Every second.
     // Handles temporary auth pruning and mafia's tick event.
     // NOTE: Hooks are unavailable for this event.
-    Events.step = function () {
+    Events.step = function step() {
         Options.stepCounter += 1;
         
         // Prune temp auth every 10 seconds.
@@ -264,7 +264,7 @@
     // [Stoppable] Called when: A message is outputted to stdout.
     // Logs script warnings, errors, gives the server host an eval command, and calls Events.init if the scripts were (re)loaded.
     // NOTE: Hooks are unavailable for this event.
-    Events.beforeNewMessage = function (message) {
+    Events.beforeNewMessage = function beforeNewMessage(message) {
         var result,
             mainChan;
         
@@ -342,13 +342,13 @@
     // [Unstoppable] Called when: A message is outputted to stdout.
     // Currently unused.
     // NOTE: Hooks are unavailable for this event.
-    Events.afterNewMessage = function (message) {
+    Events.afterNewMessage = function afterNewMessage(message) {
     };
     
     // [evt-beforeChatMessage] beforeChatMessage event
     // [Stoppable] Called when: A player sends a chat message.
     // Runs macros, flood checks, commands, silences, mutes, rank icons, chat gradients.
-    Events.beforeChatMessage = function (src, message, chan) {
+    Events.beforeChatMessage = function beforeChatMessage(src, message, chan) {
         if (require.provide("beforeChatMessage#start", src, message, chan)) {
             sys.stopEvent();
             return;
@@ -407,7 +407,7 @@
         }
         
         // Format the message with the player's macros.
-        for (i = 0, len = macros.length; i < len; ++i) {
+        for (i = 0, len = macros.length; i < len; i += 1) {
             message = message.replace(new RegExp("%m" + (i + 1), "g"), macros[i]);
         }
 
@@ -426,13 +426,13 @@
     
                 // Give them a violation.
                 // One violation is cleared every 30 minutes.
-                ++DataHash.chatSpammers[ip];
+                DataHash.chatSpammers[ip] += 1;
                 
                 WatchUtils.logPlayerEvent(src, "Flood violation added for '" + ip + "' - now at " + DataHash.chatSpammers[i] + " violations.");
                 sys.setTimer(function () {
                     if (DataHash.chatSpammers[ip] > 0) {
                         // remove one violation
-                        --DataHash.chatSpammers[ip];
+                        DataHash.chatSpammers[ip] -= 1;
                     } else {
                         // they only had 1 violation, so simply delete it.
                         delete DataHash.spammers[ip];
@@ -652,7 +652,7 @@
     // [evt-afterChatMessage] afterChatMessage event
     // [Unstoppable] Called when: A player sends a chat message.
     // Currently unused.
-    Events.afterChatMessage = function (src, message, chan) {
+    Events.afterChatMessage = function afterChatMessage(src, message, chan) {
         require.provide("afterChatMessage#start", src, message, chan);
         require.provide("afterChatMessage#end", src, message, chan);
     };
@@ -662,7 +662,7 @@
     // [evt-beforeChannelCreated] beforeChannelCreated event
     // [Stoppable] Called when: Before a channel will be created.
     // Checks if channels are enabled and creates the JSESSION object of the channel.
-    Events.beforeChannelCreated = function (chan, name, src) {
+    Events.beforeChannelCreated = function beforeChannelCreated(chan, name, src) {
         if (require.provide("beforeChannelCreated#start", chan, name, src)) {
             sys.stopEvent();
             return;
@@ -693,7 +693,7 @@
     // [evt-afterChannelCreated] afterChannelCreated event
     // [Unstoppable] Called when: After a channel has been created.
     // Sets channel data stored in ChannelData, and gives creator/auth perms if the channel was created by a player.
-    Events.afterChannelCreated = function (chan, name, src) {
+    Events.afterChannelCreated = function afterChannelCreated(chan, name, src) {
         require.provide("afterChannelCreated#start", chan, name, src);
         
         var channel = JSESSION.channels(chan);
@@ -720,7 +720,7 @@
     // [evt-beforeChannelJoin] beforeChannelJoin event
     // [Stoppable] Called when: [src] joins the channel [chan].
     // Checks if a player can join [chan] - handling bans, the channel being private, and the channel being restricted (default channels such as Ever Grande City (staff channel)).
-    Events.beforeChannelJoin = function (src, chan) {
+    Events.beforeChannelJoin = function beforeChannelJoin(src, chan) {
         if (require.provide("beforeChannelJoin#start", src, chan)) {
             sys.stopEvent();
             return;
@@ -804,7 +804,7 @@
             return;
         }
         
-        if (require.provide("beforeChannelJoin#after", src, chan)) {
+        if (require.provide("beforeChannelJoin#end", src, chan)) {
             sys.stopEvent();
             return;
         }
@@ -813,7 +813,7 @@
     // [evt-afterChannelJoin] afterChannelJoin event
     // [Unstoppable] Called when: After a player joins a channel.
     // Logs the player joining a channel, creates a chatgradient (if the channel has one), and sends them the channel topic and server message of the day (if any).
-    Events.afterChannelJoin = function (src, chan) {
+    Events.afterChannelJoin = function afterChannelJoin(src, chan) {
         require.provide("afterChannelJoin#start", src, chan);
         
         var channel = JSESSION.channels(chan),
@@ -856,7 +856,7 @@
     // [evt-beforeChannelLeave] beforeChannelLeave event
     // [Stoppable] Called when: A player leaves a channel.
     // Logs the player leaving a channel.
-    Events.beforeChannelLeave = function (src, chan) {
+    Events.beforeChannelLeave = function beforeChannelLeave(src, chan) {
         if (require.provide("beforeChannelLeave#start", src, chan)) {
             sys.stopEvent();
             return;
@@ -873,7 +873,7 @@
     // [evt-afterChannelLeave] afterChannelLeave event
     // [Unstoppable] Called when: A player leaves a channel.
     // Currently unused.
-    Events.afterChannelLeave = function (src, chan) {
+    Events.afterChannelLeave = function afterChannelLeave(src, chan) {
         require.provide("afterChannelLeave#start", src, chan);
         require.provide("afterChannelLeave#end", src, chan);
     };
@@ -881,7 +881,7 @@
     // [evt-beforeChannelDestroyed] beforeChannelDestroyed event
     // [Stoppable] Called when: A channel is deleted.
     // Stops perm/default channels from being destroyed.
-    Events.beforeChannelDestroyed = function (chan) {
+    Events.beforeChannelDestroyed = function beforeChannelDestroyed(chan) {
         if (require.provide("beforeChannelDestroyed#start", chan)) {
             sys.stopEvent();
             return;
@@ -912,7 +912,7 @@
     // [evt-afterChannelDestroyed] afterChannelDestroyed event
     // [Unstoppable] Called when: A channel is deleted.
     // Currently unused.
-    Events.afterChannelDestroyed = function (chan) {
+    Events.afterChannelDestroyed = function afterChannelDestroyed(chan) {
         require.provide("afterChannelDestroyed#start", chan);
         require.provide("afterChannelDestroyed#end", chan);
     };
@@ -922,7 +922,7 @@
     // [evt-beforeFindBattle] beforeFindBattle event
     // [Stoppable] Called when: [src] tries to find a battle via the "Find Battle" button.
     // Logs [src] pressing "Find Battle".
-    Events.beforeFindBattle = function (src) {
+    Events.beforeFindBattle = function beforeFindBattle(src) {
         if (require.provide("beforeFindBattle#start", src)) {
             sys.stopEvent();
             return;
@@ -939,7 +939,7 @@
     // [evt-afterFindBattle] afterFindBattle event
     // [Unstoppable] Called when: [src] tries to find a battle via the "Find Battle" button.
     // Currently unused.
-    Events.afterFindBattle = function (src) {
+    Events.afterFindBattle = function afterFindBattle(src) {
         require.provide("afterFindBattle#start", src);
         require.provide("afterFindBattle#end", src);
     };
@@ -947,7 +947,7 @@
     // [evt-beforeBattleMatchup] beforeBattleMatchup event
     // [Stoppable] Called when: A find battle pair is selected.
     // Prevents the battle if they are disabled.
-    Events.beforeBattleMatchup = function (src, tar, clauses, rated, mode) {
+    Events.beforeBattleMatchup = function beforeBattleMatchup(src, tar, clauses, rated, mode) {
         if (require.provide("beforeBattleMatchup#start", src, tar, clauses, rated, mode)) {
             sys.stopEvent();
             return;
@@ -968,7 +968,7 @@
     // [evt-afterBattleMatchup] afterBattleMatchup event
     // [Unstoppable] Called when: A find battle pair is selected.
     // Currently unused.
-    Events.afterBattleMatchup = function (src, tar, clauses, rated, mode) {
+    Events.afterBattleMatchup = function afterBattleMatchup(src, tar, clauses, rated, mode) {
         require.provide("afterBattleMatchup#start", src, tar, clauses, rated, mode);
         require.provide("afterBattleMatchup#end", src, tar, clauses, rated, mode);
     };
@@ -976,7 +976,7 @@
     // [evt-beforeChallengeIssued] beforeChallengeIssued event
     // [Stoppable] Called when: A player issues a challenge.
     // Prevents challenge spam and ensures the battle is Doubles/Triples if the tier is.
-    Events.beforeChallengeIssued = function (src, tar, clauses, rated, mode, srcTeam, tarTier) {
+    Events.beforeChallengeIssued = function beforeChallengeIssued(src, tar, clauses, rated, mode, srcTeam, tarTier) {
         if (require.provide("beforeChallengeIssued#start", src, tar, clauses, rated, mode, srcTeam, tarTier)) {
             sys.stopEvent();
             return;
@@ -1032,7 +1032,7 @@
     // [evt-afterChallengeIssued] afterChallengeIssued event
     // [Unstoppable] Called when: A player issues a challenge.
     // Currently unused.
-    Events.afterChallengeIssued = function (src, tar, clauses, rated, mode, srcTeam, tarTier) {
+    Events.afterChallengeIssued = function afterChallengeIssued(src, tar, clauses, rated, mode, srcTeam, tarTier) {
         require.provide("afterChallengeIssued#start", src, tar, clauses, rated, mode, srcTeam, tarTier);
         require.provide("afterChallengeIssued#end", src, tar, clauses, rated, mode, srcTeam, tarTier);
     };
@@ -1040,7 +1040,7 @@
     // [evt-battleSetup] battleSetup event
     // [Unstoppable] Called when: A battle is started (used to set up battle effects).
     // Currently unused.
-    Events.battleSetup = function (src, tar, battleId) {
+    Events.battleSetup = function battleSetup(src, tar, battleId) {
         require.provide("battleSetup#start", src, tar, battleId);
         require.provide("battleSetup#end", src, tar, battleId);
     };
@@ -1048,7 +1048,7 @@
     // [evt-beforeBattleStarted] beforeBattleStarted event
     // [Unstoppable] Called when: A battle has started.
     // Currently unused.
-    Events.beforeBattleStarted = function (src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam) {
+    Events.beforeBattleStarted = function beforeBattleStarted(src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam) {
         require.provide("beforeBattleStarted#start", src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam);
         require.provide("beforeBattleStarted#end", src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam);
     };
@@ -1056,7 +1056,7 @@
     // [evt-afterBattleStarted] afterBattleStarted event
     // [Unstoppable] Called when: A battle has started.
     // Makes tours work properly.
-    Events.afterBattleStarted = function (src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam) {
+    Events.afterBattleStarted = function afterBattleStarted(src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam) {
         require.provide("afterBattleStarted#start", src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam);
         
         // TODO: Add this as a hook.
@@ -1064,7 +1064,7 @@
             len = channelIds.length,
             i;
 
-        for (i = 0; i < len; ++i) {
+        for (i = 0; i < len; i += 1) {
             Tours.events.afterBattleStarted(src, tar, clauses, rated, mode, battleId, srcTeam, tarTeam, JSESSION.channels(channelIds[i]).tour);
         }
         
@@ -1074,7 +1074,7 @@
     // [evt-beforeBattleEnded] beforeBattleEnded event
     // [Unstoppable] Called when: A player issues a challenge.
     // Currently unused.
-    Events.beforeBattleEnded = function (winner, loser, result, battleId) {
+    Events.beforeBattleEnded = function beforeBattleEnded(winner, loser, result, battleId) {
         require.provide("beforeBattleEnded#start", winner, loser, result, battleId);
         require.provide("beforeBattleEnded#end", winner, loser, result, battleId);
     };
@@ -1082,7 +1082,7 @@
     // [evt-afterBattleEnded] afterBattleEnded event
     // [Unstoppable] Called when: A player issues a challenge.
     // Gives the players battle points, makes tours work.
-    Events.afterBattleEnded = function (winner, loser, result, battleId) {
+    Events.afterBattleEnded = function afterBattleEnded(winner, loser, result, battleId) {
         require.provide("afterBattleEnded#start", winner, loser, result, battleId);
         
         var winnerName = sys.name(winner),
@@ -1123,7 +1123,7 @@
         }
 
         
-        for (i = 0; i < len; ++i) {
+        for (i = 0; i < len; i += 1) {
             Tours.events.afterBattleStarted(winner, loser, result, JSESSION.channels(channelIds[i]).tour);
         }
         
@@ -1134,7 +1134,7 @@
     // [Semi-unstoppable] Called when: [src] tries to spectate a battle between [battler1] and [battler2].
     // Allows [src] to watch [battler1]'s and [battler2]'s battle if they are currently playing
     // a tournament finals match (even when Disallow Spectators is on).
-    Events.attemptToSpectateBattle = function (src, battler1, battler2) {
+    Events.attemptToSpectateBattle = function attemptToSpectateBattle(src, battler1, battler2) {
         if (require.provide("attemptToSpectateBattle#start", src, battler1, battler2)) {
             return "allow";
         }
@@ -1144,7 +1144,7 @@
             tour,
             i;
 
-        for (i = 0; i < length; ++i) {
+        for (i = 0; i < length; i += 1) {
             // ensure we have an object
             tour = JSESSION.channels(channelIds[i]).tour;
             
@@ -1167,7 +1167,7 @@
     // [evt-beforeSpectateBattle] beforeSpectateBattle event
     // [Stoppable] Called when: A player spectates a battle.
     // Currently unused.
-    Events.beforeSpectateBattle = function (src, battler1, battler2) {
+    Events.beforeSpectateBattle = function beforeSpectateBattle(src, battler1, battler2) {
         if (require.provide("beforeSpectateBattle#start", src, battler1, battler2)) {
             sys.stopEvent();
             return;
@@ -1181,7 +1181,7 @@
     // [evt-afterSpectateBattle] afterSpectateBattle event
     // [Unstoppable] Called when: A player spectates a battle.
     // Currently unused.
-    Events.afterSpectateBattle = function (src, battler1, battler2) {
+    Events.afterSpectateBattle = function afterSpectateBattle(src, battler1, battler2) {
         require.provide("afterSpectateBattle#start", src, battler1, battler2);
         require.provide("afterSpectateBattle#end", src, battler1, battler2);
     };
@@ -1191,7 +1191,7 @@
     // [evt-beforeIPConnected] beforeIPConnected event
     // [Stoppable] Called when: An ip tries to send information to the server (before name, etc. is sent).
     // Currently unused.
-    Events.beforeIPConnected = function (ip) {
+    Events.beforeIPConnected = function beforeIPConnected(ip) {
         if (require.provide("beforeIPConnected#start", ip)) {
             sys.stopEvent();
             return;
@@ -1205,7 +1205,7 @@
     // [evt-afterIPConnected] afterIPConnected event
     // [Unstoppable] Called when: An ip tries to send information to the server (before name, etc. is sent).
     // Currently unused.
-    Events.afterIPConnected = function (ip) {
+    Events.afterIPConnected = function afterIPConnected(ip) {
         require.provide("afterIPConnected#start", ip);
         require.provide("afterIPConnected#end", ip);
     };
@@ -1214,7 +1214,7 @@
     // [Stoppable] Called when: Before a player logs in.
     // Adds a player's correct name to DataHash, resolves their location, ensures they don't instantly reconnect after being kicked,
     // and that their name doesn't contain characters such as those which make it easy to impersonate a player (cyrillic, greek).
-    Events.beforeLogIn = function (src) {
+    Events.beforeLogIn = function beforeLogIn(src) {
         if (require.provide("beforeLogIn#start", src)) {
             sys.stopEvent();
             return;
@@ -1253,7 +1253,7 @@
     // [evt-afterLogIn] afterLogIn event
     // [Unstoppable] Called when: After a player logs in.
     // Logs the player logging in, sends them welcome messages, updates the most amount of players online, and sends a custom welcome message to everyone (if they have one).
-    Events.afterLogIn = function (src) {
+    Events.afterLogIn = function afterLogIn(src) {
         require.provide("afterLogIn#start", src);
         
         var name = PlayerUtils.formatName(src),
@@ -1318,7 +1318,6 @@
         
         // This gets called in afterChangeTeam as well.
         User.shared();
-        //ify.afterLogIn(src);
         
         require.provide("afterLogIn#end", src);
     };
@@ -1326,7 +1325,7 @@
     // [evt-beforeLogOut] beforeLogOut event
     // [Unstoppable] Called when: A player logs out.
     // Logs the player leaving the server, and destroys their JSESSION object.
-    Events.beforeLogOut = function (src) {
+    Events.beforeLogOut = function beforeLogOut(src) {
         require.provide("beforeLogOut#start", src);
         
         WatchUtils.logPlayerEvent(src, "Logged out.");
@@ -1335,7 +1334,10 @@
             Bot.sendAll("Goodbye, " + sys.name(src) + "!", 0);
         }
         
-        //ify.beforeLogOut(src);
+        if (Options.ifyInfo.active) {
+            delete Options.ifyInfo.names[src];
+        }
+        
         JSESSION.destroyUser(src);
         
         require.provide("beforeLogOut#end", src);
@@ -1344,7 +1346,7 @@
     // [evt-afterLogOut] afterLogOut event
     // Called when: A player logs out.
     // Currently unused.
-    Events.afterLogOut = function (src) {
+    Events.afterLogOut = function afterLogOut(src) {
         require.provide("afterLogOut#start", src);
         require.provide("afterLogOut#end", src);
     };
@@ -1352,7 +1354,7 @@
     // [evt-beforePlayerRegister] beforePlayerRegister event
     // [Stoppable] Called when: A player registers.
     // Currently unused.
-    Events.beforePlayerRegister = function (src) {
+    Events.beforePlayerRegister = function beforePlayerRegister(src) {
         if (require.provide("beforePlayerRegister#start", src)) {
             sys.stopEvent();
             return;
@@ -1366,7 +1368,7 @@
     // [evt-afterPlayerRegister] afterPlayerRegister event
     // [Unstoppable] Called when: A player registers.
     // Currently unused.
-    Events.afterPlayerRegister = function (src) {
+    Events.afterPlayerRegister = function afterPlayerRegister(src) {
         require.provide("afterPlayerRegister#start", src);
         require.provide("afterPlayerRegister#end", src);
     };
@@ -1374,7 +1376,7 @@
     // [evt-beforeNewPM] beforeNewPM event
     // [Stoppable] Called when: A player starts a conversation with someone else via Private Messaging.
     // Currently unused.
-    Events.beforeNewPM = function (src) {
+    Events.beforeNewPM = function beforeNewPM(src) {
         if (require.provide("beforeNewPM#start", src)) {
             sys.stopEvent();
             return;
@@ -1388,7 +1390,7 @@
     // [evt-afterNewPM] afterNewPM event
     // [Unstoppable] Called when: A player starts a conversation with someone else via Private Messaging.
     // Currently unused.
-    Events.afterNewPM = function (src) {
+    Events.afterNewPM = function afterNewPM(src) {
         require.provide("afterNewPM#start", src);
         require.provide("afterNewPM#end", src);
     };
@@ -1396,7 +1398,7 @@
     // [evt-beforePlayerAway] beforePlayerAway event
 	// [Stoppable] Called when: A player toggles their away status.
 	// Currently unused.
-	Events.beforePlayerAway = function (src, mode) {
+	Events.beforePlayerAway = function beforePlayerAway(src, mode) {
         if (require.provide("beforePlayerAway#start", src, mode)) {
             sys.stopEvent();
             return;
@@ -1410,7 +1412,7 @@
     // [evt-afterPlayerAway] afterPlayerAway event
     // [Unstoppable] Called when: A player toggles their away status.
     // Logs the player's away status to Guardtower.
-    Events.afterPlayerAway = function (src, mode) {
+    Events.afterPlayerAway = function afterPlayerAway(src, mode) {
         require.provide("afterPlayerAway#start", src, mode);
         
         WatchUtils.logPlayerEvent(src, (mode ? "Now idling." : "Now active and ready for battles"));
@@ -1421,7 +1423,7 @@
     // [evt-beforeChangeTeam] beforeChangeTeam event
 	// [Stoppable] Called when: A player changes their team and/or name.
 	// Currently unused.
-	Events.beforeChangeTeam = function (src) {
+	Events.beforeChangeTeam = function beforeChangeTeam(src) {
         if (require.provide("beforeChangeTeam#start", src)) {
             sys.stopEvent();
             return;
@@ -1436,7 +1438,7 @@
     // Called when: A player changes their team and/or name.
     // Adds data of the player's new name (if they changed it) and prevents team change spamming.
     // TODO: Add WatchUtils to afterChangeTeam
-    Events.afterChangeTeam = function (src) {
+    Events.afterChangeTeam = function afterChangeTeam(src) {
         require.provide("afterChangeTeam#start", src);
 
         var name = sys.name(src),
@@ -1444,16 +1446,18 @@
             ip = sys.ip(src),
             userObject = JSESSION.users(src);
         
+        User.shared();
+        
         userObject.name = name;
         userObject.megauser = DataHash.hasDataProperty("megausers", nameLower);
         userObject.voice = DataHash.hasDataProperty("voices", nameLower);
 
-        ++userObject.teamChanges;
+        userObject.teamChanges += 1;
 
         if (userObject.teamChanges > 2) {
             // Clear it every 10 seconds.
             sys.setTimer(function () {
-                --DataHash.teamSpammers[ip];
+                DataHash.teamSpammers[ip] -= 1;
                 
                 // 0 or negative teamSpammers count? Delete it.
                 if (!DataHash.teamSpammers[ip]) {
@@ -1485,7 +1489,7 @@
 
         // Clear it every 5 seconds.
         sys.setTimer(function () {
-            --userObject.teamChanges;
+            userObject.teamChanges -= 1;
         }, 5000, false);
 
         // Everything else //
@@ -1502,14 +1506,13 @@
             return;
         }
 
-        //ify.afterChangeTeam(src);
         require.provide("afterChangeTeam#end", src);
     };
 
     // [evt-beforeChangeTier] beforeChangeTier event
     // [Stoppable] Called when: A player changes one of their teams' tier.
     // Ensures all the player's teams are valid for the tier they're in.
-    Events.beforeChangeTier = function (src, team, oldTier, newTier) {
+    Events.beforeChangeTier = function beforeChangeTier(src, team, oldTier, newTier) {
         if (require.provide("beforeChangeTier#start", src, team, oldTier, newTier)) {
             sys.stopEvent();
             return;
@@ -1530,7 +1533,7 @@
     // [evt-afterChangeTier] afterChangeTier event
 	// [Unstoppable] Called when: A player changes one of their teams' tier.
 	// Currently unused.
-	Events.afterChangeTier = function (src, team, oldTier, newTier) {
+	Events.afterChangeTier = function afterChangeTier(src, team, oldTier, newTier) {
          require.provide("afterChangeTier#start", src, team, oldTier, newTier);
          require.provide("afterChangeTier#end", src, team, oldTier, newTier);
 	};
@@ -1538,7 +1541,7 @@
     // [evt-beforePlayerKick] beforePlayerKick event
     // [Stoppable] Called when: A player kicks someone.
     // Ensures the player isn't muted when they kick (if they are, then prevent it), and sends a custom kick message.
-    Events.beforePlayerKick = function (src, tar) {
+    Events.beforePlayerKick = function beforePlayerKick(src, tar) {
         if (require.provide("beforePlayerKick#start", src, tar)) {
             sys.stopEvent();
             return;
@@ -1573,7 +1576,7 @@
     // [evt-afterPlayerKick] afterPlayerKick event
 	// [Unstoppable] Called when: A player kicks someone.
 	// Currently unused.
-	Events.afterPlayerKick = function (src, tar) {
+	Events.afterPlayerKick = function afterPlayerKick(src, tar) {
         require.provide("afterPlayerKick#start", src, tar);
         require.provide("afterPlayerKick#end", src, tar);
 	};
@@ -1596,7 +1599,7 @@
         
         time (in beforePlayerBan) is undefined if the ban isn't a tempBan.
     */
-    Events.beforePlayerBan = function (src, tar, time) {
+    Events.beforePlayerBan = function beforePlayerBan(src, tar, time) {
         if (require.provide("beforePlayerBan#start", src, tar, time)) {
             sys.stopEvent();
             return;
@@ -1639,13 +1642,60 @@
     // [evt-afterPlayerBan] afterPlayerBan event
 	// [Unstoppable] Called when: A player bans someone.
 	// Currently unused.
-	Events.afterPlayerBan = function (src, tar, time) {
+	Events.afterPlayerBan = function afterPlayerBan(src, tar, time) {
         require.provide("afterPlayerBan#start", src, tar, time);
         require.provide("afterPlayerBan#end", src, tar, time);
 	};
     
     // Will be added as a command later.
     /*
+    
+
+    // TODO: Turn these into commands
+    Ify.commands.unify = function (src, commandData, chan) {
+        if (!Ify.inIfy) {
+            botMessage(src, "Ify isn't on!", chan);
+            return;
+        }
+
+        this.inIfy = false;
+        this.ifyName = "";
+
+        botAll(this.names[src] + " changed everyones name back!", 0);
+        var ids = sys.playerIds(),
+            id;
+
+        for (id in ids) {
+            sys.changeName(ids[id], this.names[ids[id]]);
+        }
+
+        this.names = {};
+    };
+
+    this.command_ify = function (src, commandData, chan) {
+        if (this.inIfy) {
+            botMessage(src, "Ify is already on!", chan);
+            return;
+        }
+        if (commandData.length > 25) { // Slightly longer name allowed.
+            botMessage(src, "The ifyname must be under 26 characters.", chan);
+            return;
+        }
+
+        this.inIfy = true;
+        this.ifyName = commandData;
+        this.names = {}; // Just to be sure.
+        botAll(sys.name(src) + " changed everyones name to " + commandData + "!", 0);
+        var ids = sys.playerIds(),
+            x, id;
+
+        for (x in ids) {
+            id = ids[x];
+            this.names[id] = sys.name(id);
+            sys.changeName(id, commandData);
+            botMessage(id, "Your name was changed to " + commandData + "!");
+        }
+    }
     issueMute: function (src, target, reason, time, c, timeunit) {
         var time = parseInt(time),
             theIP = sys.dbIp(target),

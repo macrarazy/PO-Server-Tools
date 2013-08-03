@@ -1,6 +1,6 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, SESSION, script, Qt, print, gc, version,
-    Config: true, require: false, module: true, exports: true*/
+/*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
+/*global sys, SESSION, script: true, Qt, print, gc, version,
+    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: channel-utils.js (ChannelUtils)
 // Contains various utilities that are for/have to do with channels
@@ -28,7 +28,7 @@
             length = channelIds.length,
             i;
     
-        for (i = 0; i < length; ++i) {
+        for (i = 0; i < length; i += 1) {
             chanNames.push(sys.channel(channelIds[i]));
         }
     
@@ -42,7 +42,7 @@
             chanName,
             i;
     
-        for (i = 0; i < length; ++i) {
+        for (i = 0; i < length; i += 1) {
             chanName = chanNames[i];
             
             str = str.replace(
