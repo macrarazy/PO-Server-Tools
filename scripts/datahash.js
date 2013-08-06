@@ -10,7 +10,7 @@
 // [expt]: Exports
 
 (function () {
-	// NOTE: A special cache, dataCache, is used for DataHash.
+    // NOTE: A special cache, dataCache, is used for DataHash.
     var Cache = require('cache').dataCache;
     
     var DataHash = {},
