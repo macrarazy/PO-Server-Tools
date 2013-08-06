@@ -104,6 +104,7 @@
     };
     
     // Exports [expt]
+	
     // Export ChatGradient
-    exports = ChatGradient;
+    module.exports = ChatGradient;
 }());

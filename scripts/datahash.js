@@ -10,8 +10,8 @@
 // [expt]: Exports
 
 (function () {
-    var Cache = require('cache').Cache,
-        WatchUtils = require('watch-utils');
+	// NOTE: A special cache, dataCache, is used for DataHash.
+    var Cache = require('cache').dataCache;
     
     var DataHash = {},
         IP_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=";
@@ -55,7 +55,7 @@
     // Saves the DataHash.[type] object.
     // Note that we don't have to call JSON.stringify, this is already done by the Cache itself.
     DataHash.save = function (type) {
-        Cache.save("DataHash_" + type, DataHash[type]);
+        Cache.save(type, DataHash[type]);
     };
     
     // Gets all the values from Cache.
@@ -71,7 +71,7 @@
                 
                 // filter out functions, including this one.
                 if (typeof entry === 'object') {
-                    DataHash[i] = Cache.get("DataHash_" + i) || {};
+                    DataHash[i] = Cache.get(i) || {};
                 }
             }
         }
@@ -91,15 +91,7 @@
             
             sys.webCall(IP_URL + ip, function (json) {
                 // They return malformed JSON, but a valid JavaScript Object.
-                var resp = eval(json);
-                
-                DataHash.locations[ip] = resp;
-
-                if (sys.loggedIn(src)) {
-                    if (resp.country_name === "Anonymous Proxy") {
-                        WatchUtils.logPlayerEvent(src, "Proxy detected");
-                    }
-                }
+                DataHash.locations[ip] = eval(json);
             });
         }
     };
@@ -110,5 +102,5 @@
     
     // Set DataHash as exports, allowing require('DataHash') to be just datahash, without needing something
     // like require('DataHash').DataHash
-    exports = DataHash;
+    module.exports = DataHash;
 }());

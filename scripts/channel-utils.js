@@ -9,7 +9,7 @@
 // No Table of Content.
 
 (function () {
-    var JSESSION = require('jsession').JSESSION,
+    var JSESSION = require('jsession'),
         PlayerUtils = require('player-utils');
     
     // Creates a clickable channel link

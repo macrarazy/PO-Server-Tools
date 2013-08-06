@@ -11,7 +11,7 @@
 
 (function () {
     var DataHash = require('datahash'),
-        JSESSION = require('jsession').JSESSION,
+        JSESSION = require('jsession'),
         Utils = require('utils');
     
     // list of default colors, used when a player doesn't have one (by the client)

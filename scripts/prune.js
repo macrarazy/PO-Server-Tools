@@ -7,23 +7,19 @@
 // Depends on: bot, channel-data, datahash, jsession, player-utils
 
 // Table of Content:
-// [prune-ctor]: Prune constructor
 // [expt]: Exports
 
 (function () {
     var Bot = require('bot'),
-        ChannelData = require('channel-data').ChannelData,
+        ChannelData = require('channel-data'),
         DataHash = require('datahash'),
-        JSESSION = require('jsession').JSESSION,
+        JSESSION = require('jsession'),
         PlayerUtils = require('player-utils');
     
-    // Prune constructor [prune-ctor]
-    // This constructor is empty and its only use is to be able to update the Prune prototype.
-    function Prune() {
-    }
+    var Prune = {};
     
     // Prunes old (expired) temporary authorities.
-    Prune.prototype.tempAuth = function () {
+    Prune.tempAuth = function () {
         var auths = DataHash.tempAuth,
             timeNow = +(sys.time()),
             hasMadeChange = false,
@@ -71,7 +67,7 @@
     // Most of these are similar to Prune#tempAuth, except simpler.
     
     // Prunes old (expired) mutes.
-    Prune.prototype.mutes = function () {
+    Prune.mutes = function () {
         var mutes = DataHash.mutes,
             timeNow = +(sys.time()),
             hasMadeChange = false,
@@ -95,7 +91,7 @@
     };
     
     // Prunes all old (expired) temporary bans.
-    Prune.prototype.bans = function () {
+    Prune.bans = function () {
         var bans = DataHash.tempBans,
             timeNow = +(sys.time()),
             hasMadeChange = false,
@@ -119,7 +115,7 @@
     };
 
     // Prunes all old (expired) range bans.
-    Prune.prototype.rangeBans = function () {
+    Prune.rangeBans = function () {
         var bans = DataHash.rangeBans,
             timeNow = +(sys.time()),
             hasMadeChange = false,
@@ -142,7 +138,7 @@
         }
     };
 
-    Prune.prototype.channelMutes = function (chan) {
+    Prune.channelMutes = function (chan) {
         var channel = JSESSION.channels(chan),
             mutes = channel.muteList,
             timeNow = +(sys.time()),
@@ -166,7 +162,7 @@
         }
     };
     
-    Prune.prototype.channelBans = function (chan) {
+    Prune.channelBans = function (chan) {
         var channel = JSESSION.channels(chan),
             bans = channel.muteList,
             timeNow = +(sys.time()),
@@ -192,9 +188,6 @@
     
     // Exports [expt]
     
-    // Export an instance of Prune
-    exports.Prune = new Prune();
-    
-    // Export the Prune constructor.
-    exports.prune_constructor = Prune;
+    // Export Prune
+    module.exports = Prune;
 }());

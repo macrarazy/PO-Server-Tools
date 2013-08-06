@@ -172,7 +172,7 @@
             format = ["<th>", "</th>"];
         }
         
-        for (i = 0, len = data.length; i < len; ++i) {
+        for (i = 0, len = data.length; i < len; i += 1) {
             table += format[0] + data[i] + format[1];
         }
     
@@ -210,5 +210,5 @@
     
     // Exports [expt]
     // Set exports as createTemplate (var Template = require('template'); var template = Template('standard', args...))
-    exports = createTemplate;
+    module.exports = createTemplate;
 }());

@@ -24,7 +24,7 @@
         }
         
         if (Config.LogFile) {
-            sys.appendToFile(Config.LogFile, "Player event '" + message + "' for player '" + PlayerUtils.name(src) + "' (ID " + src + ") called. \r\n");
+            sys.appendToFile(Config.LogFile, "Player event '" + message + "' for player '" + PlayerUtils.name(src) + "' (ID " + src + ") called. \n");
         }
     };
     
@@ -38,7 +38,7 @@
         }
         
         if (Config.LogFile) {
-            sys.appendToFile(Config.LogFile, "Channel event '" + message + "' for player '" + (sys.channel(chan) || chan) + "' (ID " + (sys.channelId(chan) || chan) + ") called. \r\n");
+            sys.appendToFile(Config.LogFile, "Channel event '" + message + "' for player '" + (sys.channel(chan) || chan) + "' (ID " + (sys.channelId(chan) || chan) + ") called. \n");
         }
     };
     
@@ -52,7 +52,7 @@
         }
         
         if (Config.LogFile) {
-            sys.appendToFile(Config.LogFile, "Player '" + PlayerUtils.name(src) + "' (ID " + src + ") said '" + message + "' (Type: " + type + "). \r\n");
+            sys.appendToFile(Config.LogFile, "Player '" + PlayerUtils.name(src) + "' (ID " + src + ") said '" + message + "' (Type: " + type + "). \n");
         }
     };
     
@@ -66,7 +66,7 @@
         }
         
         if (Config.LogFile) {
-            sys.appendToFile(Config.LogFile, "System event '" + type + "' (" + message + ") called. \r\n");
+            sys.appendToFile(Config.LogFile, "System event '" + type + "' (" + message + ") called. \n");
         }
     };
 }());

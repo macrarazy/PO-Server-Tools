@@ -540,5 +540,5 @@
     // Exports [expt]
     
     // Completely export the tierbans object.
-    exports = TierBans;
+    module.exports = TierBans;
 }());

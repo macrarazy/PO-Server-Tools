@@ -11,7 +11,7 @@
 // [expt]: Exports
 
 (function () {
-    var Cache = require('cache'),
+    var Cache = require('cache').cache,
         Utils = require('utils');
     
     // TODO: Change the default styles to something more original.
@@ -176,5 +176,5 @@
     
     // [expt] Exports
     // Export Style.
-    exports = Style;
+    module.exports = Style;
 }());

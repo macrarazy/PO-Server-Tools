@@ -21,14 +21,14 @@
         if (typeof channel === "undefined") {
             sys.sendHtmlMessage(
                 src,
-                "<font color='" + Options.Bot.color + "'><timestamp/><b>" + Options.Bot.name + ":</b></font> " + message
+                "<font color='" + Options.bot.color + "'><timestamp/><b>" + Options.bot.name + ":</b></font> " + message
             );
             return;
         }
         
         sys.sendHtmlMessage(
             src,
-            "<font color='" + Options.Bot.color + "'><timestamp/><b>" + Options.Bot.name + ":</b></font> " + message,
+            "<font color='" + Options.bot.color + "'><timestamp/><b>" + Options.bot.name + ":</b></font> " + message,
             channel
         );
     };
@@ -42,13 +42,13 @@
     exports.sendAll = function (message, channel) {
         if (typeof channel === "undefined") {
             sys.sendHtmlAll(
-                "<font color='" + Options.Bot.color + "'><timestamp/><b>" + Options.Bot.name + ":</b></font> " + message
+                "<font color='" + Options.bot.color + "'><timestamp/><b>" + Options.bot.name + ":</b></font> " + message
             );
             return;
         }
         
         sys.sendHtmlAll(
-            "<font color='" + Options.Bot.color + "'><timestamp/><b>" + Options.Bot.name + ":</b></font> " + message,
+            "<font color='" + Options.bot.color + "'><timestamp/><b>" + Options.bot.name + ":</b></font> " + message,
             channel
         );
     };

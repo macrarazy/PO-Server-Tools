@@ -10,66 +10,67 @@
 // [expt]: Exports
 
 (function () {
-    var JSESSION = require('jsession').JSESSION,
+    var JSESSION = require('jsession'),
         Utils = require('utils');
     
+    var ChannelData = {};
+	
     // ChannelData constructor
-    function ChannelData(file) {
-        this.file = file + ".json";
-        this.data = {};
+    ChannelData.load = function (file) {
+        ChannelData.file = file + ".json";
+        ChannelData.data = {};
         
         // ensures the file exists.
         Utils.createFile(file, "{}");
         
         try {
-            this.channelData = JSON.parse(sys.getFileContent(file));
+            ChannelData.data = JSON.parse(sys.getFileContent(ChannelData.file));
         } catch (e) {
-            sys.writeToFile(file + "-corrupted.json", sys.getFileContent(this.file));
+            sys.writeToFile(file + "-corrupted.json", sys.getFileContent(ChannelData.file));
             
             // resets the hash and clears the file (changing its content to "{}")
-            this.data = {};
-            this.saveData();
+            ChannelData.data = {};
+            ChannelData.saveData();
 
-            print("Could not load channel data from " + this.file + ": " + e);
+            print("Could not load channel data from " + ChannelData.file + ": " + e);
             print("Old channel data saved to " + file + "-corrupted.json. Channel data and the " + file + ".json file have been cleared.");
         }
         
         return this;
-    }
+    };
 
     // Sets [property] for [chanName].
-    ChannelData.prototype.save = function (chanName, property, value) {
+    ChannelData.save = function (chanName, property, value) {
         // this allows this function to accept ids as well.
         chanName = sys.channel(chanName) || chanName;
         
-        if (this.data[chanName] === undefined) {
-            this.data[chanName] = {};
+        if (ChannelData.data[chanName] === undefined) {
+            ChannelData.data[chanName] = {};
         }
         
-        this.data[chanName][property] = value;
-        this.saveData();
-        
-        return this;
+        ChannelData.data[chanName][property] = value;
+        ChannelData.saveData();
+        return ChannelData;
     };
     
     // Same as ChannelData#save, but doesn't call ChannelData#saveData
-    ChannelData.prototype.set = function (chanName, property, value) {
+    ChannelData.set = function (chanName, property, value) {
         // this allows this function to accept ids as well.
         chanName = sys.channel(chanName) || chanName;
         
-        if (this.data[chanName] === undefined) {
-            this.data[chanName] = {};
+        if (ChannelData.data[chanName] === undefined) {
+            ChannelData.data[chanName] = {};
         }
         
-        this.data[chanName][property] = value;
-        return this;
+        ChannelData.data[chanName][property] = value;
+        return ChannelData;
     };
     
     // Exports channel data into the channel, [chan] (channel id).
     // [chan] HAS to be a number/id!
-    ChannelData.prototype.exportData = function (chan) {
-        var channel = JSESSION.channels(chan) || {name: undefined},
-            data = this.data[channel.name],
+    ChannelData.exportData = function (chan) {
+        var channel = (JSESSION.channels(chan) || {name: undefined}),
+            data = ChannelData.data[channel.name],
             cur,
             i;
         
@@ -89,13 +90,13 @@
             }
         }
         
-        return this;
+        return ChannelData;
     };
     
     // Saves all data in ChannelData#data to file.
-    ChannelData.prototype.saveData = function () {
-        sys.writeToFile(this.file, JSON.stringify(this.data));
-        return this;
+    ChannelData.saveData = function () {
+        sys.writeToFile(ChannelData.file, JSON.stringify(ChannelData.data));
+        return ChannelData;
     };
     
     /*
@@ -119,8 +120,5 @@
     // Exports [expt]
     
     // exports an instance of ChannelData
-    exports.ChannelData = new ChannelData(Config.ChannelDataFile);
-    
-    // exports the ChannelData constructor
-    exports.channeldata_constructor = ChannelData;
+    module.exports = ChannelData;
 }());

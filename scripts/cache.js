@@ -60,12 +60,18 @@
     // Ensures all keys (which an object) exist (keyName -> keyValue).
     // Only runs saveAll if a new key had to be created.
     Cache.prototype.ensure = function (keys) {
-        var key;
+        var created = false,
+            key;
         
         for (key in keys) {
             if (typeof this.hash[key] === "undefined") {
                 this.hash[key] = keys[key];
+                created = true;
             }
+        }
+        
+        if (created) {
+            this.saveAll();
         }
     };
     
@@ -106,7 +112,7 @@
         var i;
         
         for (i in values) {
-            Options[i] = exports.Cache.get(values[i]);
+            Options[i] = exports.cache.get(values[i]);
         }
     }
     
@@ -114,7 +120,7 @@
     function init() {
         // NOTE: We don't have to init script recent load and script register, as this is done in init()
         // Ensures all cache values exist, with a default value.
-        exports.Cache.ensure({
+        exports.cache.ensure({
             botSettings: {
                 bot: "~Server~",
                 color: "red"
@@ -142,11 +148,15 @@
     }
     
     // Exports [expt]
+    
     // Exports a cache object.
-    exports.Cache = new Cache();
+    exports.cache = new Cache("script-cache");
+	
+    // Used by DataHash.
+    exports.dataCache = new Cache("datahash-cache");
     
     // Exports the cache constructor.
-    exports.cache_constructor = Cache;
+    exports.Cache = Cache;
     
     // Exports the cache value initialiser.
     exports.init = init;

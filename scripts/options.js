@@ -25,7 +25,7 @@
         then cache.js is be the way to go. */
     // The bot's name and its color.
     // Cache field used: botSettings
-    exports.Bot = {
+    exports.bot = {
         bot: "~Server~",
         color: "red"
     };
@@ -63,7 +63,7 @@
     // If the server is starting up (don't change this).
     exports.isStartingUp = false;
     
-    // Time (since Unix epoch) when the server started up (don't change this).
+    // Time (since the Unix epoch) when the server started up (don't change this).
     exports.startUpTime = 0;
     
     // Counter for the 'step' event, which increases every second.
@@ -93,4 +93,6 @@
         "Guardtower", // watchchan
         "Area 51" // evalchan
     ];
+	
+    exports.border = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
 }());

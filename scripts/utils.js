@@ -489,13 +489,6 @@
         }
     };
     
-    // Updates an object's prototype (adding/removing functions)
-    exports.updatePrototype = function (object, proto) {
-        if (object.prototype !== proto.prototype) {
-            object.prototype = proto.prototype;
-        }
-    };
-    
     // Finishes a sentence by adding '.' to it if the last character isn't '.', '?', '!', or ';'.
     exports.finishSentence = function (string) {
         var lastCharacter = string[string.length - 1];

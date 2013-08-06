@@ -7,250 +7,223 @@
 // No dependencies.
 
 // Table of Content:
-// [ctor]: JSESSION constructor.
 // [expt]: Exports.
 
 (function () {
-    // JSESSION constructor [ctor]
-    function JSESSION() {
-        this.UserData = {};
-        this.ChannelData = {};
-        this.GlobalData = {};
+    function noop() {}
     
-        this.UserFunc = function () {};
-        this.ChannelFunc = function () {};
-        this.GlobalFunc = function () {};
-    
-        this.UsesUser = false;
-        this.UsesChannel = false;
-        this.UsesGlobal = false;
-    
-        this.ScriptID = undefined;
-    }
-    
+    var JSESSION = {},
+        userData = {},
+        channelData = {},
+        globalData = {},
+        userFactory = noop,
+        channelFactory = noop,
+        globalFactory = noop,
+        usesUserFactory = false,
+        usesChannelFactory = false,
+        usesGlobalFactory = false,
+        scriptId;
+
     // Refills everything, adding missing users, channels, and the global object
-    JSESSION.prototype.refill = function refill() {
+    JSESSION.refill = function refill() {
         var users = sys.playerIds(),
             channels = sys.channelIds(),
-            i,
+            length,
             cur,
-            length;
+            i;
     
-        if (this.UsesUser) {
+        if (usesUserFactory) {
             length = users.length;
             for (i = 0; i < length; i += 1) {
                 cur = users[i];
-                if (this.users(cur) === undefined) {
-                    this.createUser(cur);
+                if (JSESSION.users(cur) === undefined) {
+                    JSESSION.createUser(cur);
                 }
             }
         }
     
-        if (this.UsesChannel) {
+        if (usesChannelFactory) {
             length = channels.length;
             for (i = 0; i < length; i += 1) {
                 cur = channels[i];
-                if (this.channels(cur) === undefined) {
-                    this.createChannel(cur);
+                if (JSESSION.channels(cur) === undefined) {
+                    JSESSION.createChannel(cur);
                 }
             }
         }
     
-        if (this.UsesGlobal) {
-            if (this.global() === undefined) {
-                this.GlobalData = new this.GlobalFunc();
+        if (usesGlobalFactory) {
+            if (JSESSION.global() === undefined) {
+                globalData = new globalFactory();
             }
         }
     };
     
     // Attempts to return a user object
-    JSESSION.prototype.users = function (id) {
-        if (!this.UsesUser) {
+    JSESSION.users = function (id) {
+        if (!usesUserFactory) {
             return;
         }
     
-        if (typeof this.UserData[id] === 'undefined') {
+        if (typeof userData[id] === 'undefined') {
             return;
         }
     
-        return this.UserData[id];
+        return userData[id];
     };
     
     // Attempts to return a channel object.
-    JSESSION.prototype.channels = function (id) {
-        if (!this.UsesChannel) {
+    JSESSION.channels = function (id) {
+        if (!usesChannelFactory) {
             return;
         }
     
-        if (typeof this.ChannelData[id] === 'undefined') {
+        if (typeof channelData[id] === 'undefined') {
             return;
         }
     
-        return this.ChannelData[id];
+        return channelData[id];
     };
     
     // Attempts to return a global object.
-    JSESSION.prototype.global = function () {
-        if (!this.UsesGlobal) {
+    JSESSION.global = function () {
+        if (!usesGlobalFactory) {
             return;
         }
     
-        if (typeof this.GlobalData === 'undefined') {
-            return;
-        }
-    
-        return this.GlobalData;
+        return globalData;
     };
     
     // Identifies the script as a certain id, clearing everything if they don't match
     // or if no script was registered beforehand.
     // Then refills.
-    JSESSION.prototype.identifyScriptAs = function (script) {
-        if (this.ScriptID === undefined || this.ScriptID !== script) {
-            this.clearAll();
+    JSESSION.identifyScriptAs = function (script) {
+        if (scriptId === undefined || scriptId !== script) {
+            JSESSION.clearAll();
         }
     
-        this.ScriptID = script;
-        this.refill();
+        scriptId = script;
+        JSESSION.refill();
     };
     
     // Registers the user constructor.
-    JSESSION.prototype.registerUser = function (func) {
-        if (typeof func !== "function") {
+    JSESSION.registerUserFactory = function (factory) {
+        if (typeof factory !== "function") {
             return;
         }
     
-        this.UserFunc = func;
-        this.UsesUser = true;
+        userFactory = factory;
+        usesUserFactory = true;
     };
     
     // Registers the channel constructor.
-    JSESSION.prototype.registerChannel = function (func) {
-        if (typeof func !== "function") {
+    JSESSION.registerChannelFactory = function (factory) {
+        if (typeof factory !== "function") {
             return;
         }
     
-        this.ChannelFunc = func;
-        this.UsesChannel = true;
+        channelFactory = factory;
+        usesChannelFactory = true;
     };
     
     // Registers the global constructor.
-    JSESSION.prototype.registerGlobal = function (Func) {
-        if (typeof Func !== "function") {
+    JSESSION.registerGlobalFactory = function (factory) {
+        if (typeof factory !== "function") {
             return;
         }
     
-        this.GlobalFunc = Func;
-        this.UsesGlobal = true;
-        this.GlobalData = new Func();
+        globalFactory = factory;
+        usesGlobalFactory = true;
+		
+        globalData = new factory();
     };
     
     // Creates a channel object.
     // Used internally. Should be used in afterChannelCreated event as well.
-    JSESSION.prototype.createChannel = function (id) {
-        if (!this.UsesChannel) {
+    JSESSION.createChannel = function (id) {
+        if (!usesChannelFactory || typeof channelData[id] !== "undefined") {
             return false;
         }
-    
-        if (typeof this.ChannelData[id] !== "undefined") {
-            return false;
-        }
-    
-        if (sys.channel(id) === undefined) {
-            return false;
-        }
-    
-        this.ChannelData[id] = new this.ChannelFunc(id);
+		
+        channelData[id] = new channelFactory(id);
         return true;
     };
     
     // Destroys a channel object.
     // Should be used in afterChannelDestroyed event.
-    JSESSION.prototype.destroyChannel = function (id) {
-        if (!this.UsesChannel) {
+    JSESSION.destroyChannel = function (id) {
+        if (!usesChannelFactory || id === 0 || typeof channelData[id] === "undefined") {
             return false;
         }
-        if (id === 0) {
-            return false;
-        }
-    
-        if (typeof this.ChannelData[id] === "undefined") {
-            return false;
-        }
-    
-        delete this.ChannelData[id];
+		
+        delete channelData[id];
         return true;
     };
     
     // Creates a user object.
     // Used internally. Should be used in the afterLogIn event as well.
-    JSESSION.prototype.createUser = function (id) {
-        if (!this.UsesUser) {
+    JSESSION.createUser = function (id) {
+        if (!usesUserFactory || typeof userData[id] !== "undefined") {
             return false;
         }
-    
-        if (typeof this.UserData[id] !== "undefined") {
-            return false;
-        }
-    
-        if (sys.name(id) === undefined) {
-            return false;
-        }
-    
-        this.UserData[id] = new this.UserFunc(id);
+		
+        userData[id] = new userFactory(id);
         return true;
     };
     
     // Destroys a user object.
     // Should be used in the afterLogOut event.
-    JSESSION.prototype.destroyUser = function (id) {
-        if (!this.UsesUser) {
+    JSESSION.destroyUser = function (id) {
+        if (!usesUserFactory || typeof userData[id] === "undefined") {
             return false;
         }
-        if (typeof this.UserData[id] === "undefined") {
-            return false;
-        }
-        if (sys.name(id) === undefined) {
-            return false;
-        }
-    
-        delete this.UserData[id];
+		
+        delete userData[id];
         return true;
     };
     
-    // If a user exists [by id]
-    JSESSION.prototype.hasUser = function (src) {
-        return this.UserData.hasOwnProperty(src);
+    // If a user exists [by id].
+    JSESSION.hasUser = function (id) {
+        return typeof userData[id] !== "undefined";
     };
     
-    // If a channel exists [by id]
-    JSESSION.prototype.hasChannel = function (channel) {
-        return this.ChannelData.hasOwnProperty(channel);
+    // If a channel exists [by id].
+    JSESSION.hasChannel = function (id) {
+        return typeof channelData[id] !== "undefined";
+    };
+	
+    JSESSION.getUserData = function () {
+        return userData;
+    };
+    
+    JSESSION.getChannelData = function () {
+        return channelData;
+    };
+    
+    JSESSION.getGlobalData = function () {
+        return globalData;
     };
     
     // Resets all data.
     // Used internally. It's not recommended to use this function.
-    JSESSION.prototype.clearAll = function () {
-        this.UserData = {};
-        this.ChannelData = {};
-        this.GlobalData = {};
-    
-        this.UserFunc = function () {};
-        this.ChannelFunc = function () {};
-        this.GlobalFunc = function () {};
-    
-        this.UsesUser = false;
-        this.UsesChannel = false;
-        this.UsesGlobal = false;
-    
-        this.ScriptID = undefined;
+    JSESSION.clearAll = function () {
+        userData = {};
+        channelData = {};
+        globalData = {};
+        
+        userFactory = noop;
+        channelFactory = noop;
+        globalFactory = noop;
+        
+        usesUserFactory = false;
+        usesChannelFactory = false;
+        usesGlobalFactory = false;
+        
+        scriptId = undefined;
     };
     
     // Exports [expt]
     
     // export JSESSION
-    exports.JSESSION = new JSESSION();
-    
-    // export the JSESSION constructor (used with Utils.updatePrototype)
-    exports.jsession_constructor = JSESSION;
+    module.exports = JSESSION;
 }());

@@ -13,7 +13,7 @@
 
 (function () {
     var Bot = require('bot'),
-        ChannelData = require('channel-data').ChannelData,
+        ChannelData = require('channel-data'),
         PlayerUtils = require('player-utils'),
         Options = require('options'),
         Tours = require('tours'),
@@ -28,7 +28,7 @@
         this.tourAuth = {};
         this.creator = "~Unknown~";
         this.topic = 'Welcome to ' + this.name + '!';
-        // topicsetter -> topicSetter
+        // TODO: topicsetter -> topicSetter
         this.topicSetter = '';
         
         this.tour = new Tours.ToursChannelConfig(id);

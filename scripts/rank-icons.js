@@ -2,7 +2,7 @@
 /*global sys, SESSION, script: true, Qt, print, gc, version,
     global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
-// File: rankicons.js
+// File: rank-icons.js
 // Fully optional icons used to showcase a player's authority level in chat.
 // Depends on: cache, utils
 
@@ -11,7 +11,7 @@
 // [expt]: Exports
 
 (function () {
-    var Cache = require('cache'),
+    var Cache = require('cache').cache,
         Utils = require('utils');
     
     // TODO: Change the default rank icons to something more original.
@@ -186,5 +186,5 @@
     
     // [expt] Exports
     // Export RankIcons.
-    exports = RankIcons;
+    module.exports = RankIcons;
 }());

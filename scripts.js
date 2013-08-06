@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
+    global: false, GLOBAL: false, require: true, Config: true, Script: true, module: true, exports: true*/
 
 /*
  ==== SCRIPT INFORMATION ====
@@ -132,13 +132,15 @@ var require;
 
 if (typeof require === 'undefined') {
     // Includes a script.
-    require = (function () {
-        var require, // require function, see below.
-            hookId = 0; // hook guid.
+    require = (function requireScript() {
+        var hookId = 0; // hook guid.
         
         // path: path to the file, no .js
         // nocache: if the cache for the file should be deleted
-        require = function (path, force) {
+		
+		// Use module.exports if you're setting it to your own object (not exports):
+		// module.exports = JSESSION; (not exports = JSESSION;)
+        function require(path, force) {
             var content,
                 identifier = String(path),
                 module = {exports: {}, path: path + ".js"},
@@ -171,7 +173,7 @@ if (typeof require === 'undefined') {
             
             require.modules[identifier] = module.exports;
             return require.modules[identifier];
-        };
+        }
         
         require.hook = function (event, hook, hookId, force) {
             if (!require.hooks[event]) {
@@ -226,35 +228,20 @@ if (typeof require === 'undefined') {
 
 // This updates all the module prototypes (and pre-loads some of them, as they are used a lot).
 // No need to polute the global namespace with this.
-(function () {
-    var Utils = require('utils'),
-        // JSESSION stuff
-        POUser = require('user').User,
-        POChannel = require('channel').Channel,
-        JSESSION = require('jsession'),
-        // these are only used to be updated with Utils.updatePrototype
-        // TODO: remove updatePrototype
-        Cache = require('cache'),
-        ChannelData = require('channel-data');
+(function setupScript() {
+    var Cache = require('cache');
     
-    // Attempts to add new features to JSESSION, Cache, and ChannelData
-    Utils.updatePrototype(JSESSION.JSESSION, JSESSION.jsession_constructor);
-    Utils.updatePrototype(Cache.Cache, Cache.cache_constructor);
-    Utils.updatePrototype(ChannelData.ChannelData, ChannelData.channeldata_constructor);
+    // Init the cache first, otherwise we'll get a warning error from Style (which is require'd from Channel) on the first run
+    Cache.init();
     
-    // NOTE: hasTeam -> PlayerUtils.hasTeamForTier
-    // NOTE: firstTeamForTier -> PlayerUtils.firstTeamForTier
-    // NOTE: script.namecolor -> PlayerUtils.trueColor
-    // NOTE: script.loadAll -> script.init
+    var User = require('user').User,
+        Channel = require('channel').Channel,
+        JSESSION = require('jsession');
     
     JSESSION.identifyScriptAs("TheUnknownOne's Server Script " + Script.version);
-    JSESSION.registerUser(POUser);
-    JSESSION.registerChannel(POChannel);
+    JSESSION.registerUserFactory(User);
+    JSESSION.registerChannelFactory(Channel);
     JSESSION.refill();
-    
-    // Load modules that have to define some hooks.
-    // We don't have to do anything else with them so creating a variable is pointless.
-    require('ify');
 }());
 /*
 function Mail(sender, text, title) {

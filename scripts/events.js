@@ -4,7 +4,7 @@
 
 // File: events.js
 // Defines all events passed to the PO script engine, along with some custom ones.
-// Depends on: bot, cache, channel-data, channel-utils, chat-gradient, datahash, jsession, options, player-utils, prune, tier-bans, tours, user, utils, watch-utils, rank-icons, mafia
+// Depends on: bot, cache, channel-data, channel-utils, chat-gradient, datahash, mafia, jsession, options, player-utils, prune, tier-bans, tours, user, utils, watch-utils, rank-icons
 
 // Table of Content:
 
@@ -75,12 +75,13 @@
 (function () {
     // TODO: Mafia
     var Bot = require('bot'),
-        Cache = require('cache').Cache,
-        ChannelData = require('channel-data').ChannelData,
+        Cache = require('cache').cache,
+        ChannelData = require('channel-data'),
         ChannelUtils = require('channel-utils'),
         ChatGradient = require('chat-gradient'),
         DataHash = require('datahash'),
         JSESSION = require('jsession'),
+        Mafia = require('mafia'),
         Options = require('options'),
         PlayerUtils = require('player-utils'),
         Prune = require('prune'),
@@ -89,14 +90,15 @@
         Tours = require('tours').Tours,
         User = require('user'),
         Utils = require('utils'),
-        WatchUtils = require('watch-utils'),
-        // Incomplete
-        Mafia = require('mafia');
+        WatchUtils = require('watch-utils');
     
     var tourNotification = require('tours').tourNotification;
     
     var Events = {};
     
+	// TODO / NOTE / IMPORTANT : Remove this line and figure out which event causes the server to crash.
+	module.exports = Events;
+	return;
     // [sys-evts] System events
     
     // [evt-loadScript] loadScript event
@@ -200,10 +202,7 @@
                 ChannelData.exportData(sys.channelId(i));
             }
         }
-        
-        // Initialises all cache values.
-        Cache.init();
-
+		
         // Old stuff.
         // TODO: Remove/put in a different module.
         /*
@@ -444,7 +443,7 @@
                 // After 5 violations, ban them for 1 hour.
                 if (DataHash.chatSpammers[ip] >= 5) {
                     WatchUtils.logPlayerEvent(src, "Banned for 1 hour for receiving 5 flood violations.");
-                    Bot.sendAll(playerName + " got banned for 1 hour by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
+                    Bot.sendAll(playerName + " got banned for 1 hour by " + Options.bot.name + " with reason 'Do not flood the chat'.", chan);
                     
                     PlayerUtils.tempBan({
                         ip: ip,
@@ -462,11 +461,11 @@
                     muteTime = DataHash.chatSpammers[ip] === 3 ? 10 : 30;
                     
                     WatchUtils.logPlayerEvent(src, "Muted for " + muteTime + " minutes for receiving " + DataHash.chatSpammers[ip] + " flood violations.");
-                    Bot.sendAll(playerName + " got muted for " + muteTime + " minutes by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
+                    Bot.sendAll(playerName + " got muted for " + muteTime + " minutes by " + Options.bot.name + " with reason 'Do not flood the chat'.", chan);
                     
                     PlayerUtils.mute({
                         ip: ip,
-                        by: Options.Bot.name,
+                        by: Options.bot.name,
                         reason: "Do not flood the chat.",
                         time: 60 * muteTime
                     });
@@ -475,18 +474,18 @@
                     // Disconnect (not kick) them for their first violation.
                     WatchUtils.logPlayerEvent(src, "Disconnected for receiving 1 flood violation.");
                                               
-                    Bot.sendAll(playerName + " got disconnected by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
+                    Bot.sendAll(playerName + " got disconnected by " + Options.bot.name + " with reason 'Do not flood the chat'.", chan);
                     PlayerUtils.disconnectAll(src);
                     return;
                 }
                     
                 // Otherwise, simply mute them for 5 minutes (2nd violation)
                 WatchUtils.logPlayerEvent(src, "Muted for 5 minutes for receiving 2 flood violations.");
-                Bot.sendAll(playerName + " got muted for 5 minutes by " + Options.Bot.name + " with reason 'Do not flood the chat'.", chan);
+                Bot.sendAll(playerName + " got muted for 5 minutes by " + Options.bot.name + " with reason 'Do not flood the chat'.", chan);
                 
                 PlayerUtils.mute({
                     ip: ip,
-                    by: Options.Bot.name,
+                    by: Options.bot.name,
                     reason: "Do not flood the chat.",
                     time: 60 * 5
                 });
@@ -617,8 +616,8 @@
         
         // TODO: Mafia.testChat, Utils.badUnicode
         // Prevents the user from talking if they have been caps muting, are deadtalking in Mafia, or are using bad unicode characters.
-        if (Mafia.testChat(src, chan)
-                || userObject.capsMute(message, chan)
+        if (/*Mafia.testChat(src, chan)
+                ||*/ userObject.capsMute(message, chan)
                 || Utils.badUnicode(src, message)) {
             return;
         }
@@ -700,7 +699,7 @@
 
         // Bail and panic if the channel doesn't exist.
         if (channel === undefined) {
-            Utils.panic("events.js", "Events.afterChannelCreated", "JSESSION does not contain channel " + chan + " (" + name + ").", JSESSION.ChannelData, Utils.panic.error);
+            Utils.panic("events.js", "Events.afterChannelCreated", "JSESSION does not contain channel " + chan + " (" + name + ").", JSESSION.getChannelData(), Utils.panic.error);
             return;
         }
         
@@ -1518,7 +1517,7 @@
             return;
         }
         
-        if (!TierBans.isLegalTeam(src, team, newtier)) {
+        if (!TierBans.isLegalTeam(src, team, newTier)) {
             sys.stopEvent();
             Utils.teamAlertMessage(src, team, "Your team is not valid for the " + oldTier + " tier.");
             TierBans.findGoodTier(src, team);
@@ -1534,8 +1533,8 @@
 	// [Unstoppable] Called when: A player changes one of their teams' tier.
 	// Currently unused.
 	Events.afterChangeTier = function afterChangeTier(src, team, oldTier, newTier) {
-         require.provide("afterChangeTier#start", src, team, oldTier, newTier);
-         require.provide("afterChangeTier#end", src, team, oldTier, newTier);
+        require.provide("afterChangeTier#start", src, team, oldTier, newTier);
+        require.provide("afterChangeTier#end", src, team, oldTier, newTier);
 	};
     
     // [evt-beforePlayerKick] beforePlayerKick event
@@ -2166,8 +2165,6 @@
 
             print("[#" + sys.channel(0) + "] " + Bot.bot + ": " + message);
         }
-        
-        BORDER = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
 
         
 
@@ -2633,5 +2630,5 @@
     loadMafia: function () {
     }*/
     
-    return Events;
+    module.exports = Events;
 }());
