@@ -188,6 +188,7 @@
     };
     
     // Register the templates.
+	
     // QtScript doesn't like keywords as identifiers.
     templates["default"] = defaultTemplate;
     templates.basic = basicTemplate;
