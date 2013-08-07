@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
+    global: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: watch-utils.js (WatchUtils)
 // Contains various logging utilities (which also send messages to Guardtower).
@@ -16,9 +16,9 @@
     
     // Logs a player event to watch, such as a log in.
     exports.logPlayerEvent = function logPlayerEvent(src, message) {
-        if (!Options.defaultChannelIds.watch) {
+        if (Options.defaultChannelIds.watch) {
             sys.sendHtmlAll(
-                "<timestamp>[" + PlayerUtils.formatName(src) + "] <i>" + message + "</i>",
+                "<timestamp/> [" + PlayerUtils.formatName(src) + "] <i>" + message + "</i>",
                 Options.defaultChannelIds.watch
             );
         }
@@ -32,13 +32,13 @@
     exports.logChannelEvent = function logChannelEvent(chan, message) {
         if (Options.defaultChannelIds.watch) {
             sys.sendHtmlAll(
-                "<timestamp>[#<b>" + (sys.channel(chan) || chan) + "</b>] <i>" + message + "</i>",
+                "<timestamp/> [#<b>" + (sys.channel(chan) || chan) + "</b>] <i>" + message + "</i>",
                 Options.defaultChannelIds.watch
             );
         }
         
         if (Config.LogFile) {
-            sys.appendToFile(Config.LogFile, "Channel event '" + message + "' for player '" + (sys.channel(chan) || chan) + "' (ID " + (sys.channelId(chan) || chan) + ") called. \n");
+            sys.appendToFile(Config.LogFile, "Channel event '" + message + "' for channel '" + (sys.channel(chan) || chan) + "' (ID " + (sys.channelId(chan) || chan) + ") called. \n");
         }
     };
     
@@ -46,7 +46,7 @@
     exports.logPlayerMessage = function logPlayerMessage(type, src, message, chan) {
         if (Options.defaultChannelIds.watch) {
             sys.sendHtmlAll(
-                "<timestamp>[" + PlayerUtils.formatName(src) + " ~ <i>" + type + "</i>] <i>" + message + "</i> in <i>#" + (sys.channel(chan) || chan) + "</i>.",
+                "<timestamp/> [" + PlayerUtils.formatName(src) + " ~ <i>" + type + "</i>] <i>" + message + "</i> in <i>#" + (sys.channel(chan) || chan) + "</i>.",
                 Options.defaultChannelIds.watch
             );
         }
@@ -60,7 +60,7 @@
     exports.logSystemMessage = function logSystemMessage(type, message) {
         if (Options.defaultChannelIds.watch) {
             sys.sendHtmlAll(
-                "<timestamp>[<u><b>~SYS</b></u> - " + type + "] <i>" + message + "</i>",
+                "<timestamp/> [<u><b>~SYS</b></u> - " + type + "] <i>" + message + "</i>",
                 Options.defaultChannelIds.watch
             );
         }

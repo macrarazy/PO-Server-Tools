@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
+    global: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: channel-data.js (ChannelData)
 // Contains ChannelData, which stores data (chan auth, etc.) of channels even after the server has shut down.
@@ -15,8 +15,8 @@
     
     var ChannelData = {};
 	
-    // ChannelData constructor
-    ChannelData.load = function (file) {
+    // Inits ChannelData
+    ChannelData.init = function (file) {
         ChannelData.file = file + ".json";
         ChannelData.data = {};
         
@@ -39,6 +39,8 @@
         return this;
     };
 
+    ChannelData.init(Config.ChannelDataFile);
+    
     // Sets [property] for [chanName].
     ChannelData.save = function (chanName, property, value) {
         // this allows this function to accept ids as well.
@@ -50,7 +52,7 @@
         
         ChannelData.data[chanName][property] = value;
         ChannelData.saveData();
-        return ChannelData;
+        return this;
     };
     
     // Same as ChannelData#save, but doesn't call ChannelData#saveData
@@ -63,7 +65,7 @@
         }
         
         ChannelData.data[chanName][property] = value;
-        return ChannelData;
+        return this;
     };
     
     // Exports channel data into the channel, [chan] (channel id).
@@ -90,13 +92,13 @@
             }
         }
         
-        return ChannelData;
+        return this;
     };
     
     // Saves all data in ChannelData#data to file.
     ChannelData.saveData = function () {
         sys.writeToFile(ChannelData.file, JSON.stringify(ChannelData.data));
-        return ChannelData;
+        return this;
     };
     
     /*

@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
+    global: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: utils.js (Utils)
 // Contains utilities not specificly for players, channels, and logging.
@@ -398,34 +398,41 @@
     
     // Turns [time] into a string (for example, 60 becomes "1 Minute")
     // TODO: Comments
-    exports.timeToString = function (time) {
+    exports.timeToString = function (timeToFormat) {
         var ret = [],
             times = [
-                [2629744, "Month"],
-                [604800, "Week"],
-                [86400, "Day"],
-                [3600, "Hour"],
-                [60, "Minute"],
-                [1, "Second"]
+                [2629744, "month"],
+                [604800, "week"],
+                [86400, "day"],
+                [3600, "hour"],
+                [60, "minute"],
+                [1, "second"]
             ],
-            timeToFormat = +(sys.time()) - time;
+            len = times.length,
+            currentTime,
+            time,
+            i;
 
-        times.forEach(function (value, index, array) {
-            var currentTime = +(timeToFormat / value[0]),
-                s = "";
-
+        if (timeToFormat < 0) {
+            return "0 seconds";
+        }
+        
+        for (i = 0; i < len; i += 1) {
+            time = times[i];
+            currentTime = parseInt(timeToFormat / time[0], 10);
+            
             if (currentTime > 0) {
-                if (currentTime > 1) {
-                    s = "s";
+                ret.push(currentTime + " " + time[1] + (currentTime > 1 ? "s" : ""));
+                timeToFormat -= currentTime * time[0];
+                
+                if (timeToFormat <= 0) {
+                    break;
                 }
-
-                ret.push((currentTime + " " + value[1] + s));
-                timeToFormat -= currentTime * value[0];
             }
-        });
-
+        }
+        
         if (ret.length === 0) {
-            return "1 Second";
+            return "1 second";
         }
 
         return exports.fancyJoin(ret);

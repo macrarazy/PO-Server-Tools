@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
+    global: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: datahash.js (DataHash)
 // Contains DataHash, which is used to read and write values.
@@ -78,8 +78,9 @@
     };
     
 
-    // NOTE: All requests are async
-    DataHash.resolveLocation = function (src, ip) {
+    // NOTE: All requests are async.
+    // Callback is called with one perimeter: the result of the lookup.
+    DataHash.resolveLocation = function (src, ip, callback) {
         var resp;
         
         if (!DataHash.hasDataProperty('locations', ip)) {
@@ -91,7 +92,14 @@
             
             sys.webCall(IP_URL + ip, function (json) {
                 // They return malformed JSON, but a valid JavaScript Object.
-                DataHash.locations[ip] = eval(json);
+                var res = eval(json);
+                
+                DataHash.locations[ip] = res;
+                DataHash.save("locations");
+                
+                if (typeof callback === "function") {
+                    callback(res);
+                }
             });
         }
     };

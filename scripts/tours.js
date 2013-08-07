@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, Tours: true, module: true, exports: true*/
+    global: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: tours.js (Tours)
 // Contains most tournament logic, including commands.
@@ -24,6 +24,10 @@
         // NOTE: Style is require('style').style, not .manager or both
         Style = require('style').style,
         Utils = require('utils');
+    
+    // This object holds tournament manipulation functions [t-o]
+    // And other constants
+    var Tours = {};
     
     // Sends a line of whitespace to [src].
     function white(src, chan) {
@@ -52,18 +56,23 @@
     // name: Name of the bot.
     // color: Color of the bot.
     function tourNotification(src, chan, info) {
+        if (!JSESSION.hasChannel(chan)) {
+            return;
+        }
+        
         var tour = JSESSION.channels(chan).tour,
-            mode = tour.mode,
+            state = tour.state,
             prize = '',
             finalsStr = '',
             startTime;
     
+        // No tournament is running, don't send them anything.
+        if (state === 0) {
+            return;
+        }
+        
         if (src !== 0) {
-            if (mode === 0) {
-                return;
-            }
-            
-            startTime = Utils.timeToString(+(sys.time()) - tour.startTime);
+            startTime = Utils.timeToString((+sys.time()) - tour.startTime);
     
             white(src, chan);
             border(src, chan);
@@ -79,9 +88,9 @@
     
             border(src, chan);
     
-            if (mode === 1) {
+            if (state === 1) {
                 sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
-            } else if (mode === 2) {
+            } else if (state === 2) {
                 if (tour.finals) {
                     finalsStr = " (<B>Finals</B>)";
                 }
@@ -193,10 +202,6 @@
         // 1: clean
         this.display = 1;
     }
-    
-    // This object holds tournament manipulation functions [t-o]
-    // And other constants
-    var Tours = {};
     
     // Sends the tournament border to a channel.
     Tours.border = function (chan) {
@@ -924,7 +929,7 @@
             idleBattler;
         
         // e.g. when the tour has started
-        if (tcc.mode === 2) {
+        if (tcc.state === 2) {
             if (Tours.areOpponentsForTourBattle(src, tar, tcc)) {
                 // No crash safety guard
                 if (!Config.NoCrash) {
@@ -969,7 +974,7 @@
     // expects a ToursChannelConfig.
     Tours.events.afterBattleEnded = function afterBattleEnded(src, dest, desc, tcc) {
         // bail if the tour hasn't started or we only have one player left.
-        if (tcc.mode !== 2 || Utils.objectLength(tcc.players) === 1) {
+        if (tcc.state !== 2 || Utils.objectLength(tcc.players) === 1) {
             return;
         }
     
@@ -1241,7 +1246,7 @@
     // Displays the tournament prize
     // Permission: User
     Tours.commands.tourprize = function tourprizeCommand(src, commandData, chan, tcc) {
-        if (tcc.mode === 0) {
+        if (tcc.state === 0) {
             Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
@@ -1261,7 +1266,7 @@
             message = PlayerUtils.formatName(src) + " joined the tournament! <b>" + Tours.tourSpots(tcc) - 1 + "</b> more spot(s) left!";
         
         // either hasn't started or isn't running
-        if (tcc.mode !== 1) {
+        if (tcc.state !== 1) {
             Bot.sendMessage(src, "No tournament has started or is already running.", chan);
             return;
         }
@@ -1288,7 +1293,7 @@
     
             if (Tours.tourSpots(src) === 0) {
                 // because a player has joined, there is one less spot remaining.
-                tcc.mode = 2;
+                tcc.state = 2;
                 tcc.round = 0;
             }
         } else {
@@ -1302,7 +1307,7 @@
         var name = sys.name(src),
             nameToLower = name.toLowerCase();
         
-        if (tcc.mode === 0) {
+        if (tcc.state === 0) {
             // no tour has started yet..
             Bot.sendMessage(src, "No tournament has started.", chan);
             return;
@@ -1315,7 +1320,7 @@
     
         // if there the tour has already started, lower the amount
         // of players still remaining
-        if (tcc.mode === 2) {
+        if (tcc.state === 2) {
             tcc.remaining -= 1;
             
             if (tcc.players[nameToLower].couplesid !== -1) {
@@ -1331,7 +1336,7 @@
         // if there are no more couples remaining,
         // and we are in the battling phase,
         // call .roundPairing (note that we do this after the tourBox above to prevent the order from being all messed up)
-        if (tcc.mode === 2 && Utils.objectLength(tcc.couples) === 0) {
+        if (tcc.state === 2 && Utils.objectLength(tcc.couples) === 0) {
             Tours.roundPairing(tcc);
         }
     };
@@ -1349,7 +1354,7 @@
             cur,
             i;
         
-        if (tcc.mode !== 2) {
+        if (tcc.state !== 2) {
             Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
@@ -1454,7 +1459,7 @@
     Tours.commands.dq = function dqCommand(src, commandData, chan, tcc) {
         var target = commandData.toLowerCase();
         
-        if (tcc.mode === 0) {
+        if (tcc.state === 0) {
             Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
@@ -1466,7 +1471,7 @@
     
         Tours.tourBox(PlayerUtils.formatName(target) + " was disqualified from the tournament by " + PlayerUtils.formatName(src) + "!", tcc);
     
-        if (tcc.mode === 2) {
+        if (tcc.state === 2) {
             tcc.remaining -= 1;
             
             // forcefully dq them if they have a couple (e.g. not a bye)
@@ -1491,7 +1496,7 @@
             idleIndex,
             idleObject;
         
-        if (tcc.mode === 0) {
+        if (tcc.state === 0) {
             Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
@@ -1534,7 +1539,7 @@
     
         message.push(PlayerUtils.formatName(player1) + " was switched with " + PlayerUtils.formatName(player2) + " by " + PlayerUtils.formatName(src) + "!");
     
-        if (tcc.mode === 1) {
+        if (tcc.state === 1) {
             message.push("<b>" + Tours.tourSpots(tcc) + "</b> more spot(s) left!");
         }
     
@@ -1548,12 +1553,12 @@
             targetToLower = target.toLowerCase(),
             message = [];
         
-        if (tcc.mode === 0) {
+        if (tcc.state === 0) {
             Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
     
-        if (tcc.mode === 2 && Tours.isTagTeamTour(tcc)) {
+        if (tcc.state === 2 && Tours.isTagTeamTour(tcc)) {
             Bot.sendMessage(src, "You cannot add players to a running tag team tour!", chan);
             return;
         }
@@ -1569,17 +1574,17 @@
         // note that they are automatically a bye if the tournament has already started.
         Tours.buildHash(target, tcc);
     
-        if (tcc.mode === 1) {
+        if (tcc.state === 1) {
             message.push("<b>" + Tours.tourSpots(tcc) + "</b> more spot(s) left!");
-        } else if (tcc.mode === 2) {
+        } else if (tcc.state === 2) {
             tcc.remaining += 1;
         }
     
         Tours.tourBox(message, tcc);
         
         // if there are no more spots left, run roundPairing
-        if (tcc.mode === 1 && Tours.tourSpots(tcc) === 0) {
-            tcc.mode = 2;
+        if (tcc.state === 1 && Tours.tourSpots(tcc) === 0) {
+            tcc.state = 2;
             tcc.round = 0;
             
             Tours.roundPairing(tcc);
@@ -1593,7 +1598,7 @@
             targetToLower = target.toLowerCase(),
             battleIndex;
         
-        if (tcc.mode === 0) {
+        if (tcc.state === 0) {
             Bot.sendMessage(src, "No tournament has started or is currently running.", chan);
             return;
         }
@@ -1638,7 +1643,7 @@
             tierName;
         
         // if a tour is in the signups / battling phase
-        if (tcc.mode !== 0) {
+        if (tcc.state !== 0) {
             Bot.sendMessage(src, "A tournament is already running.", chan);
             return;
         }
@@ -1701,7 +1706,7 @@
         
         // set all important information
         tcc.tier = tierName;
-        tcc.mode = 1;
+        tcc.state = 1;
         tcc.startTime = +(sys.time());
         tcc.starter = name;
     
@@ -1717,7 +1722,7 @@
         var newSpots = parseInt(commandData, 10);
         
         // if this isn't the signups.
-        if (tcc.tourmode !== 1) {
+        if (tcc.state !== 1) {
             Bot.sendMessage(src, "No tournament is running or it appears to have passed the signups.", chan);
             return;
         }
@@ -1760,7 +1765,7 @@
     
         // call roundPairing if no more spots are remaining.
         if (Tours.tourSpots(tcc) === 0) {
-            tcc.mode = 2;
+            tcc.state = 2;
             tcc.round = 0;
             
             Tours.roundPairing(tcc);
@@ -1771,7 +1776,7 @@
     // Ends the running tournament.
     // Permission: Operator
     Tours.commands.endtour = function endtourCommand(src, commandData, chan, tcc) {
-        if (tcc.mode === 0) {
+        if (tcc.state === 0) {
             Bot.sendMessage("No tournament has started or is currently running.");
             return;
         }

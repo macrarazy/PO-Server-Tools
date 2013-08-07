@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: true, Config: true, Script: true, module: true, exports: true*/
+    global: false, require: true, Config: true, Script: true, module: true, exports: true*/
 
 /*
  ==== SCRIPT INFORMATION ====
@@ -57,7 +57,7 @@ var Config = {
     // File to save channel data in. 
     // It's recommended to keep this as-is, unless if you want to reset all channel data stored or want to import a file.
     // Note that v3 (this version) is not compatible with v2 channel data.
-    ChannelDataFile: "channel-data.json",
+    ChannelDataFile: "channel-data",
     
     // File where actions and events will be logged to. 
     // Change this to "" in order to disable the log file. 
@@ -71,7 +71,7 @@ var Config = {
     FloodClearTime: 6,
     
     // List of players that can use the 'eval') command. Note that if the player isn't in this list, then they are simply not allowed to use the command,
-    // even if they are Owner, with the exception of the server host (who has ip 127.0.0.1).
+    // even if they are Owner, with the exception of the server host (who has ip 127.0.0.1 or ::1%0).
     
     // Note that it's important to write the player's name in lower case (so "theunknownone" instead of "TheUnknownOne").
     EvalAccess: [
@@ -127,7 +127,6 @@ var Script = {
 
 // Don't modify anything beyond this point if you don't know what you're doing.
 var global = this;
-var GLOBAL = this;
 var require;
 
 if (typeof require === 'undefined') {

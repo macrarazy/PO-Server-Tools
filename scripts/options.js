@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
+    global: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: options.js (Options)
 // Contains script options (mainly default and hardcoded values). If you're looking to change behavior,
@@ -26,7 +26,7 @@
     // The bot's name and its color.
     // Cache field used: botSettings
     exports.bot = {
-        bot: "~Server~",
+        name: "~Server~",
         color: "red"
     };
 

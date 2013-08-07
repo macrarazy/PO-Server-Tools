@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
+    global: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: events.js
 // Defines all events passed to the PO script engine, along with some custom ones.
@@ -21,6 +21,8 @@
 // [msg-evts] Message events
 // [evt-beforeNewMessage] beforeNewMessage event
 // [evt-afterNewMessage] afterNewMessage event
+// [evt-beforeServerMessage] beforeServerMessage event
+// [evt-afterServerMessage] afterServerMessage event
 // [evt-beforeChatMessage] beforeChatMessage event
 // [evt-afterChatMessage] afterChatMessage event
 
@@ -96,9 +98,6 @@
     
     var Events = {};
     
-	// TODO / NOTE / IMPORTANT : Remove this line and figure out which event causes the server to crash.
-	module.exports = Events;
-	return;
     // [sys-evts] System events
     
     // [evt-loadScript] loadScript event
@@ -134,18 +133,21 @@
     
     // [evt-warning] warning event
     // [Stoppable] Called when: A warning is triggered by a sys function.
-    // Currently unused.
-    Events.warning = function warning(func, message, backtrace) {
+    // Registers the warning.
+    // TODO: Disabled - crashes.
+    /*Events.warning = function warning(func, message, backtrace) {
         if (require.provide("warning#start", func, message, backtrace)) {
             sys.stopEvent();
             return;
         }
         
+        WatchUtils.logSystemEvent("Script Warning - " + func, message);
+
         if (require.provide("warning#end", func, message, backtrace)) {
             sys.stopEvent();
             return;
         }
-    };
+    };*/
     
     // [evt-serverStartUp] serverStartUp event
     // [Unstoppable] Called when: Server starts up.
@@ -177,21 +179,33 @@
     Events.init = function init() {
         require.provide("init#start");
         
-        var serverLine = sys.getFileContent("config").split("\n")[30],
+        var config = sys.getFileContent("config").split("\n"),
             defaultChannels = Options.defaultChannels,
             channelIdKeys = Object.keys(Options.defaultChannelIds),
-            length = defaultChannels.length,
             chanData = ChannelData.data,
             date = (new Date()).toUTCString(),
             curChan,
             cur,
+            len,
             i;
         
-        Options.serverName = serverLine.substring(5).replace(/\\xe9/i, "é").trim();
+        for (i = 0, len = config.length; i < len; i += 1) {
+            cur = config[i];
+            
+            if (cur.substring(0, 5) === "Name=") {
+                Options.serverName = cur.substring(5).replace(/\\xe9/i, "é").trim();
+                break;
+            }
+        }
+        
+        // Default message.
+        if (!Options.motd.message) {
+            Options.motd.message = "Enjoy your stay at " + Options.serverName + "!";
+        }
         
         // Creates/gets the id of the default channels.
         // NOTE: Very important that this is done in init(). If this is done during (or before) serverStartUp, the server crashes.
-        for (i = 0; i < length; i += 1) {
+        for (i = 0, len = defaultChannels.length; i < len; i += 1) {
             Options.defaultChannelIds[channelIdKeys[i]] = sys.createChannel(defaultChannels[i]) || sys.channelId(defaultChannels[i]);
         }
         
@@ -202,39 +216,7 @@
                 ChannelData.exportData(sys.channelId(i));
             }
         }
-		
-        // Old stuff.
-        // TODO: Remove/put in a different module.
-        /*
-        loadOldPoll = function () {
-            if (typeof Poll === 'undefined') {
-                Poll = {};
-                Poll.mode = 0;
-                Poll.subject = "";
-                Poll.starter = '';
-                Poll.options = {};
-                Poll.votes = 0;
-
-                if (cache.get("Poll") != "") {
-                    try {
-                        Poll = JSON.parse(cache.get("Poll"));
-                    }
-                    catch (e) {
-                        cache.remove("Poll");
-                    }
-                }
-            }
-        }
-
-        loadOldPoll();
-*/
-        // NOTE: DataHash.spammers -> chatSpammers
-        // reconnect -> autoReconnectBlock
-        // TODO: Remove clantag
-/*
-
-        ScriptLength = {};
-*/
+        
         // Register script recent re-load and register dates.
         Cache.write("scriptRecentLoadDate", date);
         Cache.save("scriptRegisterDate", date);
@@ -270,29 +252,9 @@
         // Don't post any messages from Guardtower here.
         // Guardtower is index 3.
         // Also take out empty messages.
-        if (message.substring(0, "[#" + Options.defaultChannelIds.watch + "]".length) === "[#" + Options.defaultChannelIds.watch + "]"
+        if (message.substring(0, "[#" + Options.defaultChannels[3] + "]".length) === "[#" + Options.defaultChannels[3] + "]"
                 || message.replace(/^\[#(.*?)\]/, "") === " ") {
             sys.stopEvent();
-            return;
-        }
-
-        if (message.substring(0, 14) === "Script Warning") {
-            WatchUtils.logSystemEvent("Script Warning", message);
-            sys.stopEvent();
-            return;
-        }
-
-        if (message.substring(0, 14) === "~~Server~~: ->") {
-            sys.stopEvent();
-            print("-> " + message.substring(14));
-            
-            try {
-                result = GLOBAL.eval.call(null, message.substring(14));
-            } catch (e) {
-                result = Utils.formatError(e);
-            }
-
-            print("<- " + result);
             return;
         }
 
@@ -342,6 +304,46 @@
     // Currently unused.
     // NOTE: Hooks are unavailable for this event.
     Events.afterNewMessage = function afterNewMessage(message) {
+    };
+    
+    // [evt-beforeServerMessage] beforeServerMessage event
+    // [Stoppable] Called when: A message is posted through the server window.
+    // Allows the server to use eval (with >> [code] syntax).
+    Events.beforeServerMessage = function beforeServerMessage(message) {
+        if (require.provide("beforeServerMessage#start", message)) {
+            sys.stopEvent();
+            return;
+        }
+        
+        var result;
+
+        if (message.substring(0, 2) === ">>") {
+            sys.stopEvent();
+            
+            print(">> " + message.substring(2));
+            
+            try {
+                result = global.eval.call(null, message.substring(2));
+            } catch (e) {
+                result = Utils.formatError(e);
+            }
+
+            print("<< " + result);
+            return;
+        }
+        
+        if (require.provide("beforeServerMessage#end", message)) {
+            sys.stopEvent();
+            return;
+        }
+    };
+    
+    // [evt-afterServerMessage] afterServerMessage event
+    // [Unstoppable] Called when: A message is posted through the server window.
+    // Currently unused.
+    Events.afterServerMessage = function afterServerMessage(message) {
+        require.provide("afterServerMessage#start", message);
+        require.provide("afterServerMessage#end", message);
     };
     
     // [evt-beforeChatMessage] beforeChatMessage event
@@ -401,7 +403,7 @@
         }
 
         // Give Owner authority to the host if they aren't one.
-        if (ip === "127.0.0.1" && playerAuth < 3) {
+        if (PlayerUtils.isServerHost(src) && playerAuth < 3) {
             sys.changeAuth(src, 3);
         }
         
@@ -660,7 +662,7 @@
     
     // [evt-beforeChannelCreated] beforeChannelCreated event
     // [Stoppable] Called when: Before a channel will be created.
-    // Checks if channels are enabled and creates the JSESSION object of the channel.
+    // Checks if channels are enabled.
     Events.beforeChannelCreated = function beforeChannelCreated(chan, name, src) {
         if (require.provide("beforeChannelCreated#start", chan, name, src)) {
             sys.stopEvent();
@@ -680,9 +682,9 @@
             sys.stopEvent();
             return;
         }*/
-
-        JSESSION.createChannel(chan);
-    
+        
+        // We have to call JSESSION.createChannel in afterChannelCreated, otherwise sys.channel (and others) aren't set.
+        
         if (require.provide("beforeChannelCreated#end", chan, name, src)) {
             sys.stopEvent();
             return;
@@ -691,10 +693,12 @@
 
     // [evt-afterChannelCreated] afterChannelCreated event
     // [Unstoppable] Called when: After a channel has been created.
-    // Sets channel data stored in ChannelData, and gives creator/auth perms if the channel was created by a player.
+    // Creates the channel's JSESSION object, sets channel data stored in ChannelData, and gives creator/auth perms if the channel was created by a player.
     Events.afterChannelCreated = function afterChannelCreated(chan, name, src) {
         require.provide("afterChannelCreated#start", chan, name, src);
         
+        JSESSION.createChannel(chan);
+    
         var channel = JSESSION.channels(chan);
 
         // Bail and panic if the channel doesn't exist.
@@ -730,15 +734,11 @@
             user,
             channel;
         
-        // Ensure their JSESSION objects exist
-        // Only alarm when a channel object doesn't exist yet
+        // Ensure their JSESSION object exists
         if (!JSESSION.hasUser(src)) {
             JSESSION.createUser(src);
         }
-        if (!JSESSION.hasChannel(chan)) {
-            JSESSION.createChannel(chan);
-        }
-
+        
         user = JSESSION.users(src);
         channel = JSESSION.channels(src);
 
@@ -828,7 +828,7 @@
         }
 
         sys.sendHtmlMessage(src, "<font color='orange'><timestamp/><b>Topic:</b></font> " + channel.topic, chan);
-
+        
         if (channel.topicSetter !== "") {
             sys.sendHtmlMessage(src, "<font color='darkorange'><timestamp/><b>Set By:</b></font> " + channel.topicSetter, chan);
         }
@@ -837,16 +837,16 @@
             sys.sendHtmlMessage(src, "<font color='red'><timestamp/><b>Message Of The Day:</b></font> " + Options.motd.message, chan);
             sys.sendHtmlMessage(src, "<font color='darkred'><timestamp/><b>Set By:</b></font> " + Options.motd.setter, chan);
         }
-
+        
         // TODO: Polls
-        /*
-        if (Poll.mode) {
-            botMessage(src, "A poll is going on! Use <font color=green><b>/viewpoll</b></font> for more information.", chan);
-        }*/
+        
+        //if (Poll.mode) {
+            //botMessage(src, "A poll is going on! Use <font color=green><b>/viewpoll</b></font> for more information.", chan);
+        //}
 
         // Don't send them a notification if this is the main channel.
-        if (channel !== 0) {
-            tourNotification(src, channel);
+        if (chan !== 0) {
+            tourNotification(src, chan);
         }
         
         require.provide("afterChannelJoin#end", src, chan);
@@ -1208,7 +1208,7 @@
         require.provide("afterIPConnected#start", ip);
         require.provide("afterIPConnected#end", ip);
     };
-    
+
     // [evt-beforeLogIn] beforeLogIn event
     // [Stoppable] Called when: Before a player logs in.
     // Adds a player's correct name to DataHash, resolves their location, ensures they don't instantly reconnect after being kicked,
@@ -1223,22 +1223,28 @@
             ip = sys.ip(src);
 
         // Give Owner authority to the host if they aren't one.
-        if (ip === "127.0.0.1" && sys.auth(src) < 3) {
+        if (PlayerUtils.isServerHost(src) && sys.auth(src) < 3) {
             sys.changeAuth(src, 3);
         }
 
-        DataHash.correctNames[name.toLowerCase()] = name;
+        if (!DataHash.hasDataProperty("correctNames", name.toLowerCase())) {
+            DataHash.correctNames[name.toLowerCase()] = name;
+            DataHash.save("correctNames");
+        }
+        
         DataHash.namesByIp[ip] = name;
-
-        DataHash.save("correctNames");
         DataHash.save("namesByIp");
         
         DataHash.resolveLocation(src, ip);
 
         // Players will only be in autoReconnectBlock if they were kicked.
+        if (DataHash.hasDataProperty("autoReconnectBlock", ip)) {
+            sys.stopEvent();
+            return;
+        }
+        
         // User.isValid checks for bad unicode characters and the like, as well as ban checking.
-        if (DataHash.hasDataProperty("autoReconnectBlock", ip)
-                || User.isValid(src) !== "fine") {
+        if (User.isValid(src) !== "fine") {
             sys.stopEvent();
             return;
         }
@@ -1248,7 +1254,7 @@
             return;
         }
     };
-
+    
     // [evt-afterLogIn] afterLogIn event
     // [Unstoppable] Called when: After a player logs in.
     // Logs the player logging in, sends them welcome messages, updates the most amount of players online, and sends a custom welcome message to everyone (if they have one).
@@ -1265,9 +1271,9 @@
         WatchUtils.logPlayerEvent(src, "Logged in with ip '" + sys.ip(src) + "'");
 
         Bot.sendMessage(src, "Welcome, " + name + "!", 0);
-        Bot.sendMessage(src, "Type '<b><font color=green>/commands</font></b>' to see the server commands and '<b><font color=green>/rules</font></b>' to read the server rules.", 0);
+        Bot.sendMessage(src, "Type <b><font color=green>/commands</font></b> to see the server commands and <b><font color=green>/rules</font></b> to read the server rules.", 0);
         if (Options.startUpTime !== 0) {
-            Bot.sendMessage(src, "The server has been up for " + Utils.timeToString(Options.startUpTime) + ".", 0);
+            Bot.sendMessage(src, "The server has been up for " + Utils.timeToString((+sys.time()) - Options.startUpTime) + ".", 0);
         }
 
         // Update the most players online, if we've hit a new limit
@@ -1276,7 +1282,7 @@
             Cache.write("mostPlayersOnline", playersOnline);
         }
 
-        Bot.sendMessage(src, "<b>" + playersOnline + "</b> players are currently online. The highest amount of players we've ever seen is <b>" + Options.mostPlayersOnlines + "</b>.", 0);
+        Bot.sendMessage(src, "There are <b>" + playersOnline + "</b> player" + (playersOnline > 1 ? "s" : "") + ". At most, there were <b>" + Options.mostPlayersOnline + "</b> players online.", 0);
 
         // Check if they are registered.
         if (!sys.dbRegistered(nameLower)) {
@@ -1294,7 +1300,7 @@
                 chanIds.push(Options.defaultChannelIds.watch);
             }
 
-            if (auth > 0 || JSESSION.users(src).megauser || SESSION.channels(Options.defaultChannelIds.staff).isChanMod(src)) {
+            if (auth > 0 || JSESSION.users(src).megauser || JSESSION.channels(Options.defaultChannelIds.staff).isChanMod(src)) {
                 chanIds.push(Options.defaultChannelIds.staff);
             }
 
@@ -1305,7 +1311,6 @@
             // puts the player in those channels.
             PlayerUtils.pushChannels(src, chanIds);
         }
-
         
         if (DataHash.hasDataProperty("autoIdle", nameLower)) {
             if (DataHash.autoIdle[nameLower].welcomeMessage !== "") {
@@ -1316,7 +1321,7 @@
         }
         
         // This gets called in afterChangeTeam as well.
-        User.shared();
+        User.shared(src);
         
         require.provide("afterLogIn#end", src);
     };
@@ -1445,7 +1450,7 @@
             ip = sys.ip(src),
             userObject = JSESSION.users(src);
         
-        User.shared();
+        User.shared(src);
         
         userObject.name = name;
         userObject.megauser = DataHash.hasDataProperty("megausers", nameLower);
@@ -1649,7 +1654,35 @@
     // Will be added as a command later.
     /*
     
+    // Old stuff.
+    // TODO: Remove/put in a different module.
+    loadOldPoll = function () {
+        if (typeof Poll === 'undefined') {
+            Poll = {};
+            Poll.mode = 0;
+            Poll.subject = "";
+            Poll.starter = '';
+            Poll.options = {};
+            Poll.votes = 0;
 
+            if (cache.get("Poll") != "") {
+                try {
+                    Poll = JSON.parse(cache.get("Poll"));
+                }
+                catch (e) {
+                    cache.remove("Poll");
+                }
+            }
+        }
+    }
+
+    loadOldPoll();
+    // NOTE: DataHash.spammers -> chatSpammers
+    // reconnect -> autoReconnectBlock
+    // TODO: Remove clantag
+    
+    ScriptLength = {};
+    
     // TODO: Turn these into commands
     Ify.commands.unify = function (src, commandData, chan) {
         if (!Ify.inIfy) {
@@ -1986,63 +2019,8 @@
     */
 
 
-    // NOTE: script.resolveLocation -> DataHash.resolveLocation
     /*
     loadUtilities: function () {
-        // TODO: Change for the next version.
-        checkForUpdates = function (noresume) {
-            var commitData = "";
-            try {
-                commitData = JSON.parse(cache.get("LastCommitData"));
-            }
-            catch (e) {
-                commitData = "";
-            }
-
-            sys.webCall(CommitDataURL, function (resp) {
-                if (resp != "") {
-                    var json = JSON.parse(resp);
-                    var lastCom = json.commits[0];
-                    var commitMsg = lastCom.message;
-
-                    if (commitMsg.toLowerCase().indexOf("(script: no update)") == -1) {
-                        if (commitData.message != commitMsg || commitData == "") {
-                            cache.write("LastCommitData", JSON.stringify(lastCom));
-                            botAll("An update for the script is available. Update available on <a href=" + ScriptURL + ">" + ScriptURL + "</a>.", 0);
-                            botAll("Commit Message: " + commitMsg, 0);
-
-                        }
-                    }
-                }
-            });
-
-            if (noresume == null) {
-                sys.callLater("checkForUpdates();", 1800);
-            }
-        }
-
-        if (typeof updateChecking == 'undefined') {
-            sys.callLater("checkForUpdates();", 1800); // 60*30
-            updateChecking = true;
-        }
-
-        // ScriptUpdateMessage -> Utils.scriptUpdateMessage
-
-        // AuthIMG -> PlayerUtils.statusImage
-
-        // sendSTFUTruck -> Bot.stfuTruck
-        // sendFailWhale -> Bot.failWhale
-
-        // sortHash -> Utils.sortObject
-        
-
-        // silence -> Options.silence
-        
-        // ban -> PlayerUtils.ban
-        // disconnectAll -> PlayerUtils.disconnectAll
-        // kick -> PlayerUtils.kickAll
-        
-        // massKick -> PlayerUtils.massKick
         function clink($1) {
             return ChannelLink(sys.channel($1));
         }
@@ -2165,9 +2143,7 @@
 
             print("[#" + sys.channel(0) + "] " + Bot.bot + ": " + message);
         }
-
         
-
         unicodeAbuse = function (src, m) {
             if (typeof m != 'string') {
                 m = String(m);
@@ -2374,17 +2350,17 @@
             "bot": "~Server~",
             "botcolor": "red"
         },
-            LEAGUE_JSON = {
-                "Champion": "",
-                "gym": {},
-                "elite": {}
-            },
-            ENABLED_JSON = {
-                "me": true,
-                "_catch_": true,
-                "attack": true,
-                "roulette": true
-            };
+        LEAGUE_JSON = {
+            "Champion": "",
+            "gym": {},
+            "elite": {}
+        },
+        ENABLED_JSON = {
+            "me": true,
+            "_catch_": true,
+            "attack": true,
+            "roulette": true
+        };
 
         cache.ensure("Bot", JSON.stringify(BOT_JSON));
         cache.ensure("CommandsEnabled", JSON.stringify(ENABLED_JSON));
@@ -2629,6 +2605,6 @@
     // TODO: add mafia
     loadMafia: function () {
     }*/
-    
+            
     module.exports = Events;
 }());

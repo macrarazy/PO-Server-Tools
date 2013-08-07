@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
+    global: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: channel.js (Channel)
 // Contains the JSESSION channel constructor.
@@ -23,11 +23,11 @@
     function Channel(id) {
         this.name = sys.channel(id);
         this.id = id;
-    
+            
         this.chanAuth = {};
         this.tourAuth = {};
         this.creator = "~Unknown~";
-        this.topic = 'Welcome to ' + this.name + '!';
+        this.topic = "Welcome to " + this.name + "!";
         // TODO: topicsetter -> topicSetter
         this.topicSetter = '';
         

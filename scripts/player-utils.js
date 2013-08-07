@@ -1,6 +1,6 @@
 /*jslint continue: true, es5: true, evil: true, forin: true, sloppy: true, vars: true, regexp: true, newcap: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
-    global: false, GLOBAL: false, require: false, Config: true, Script: true, module: true, exports: true*/
+    global: false, require: false, Config: true, Script: true, module: true, exports: true*/
 
 // File: player-utils.js (PlayerUtils)
 // Contains player utilities (such as easily getting player and team information).
@@ -122,6 +122,8 @@
     // Returns a player's true color
     // So it doesn't appear to be black if the player has none (in html messages)
     exports.trueColor = function (src) {
+        src = sys.id(exports.name(src));
+        
         var defaultColor = sys.getColor(src);
         
         // when the player hasn't set their own color
@@ -152,7 +154,7 @@
         var trueName = exports.name(nameOrId);
         
         // simply return a string. still a pain to write manually though.
-        return "<b style='color: " + exports.trueColor(trueName) + "'>" + trueName + "</b>";
+        return "<b style='color: " + exports.trueColor(nameOrId) + "'>" + trueName + "</b>";
     };
     
     // Returns a player's name. Accepts an id, name, or the ip itself (if passed)
@@ -340,13 +342,17 @@
             i;
 
         for (i = 0; i < len; i += 1) {
-            sys.putInChannel(src, channels[i]);
+            if (!sys.isInChannel(src, channels[i])) {
+                sys.putInChannel(src, channels[i]);
+            }
         }
     };
     
-    // If the player is on localhost (127.0.0.1)
+    // If the player is on localhost (127.0.0.1 (IPv4) / ::1%0 (IPv6))
     exports.isServerHost = function (idOrNameOrIp) {
-        return exports.ip(idOrNameOrIp) === "127.0.0.1";
+        var ip = exports.ip(idOrNameOrIp);
+        
+        return ip === "127.0.0.1" || ip === "::1%0";
     };
     
     // If tar is the same player as src (checks with IPs).
