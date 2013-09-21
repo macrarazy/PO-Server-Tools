@@ -935,7 +935,7 @@ Tours.prototype.hasTourAuth = function (id) {
 };
 
 Tours.prototype.identify = function (test) {
-    if (test === null) {
+    if (typeof test !== 'number') {
         test = this.battlemode;
     }
     if (test === 0) {
@@ -1107,8 +1107,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         message;
     if (spots > 0) {
         this.buildHash(src);
-
-        spots--;
+        spots = this.tourSpots();
         message = me + " joined the tournament! <b>" + spots + "</b> more " + Grammar.s("spot", spots) + " left!";
 
         if (this.tournumber < 9) { // Max spots is 8 for the bigger message.
@@ -1116,8 +1115,7 @@ Tours.prototype.command_join = function (src, commandData, fullCommand) {
         } else {
             this.sendAll(message);
         }
-
-
+        
         if (spots === 0) {
             this.tourmode = 2;
             this.roundnumber = 0;
@@ -1354,11 +1352,11 @@ Tours.prototype.command_push = function (src, commandData, fullCommand) {
     }
 
     var name = commandData.name(),
-        spots = this.tourSpots(),
         me = player(src),
         message = [target + " was added to the tournament by " + me + "!"];
 
     this.buildHash(name);
+    var spots = this.tourSpots();
 
     if (this.tourmode === 1) {
         message.push("<b>" + spots + "</b> more " + Grammar.s("spot", spots) + " left!");
@@ -1616,7 +1614,7 @@ Tours.prototype.teamWin = function () {
 };
 
 Tours.prototype.roundPairing = function () {
-    var message,
+    var message = [],
         name,
         nameId,
         money = DataHash.money,
@@ -1796,7 +1794,7 @@ Tours.prototype.roundPairing = function () {
     message.push("");
 
     if (tempplayers.length() > 0) {
-        message.push(tempplayers.first().name + " is randomly selected to go to next round!", "");
+        message.push(tempplayers.first().name + " is randomly selected to go to next round!");
     }
 
     this.TourBox(message);
