@@ -1,11 +1,11 @@
-﻿# TheUnknownOne's Server Tools  
+# TheUnknownOne's Server Tools  
 
 **Site: http://theunknownone.github.com/PO-Server-Tools/**
 
 ***
 
 ## scripts.js
-### Version: 2.2.60  
+### Version: 2.2.63  
 
 **Report bugs/post suggestions/ideas in Issues**
 
