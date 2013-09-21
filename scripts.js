@@ -2381,8 +2381,8 @@ JSESSION.refill();
             };
         }
 
-        var line = sys.getFileContent("config").split("\n")[30];
-        servername = line.substring(5).replace(/\\xe9/i, "é").trim();
+        var conf = sys.getFileContent("config");
+        servername = conf.match(/Name=[^\n]+/i).toString().substr(5).trim();
 
         run("loadRequiredUtilities");
         run("loadCache");
