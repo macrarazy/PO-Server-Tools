@@ -110,7 +110,7 @@ var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This
 var RECOVERY_BACKUP = {};
 
 // Script globals
-var Bot, html_escape, DataHash, hpAuth, AutoMute, WatchPlayer, cache, DefaultChannels, Tours, cData, isEmpty, player, JSESSIONInst, JSESSION, updateProto, hasTeam, TOUR_BORDER, getTimeString, toOn, Grammar, objLength, style, validTier, cmp, startupTime, StartUp, run, servername, poGlobal, loadOldPoll, Poll, WatchEvent, scriptchannel, staffchannel, Clantag, ClanTag, removespaces, ScriptLength, Prune, watch, mafiachan, WatchChannelEvent, RECOVERY, stepCounter, AutoStartTours, mafia, ChannelsAllowed, permission, unicodeAbuse, sendFailWhale, playerscache, testNameKickedPlayer, botAllExcept, startUpTime, maxPlayersOnline, putInMultipleChannels, format, ify, ChatColorRandomizers, motd, ScriptUpdateMessage, isHost, kick, AutoKick, stringToTime, disconnectAll, MaxMessageLength, silence, sendSTFUTruck, UseIcons, Icons, MessageEditor, hasCommandStart, RandFont, ignoreCommandStart, PointerCommands, Command_Templater, UserName, ModName, AdminName, OwnerName, Templater, evallock, sortHash, pokedex, playerInfo, implock, CommandsEnabled, InvisName, ChanUser, ChanMod, ChanAdmin, ChanOwner, Tour0, Tour1, ChanTour0, ChanTour1, FutureLimit, sendAuthLength, Table_Templater, testMafiaChat, formatPoke, AttackingMoves, CommandStats, IconManager, sendAuth, StyleManager, noPermission, lastName, BORDER, ChatColorRandomizer, DisableChatColorRandomizer, putInAuthChan, TourDisplay, self, rangeIP, ban, massKick, on, kickFromChannel, millitime, BattlesAllowed, bannedGSCSleep, bannedGSCTrap, TierBans, idsOfIP, aliasKick, authToString, Template;
+var Bot, html_escape, DataHash, hpAuth, AutoMute, WatchPlayer, cache, DefaultChannels, Tours, cData, isEmpty, player, JSESSIONInst, JSESSION, updateProto, hasTeam, TOUR_BORDER, getTimeString, toOn, Grammar, objLength, style, validTier, cmp, startupTime, StartUp, run, servername, poGlobal, loadOldPoll, Poll, WatchEvent, scriptchannel, staffchannel, Clantag, ClanTag, removespaces, ScriptLength, Prune, watch, mafiachan, WatchChannelEvent, RECOVERY, stepCounter, AutoStartTours, mafia, ChannelsAllowed, permission, unicodeAbuse, sendFailWhale, playerscache, testNameKickedPlayer, botAllExcept, startUpTime, maxPlayersOnline, putInMultipleChannels, format, ify, ChatColorRandomizers, motd, ScriptUpdateMessage, isHost, kick, AutoKick, stringToTime, disconnectAll, MaxMessageLength, silence, sendSTFUTruck, UseIcons, Icons, MessageEditor, hasCommandStart, RandFont, ignoreCommandStart, PointerCommands, Command_Templater, UserName, ModName, AdminName, OwnerName, Templater, evallock, sortHash, pokedex, playerInfo, implock, CommandsEnabled, InvisName, ChanUser, ChanMod, ChanAdmin, ChanOwner, Tour0, Tour1, ChanTour0, ChanTour1, FutureLimit, sendAuthLength, Table_Templater, testMafiaChat, formatPoke, AttackingMoves, CommandStats, IconManager, sendAuth, StyleManager, noPermission, lastName, BORDER, ChatColorRandomizer, DisableChatColorRandomizer, putInAuthChan, TourDisplay, self, rangeIP, ban, massKick, on, kickFromChannel, millitime, BattlesAllowed, bannedGSCSleep, bannedGSCTrap, TierBans, idsOfIP, aliasKick, authToString, Template, pokeNatures, lcpokemons, dwpokemons, breedingpokemons, fonts, checkForUpdates, updateChecking, randcolor, RandomColorSpan, AuthIMG, GlobalHostVar, auths, authByLevel, fancyJoin, clauseList, cap, isNonNegative;
 
 (function () {
     var x;
@@ -9564,7 +9564,7 @@ if(message == "Maximum Players Changed.") {
             tarid = sys.id(target),
             timeUnitTime = stringToTime(timeunit, time);
 
-        if (theIP == undefined) {
+        if (theIP === undefined) {
             botMessage(src, "Unknown target!");
             return;
         }
@@ -9580,7 +9580,7 @@ if(message == "Maximum Players Changed.") {
             return;
         }
 
-        if (time == undefined || isNaN(timeUnitTime)) {
+        if (time === undefined || isNaN(timeUnitTime)) {
             botMessage(src, "Specify time!", c);
             return;
         }
@@ -9589,8 +9589,8 @@ if(message == "Maximum Players Changed.") {
             return;
         }
 
-        var thetime = sys.time() * 1 + timeUnitTime,
-            thestr = thetime - sys.time() * 1,
+        var thetime = +sys.time() + timeUnitTime,
+            thestr = thetime - (+sys.time()),
             timestr = getTimeString(thestr);
 
         botEscapeAll(target + " was banned by " + srcname + " for " + timestr + "!", 0);
@@ -9599,10 +9599,9 @@ if(message == "Maximum Players Changed.") {
             botEscapeAll("Reason: " + reason, 0);
         }
 
-        if (tarid != undefined) {
+        if (tarid !== undefined) {
             kick(tarid);
-        }
-        else {
+        } else {
             aliasKick(theIP);
         }
 
@@ -9627,7 +9626,7 @@ if(message == "Maximum Players Changed.") {
             srcname = sys.name(src),
             tarid = sys.id(target);
 
-        if (theIP == undefined) {
+        if (theIP === undefined) {
             botMessage(src, "Unknown target!", c);
             return;
         }
@@ -9657,7 +9656,7 @@ if(message == "Maximum Players Changed.") {
 
         auth = Math.round(auth);
 
-        if (theIP == undefined) {
+        if (theIP === undefined) {
             botMessage(src, "Unknown target!", chan);
             return;
         }
@@ -9669,13 +9668,13 @@ if(message == "Maximum Players Changed.") {
 
         if (!sys.dbRegistered(tar)) {
             botMessage(src, "This player is not registered.", chan);
-            if (sys.id(tar) != undefined) {
+            if (sys.id(tar) !== undefined) {
                 botMessage(sys.id(tar), "Please register for Authority.");
             }
             return;
         }
 
-        if (auth > 1 && sa == 2) {
+        if (auth > 1 && sa === 2) {
             botMessage(src, "You cannot give any authority higher than " + ModName + " to " + tar, chan);
             return;
         }
@@ -9689,7 +9688,7 @@ if(message == "Maximum Players Changed.") {
             toAuth = "mod";
         }
 
-        if (sys.maxAuth(theIP) >= sa && sa < 3 || ta >= auth) {
+        if (sys.maxAuth(theIP) >= sa && (sa < 3 || ta >= auth)) {
             botMessage(src, "You cannot give " + authToString(auth) + " to " + tar + "!", chan);
             return;
         }
@@ -9699,7 +9698,7 @@ if(message == "Maximum Players Changed.") {
             return;
         }
 
-        if (DataHash.tempauth[tar.toLowerCase()] != undefined) {
+        if (DataHash.tempauth[tar.toLowerCase()] !== undefined) {
             botMessage(src, "This user already has tempauth.", chan);
             return;
         }
@@ -9709,7 +9708,7 @@ if(message == "Maximum Players Changed.") {
         putInAuthChan(tar, toAuth);
         botAll(sys.name(src) + " made " + tar + " " + authToString(auth) + " for " + timey + ".", 0);
 
-        if (sys.id(tar) != undefined) {
+        if (sys.id(tar) !== undefined) {
             sys.changeAuth(sys.id(tar), auth);
         }
 
@@ -9718,7 +9717,7 @@ if(message == "Maximum Players Changed.") {
 
         tar = tar.toLowerCase();
         time = timeUnitTime;
-        time += sys.time() * 1;
+        time += +sys.time();
 
         DataHash.tempauth[tar] = {
             'time': time,
@@ -9801,13 +9800,13 @@ if(message == "Maximum Players Changed.") {
             gen = sys.gen(tar, n);
             fullgen = sys.generation(gen, sys.subgen(tar, n));
 
-            if (n != 0) {
+            if (n !== 0) {
                 t.register("");
             }
 
             t.register("#" + teamno + ": Gen " + gen + " (" + fullgen + ")<br/>");
 
-            var i, color, gender, pokeId, nick, item, level, evstr, w, evtable, dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs, hp, movetype, hptype;
+            var i, color, gender, pokeId, nick, item, level, evstr, w, evtable, dvstr, dvtable, nature, j, moveNum, moveName, moveStr, hpdvs, hp, movetype, hptype, shinyPoke;
 
             for (i = 0; i < 6; i++) {
                 color = colorNames[sys.pokeType1(sys.teamPoke(tar, n, i), gen)];
@@ -9818,25 +9817,25 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 gender = genderNames[sys.teamPokeGender(tar, n, i)];
-                shinyPoke = false; // sys.teamPokeShine(tar, n, i); = bugged in v2
+                shinyPoke = sys.teamPokeShine(tar, n, i);
                 if (!simple) {
                     t.register("<img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=false&shiny=" + shinyPoke + "&gender=" + gender + "'><img src='pokemon:num=" + pokeId + "&gen=" + gen + "&back=true&shiny=" + shinyPoke + "&gender=" + gender + "'>");
                 }
 
-                nick = sys.teamPokeNick(tar, n, i) + "</b></font> (<b><font color=" + color + ">" + sys.pokemon(sys.teamPoke(tar, n, i)) + "</b></font>)"
-                if (sys.teamPokeNick(tar, n, i) == sys.pokemon(sys.teamPoke(tar, n, i))) {
+                nick = sys.teamPokeNick(tar, n, i) + "</b></font> (<b><font color=" + color + ">" + sys.pokemon(sys.teamPoke(tar, n, i)) + "</b></font>)";
+                if (sys.teamPokeNick(tar, n, i) === sys.pokemon(sys.teamPoke(tar, n, i))) {
                     nick = sys.pokemon(sys.teamPoke(tar, n, i)) + "</b></font>";
                 }
 
                 item = "<img src='item:" + sys.teamPokeItem(tar, n, i) + "'>";
-                if (sys.item(sys.teamPokeItem(tar, n, i)) == "(No Item)") {
+                if (sys.item(sys.teamPokeItem(tar, n, i)) === "(No Item)") {
                     item = "";
                 }
 
                 if (!simple) {
                     t.register("<font color=" + color + "><b> " + nick + " " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "<img src='Themes/Classic/genders/gender2.png'> (F)").replace(/male/g, "<img src='Themes/Classic/genders/gender1.png'> (M)").replace(/genderless/g, "<img src='Themes/Classic/genders/gender0.png'>") + " @ " + item + " " + sys.item(sys.teamPokeItem(tar, n, i)));
                 } else {
-                    t.register("<font color=" + color + "><b> " + nick + " " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "(F)").replace(/male/g, "(M)").replace(/genderless/g, "") + " @ " + sys.item(sys.teamPokeItem(tar, n, i)));                
+                    t.register("<font color=" + color + "><b> " + nick + " " + sys.gender(sys.teamPokeGender(tar, n, i)).replace(/female/g, "(F)").replace(/male/g, "(M)").replace(/genderless/g, "") + " @ " + sys.item(sys.teamPokeItem(tar, n, i)));
                 }
 
                 if (gen > 2) {
@@ -9845,7 +9844,7 @@ if(message == "Maximum Players Changed.") {
 
                 level = sys.teamPokeLevel(tar, n, i);
 
-                if (level != 100) {
+                if (level !== 100) {
                     t.register('<b><font color=' + color + '>Level:</b></font> ' + level);
                 }
 
@@ -9853,24 +9852,24 @@ if(message == "Maximum Players Changed.") {
 
                 for (w = 0; w < 6; w++) {
                     evtable = evNames[w];
-                    if (sys.teamPokeEV(tar, n, i, w) != 0 || gen == 2 && sys.teamPokeEV(tar, n, i, q) != 255) {
+                    if (sys.teamPokeEV(tar, n, i, w) !== 0 || (gen === 2 && sys.teamPokeEV(tar, n, i, w) !== 255)) {
                         evstr.push(sys.teamPokeEV(tar, n, i, w) + " " + evtable);
                     }
                 }
 
-                if (evstr.length != 0) {
+                if (evstr.length !== 0) {
                     t.register("<font color=" + color + "><b>EVs:</b></font> " + evstr.join(" / "));
                 }
 
                 dvstr = [];
                 for (w = 0; w < 6; w++) {
                     dvtable = evNames[w];
-                    if (sys.teamPokeDV(tar, n, i, w) != 31 || gen == 2 && sys.teamPokeDV(tar, n, i, w) != 15) {
+                    if (sys.teamPokeDV(tar, n, i, w) !== 31 || (gen === 2 && sys.teamPokeDV(tar, n, i, w) !== 15)) {
                         dvstr.push(sys.teamPokeDV(tar, n, i, w) + " " + dvtable);
                     }
                 }
 
-                if (dvstr.length != 0) {
+                if (dvstr.length !== 0) {
                     t.register("<font color=" + color + "><b>IVs:</b></font> " + dvstr.join(" / "));
                 }
 
@@ -9884,11 +9883,11 @@ if(message == "Maximum Players Changed.") {
                     moveName = sys.move(moveNum);
                     moveStr = "<b><font color=" + colorNames[sys.moveType(moveNum)] + ">" + moveName + "</font></b>";
 
-                    if (moveNum == 0) {
+                    if (moveNum === 0) {
                         continue;
                     }
 
-                    if (moveNum == hiddenPowerNum) {
+                    if (moveNum === hiddenPowerNum) {
                         hpdvs = [];
 
                         for (w = 0; w < 6; w++) {
@@ -9907,7 +9906,7 @@ if(message == "Maximum Players Changed.") {
                 
                 t.register("");
 
-                if (teamno != numteams) {
+                if (teamno !== numteams) {
                     t.register("<hr/>");
                 }
             }
@@ -9917,7 +9916,7 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadTiers: function () {
-        TierBans = new(function () {
+        TierBans = new function () {
             this.bans = [];
 
             this.Include = 0;
@@ -9929,10 +9928,10 @@ if(message == "Maximum Players Changed.") {
                     tiers: tiers,
                     ban: ban
                 });
-            }
+            };
 
             this.isLegalTeam = function (src, team, tier, silent) {
-                if (tier == "Challenge Cup") {
+                if (tier === "Challenge Cup") {
                     return true;
                 }
 
@@ -9942,12 +9941,16 @@ if(message == "Maximum Players Changed.") {
                 }
 
                 var alerts = [],
-                    x, b = this.bans,
-                    cban, correct, z, alert;
+                    x,
+                    b = this.bans,
+                    cban,
+                    correct,
+                    z,
+                    alert;
 
                 for (x in b) {
                     cban = b[x];
-                    if (cban.method == this.Include) {
+                    if (cban.method === this.Include) {
                         correct = cban.tiers.has(tier);
                     } else {
                         correct = !cban.tiers.has(tier);
@@ -9955,12 +9958,12 @@ if(message == "Maximum Players Changed.") {
 
                     if (correct) {
                         alert = cban.ban(src, team, tier);
-                        if (typeof alert == "object") {
+                        if (typeof alert === "object") {
                             alerts.concat(alert);
                         }
                     }
 
-                    if (alerts.length == 0) {
+                    if (alerts.length === 0) {
                         return true; // Team is valid
                     } else if (!silent) {
                         for (z in alerts) {
@@ -9969,11 +9972,12 @@ if(message == "Maximum Players Changed.") {
                         return false;
                     }
                 }
-            }
+            };
 
             this.findGoodTier = function (src, team) {
                 var path = ["Wifi LC", "DW LC", "Wifi LC Ubers", "Wifi NU", "Wifi LU", "Wifi UU", "Wifi OU", "No Preview OU", "Wifi Ubers", "No Preview Ubers", "Challenge Cup"],
-                    i, tier;
+                    i,
+                    tier;
                 for (i in path) {
                     tier = path[i];
                     if (sys.hasLegalTeamForTier(src, team, tier) && this.isLegalTeam(src, team, tier, true)) {
@@ -9982,16 +9986,17 @@ if(message == "Maximum Players Changed.") {
                         return;
                     }
                 }
-            }
-        })();
+            };
+        }();
 
         var INCLUDING = TierBans.Include,
             EXCLUDING = TierBans.Exclude,
             cc = ["Challenge Cup", "CC 1v1"],
             dw = ["No Preview OU", "No Preview Ubers", "Monotype", "Gen 5 1v1 Ubers", "Gen 5 1v1", "Challenge Cup", "CC 1v1", "DW Uber Triples", "No Preview OU Triples", "No Preview Uber Doubles", "No Preview OU Doubles", "Shanai Cup", "Monocolour"];
+        var beasts, pokeColours;
 
         TierBans.newBan(EXCLUDING, [], function eventShinies(player, team) {
-            if (typeof beasts == "undefined") {
+            if (typeof beasts === "undefined") {
                 beasts = {};
                 beasts[sys.pokeNum('Raikou')] = ['Extremespeed', 'Aura Sphere', 'Weather Ball', 'Zap Cannon'].map(sys.moveNum);
                 beasts[sys.pokeNum('Suicune')] = ['Extremespeed', 'Aqua Ring', 'Sheer Cold', 'Air Slash'].map(sys.moveNum);
@@ -10001,7 +10006,7 @@ if(message == "Maximum Players Changed.") {
             var beast, slot, i;
             for (beast in beasts) {
                 for (slot = 0; slot < 6; slot++) {
-                    if (sys.teamPoke(player, team, slot) == beast) {
+                    if (sys.teamPoke(player, team, slot) === beast) {
                         for (i = 0; i < 4; i++) {
                             if (beasts[beast].has(sys.teamPokeMove(player, team, slot, i))) {
                                 sys.changePokeShine(player, team, slot, true);
@@ -10016,13 +10021,20 @@ if(message == "Maximum Players Changed.") {
             var ltier = tier.toLowerCase(),
                 ret = [],
                 bans = DataHash.bannedAbilities,
-                i, ability, lability, poke, lpoke;
+                i,
+                ability,
+                lability,
+                poke,
+                lpoke;
             for (i = 0; i < 6; ++i) {
-                ability = sys.ability(sys.teamPokeAbility(src, team, i)), lability = ability.toLowerCase(), poke = sys.pokemon(sys.teamPoke(src, team, i)), lpoke = poke.toLowerCase();
+                ability = sys.ability(sys.teamPokeAbility(src, team, i));
+                lability = ability.toLowerCase();
+                poke = sys.pokemon(sys.teamPoke(src, team, i));
+                lpoke = poke.toLowerCase();
 
-                if (bans[ltier] != undefined) {
-                    if (bans[ltier][lpoke] != undefined) {
-                        if (bans[ltier][lpoke].indexOf(lability) != -1) {
+                if (bans[ltier] !== undefined) {
+                    if (bans[ltier][lpoke] !== undefined) {
+                        if (bans[ltier][lpoke].indexOf(lability) !== -1) {
                             ret.push(poke + " is not allowed to have ability " + ability + " in " + tier + ". Please change it in Teambuilder.");
                         }
                     }
@@ -10033,7 +10045,12 @@ if(message == "Maximum Players Changed.") {
 
         TierBans.newBan(EXCLUDING, cc, function eventMovesCheck(src, team, tier) {
             var ret = [],
-                i, poke, x, y, nat, move;
+                i,
+                poke,
+                x,
+                y,
+                nat,
+                move;
             for (i = 0; i < 6; i++) {
                 poke = sys.teamPoke(src, team, i);
                 if (pokeNatures.has(poke)) {
@@ -10041,7 +10058,7 @@ if(message == "Maximum Players Changed.") {
                         nat = pokeNatures[poke][x];
                         for (y in nat[0]) {
                             move = nat[0][y];
-                            if (sys.hasTeamPokeMove(src, team, i, sys.moveNum(move)) && sys.teamPokeNature(src, team, i) != sys.natureNum(nat[1])) {
+                            if (sys.hasTeamPokeMove(src, team, i, sys.moveNum(move)) && sys.teamPokeNature(src, team, i) !== sys.natureNum(nat[1])) {
                                 ret.push(sys.pokemon(poke) + " with " + move + " must be a " + nat[1] + " nature. Change it in the teambuilder.");
                             }
                         }
@@ -10053,10 +10070,11 @@ if(message == "Maximum Players Changed.") {
 
         TierBans.newBan(INCLUDING, ["Wifi LC", "Wifi LC Ubers", "Wifi UU LC"], function littleCupCheck(src, team, tier) {
             var ret = [],
-                i, x;
+                i,
+                x;
             for (i = 0; i < 6; i++) {
                 x = sys.teamPoke(src, team, i);
-                if (x !== 0 && sys.hasDreamWorldAbility(src, team, i) && lcpokemons.indexOf(x) != -1) {
+                if (x !== 0 && sys.hasDreamWorldAbility(src, team, i) && lcpokemons.indexOf(x) !== -1) {
                     ret.push(sys.pokemon(x) + " is not allowed with a Dream World ability in the " + tier + " tier. Change it in the teambuilder.");
 
                 }
@@ -10067,18 +10085,19 @@ if(message == "Maximum Players Changed.") {
         TierBans.newBan(INCLUDING, ["Wifi NU"], function evioliteCheck(src, team, tier) {
             var evioliteLimit = 6,
                 eviolites = 0,
-                i, x, item;
+                i,
+                x,
+                item;
 
             for (i = 0; i < 6; i++) {
                 x = sys.teamPoke(src, team, i);
                 item = sys.teamPokeItem(src, team, i);
                 if (item !== undefined) {
                     item = sys.item(item);
-                }
-                else {
+                } else {
                     item = "";
                 }
-                if (item == "Eviolite" && ++eviolites > evioliteLimit) {
+                if (item === "Eviolite" && ++eviolites > evioliteLimit) {
                     return ["Only 1 pokemon is allowed with eviolite in " + tier + " tier. Please remove extra evioites in teambuilder."];
                 }
             }
@@ -10089,11 +10108,12 @@ if(message == "Maximum Players Changed.") {
                 return;
             }
             var ret = [],
-                i, x;
+                i,
+                x;
             for (i = 0; i < 6; i++) {
                 x = sys.teamPoke(src, team, i);
-                if (x !== 0 && sys.hasDreamWorldAbility(src, team, i) && (!(x in dwpokemons) || (breedingpokemons.indexOf(x) != -1 && sys.compatibleAsDreamWorldEvent(src, team, i) !== true))) {
-                    if (!(x in dwpokemons)) {
+                if (x !== 0 && sys.hasDreamWorldAbility(src, team, i) && (!(dwpokemons.hasOwnProperty(x)) || (breedingpokemons.indexOf(x) !== -1 && sys.compatibleAsDreamWorldEvent(src, team, i) !== true))) {
+                    if (!(dwpokemons.hasOwnProperty(x))) {
                         ret.push(sys.pokemon(x) + " is not allowed with a Dream World ability in " + tier + " tier. Change it in the teambuilder.");
                     } else {
                         ret.push(sys.pokemon(x) + " has to be Male and have no egg moves with its Dream World ability in  " + tier + " tier. Change it in the teambuilder.");
@@ -10106,11 +10126,12 @@ if(message == "Maximum Players Changed.") {
         TierBans.newBan(INCLUDING, ["No Preview OU", "Wifi OU", "Wifi UU", "Wifi LU", "Wifi LC", "DW LC", "Wifi Ubers", "No Preview Ubers", "Clear Skies", "Clear Skies DW", "Monotype", "Monocolour", "Monogen", "Smogon OU", "Smogon UU", "Smogon RU", "Wifi NU"], function inconsistentCheck(src, team, tier) {
             var moody = sys.abilityNum("Moody"),
                 ret = [],
-                i, x;
+                i,
+                x;
 
             for (i = 0; i < 6; i++) {
                 x = sys.teamPoke(src, team, i);
-                if (x !== 0 && sys.teamPokeAbility(src, team, i) == moody) {
+                if (x !== 0 && sys.teamPokeAbility(src, team, i) === moody) {
                     ret.push(sys.pokemon(x) + " is not allowed with Moody in " + tier + ". Change it in the teambuilder.");
                 }
             }
@@ -10119,12 +10140,14 @@ if(message == "Maximum Players Changed.") {
 
         TierBans.newBan(INCLUDING, ["Clear Skies"], function weatherlesstiercheck(src, team, tier) {
             var ret = [],
-                i, ability, tl;
+                i,
+                ability,
+                tl;
             for (i = 0; i < 6; i++) {
                 ability = sys.ability(sys.teamPokeAbility(src, team, i));
                 tl = ability.toLowerCase();
 
-                if (tl == "drizzle" || tl == "drought" || tl == "snow warning" || tl == "sand stream") {
+                if (tl === "drizzle" || tl === "drought" || tl === "snow warning" || tl === "sand stream") {
                     ret.push("Your team has a pokemon with the ability " + ability + ", please remove before entering " + tier + " tier.");
                 }
             }
@@ -10134,64 +10157,70 @@ if(message == "Maximum Players Changed.") {
         TierBans.newBan(INCLUDING, ["Monotype"], function monotypeCheck(src, team, tier) {
             var TypeA = sys.pokeType1(sys.teamPoke(src, team, 0), 5),
                 TypeB = sys.pokeType2(sys.teamPoke(src, team, 0), 5),
-                k, checkType, i, temptypeA, temptypeB;
+                k,
+                checkType,
+                i,
+                temptypeA,
+                temptypeB;
+            
             for (i = 1; i < 6; i++) {
                 if (sys.teamPoke(src, team, i) === 0) {
                     continue;
                 }
 
-                temptypeA = sys.pokeType1(sys.teamPoke(src, team, i), 5), temptypeB = sys.pokeType2(sys.teamPoke(src, team, i), 5);
+                temptypeA = sys.pokeType1(sys.teamPoke(src, team, i), 5);
+                temptypeB = sys.pokeType2(sys.teamPoke(src, team, i), 5);
 
                 if (checkType !== undefined) {
                     k = 3;
                 }
-                if (i == 1) {
+                if (i === 1) {
                     k = 1;
                 }
-                if (TypeB != 17) {
-                    if (temptypeA == TypeA && temptypeB == TypeB && k == 1 || temptypeA == TypeB && temptypeB == TypeA && k == 1) {
+                if (TypeB !== 17) {
+                    if ((temptypeA === TypeA && temptypeB === TypeB && k === 1) || (temptypeA === TypeB && temptypeB === TypeA && k === 1)) {
                         k = 2;
                     }
                 }
-                if (temptypeA == TypeA && k == 1 || temptypeB == TypeA && k == 1) {
+                if ((temptypeA === TypeA && k === 1) || (temptypeB === TypeA && k === 1)) {
                     checkType = TypeA;
                 }
-                if (temptypeA == TypeB && k == 1 || temptypeB == TypeB && k == 1) {
-                    if (TypeB != 17) {
+                if ((temptypeA === TypeB && k === 1) || (temptypeB === TypeB && k === 1)) {
+                    if (TypeB !== 17) {
                         checkType = TypeB;
                     }
-                    if (TypeB == 17) {
+                    if (TypeB === 17) {
                         checkType = TypeA;
                     }
                 }
-                if (i > 1 && k == 2) {
+                if (i > 1 && k === 2) {
                     k = 1;
-                    if (temptypeA == TypeA && temptypeB == TypeB && k == 1 || temptypeA == TypeB && temptypeB == TypeA && k == 1) {
+                    if ((temptypeA === TypeA && temptypeB === TypeB && k === 1) || (temptypeA === TypeB && temptypeB === TypeA && k === 1)) {
                         k = 2;
                     }
-                    if (temptypeA == TypeA && k == 1 || temptypeB == TypeA && k == 1) {
+                    if ((temptypeA === TypeA && k === 1) || (temptypeB === TypeA && k === 1)) {
                         checkType = TypeA;
                     }
-                    if (temptypeA == TypeB && k == 1 || temptypeB == TypeB && k == 1) {
-                        if (TypeB != 17) {
+                    if ((temptypeA === TypeB && k === 1) || (temptypeB === TypeB && k === 1)) {
+                        if (TypeB !== 17) {
                             checkType = TypeB;
                         }
-                        if (TypeB == 17) {
+                        if (TypeB === 17) {
                             checkType = TypeA;
                         }
                     }
                 }
-                if (k == 3) {
-                    if (temptypeA != checkType && temptypeB != checkType) {
+                if (k === 3) {
+                    if (temptypeA !== checkType && temptypeB !== checkType) {
                         return ["Your team is not Monotype as " + sys.pokemon(sys.teamPoke(src, team, i)) + " is not of type " + sys.type(checkType) + "!"];
                     }
                 }
 
-                if (k == 1) {
-                    if (TypeB == 17) {
+                if (k === 1) {
+                    if (TypeB === 17) {
                         TypeB = TypeA;
                     }
-                    if (temptypeA != TypeA && temptypeB != TypeA && temptypeA != TypeB && temptypeB != TypeB) {
+                    if (temptypeA !== TypeA && temptypeB !== TypeA && temptypeA !== TypeB && temptypeB !== TypeB) {
                         return ["Your team is not Monotype as " + sys.pokemon(sys.teamPoke(src, team, i)) + " does not share a type with " + sys.pokemon(sys.teamPoke(src, team, 0)) + "!"];
                     }
 
@@ -10202,9 +10231,12 @@ if(message == "Maximum Players Changed.") {
         TierBans.newBan(INCLUDING, ["Monogen"], function monoGenCheck(src, team, tier) {
             var GEN_MAX = [0, 151, 252, 386, 493, 647],
                 gen = 0,
-                i, pokenum, species;
+                i,
+                pokenum,
+                species;
             for (i = 0; i < 6; ++i) {
-                pokenum = sys.teamPoke(src, team, i), species = pokenum % 65536; // remove alt formes
+                pokenum = sys.teamPoke(src, team, i);
+                species = pokenum % 65536; // remove alt formes
                 if (species === 0) {
                     continue;
                 }
@@ -10220,7 +10252,7 @@ if(message == "Maximum Players Changed.") {
 
 
         TierBans.newBan(INCLUDING, ["Monocolour"], function monoColourCheck(src, team, tier) {
-            if (typeof pokeColours == 'undefined') {
+            if (typeof pokeColours === 'undefined') {
                 pokeColours = {
                     'Red': ['Charmander', 'Charmeleon', 'Charizard', 'Vileplume', 'Paras', 'Parasect', 'Krabby', 'Kingler', 'Voltorb', 'Electrode', 'Goldeen', 'Seaking', 'Jynx', 'Magikarp', 'Magmar', 'Flareon', 'Ledyba', 'Ledian', 'Ariados', 'Yanma', 'Scizor', 'Slugma', 'Magcargo', 'Octillery', 'Delibird', 'Porygon2', 'Magby', 'Ho-Oh', 'Torchic', 'Combusken', 'Blaziken', 'Wurmple', 'Medicham', 'Carvanha', 'Camerupt', 'Solrock', 'Corphish', 'Crawdaunt', 'Latias', 'Groudon', 'Deoxys', 'Deoxys-A', 'Deoxys-D', 'Deoxys-S', 'Kricketot', 'Kricketune', 'Magmortar', 'Porygon-Z', 'Rotom', 'Rotom-H', 'Rotom-F', 'Rotom-W', 'Rotom-C', 'Rotom-S', 'Tepig', 'Pignite', 'Emboar', 'Pansear', 'Simisear', 'Throh', 'Venipede', 'Scolipede', 'Krookodile', 'Darumaka', 'Darmanitan', 'Dwebble', 'Crustle', 'Scrafty', 'Shelmet', 'Accelgor', 'Druddigon', 'Pawniard', 'Bisharp', 'Braviary', 'Heatmor'],
                     'Blue': ['Squirtle', 'Wartortle', 'Blastoise', 'Nidoran?', 'Nidorina', 'Nidoqueen', 'Oddish', 'Gloom', 'Golduck', 'Poliwag', 'Poliwhirl', 'Poliwrath', 'Tentacool', 'Tentacruel', 'Tangela', 'Horsea', 'Seadra', 'Gyarados', 'Lapras', 'Vaporeon', 'Omanyte', 'Omastar', 'Articuno', 'Dratini', 'Dragonair', 'Totodile', 'Croconaw', 'Feraligatr', 'Chinchou', 'Lanturn', 'Marill', 'Azumarill', 'Jumpluff', 'Wooper', 'Quagsire', 'Wobbuffet', 'Heracross', 'Kingdra', 'Phanpy', 'Suicune', 'Mudkip', 'Marshtomp', 'Swampert', 'Taillow', 'Swellow', 'Surskit', 'Masquerain', 'Loudred', 'Exploud', 'Azurill', 'Meditite', 'Sharpedo', 'Wailmer', 'Wailord', 'Swablu', 'Altaria', 'Whiscash', 'Chimecho', 'Wynaut', 'Spheal', 'Sealeo', 'Walrein', 'Clamperl', 'Huntail', 'Bagon', 'Salamence', 'Beldum', 'Metang', 'Metagross', 'Regice', 'Latios', 'Kyogre', 'Piplup', 'Prinplup', 'Empoleon', 'Shinx', 'Luxio', 'Luxray', 'Cranidos', 'Rampardos', 'Gible', 'Gabite', 'Garchomp', 'Riolu', 'Lucario', 'Croagunk', 'Toxicroak', 'Finneon', 'Lumineon', 'Mantyke', 'Tangrowth', 'Glaceon', 'Azelf', 'Phione', 'Manaphy', 'Oshawott', 'Dewott', 'Samurott', 'Panpour', 'Simipour', 'Roggenrola', 'Boldore', 'Gigalith', 'Woobat', 'Swoobat', 'Tympole', 'Palpitoad', 'Seismitoad', 'Sawk', 'Tirtouga', 'Carracosta', 'Ducklett', 'Karrablast', 'Eelektrik', 'Eelektross', 'Elgyem', 'Cryogonal', 'Deino', 'Zweilous', 'Hydreigon', 'Cobalion', 'Thundurus'],
@@ -10237,16 +10269,17 @@ if(message == "Maximum Players Changed.") {
 
             var poke = sys.pokemon(sys.teamPoke(src, team, 0)),
                 thecolour = '',
-                colour, i;
+                colour,
+                i;
 
-            for (colour in colours) {
-                if (colours[colour].indexOf(poke) > -1) {
+            for (colour in pokeColours) {
+                if (pokeColours[colour].indexOf(poke) > -1) {
                     thecolour = colour;
                 }
             }
             for (i = 1; i < 6; ++i) {
                 poke = sys.pokemon(sys.teamPoke(src, team, i));
-                if (colours[thecolour].indexOf(poke) == -1 && poke != "Missingno") {
+                if (pokeColours[thecolour].indexOf(poke) === -1 && poke !== "Missingno") {
                     return [Grammar.es(poke) + " colour is not " + thecolour];
                 }
             }
@@ -10255,9 +10288,9 @@ if(message == "Maximum Players Changed.") {
         TierBans.newBan(INCLUDING, ["Smogon OU", "Wifi OU", "No Preview OU"], function swiftSwimCheck(src, team, tier) {
             var i, j;
             for (i = 0; i < 6; ++i) {
-                if (sys.ability(sys.teamPokeAbility(src, team, i)) == "Drizzle") {
+                if (sys.ability(sys.teamPokeAbility(src, team, i)) === "Drizzle") {
                     for (j = 0; j < 6; ++j) {
-                        if (sys.ability(sys.teamPokeAbility(src, team, j)) == "Swift Swim") {
+                        if (sys.ability(sys.teamPokeAbility(src, team, j)) === "Swift Swim") {
                             return ["You cannot have the combination of Swift Swim and Drizzle in " + tier];
                         }
                     }
@@ -10268,7 +10301,7 @@ if(message == "Maximum Players Changed.") {
         TierBans.newBan(INCLUDING, ["Smogon UU"], function droughtCheck(src, team, tier) {
             var i;
             for (i = 0; i < 6; ++i) {
-                if (sys.ability(sys.teamPokeAbility(src, team, i)) == "Drought") {
+                if (sys.ability(sys.teamPokeAbility(src, team, i)) === "Drought") {
                     return ["Drought is not allowed in Smogon UU"];
                 }
             }
@@ -10277,7 +10310,7 @@ if(message == "Maximum Players Changed.") {
         TierBans.newBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function sandStreamCheck(src, team, tier) {
             var i;
             for (i = 0; i < 6; ++i) {
-                if (sys.ability(sys.teamPokeAbility(src, team, i)) == "Sand Stream") {
+                if (sys.ability(sys.teamPokeAbility(src, team, i)) === "Sand Stream") {
                     return ["Sand Stream is not allowed in " + tier + "."];
                 }
             }
@@ -10286,7 +10319,7 @@ if(message == "Maximum Players Changed.") {
         TierBans.newBan(INCLUDING, ["Wifi UU", "Wifi LU", "Wifi NU"], function snowWarningCheck(src, team, tier) {
             var i;
             for (i = 0; i < 6; ++i) {
-                if (sys.ability(sys.teamPokeAbility(src, team, i)) == "Snow Warning") {
+                if (sys.ability(sys.teamPokeAbility(src, team, i)) === "Snow Warning") {
                     return ["Snow Warning is not allowed in " + tier + "."];
                 }
             }
@@ -10313,11 +10346,18 @@ if(message == "Maximum Players Changed.") {
                 'karrablast': ['swarm']
             },
                 ret = [],
-                ability, lability, poke, lpoke;
+                ability,
+                lability,
+                poke,
+                lpoke,
+                i;
 
             for (i = 0; i < 6; ++i) {
-                ability = sys.ability(sys.teamPokeAbility(src, team, i)), lability = ability.toLowerCase(), poke = sys.pokemon(sys.teamPoke(src, team, i)), lpoke = poke.toLowerCase();
-                if (lpoke in bannedAbilities && bannedAbilities[lpoke].indexOf(lability) != -1) {
+                ability = sys.ability(sys.teamPokeAbility(src, team, i));
+                lability = ability.toLowerCase();
+                poke = sys.pokemon(sys.teamPoke(src, team, i));
+                lpoke = poke.toLowerCase();
+                if (bannedAbilities.hasOwnProperty(lpoke) && bannedAbilities[lpoke].indexOf(lability) !== -1) {
                     ret.push(poke + " is not allowed to have ability " + ability + " in " + tier + ". Please change it in Teambuilder.");
                 }
             }
@@ -10328,9 +10368,10 @@ if(message == "Maximum Players Changed.") {
             var slot, move;
             for (slot = 0; slot < 6; slot++) {
                 if (sys.teamPoke(player, team, slot) !== 0) {
-                    for (move = 0; move < 4; move++)
-                    if (sys.teamPokeMove(player, team, slot, move) !== 0) {
-                        return;
+                    for (move = 0; move < 4; move++) {
+                        if (sys.teamPokeMove(player, team, slot, move) !== 0) {
+                            return;
+                        }
                     }
                 }
             }
@@ -10373,6 +10414,7 @@ if(message == "Maximum Players Changed.") {
         };
 
         breedingpokemons = [];
+        var dwnum;
 
         if (Config.DWAbilityCheck) {
             var breedingList = ["Bulbasaur", "Ivysaur", "Venusaur", "Charmander", "Charmeleon", "Charizard", "Squirtle", "Wartortle", "Blastoise", "Croagunk", "Toxicroak", "Turtwig", "Grotle", "Torterra", "Chimchar", "Monferno", "Infernape", "Piplup", "Prinplup", "Empoleon", "Treecko", "Grovyle", "Sceptile", "Torchic", "Combusken", "Blaziken", "Mudkip", "Marshtomp", "Swampert", "Hitmonlee", "Hitmonchan", "Hitmontop", "Tyrogue", "Porygon", "Porygon2", "Porygon-Z", "Gothorita", "Gothitelle"];
@@ -10386,7 +10428,7 @@ if(message == "Maximum Players Changed.") {
     resolveLocation: function (id, ip, synchronously) {
         var dhl = DataHash.locations,
             myip = ip;
-        if (dhl[ip] == undefined) {
+        if (dhl[ip] === undefined) {
             dhl[ip] = {
                 'hostname': 'pending',
                 'country_code': 'pending',
@@ -10405,16 +10447,15 @@ if(message == "Maximum Players Changed.") {
                     playerscache.write("locations", JSON.stringify(dhl));
 
                     if (sys.loggedIn(id)) {
-                        if (code.country_name == "Anonymous Proxy") {
-                            sendFailWhale(src, 0);
-                            botMessage(src, "Remove the proxy to enter the server.");
+                        if (code.country_name === "Anonymous Proxy") {
+                            sendFailWhale(id, 0);
+                            botMessage(id, "Remove the proxy to enter the server.");
                             botAll(sys.name(id) + " tried to enter the server and failed. [Reason: Proxy]", watch);
-                            kick(src);
+                            kick(id);
                         }
                     }
                 });
-            }
-            else {
+            } else {
                 var json_code = sys.synchronousWebCall(IP_Resolve_URL.format(ip));
                 json_code = json_code.replace("ip", '"ip"');
                 json_code = json_code.replace("hostname", '"hostname"');
@@ -10426,11 +10467,11 @@ if(message == "Maximum Players Changed.") {
                 playerscache.write("locations", JSON.stringify(dhl));
 
                 if (sys.loggedIn(id)) {
-                    if (code.country_name == "Anonymous Proxy") {
-                        sendFailWhale(src, 0);
-                        botMessage(src, "Remove the proxy to enter the server.");
+                    if (code.country_name === "Anonymous Proxy") {
+                        sendFailWhale(id, 0);
+                        botMessage(id, "Remove your proxy to enter the server.");
                         botAll(sys.name(id) + " tried to enter the server and failed. [Reason: Proxy]", watch);
-                        kick(src);
+                        kick(id);
                     }
                 }
             }
@@ -10439,7 +10480,7 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadUtilities: function () {
-        if (typeof fonts == 'undefined') {
+        if (typeof fonts === 'undefined') {
             // Windows 7 Fonts //
             // Note: Some fonts MIGHT not work/look too much like default font
             // so they won't be noticed.
@@ -10450,38 +10491,9 @@ if(message == "Maximum Players Changed.") {
         }
 
         checkForUpdates = function (noresume) {
-            return; // TODO: Modify.
-            var commitData = "";
-            try {
-                commitData = JSON.parse(cache.get("LastCommitData"));
-            }
-            catch (e) {
-                commitData = "";
-            }
+        };
 
-            sys.webCall(CommitDataURL, function (resp) {
-                if (resp != "") {
-                    var json = JSON.parse(resp);
-                    var lastCom = json.commits[0];
-                    var commitMsg = lastCom.message;
-
-                    if (commitMsg.toLowerCase().indexOf("(script: no update)") == -1) {
-                        if (commitData.message != commitMsg || commitData == "") {
-                            cache.write("LastCommitData", JSON.stringify(lastCom));
-                            botAll("An update for the script is available. Update available on <a href=" + ScriptURL + ">" + ScriptURL + "</a>.", 0);
-                            botAll("Commit Message: " + commitMsg, 0);
-
-                        }
-                    }
-                }
-            });
-
-            if (noresume == null) {
-                sys.callLater("checkForUpdates();", 1800);
-            }
-        }
-
-        if (typeof updateChecking == 'undefined') {
+        if (typeof updateChecking === 'undefined') {
             sys.callLater("checkForUpdates();", 1800); /* 60*30 */
             updateChecking = true;
         }
@@ -10490,25 +10502,25 @@ if(message == "Maximum Players Changed.") {
             var runEndTime = new Date().getTime(),
                 ending = runEndTime - EvaluationTimeStart,
                 load = "Runtime: " + ending / 1000 + " seconds.";
-            delete EvaluationTimeStart;
 
+            EvaluationTimeStart = null;
             DisableChatColorRandomizer(0);
 
             if (typeof StartUp !== 'undefined') {
-                delete StartUp;
+                StartUp = null;
                 print("\t\tServer Script has been loaded.\t\t\n\t\tEvaluation Time: " + ending / 1000 + " seconds.\t\t");
                 return;
             }
 
             var code = '<center><table border="1" width="50%" style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><tr style="background: qradialgradient(cy: 0.1, cx: 0.5, fx: 0.9, fy: 0, radius: 2 stop: 0 black, stop: 1 white);"><td align="center"><img src="pokemon:493&back=true" align="left"><img src="pokemon:385&back=false" align="right"><font size="4"><b><br/> ' + servername + ' - Scripts <br/></b></font> Scripts have been updated! <br/> ' + load + ' <br/> ~ ' + Version + ' ~ <br/></td></tr></table></center>';
             sys.sendHtmlAll(code, 0);
-        }
+        };
 
         ChatColorRandomizer = function (firstColor, secondColor, channel) {
-            if (firstColor === undefined || firstColor.toLowerCase() == "random") {
+            if (firstColor === undefined || firstColor.toLowerCase() === "random") {
                 firstColor = randcolor();
             }
-            if (secondColor === undefined || secondColor.toLowerCase() == "random") {
+            if (secondColor === undefined || secondColor.toLowerCase() === "random") {
                 secondColor = randcolor();
             }
 
@@ -10520,7 +10532,7 @@ if(message == "Maximum Players Changed.") {
                 'firstColor': firstColor,
                 'secondColor': secondColor
             };
-        }
+        };
 
         DisableChatColorRandomizer = function (channel) {
             if (!ChatColorRandomizers.has(channel)) {
@@ -10530,19 +10542,19 @@ if(message == "Maximum Players Changed.") {
             delete ChatColorRandomizers[channel];
 
             sys.sendHtmlAll('<center><hr width="150"/><b>Party Time is over!</b><hr width="150"/></center>', channel);
-        }
+        };
 
         RandFont = function () {
             return fonts[Math.round(fonts.length * Math.random())];
-        }
+        };
 
         RandomColorSpan = function () {
             var color1 = sys.rand(0, 256),
                 color2 = sys.rand(0, 256),
                 color3 = sys.rand(0, 256);
 
-            return "<span style='background-color: rgb(" + color1 + ", " + color2 + ", " + color3 + ");'>"
-        }
+            return "<span style='background-color: rgb(" + color1 + ", " + color2 + ", " + color3 + ");'>";
+        };
 
         randcolor = function (tagformat) {
             var nums = 5,
@@ -10558,65 +10570,65 @@ if(message == "Maximum Players Changed.") {
             } else {
                 return "<font color='#" + str + "'>";
             }
-        }
+        };
 
         removespaces = function (string) {
             return string.split(' ').join('');
-        }
+        };
 
         authToString = function (auth, img) {
             if (!img) {
-                if (auth == 0) {
+                if (auth === 0) {
                     return UserName;
-                } else if (auth == 1) {
+                } else if (auth === 1) {
                     return ModName;
-                } else if (auth == 2) {
+                } else if (auth === 2) {
                     return AdminName;
-                } else if (auth == 3) {
+                } else if (auth === 3) {
                     return OwnerName;
                 } else {
                     return InvisName;
                 }
-            }
-            else {
-                if (auth == 1) {
+            } else {
+                if (auth === 1) {
                     return 'M';
-                } else if (auth == 2) {
+                } else if (auth === 2) {
                     return 'A';
-                } else if (auth == 3) {
+                } else if (auth === 3) {
                     return 'O';
                 } else {
                     return 'U';
                 }
             }
-        }
+        };
 
         putInAuthChan = function (name, type, channel) {
-            var src = sys.id(name),
-                putIn = function (id, chan) {
-                    if (!sys.isInChannel(id, chan)) {
-                        sys.putInChannel(id, chan);
-                    }
+            var src = sys.id(name);
+            
+            var putIn = function (id, chan) {
+                if (!sys.isInChannel(id, chan)) {
+                    sys.putInChannel(id, chan);
                 }
+            };
 
-                if (src == undefined) {
-                    return;
-                }
+            if (src === undefined) {
+                return;
+            }
 
-                if (type == "mu") {
-                    put(src, staffchannel);
-                }
-                if (type == "evalop" || type == "admin") {
-                    putIn(src, scriptchannel);
-                }
-                if (type == "mod" || type == "admin") {
-                    putIn(src, staffchannel);
-                    putIn(src, watch);
-                }
-                if (type == "cauth") {
-                    putIn(src, channel);
-                }
-        }
+            if (type === "mu") {
+                putIn(src, staffchannel);
+            }
+            if (type === "evalop" || type === "admin") {
+                putIn(src, scriptchannel);
+            }
+            if (type === "mod" || type === "admin") {
+                putIn(src, staffchannel);
+                putIn(src, watch);
+            }
+            if (type === "cauth") {
+                putIn(src, channel);
+            }
+        };
 
         kickFromChannel = function (name, chan) {
             var ownTL = name.toLowerCase(),
@@ -10628,45 +10640,46 @@ if(message == "Maximum Players Changed.") {
                 return;
             }
 
-            if (chan == staffchannel && isMU) {
+            if (chan === staffchannel && isMU) {
                 return;
             }
 
-            if (chan == scriptchannel && isOp) {
+            if (chan === scriptchannel && isOp) {
                 return;
             }
 
             var id = sys.id(name);
-            if (id != undefined) {
+            if (id !== undefined) {
                 sys.kick(id, chan);
-                if (sys.channelsOfPlayer(id).length == 0) {
+                if (sys.channelsOfPlayer(id).length === 0) {
                     sys.putInChannel(id, 0);
                 }
             }
-        }
+        };
 
         AuthIMG = function (x) {
-            if (typeof x == 'string') {
-                var ats = authToString(sys.dbAuth(x), true);
+            var ats;
+            if (typeof x === 'string') {
+                ats = authToString(sys.dbAuth(x), true);
                 return "<img src='Themes/Classic/Client/" + ats + "Away.png'>";
             }
 
-            var status, ats = authToString(sys.auth(x), true),
-                n, away = sys.away(x);
+            var status,
+                n,
+                away = sys.away(x);
+            ats = authToString(sys.auth(x), true);
 
             if (away) {
                 status = 'Away';
-            }
-            else if (!away) {
+            } else if (!away) {
                 status = 'Available';
-            }
-            else if (sys.battling(x)) {
+            } else if (sys.battling(x)) {
                 status = 'Battle';
             }
 
             n = ats + status + ".png";
             return '<img src="Themes/Classic/Client/' + n + '">';
-        }
+        };
 
         sendSTFUTruck = function (src, chan) {
             var name = "",
@@ -10677,12 +10690,12 @@ if(message == "Maximum Players Changed.") {
             if (!silence.level) {
                 name = ". STFU!";
             }
-            botMessage(src, '|^^^^^^^^^^^\||____', chan);
-            botMessage(src, '| The STFU Truck  |||""\'|""\__,_', chan);
+            botMessage(src, '|^^^^^^^^^^^\\||____', chan);
+            botMessage(src, '| The STFU Truck  |||""\'|""\\__,_', chan);
             botMessage(src, '| _____________ l||__|__|__|)', chan);
             botMessage(src, '...|(@)@)"""""""**|(@)(@)**|(@)', chan);
             botMessage(src, message + name, chan);
-        }
+        };
 
         sendFailWhale = function (id, chan) {
             botMessage(id, "▄██████████████▄▐█▄▄▄▄█▌", chan);
@@ -10690,17 +10703,18 @@ if(message == "Maximum Players Changed.") {
             botMessage(id, "████▄█▌▄▌▄▐▐▌▀███▄▄█▌", chan);
             botMessage(id, "▄▄▄▄▄██████████████▀", chan);
             botMessage(id, "Fail!", chan);
-        }
+        };
 
         sortHash = function (object, method) {
             var objs = Object.keys(object),
-                y, newobj = {},
-                x, n;
+                y,
+                newobj = {},
+                x,
+                n;
 
-            if (typeof method == 'function') {
+            if (typeof method === 'function') {
                 objs.sort(method);
-            }
-            else {
+            } else {
                 objs.sort();
             }
 
@@ -10710,16 +10724,16 @@ if(message == "Maximum Players Changed.") {
             }
 
             return newobj;
-        }
+        };
 
-        if (typeof silence == "undefined") {
+        if (typeof silence === "undefined") {
             silence = {
                 "by": "",
                 "level": 0
             };
         }
 
-        if (typeof ChatColorRandomizers == 'undefined') {
+        if (typeof ChatColorRandomizers === 'undefined') {
             ChatColorRandomizers = {};
         }
 
@@ -10727,25 +10741,26 @@ if(message == "Maximum Players Changed.") {
             sys.ban(name);
 
             var id = sys.id(name);
-            if (id != undefined) {
+            if (id !== undefined) {
                 kick(id);
-            }
-            else {
+            } else {
                 aliasKick(sys.dbIp(name));
             }
-        }
+        };
 
         disconnectAll = function (src) {
-            var xlist, c, ip = sys.ip(src),
+            var xlist,
+                c,
+                ip = sys.ip(src),
                 playerIdList = sys.playerIds();
 
             for (xlist in playerIdList) {
                 c = playerIdList[xlist];
-                if (ip == sys.ip(c)) {
+                if (ip === sys.ip(c)) {
                     sys.disconnect(c);
                 }
             }
-        }
+        };
 
         kick = function (src) {
             var xlist, c, ip = sys.ip(src),
@@ -10753,7 +10768,7 @@ if(message == "Maximum Players Changed.") {
                 addIp = false;
             for (xlist in playerIdList) {
                 c = playerIdList[xlist];
-                if (ip == sys.ip(c)) {
+                if (ip === sys.ip(c)) {
                     sys.callQuickly('sys.kick(' + c + ');', 20);
                     addIp = true;
                 }
@@ -10763,14 +10778,16 @@ if(message == "Maximum Players Changed.") {
                 DataHash.reconnect[ip] = true;
                 sys.callLater("delete DataHash.reconnect['" + ip + "'];", 5);
             }
-        }
+        };
 
         aliasKick = function (ip) {
             var aliases = sys.aliases(ip),
-                alias, id, addIp = false;
+                alias,
+                id,
+                addIp = false;
             for (alias in aliases) {
                 id = sys.id(aliases[alias]);
-                if (id != undefined) {
+                if (id !== undefined) {
                     sys.callQuickly('sys.kick(' + id + ');', 20);
                     addIp = true;
                 }
@@ -10780,7 +10797,7 @@ if(message == "Maximum Players Changed.") {
                 DataHash.reconnect[ip] = true;
                 sys.callLater("delete DataHash.reconnect['" + ip + "'];", 5);
             }
-        }
+        };
 
         massKick = function () {
             var x, ids = sys.playerIds(),
@@ -10792,20 +10809,20 @@ if(message == "Maximum Players Changed.") {
                     sys.kick(current);
                 }
             }
-        }
+        };
 
         rangeIP = function (name) {
             var ips = sys.dbIp(name).split('.');
             return ips[0] + '.' + ips[1] + '.';
-        }
+        };
 
         isHost = function (src) {
             return sys.ip(src) === "127.0.0.1";
-        }
+        };
 
         self = function (src, tarname) {
-            return sys.ip(src) == sys.dbIp(tarname);
-        }
+            return sys.ip(src) === sys.dbIp(tarname);
+        };
 
         function clink($1) {
             return ChannelLink(sys.channel($1));
@@ -10819,8 +10836,7 @@ if(message == "Maximum Players Changed.") {
                 ret;
             try {
                 ret = eval(toEval);
-            }
-            catch (e) {
+            } catch (e) {
                 return FormatError("", e);
             }
 
@@ -10832,29 +10848,29 @@ if(message == "Maximum Players Changed.") {
         }
 
         format = function (src, str) {
-            if (typeof str != "string") {
+            if (typeof str !== "string") {
                 str = String(str);
             }
 
             var auth = hpAuth(src);
             GlobalHostVar = isHost(src);
 
-            if (src == "lvl0") {
+            if (src === "lvl0") {
                 auth = 0;
                 GlobalHostVar = false;
             }
 
-            if (src == "lvl2") {
+            if (src === "lvl2") {
                 auth = 2;
                 GlobalHostVar = false;
             }
 
-            if (src == 0) {
+            if (src === 0) {
                 auth = 3;
                 GlobalHostVar = true;
             }
 
-            if (typeof src == 'number' && sys.loggedIn(src)) {
+            if (typeof src === 'number' && sys.loggedIn(src)) {
                 var srcName = sys.name(src).toLowerCase();
                 if (DataHash.evalops.has(srcName)) {
                     GlobalHostVar = true;
@@ -10878,7 +10894,7 @@ if(message == "Maximum Players Changed.") {
             str = str.replace(/\[servername\]/gi, servername.bold());
             str = str.replace(/\[spoiler\](.*?)\[\/spoiler\]/gi, '<a style="color: black; background-color:black;">$1</a>');
             str = str.replace(/\[time\]/gi, "<timestamp/>");
-            str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, '<font color=$1>$2</font>')
+            str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, '<font color=$1>$2</font>');
             str = str.replace(/\[face=(.*?)\](.*?)\[\/face\]/gi, '<font face=$1>$2</font>');
             str = str.replace(/\[font=(.*?)\](.*?)\[\/font\]/gi, '<font face=$1>$2</font>');
 
@@ -10891,10 +10907,10 @@ if(message == "Maximum Players Changed.") {
             }
 
             str = addChannelLinks(str); // do this late for other bbcodes to work properly
-            delete GlobalHostVar;
+            GlobalHostVar = null;
 
             return str;
-        }
+        };
 
         hpAuth = function (src) {
             var perms = Config.HighPermission,
@@ -10903,39 +10919,42 @@ if(message == "Maximum Players Changed.") {
                 maxAuth = sys.maxAuth(sys.ip(src));
 
             if (!sys.loggedIn(src)) {
-                name = src, auth = sys.dbAuth(src), maxAuth = sys.maxAuth(auth);
+                name = src;
+                auth = sys.dbAuth(src);
+                maxAuth = sys.maxAuth(auth);
             }
 
             perms = perms[name];
 
-            if (perms != undefined) {
-                if (perms[0] == auth && perms[1] > maxAuth) {
+            if (perms !== undefined) {
+                if (perms[0] === auth && perms[1] > maxAuth) {
                     maxAuth = perms[1];
                 }
             }
 
             return maxAuth;
-        }
+        };
 
         permission = function (id, auth) {
             return hpAuth(id) >= auth;
-        }
+        };
 
         noPermission = function (id, auth) {
             return !permission(id, auth);
-        }
+        };
 
         testMafiaChat = function (src, chan) {
-            if (chan == mafiachan && mafia.ticks > 0 && mafia.state != "blank" && mafia.state != "voting" && !mafia.isInGame(sys.name(src)) && hpAuth(src) <= 0) {
+            if (chan === mafiachan && mafia.ticks > 0 && mafia.state !== "blank" && mafia.state !== "voting" && !mafia.isInGame(sys.name(src)) && hpAuth(src) <= 0) {
                 sys.sendMessage(src, "±Game: You're not playing, so shush! Go in another channel to play!", mafiachan);
                 return true;
             }
-        }
+        };
 
         auths = function () { // TODO: Test if somewhat faster or equal to a playerIds loop.
             var ids = [],
                 list = sys.dbAuths(),
-                i, id;
+                i,
+                id;
 
             for (i in list) {
                 id = sys.id(list[i]);
@@ -10945,12 +10964,13 @@ if(message == "Maximum Players Changed.") {
             }
 
             return ids;
-        }
+        };
 
         authByLevel = function () {
             var hash = {},
                 list = sys.dbAuths(),
-                x, lis;
+                x,
+                lis;
 
             for (x in list) {
                 lis = list[x];
@@ -10958,27 +10978,27 @@ if(message == "Maximum Players Changed.") {
             }
 
             return hash;
-        }
+        };
 
         sendAuth = function (message) {
             var auth_list = sys.dbAuths(),
-                id, y;
+                id,
+                y;
 
             for (y in auth_list) {
                 id = sys.id(auth_list[y]);
-                if (id != undefined) {
+                if (id !== undefined) {
                     botMessage(id, message);
                 }
             }
 
             print("[#" + sys.channel(0) + "] " + Bot.bot + ": " + message);
-        }
+        };
 
         millitime = function () {
             var now = new Date().getTime();
             return now;
-        }
-
+        };
 
         BORDER = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
         TOUR_BORDER = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
@@ -11009,7 +11029,7 @@ if(message == "Maximum Players Changed.") {
                 return thingy + 's';
             },
             "s": function (word, number) {
-                if (number != 1) {
+                if (number !== 1) {
                     word += "s";
                 }
 
@@ -11043,10 +11063,10 @@ if(message == "Maximum Players Changed.") {
             }
 
             return leng;
-        }
+        };
 
         unicodeAbuse = function (src, m) {
-            if (typeof m != 'string') {
+            if (typeof m !== 'string') {
                 m = String(m);
             }
 
@@ -11064,12 +11084,12 @@ if(message == "Maximum Players Changed.") {
                 thai = /[\u0E00-\u0E7F]/;
 
             // var evil = /\u2061|\u2062|\u2063|\u2064|\u200B|\xAD/;
-            if (creek.test(m) || armenian.test(m) || dash.test(m) || space.test(m) || cyrillic.test(m) || greek.test(m) || special.test(m) || other.test(m) || zalgo.test(m) || thai.test(m) /*| evil.test(m)*/ ) {
+            if (creek.test(m) || armenian.test(m) || dash.test(m) || space.test(m) || cyrillic.test(m) || greek.test(m) || special.test(m) || other.test(m) || zalgo.test(m) || thai.test(m)) {
                 return true;
             }
 
             return false;
-        }
+        };
 
         function offline() {
             return "<small>Offline</small>".fontcolor("red").bold();
@@ -11082,7 +11102,7 @@ if(message == "Maximum Players Changed.") {
         function lastOn(name) {
             var lastOnline = sys.dbLastOn(name);
 
-            if (lastOnline == undefined) {
+            if (lastOnline === undefined) {
                 lastOnline = "Unknown";
             }
 
@@ -11090,39 +11110,38 @@ if(message == "Maximum Players Changed.") {
         }
 
         player = function (user) {
-            if (typeof user == "string") {
+            if (typeof user === "string") {
                 return "<b><font color='" + script.namecolor(sys.id(user)) + "'>" + html_escape(user.name()) + "</font></b>";
             }
 
             return "<b><font color='" + script.namecolor(user) + "'>" + html_escape(sys.name(user)) + "</font></b>";
-        }
+        };
 
         playerInfo = function (name) {
             var id = sys.id(name),
                 auth = sys.dbAuth(name);
 
-            if (sys.dbIp(name) == undefined) {
+            if (sys.dbIp(name) === undefined) {
                 var status = online(),
                     icon = AuthIMG(id);
-                if (id == undefined) {
+                if (id === undefined) {
                     status = offline();
                 }
                 return "<img src='Themes/Classic/Client/" + icon + ".png'> " + player(name) + " " + status + " " + lastOn(name);
             }
 
-            if (id == undefined) {
+            if (id === undefined) {
                 return AuthIMG(name) + " " + player(name) + " " + offline() + " " + lastOn(name);
             }
 
             return AuthIMG(id) + " " + player(name) + " " + online() + " <small>(<font color='blue'><b>Player ID: " + id + "</b></font>)</small>";
-        }
+        };
 
         formatPoke = function (num, isShiny, fromBack, Gender, generation) {
             if (!isNonNegative(num)) {
-                if (sys.pokeNum(num) == undefined) {
+                if (sys.pokeNum(num) === undefined) {
                     return "<img src='pokemon:0'>";
-                }
-                else {
+                } else {
                     num = sys.pokeNum(num);
                 }
             }
@@ -11140,7 +11159,7 @@ if(message == "Maximum Players Changed.") {
                 back = true;
             }
 
-            if (Gender != undefined) {
+            if (Gender !== undefined) {
                 Gender = Number(Gender);
 
                 gender = {
@@ -11151,36 +11170,36 @@ if(message == "Maximum Players Changed.") {
             }
 
 
-            if (generation == 2 && pokenum > 151 && pokenum < 252) {
+            if (generation === 2 && num > 151 && num < 252) {
                 gen = 2;
             }
 
-            if (generation == 3 && pokenum > 251 && pokenum < 387) {
+            if (generation === 3 && num > 251 && num < 387) {
                 gen = 3;
             }
 
-            if (generation == 3 && pokenum > 386 && pokemon < 494) {
+            if (generation === 3 && num > 386 && num < 494) {
                 gen = 4;
             }
 
             return "<img src='pokemon:" + num + "&shiny=" + shiny + "&back=" + back + "&gender=" + gender + "&gen=" + gen + "'>";
-        }
+        };
 
         cmp = function (a, b) {
-            return a.toLowerCase() == b.toLowerCase();
-        }
+            return a.toLowerCase() === b.toLowerCase();
+        };
 
         stringToTime = function (str, time) {
-            if (time == "") {
+            if (time === "") {
                 return "forever";
             }
 
-            if (typeof str != 'string') {
+            if (typeof str !== 'string') {
                 str = "";
             }
 
             str = str.toLowerCase();
-            time = time * 1;
+            time = +time;
 
             var unitString = str[0],
                 unitString2 = str.substr(0, 2),
@@ -11199,19 +11218,20 @@ if(message == "Maximum Players Changed.") {
                 unit1 = units[unitString],
                 unit2 = units2[unitString2];
 
-            if (unit2 != undefined) {
+            if (unit2 !== undefined) {
                 return unit2 * time;
             }
 
-            if (unit1 != undefined) {
+            if (unit1 !== undefined) {
                 return unit1 * time;
             }
 
             return 60 * time;
-        }
+        };
 
         startUpTime = function () {
-            var n, s = [],
+            var n,
+                s = [],
                 d = [
                     [2629744, "<b>Month</b>"],
                     [604800, "<b>Week</b>"],
@@ -11220,11 +11240,13 @@ if(message == "Maximum Players Changed.") {
                     [60, "<b>Minute</b>"],
                     [1, "<b>Second</b>"]
                 ],
-                sec = sys.time() * 1 - startupTime,
-                j, n, sL, len = d.length;
+                sec = (+sys.time()) - startupTime,
+                j,
+                sL,
+                len = d.length;
 
             for (j = 0; j < d.length; ++j) {
-                n = parseInt(sec / d[j][0]);
+                n = parseInt(sec / d[j][0], 10);
                 if (n > 0) {
                     sL = "";
                     if (n > 1) {
@@ -11239,12 +11261,12 @@ if(message == "Maximum Players Changed.") {
                     }
                 }
             }
-            if (s.length == 0) {
+            if (s.length === 0) {
                 return "1 <b>Second</b>";
             }
 
             return fancyJoin(s) + "</b>";
-        }
+        };
 
         getTimeString = function (sec) {
             var d = [
@@ -11262,7 +11284,7 @@ if(message == "Maximum Players Changed.") {
                 j, n, sL, len = d.length;
 
             for (j = 0; j < d.length; ++j) {
-                n = parseInt(sec / d[j][0]);
+                n = parseInt(sec / d[j][0], 10);
                 if (n > 0) {
                     sL = "";
                     if (n > 1) {
@@ -11278,12 +11300,12 @@ if(message == "Maximum Players Changed.") {
                 }
             }
 
-            if (s.length == 0) {
+            if (s.length === 0) {
                 return "1 second";
             }
 
             return fancyJoin(s);
-        }
+        };
 
         clauseList = function (clauses) {
             var clause_list = [
@@ -11309,53 +11331,54 @@ if(message == "Maximum Players Changed.") {
             }
 
             return ret_list;
-        }
+        };
 
         cap = function (string) {
             return string[0].toUpperCase() + string.substr(1);
-        }
+        };
 
         lastName = function (ip) {
             var name = DataHash.names[ip];
-            if (name == undefined) { // Unknown Player :/
+            if (name === undefined) { // Unknown Player :/
                 name = "~Unknown~";
             }
 
             return name;
-        }
+        };
 
         html_escape = function (str) {
-            if (typeof str != "string") {
+            if (typeof str !== "string") {
                 str = String(str);
             }
 
-            return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
-        }
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        };
 
         html_strip = function (str) {
             return str.replace(/<\/?[^>]*>/g, "");
-        }
+        };
 
         regexp_escape = function (str) {
             return str.replace(/([\.\\\+\*\?\[\^\]\$\(\)])/g, '\\$1');
-        }
+        };
 
         idsOfIP = function (ip) {
             var players = sys.playerIds(),
-                y, ipArr = [];
+                y,
+                ipArr = [];
 
             for (y in players) {
-                if (sys.ip(players[y]) == ip) {
+                if (sys.ip(players[y]) === ip) {
                     ipArr.push(players[y]);
                 }
             }
 
             return ipArr;
-        }
+        };
 
         hasCommandStart = function (message) {
-            return message[0] == '/' || message[0] == '!';
-        }
+            return message[0] === '/' || message[0] === '!';
+        };
 
         ignoreCommandStart = function (message) {
             if (!hasCommandStart(message)) {
