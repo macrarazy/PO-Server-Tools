@@ -258,6 +258,7 @@
             return;
         }
 
+        // TODO: Check if this crashes the server.
         if (message.substr(0, 2) !== "[#") {
             if (/Script Error line \d+:/.test(message)) {
                 WatchUtils.logSystemEvent("Script Error", message);
