@@ -110,7 +110,7 @@ var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This
 var RECOVERY_BACKUP = {};
 
 // Script globals
-var Bot, html_escape, DataHash, hpAuth, AutoMute, WatchPlayer, cache, DefaultChannels, Tours, cData, isEmpty, player, JSESSIONInst, JSESSION, updateProto, hasTeam, TOUR_BORDER, getTimeString, toOn, Grammar, objLength, style, validTier, cmp, startupTime, StartUp, run, servername, poGlobal, loadOldPoll, Poll, WatchEvent, scriptchannel, staffchannel, Clantag, ClanTag, removespaces, ScriptLength, Prune, watch, mafiachan, WatchChannelEvent, RECOVERY, stepCounter, AutoStartTours, mafia, ChannelsAllowed, permission, unicodeAbuse, sendFailWhale, playerscache, testNameKickedPlayer, botAllExcept, startUpTime, maxPlayersOnline, putInMultipleChannels, format, ify, ChatColorRandomizers, motd, ScriptUpdateMessage, isHost, kick, AutoKick, stringToTime, disconnectAll, MaxMessageLength, silence, sendSTFUTruck, UseIcons, Icons, MessageEditor, hasCommandStart, RandFont, ignoreCommandStart, PointerCommands, Command_Templater, UserName, ModName, AdminName, OwnerName, Templater, evallock, sortHash, pokedex, playerInfo, implock, CommandsEnabled, InvisName, ChanUser, ChanMod, ChanAdmin, ChanOwner, Tour0, Tour1, ChanTour0, ChanTour1, FutureLimit, sendAuthLength, Table_Templater, testMafiaChat, formatPoke, AttackingMoves, CommandStats, IconManager, sendAuth, StyleManager, noPermission, lastName, BORDER, ChatColorRandomizer, DisableChatColorRandomizer, putInAuthChan, TourDisplay, self, rangeIP, ban, massKick, on, kickFromChannel, millitime, BattlesAllowed, bannedGSCSleep, bannedGSCTrap, TierBans, idsOfIP, aliasKick, authToString, Template, pokeNatures, lcpokemons, dwpokemons, breedingpokemons, fonts, checkForUpdates, updateChecking, randcolor, RandomColorSpan, AuthIMG, GlobalHostVar, auths, authByLevel, fancyJoin, clauseList, cap, isNonNegative, html_strip, regexp_escape, sendChanError, createFile, Poke_Data, formatStat, statsOf, formatStatsOf, movesOf, evosOf, formatEvosOf, formatMovesOf, baseStatTotal, formatBaseStatTotal, pokeType, firstGen, pokeAbilities, pokeGender, updateProtoForJSESSION;
+var Bot, html_escape, DataHash, hpAuth, AutoMute, WatchPlayer, cache, DefaultChannels, Tours, cData, isEmpty, player, JSESSIONInst, JSESSION, updateProto, hasTeam, TOUR_BORDER, getTimeString, toOn, Grammar, objLength, style, validTier, cmp, startupTime, StartUp, run, servername, poGlobal, loadOldPoll, Poll, WatchEvent, scriptchannel, staffchannel, Clantag, ClanTag, removespaces, ScriptLength, Prune, watch, mafiachan, WatchChannelEvent, RECOVERY, stepCounter, AutoStartTours, mafia, ChannelsAllowed, permission, unicodeAbuse, sendFailWhale, playerscache, testNameKickedPlayer, botAllExcept, startUpTime, maxPlayersOnline, putInMultipleChannels, format, ify, ChatColorRandomizers, motd, ScriptUpdateMessage, isHost, kick, AutoKick, stringToTime, disconnectAll, MaxMessageLength, silence, sendSTFUTruck, UseIcons, Icons, MessageEditor, hasCommandStart, RandFont, ignoreCommandStart, PointerCommands, Command_Templater, UserName, ModName, AdminName, OwnerName, Templater, evallock, sortHash, pokedex, playerInfo, implock, CommandsEnabled, InvisName, ChanUser, ChanMod, ChanAdmin, ChanOwner, Tour0, Tour1, ChanTour0, ChanTour1, FutureLimit, sendAuthLength, Table_Templater, testMafiaChat, formatPoke, AttackingMoves, CommandStats, IconManager, sendAuth, StyleManager, noPermission, lastName, BORDER, ChatColorRandomizer, DisableChatColorRandomizer, putInAuthChan, TourDisplay, self, rangeIP, ban, massKick, on, kickFromChannel, millitime, BattlesAllowed, bannedGSCSleep, bannedGSCTrap, TierBans, idsOfIP, aliasKick, authToString, Template, pokeNatures, lcpokemons, dwpokemons, breedingpokemons, fonts, checkForUpdates, updateChecking, randcolor, RandomColorSpan, AuthIMG, GlobalHostVar, auths, authByLevel, fancyJoin, clauseList, cap, isNonNegative, html_strip, regexp_escape, sendChanError, createFile, Poke_Data, formatStat, statsOf, formatStatsOf, movesOf, evosOf, formatEvosOf, formatMovesOf, baseStatTotal, formatBaseStatTotal, pokeType, firstGen, pokeAbilities, pokeGender, updateProtoForJSESSION, CacheInst, poGlobal;
 
 (function () {
     var x;
@@ -13166,10 +13166,10 @@ if(message == "Maximum Players Changed.") {
         };
 
         WatchChannelEvent = function (channel, message) {
-            if (typeof watch != "undefined") {
+            if (typeof watch !== "undefined") {
                 sys.sendHtmlAll("<timestamp/><b>" + sys.channel(channel) + ":</b> " + message, watch);
             }
-        }
+        };
     },
 
     loadCache: function () {
@@ -13180,13 +13180,12 @@ if(message == "Maximum Players Changed.") {
 
             try {
                 this.hash = JSON.parse(sys.getFileContent(this.file));
-            }
-            catch (e) {
+            } catch (e) {
                 sys.writeToFile(file + "-corrupt.json", JSON.stringify(this.hash));
                 this.hash = {};
                 this.saveAll();
                 var cacheName = file;
-                if (file != "Cache") {
+                if (file !== "Cache") {
                     cacheName += " cache";
                 } else {
                     cacheName = "cache";
@@ -13195,57 +13194,57 @@ if(message == "Maximum Players Changed.") {
                 print(FormatError("Could not load " + cacheName + " from file " + this.file + ".json!", e));
                 print("Old cache available in " + file + "-corrupt.json. Cache has been cleared and " + file + ".json has been cleared.");
             }
-        }
+        };
 
         CacheInst.prototype.save = function (key, value) {
-            if (typeof this.hash[key] == "undefined") {
+            if (typeof this.hash[key] === "undefined") {
                 this.hash[key] = value;
                 this.saveAll();
             }
-        }
+        };
 
         CacheInst.prototype.write = function (key, value) {
             this.hash[key] = value;
             this.saveAll();
-        }
+        };
 
         CacheInst.prototype.remove = function (key) {
-            if (this.get(key) == "") {
+            if (this.get(key) === "") {
                 return;
             }
 
             delete this.hash[key];
             this.saveAll();
-        }
+        };
 
         CacheInst.prototype.get = function (key) {
-            if (this.hash[key] == undefined) {
+            if (this.hash[key] === undefined) {
                 return "";
             }
 
             return this.hash[key];
-        }
+        };
 
         CacheInst.prototype.reset = function () {
             this.hash = {};
             sys.writeToFile(this.file, "{}");
-        }
+        };
 
         CacheInst.prototype.saveAll = function () {
             sys.writeToFile(this.file, JSON.stringify(this.hash));
-        }
+        };
 
         CacheInst.prototype.ensure = function (key, value) {
-            if (typeof this.hash[key] == "undefined") {
+            if (typeof this.hash[key] === "undefined") {
                 this.hash[key] = value;
                 this.ensures++;
             }
-        }
+        };
 
-        if (typeof cache == "undefined") {
+        if (typeof cache === "undefined") {
             cache = new CacheInst("Cache");
         }
-        if (typeof playerscache == "undefined") {
+        if (typeof playerscache === "undefined") {
             playerscache = new CacheInst("Players");
         }
 
@@ -13339,7 +13338,7 @@ if(message == "Maximum Players Changed.") {
         AutoKick = cache.get("AutoKick");
         AutoMute = cache.get("AutoMute");
         ChannelsAllowed = cache.get("ChannelsAllowed");
-        BattlesAllowed = cache.get("BattlesAllowed")
+        BattlesAllowed = cache.get("BattlesAllowed");
 
         MaxMessageLength = cache.get("MaxMessageLength");
         maxPlayersOnline = cache.get("MaxPlayersOnline");
@@ -13366,11 +13365,10 @@ if(message == "Maximum Players Changed.") {
                 if (!dHash.has(name)) {
                     dHash[name] = {};
                     var query = cacheobj.get(name);
-                    if (query != "") {
+                    if (query !== "") {
                         try {
                             DataHash[name] = JSON.parse(query);
-                        }
-                        catch (e) {
+                        } catch (e) {
                             DataHash[name] = {};
                         }
                     } else {
@@ -13397,7 +13395,10 @@ if(message == "Maximum Players Changed.") {
         defineDataProp("locations", playerscache);
 
         var ids = sys.playerIds(),
-            x, n, l, names = dHash.names,
+            x,
+            n,
+            l,
+            names = dHash.names,
             curr;
 
         for (x in ids) {
@@ -13419,26 +13420,23 @@ if(message == "Maximum Players Changed.") {
                 'roulette': true
             };
 
-            if (cache.get("CommandsEnabled") != "") {
+            if (cache.get("CommandsEnabled") !== "") {
                 try {
                     CommandsEnabled = JSON.parse(cache.get("CommandsEnabled"));
-                }
-                catch (e) {
+                } catch (e) {
                     cache.write("CommandsEnabled", JSON.stringify(CommandsEnabled));
                 }
-            }
-            else {
+            } else {
                 cache.write("CommandsEnabled", JSON.stringify(CommandsEnabled));
             }
         }
 
         if (typeof PointerCommands === "undefined") {
             PointerCommands = {};
-            if (cache.get("pointercommands") != "") {
+            if (cache.get("pointercommands") !== "") {
                 try {
                     PointerCommands = JSON.parse(cache.get('pointercommands'));
-                }
-                catch (e) {
+                } catch (ex) {
                     PointerCommands = {};
                 }
             }
@@ -13528,12 +13526,12 @@ if(message == "Maximum Players Changed.") {
         }
 
         for (y in pc) {
-            if (y == "!!/Reverse/!!") {
+            if (y === "!!/Reverse/!!") {
                 break;
             }
 
             cur = pc["!!/Reverse/!!"][pc[y]];
-            if (typeof cur != "object") {
+            if (typeof cur !== "object") {
                 cur = {};
                 pc["!!/Reverse/!!"][pc[y]] = {};
             }
@@ -13551,11 +13549,11 @@ if(message == "Maximum Players Changed.") {
     },
 
     loadCommandStatsUtility: function () {
-        if (typeof CommandStats != "undefined") {
+        if (typeof CommandStats !== "undefined") {
             sys.stopTimer(CommandStats.timer);
         }
 
-        CommandStats = new(function () {
+        CommandStats = (new function () {
             var file = "CommandStats.json";
             createFile(file, "{}");
 
@@ -13567,7 +13565,7 @@ if(message == "Maximum Players Changed.") {
             try {
                 this.stats = JSON.parse(sys.getFileContent(file));
             } catch (e) {
-                var time = sys.time() * 1;
+                var time = +sys.time();
                 this.stats = {
                     commands: {}
                 };
@@ -13579,7 +13577,7 @@ if(message == "Maximum Players Changed.") {
 
             this.save = function () {
                 sys.writeToFile(file, JSON.stringify(this.stats));
-            }
+            };
 
             this.write = function (command, user) {
                 var stats = this.stats;
@@ -13598,26 +13596,29 @@ if(message == "Maximum Players Changed.") {
                 query.used += 1;
                 query.last = user;
 
-                if (command != "commandstats") {
-                    this.stats.lastCommandTime = sys.time() * 1;
+                if (command !== "commandstats") {
+                    this.stats.lastCommandTime = +sys.time();
                 }
-            }
+            };
 
             this.display = function (src, chan, limit) {
                 var statsArray = [],
-                    name, totalstats = 0,
+                    name,
+                    totalstats = 0,
                     commandStats = this.stats.commands,
                     lim = -1,
-                    current, at, time = sys.time() * 1,
+                    current,
+                    at,
+                    time = +sys.time(),
                     statsLen = commandStats.length();
 
-                if (limit != undefined && limit != 0 && limit != -1) {
+                if (limit !== undefined && limit !== 0 && limit !== -1) {
                     lim = limit;
                 }
 
                 for (name in commandStats) {
                     current = commandStats[name];
-                    if (lim != -1 && lim < at) {
+                    if (lim !== -1 && lim < at) {
                         break;
                     }
 
@@ -13632,9 +13633,11 @@ if(message == "Maximum Players Changed.") {
 
                 var msg_footer = "%1 commands used in total",
                     msg_header = "Command usage statistics for " + servername + ":";
+                var total = 0;
 
-                if (lim != -1 && lim <= statsLen) {
-                    msg_footer = lim + " commands were used %1 times.", msg_header = "Command usage statistics for " + lim + " commands:";
+                if (lim !== -1 && lim <= statsLen) {
+                    msg_footer = lim + " commands were used %1 times.";
+                    msg_header = "Command usage statistics for " + lim + " commands:";
                 }
 
                 botMessage(src, msg_header, chan);
@@ -13655,8 +13658,8 @@ if(message == "Maximum Players Changed.") {
 
                 botEscapeMessage(src, msg_footer.format(total), chan);
                 botMessage(src, "Started counting command usage " + getTimeString(time - this.stats.startTime) + " ago. Last command used " + getTimeString(time - this.stats.lastCommandTime) + " ago.", chan);
-            }
-        })();
+            };
+        }());
     },
     
 
@@ -16417,107 +16420,6 @@ if(message == "Maximum Players Changed.") {
                     sys.sendMessage(src, "±Game: No game running!", mafiachan);
                 }
             };
-            this.flashPlayer = function (src, commandData) {
-                var user = SESSION.users(src);
-                var data = commandData.split(":");
-                var action = data[0].toLowerCase();
-                var t; // loop index
-                var themeName; // loop variable
-                if (action == "on") {
-                    msg(src, "Alert for mafia games is now on!");
-                    user.mafiaalertson = true;
-                    saveKey("mafiaalertson", src, true);
-                    return;
-                }
-                else if (action == "off") {
-                    msg(src, "Alert for mafia games is now off!");
-                    user.mafiaalertson = false;
-                    saveKey("mafiaalertson", src, false);
-                    return;
-                }
-                else if (action == "any") {
-                    user.mafiaalertsany = !user.mafiaalertsany;
-                    msg(src, "You'll get alerts for " + (user.mafiaalertsany ? "any theme" : "specific themes only") + "!");
-                    saveKey("mafiaalertsany", src, user.mafiaalertsany);
-                    return;
-                }
-                else if (action == "add") {
-                    var themesAdded = [];
-                    var themesNotAdded = [];
-                    var repeatedThemes = [];
-                    for (t = 1; t < data.length; ++t) {
-                        themeName = data[t].toLowerCase();
-                        if (!mafia.themeManager.themes.hasOwnProperty(themeName)) {
-                            themesNotAdded.push(themeName);
-                            continue;
-                        }
-                        if (user.mafiathemes === undefined) {
-                            user.mafiathemes = [];
-                        }
-                        if (user.mafiathemes.indexOf(themeName) != -1) {
-                            repeatedThemes.push(themeName);
-                            continue;
-                        }
-                        themesAdded.push(themeName);
-                        user.mafiathemes.push(themeName);
-                    }
-                    if (themesAdded.length > 0) {
-                        msg(src, "Added alert for the themes: " + readable(themesAdded, "and") + ". ");
-                        saveKey("mafiathemes", src, user.mafiathemes.join("*"));
-                    }
-                    if (repeatedThemes.length > 0) {
-                        msg(src, "You already have alerts for the themes: " + readable(repeatedThemes, "and") + ". ");
-                    }
-                    if (themesNotAdded.length > 0) {
-                        msg(src, "Couldn't add alert for the themes: " + readable(themesNotAdded, "and") + ". ");
-                    }
-                    return;
-                }
-                else if (action == "remove") {
-                    if (user.mafiathemes === undefined || user.mafiathemes.length === 0) {
-                        msg(src, "You have no alerts to remove!");
-                        return;
-                    }
-                    var themesRemoved = [];
-                    var themesNotRemoved = [];
-                    for (t = 1; t < data.length; ++t) {
-                        themeName = data[t].toLowerCase();
-                        if (user.mafiathemes.indexOf(themeName) != -1) {
-                            user.mafiathemes.splice(user.mafiathemes.indexOf(themeName), 1);
-                            themesRemoved.push(themeName);
-                            continue;
-                        } else {
-                            themesNotRemoved.push(themeName);
-                            continue;
-                        }
-                    }
-                    if (themesRemoved.length > 0) {
-                        msg(src, "Removed alert for the themes: " + readable(themesRemoved, "and") + ". ");
-                        saveKey("mafiathemes", src, user.mafiathemes.join("*"));
-                    }
-                    if (themesNotRemoved.length > 0) {
-                        msg(src, "Couldn't remove alert for the themes: " + readable(themesNotRemoved, "and") + ". ");
-                    }
-                    return;
-                }
-                else if (action == "help") {
-                    var mess = ["", "<b>How to use the Flash Me:</b>", "Type <b>/flashme</b> to see your current alerts.", "Type <b>/flashme on</b> or <b>/flashme off</b> to turn your alerts on or off.", "Type <b>/flashme any</b> to receive alerts for any new mafia game. Type again to receive alerts for specific themes.", "Type <b>/flashme add:theme1:theme2</b> to add alerts for specific themes.", "Type <b>/flashme remove:theme1:theme2</b> to remove alerts you added.", ""];
-                    for (var x in mess) {
-                        sys.sendHtmlMessage(src, mess[x], mafiachan);
-                    }
-                }
-                else {
-                    if (!user.mafiaalertson) {
-                        msg(src, "You currently have /flashme deactivated (you can enable it by typing /flashme on).");
-                    } else if (user.mafiaalertsany) {
-                        msg(src, "You currently get alerts for any theme. ");
-                    } else if (user.mafiathemes === undefined || user.mafiathemes.length === 0) {
-                        msg(src, "You currently have no alerts for mafia themes activated.");
-                    } else {
-                        msg(src, "You currently get alerts for the following themes: " + readable(user.mafiathemes.sort(), "and") + ". ");
-                    }
-                }
-            };
             this.showPriority = function (src, commandData) {
                 var themeName = "default";
                 if (mafia.state != "blank") {
@@ -16543,16 +16445,10 @@ if(message == "Maximum Players Changed.") {
             // Auth commands
             this.isMafiaAdmin = function (src) {
                 if (sys.auth(src) >= 1) return true;
-                if (mafiaAdmins.hash.hasOwnProperty(sys.name(src).toLowerCase())) {
-                    return true;
-                }
                 return false;
             };
             this.isMafiaSuperAdmin = function (src) {
                 if (sys.auth(src) >= 2) return true;
-                if (['steeledges', "bebbz"].indexOf(sys.name(src).toLowerCase()) >= 0) {
-                    return true;
-                }
                 return false;
             };
 
@@ -16914,26 +16810,6 @@ if(message == "Maximum Players Changed.") {
             };
 
             function runUpdate() {
-                if (mafia.needsUpdating !== true) return;
-                var POglobal = SESSION.global();
-                var index, source;
-                for (var i = 0; i < POglobal.plugins.length; ++i) {
-                    if ("mafia.js" == POglobal.plugins[i].source) {
-                        source = POglobal.plugins[i].source;
-                        index = i;
-                    }
-                }
-                if (index !== undefined) {
-                    updateModule(source, function (module) {
-                        POglobal.plugins[index] = module;
-                        module.source = source;
-                        module.init();
-                        sendChanAll("Update complete!", mafiachan);
-                    });
-                    sendChanAll("Updating mafia game...", mafiachan);
-                    mafia.needsUpdating = false;
-                }
-                return;
             }
 
             this.importOld = function (src, name) {
