@@ -2383,7 +2383,6 @@ JSESSION.refill();
         run("loadUtilities");
         run("loadChannelUtilities");
 
-        run("loadTrivia");
         run("loadMafia");
         run("loadPrune");
 
@@ -2725,7 +2724,7 @@ JSESSION.refill();
         sys.sendMessage(src, "", 0);
 
         if (Config.AutoChannelJoin) {
-            var ChanIds = [mafiachan /*, trivia*/ ];
+            var ChanIds = [mafiachan];
 
             if (sys.auth(src) > 0 || JSESSION.channels(watch).isChanMod(src)) {
                 ChanIds.push(watch);
@@ -2738,10 +2737,6 @@ JSESSION.refill();
             if (sys.auth(src) > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
                 ChanIds.push(scriptchannel);
             }
-/*
-            if (sys.auth(src) > 1 || JSESSION.channels(trivreview).isChanMod(src)) {
-                ChanIds.push(trivreview);
-            }*/
 
             putInMultipleChannels(src, ChanIds);
         }
@@ -3338,8 +3333,6 @@ if(message == "Maximum Players Changed.") {
                         ct.register("tourcommands", "Displays the Tournament commands.");
                     }
 
-                    /*ct.register("triviacommands", "Displays the Trivia commands.");*/
-
                     if (permission(src, 1)) {
                         ct.register(removespaces(ModName).toLowerCase() + "commands", "Displays the " + ModName + " commands.");
                     }
@@ -3401,14 +3394,6 @@ if(message == "Maximum Players Changed.") {
 
                     ct.render(src, chan);
                 },
-
-/*triviacommands: function () {
-                    var ct = new Command_Templater('Trivia Commands', true);
-                    
-                    ct.span("Trivia " + UserName + " Commands");
-
-                    ct.render(src, chan);
-                },*/
 
                 messagecommands: function () {
                     var ct = new Command_Templater('Messaging Commands', true);
@@ -4769,35 +4754,6 @@ if(message == "Maximum Players Changed.") {
                 styles: function () {
                     StyleManager.styleInfo(src, chan);
                 },
-
-                /* -- User Commands: Trivia */
-/*
-                a: function () {
-                    if (sendChanError(src, chan, trivia)) return;
-
-                    Trivia.a(src, commandData);
-                },
-                submit: function () {
-                    if (sendChanError(src, chan, trivia)) return;
-
-                    Trivia.submit(src, mcmd);
-                },
-                leaderboard: function () {
-                    if (sendChanError(src, chan, trivia)) return;
-
-                    Trivia.leaderboardDisplay(src, commandData);
-                },
-                questions: function () {
-                    if (sendChanError(src, chan, trivia)) return;
-
-                    Trivia.questionList(src, commandData);
-                },
-                question: function () {
-                    if (sendChanError(src, chan, trivia)) return;
-
-                    Trivia.viewQuestion(src, commandData);
-                },
-				*/
 
                 /* -- User Commands: Messaging */
                 me: function () {
@@ -6527,33 +6483,6 @@ if(message == "Maximum Players Changed.") {
                         botMessage(tar, "You have been un-impersonated by " + srcname + "!");
                     }
                 },
-
-                /* -- Mod Commands: Trivia -- */
-/*
-                start: function () {
-                    if (sendChanError(src, chan, trivia)) return;
-
-                    Trivia.start(src);
-                },
-
-                remove: function () {
-                    if (sendChanError(src, chan, trivia)) return;
-
-                    Trivia.remove(src, commandData);
-                },
-
-                end: function () {
-                    if (sendChanError(src, chan, trivia)) return;
-
-                    Trivia.end(src);
-                },
-
-                skip: function () {
-                    if (sendChanError(src, chan, trivia)) return;
-
-                    Trivia.skipRound(src);
-                },
-				*/
 
                 /* -- Mod Commands: Wall -- */
                 htmlwall: function () {
@@ -11507,14 +11436,12 @@ if(message == "Maximum Players Changed.") {
             y, current, isUndefined = typeof cData == "undefined";
 
         mafiachan = makeChan("Mafia Channel");
-/*
-        trivia = makeChan("Trivia");
-        trivreview = makeChan("Trivia Review");*/
+        
         watch = makeChan("Watch");
         staffchannel = makeChan("Staff Channel");
         scriptchannel = makeChan("Eval Area");
 
-        DefaultChannels = [0, mafiachan, /*trivia, trivreview, */ staffchannel, watch, scriptchannel];
+        DefaultChannels = [0, mafiachan, staffchannel, watch, scriptchannel];
 
 
         cData = new(function () {
@@ -13273,9 +13200,6 @@ if(message == "Maximum Players Changed.") {
         if (typeof playerscache == "undefined") {
             playerscache = new CacheInst("Players");
         }
-        if (typeof TrivCache == "undefined") {
-            TrivCache = new CacheInst("Trivia");
-        }
 
         cache.ensure("ClanTag", "None");
         cache.ensure("AuthLevel0Name", "User");
@@ -13686,9 +13610,7 @@ if(message == "Maximum Players Changed.") {
             }
         })();
     },
-
-    loadTrivia: function () {
-    },
+    
 
     loadMafia: function () {
         // Remember to update this if you are updating mafia
@@ -17431,8 +17353,7 @@ if(message == "Maximum Players Changed.") {
             mafia = new Mafia(mafiachan);
             mafia.importOld();
             poGlobal.mafiaVersion = mafia.version;
-        }
-        else {
+        } else {
             if (Mafia.version > poGlobal.mafiaVersion) {
                 poGlobal.mafiaVersion = Mafia.version;
 
