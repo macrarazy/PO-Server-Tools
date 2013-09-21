@@ -16,7 +16,7 @@
 || # Lamperi, Mystra                                       # ||
 || #                                                       # ||
 || # Script Version:                                       # ||
-|| # 2.2.61                                                # ||
+|| # 2.2.63                                                # ||
 || #                                                       # ||
 || # Server Requirements:                                  # ||
 || # 2.1.0 recommended                                     # ||
@@ -101,7 +101,7 @@ var Config = {
 
 
 var EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to calculate load speed! **/
-var Version = "2.6.1";
+var Version = "2.6.3";
 var ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 var CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
