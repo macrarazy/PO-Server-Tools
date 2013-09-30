@@ -789,6 +789,10 @@ function firstTeamForTier(id, tier) {
         return 0;
     }
 
+    if (typeof tier !== 'string') {
+        return -1;
+    }
+    
     var ttl = tier.toLowerCase(),
         x;
 
