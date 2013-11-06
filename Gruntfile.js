@@ -17,6 +17,9 @@ module.exports = function (grunt) {
     grunt.registerTask('default', ['build']);
     
     var files = [
+        'defines',
+        'util',
+        'bot',
         'scripts'
     ];
 

@@ -8,7 +8,14 @@
       "version": "2.6.4",
       "author": "TheUnknownOne",
       "authorpage": "https://github.com/TheUnknownOne/",
-      "project": "https://github.com/TheUnknownOne/PO-Server-Tools"
+      "project": "https://github.com/TheUnknownOne/PO-Server-Tools",
+      "url": "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js",
+      "default": {
+          "bot": {
+              "name": "~Server~",
+              "color": "blue"
+          }
+      }
   },
   "repository": {
     "type": "git",

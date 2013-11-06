@@ -26,6 +26,8 @@
         "gc": false,
         "version": false,
         "global": true,
-        "Script": true
+        "Script": true,
+        "Bot": true,
+        "Util": true
     }
 }
