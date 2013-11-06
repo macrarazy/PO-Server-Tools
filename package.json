@@ -1,0 +1,27 @@
+{
+  "name": "PO-Server-Tools",
+  "private": true,
+  "version": "2.6.4",
+  "author": "TheUnknownOne",
+  "script": {
+      "name": "TheUnknownOne's Server Script",
+      "version": "2.6.4",
+      "author": "TheUnknownOne",
+      "authorpage": "https://github.com/TheUnknownOne/",
+      "project": "https://github.com/TheUnknownOne/PO-Server-Tools"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheUnknownOne/PO-Server-Tools.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "test": "npm install grunt-cli && grunt test"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-jshint": "~0.7.1",
+    "grunt-contrib-concat": "~0.3.0"
+  }
+}

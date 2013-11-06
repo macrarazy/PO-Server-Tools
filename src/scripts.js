@@ -1,16 +1,3 @@
-/*      
-    TheUnknownOne's Server Script (https://github.com/TheUnknownOne/PO-Server-Tools) @ v2.6.4
-    
-    By TheUnknownOne (https://github.com/TheUnknownOne/)
-    License: MIT
-    
-    Special Thanks to Lutra, Intel_iX, Lamperi, coyotte508 & Mystra
-    Default styles & rank icons partially by Lutra, Intel_iX & person6445
-
-    Tested on PO v2.1.0
-*/
-
-// Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/scripts.js
 /*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true, nomen: true*/
 /*global sys, SESSION, script: true, Qt, print, gc, version,
     Config: true*/
@@ -40,7 +27,7 @@ var Config = {
 
 
 var EvaluationTimeStart = new Date().getTime(); /** Do not modify this! This is only to calculate load speed! **/
-var Version = "2.6.4";
+var Version = "<%= pkg.script.version %>";
 var ScriptURL = "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 var CommitDataURL = "http://github.com/api/v2/json/commits/list/TheUnknownOne/PO-Server-Tools/master/scripts.js";
 var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1"; /* This URL will get formatted. %1 is the IP */
