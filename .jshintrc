@@ -26,6 +26,6 @@
         "gc": false,
         "version": false,
         "global": true,
-        "Rainbow": true
+        "Script": true
     }
 }
