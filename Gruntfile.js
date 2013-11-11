@@ -18,6 +18,7 @@ module.exports = function (grunt) {
         'factory/user',
         'factory/channel',
         //'factory/global',
+        'tours/defines',
         'scripts'
     ];
 
