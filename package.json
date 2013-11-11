@@ -1,14 +1,15 @@
 {
   "name": "PO-Server-Tools",
   "private": true,
-  "version": "2.6.4",
+  "version": "2.7.0-dev",
   "author": "TheUnknownOne",
   "script": {
       "name": "TheUnknownOne's Server Script",
-      "version": "2.6.4",
+      "version": "2.7.0-dev",
       "author": "TheUnknownOne",
       "authorpage": "https://github.com/TheUnknownOne/",
       "project": "https://github.com/TheUnknownOne/PO-Server-Tools",
+      "sourceurl": "https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/",
       "url": "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js",
       "default": {
           "bot": {
@@ -23,7 +24,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "npm install grunt-cli && grunt test"
+    "test": "npm install -g grunt-cli && grunt test"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

@@ -1,8 +1,9 @@
-(function () {
+(function setupBot() {
     var NoSender = -1,
         NoTarget = -1,
         NoChannel = -1;
     
+    Bot = {};
     Bot.NoSender = NoSender;
     Bot.NoTarget = NoTarget;
     Bot.NoChannel = NoChannel;

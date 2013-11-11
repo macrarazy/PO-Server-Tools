@@ -1,4 +1,7 @@
-var Script, Util, Util, Bot;
+var Script,
+    JSESSION,
+    Util,
+    Bot;
 
 Script = {
     version: "<%= pkg.script.version %>",
@@ -6,8 +9,10 @@ Script = {
     bot: {
         name: "<%= pkg.script.default.bot.name %>",
         color: "<%= pkg.script.default.bot.color %>"
-    }
+    },
+    poScript: (typeof Script !== 'undefined' ? Script.poScript : {})
 };
+
 /*
 var Config = {
     Mafia: {

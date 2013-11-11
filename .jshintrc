@@ -15,7 +15,7 @@
     "eqnull": true,
     "evil": true,
     "proto": true,
-    "node": true,
+    "-W015": true,
     "globals": {
         "grunt": false,
         "sys": false,

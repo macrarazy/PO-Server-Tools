@@ -1,4 +1,5 @@
-(function () {
+(function setupUtil() {
+    Util = {};
     Util.escapeHtml = function (str) {
         return ('' + str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     };
