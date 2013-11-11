@@ -15,6 +15,9 @@ module.exports = function (grunt) {
         'jsession',
         'util',
         'bot',
+        'factory/user',
+        'factory/channel',
+        //'factory/global',
         'scripts'
     ];
 

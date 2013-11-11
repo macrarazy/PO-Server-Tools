@@ -48,291 +48,6 @@ function fileLen(file) {
     return sys.getFileContent(file).length;
 }
 
-function POUser(id) {
-    var my_name = sys.name(id),
-        mn_lc = my_name.toLowerCase(),
-        date = +sys.time();
-    if (my_name === undefined) {
-        return;
-    }
-
-    this.id = id;
-    this.impersonation = undefined;
-    this.ip = sys.ip(id);
-    this.name = my_name;
-    this.lowername = mn_lc;
-    this.lastMsg = 0;
-    this.loginTime = date;
-    this.lastChallenge = 0;
-    this.floodCount = 0;
-    this.caps = 0;
-    this.lastFuture = 0;
-    this.isAutoAFK = false;
-    this.teamChanges = 0;
-
-    if (typeof DataHash === "undefined" || typeof DataHash.voices === "undefined") { /* Shouldn't matter. */
-        return;
-    }
-
-    var dh = DataHash;
-
-    var d = dh.mutes;
-    this.muted = d.has(this.ip);
-
-    this.megauser = dh.megausers.has(mn_lc);
-
-    var i = dh.rankicons;
-
-    if (i.has(mn_lc)) {
-        this.icon = i[mn_lc];
-    }
-
-    i = dh.voices;
-    this.voice = i.has(mn_lc);
-
-    i = dh.macros;
-    this.macro = ["%m1", "%m2", "%m3", "%m4", "%m5"];
-
-    if (i.has(mn_lc)) {
-        this.macro = i[mn_lc];
-    }
-}
-
-POUser.prototype.addFlood = function () {
-    if (typeof hpAuth === 'undefined' || hpAuth(this.id) < 1) {
-        this.floodCount++;
-        sys.callLater('JSESSION.users(' + this.id + ').floodCount--', 6);
-    }
-};
-
-POUser.prototype.capsMute = function (message, channel) {
-    if (typeof hpAuth !== 'undefined' && hpAuth(this.id) > 0) {
-        return false;
-    }
-
-    if (typeof AutoMute !== 'undefined' && !AutoMute) {
-        return false;
-    }
-
-    var newCapsAmount = 0,
-        z;
-    for (z in message) {
-        if (capsMessage(message[z])) {
-            newCapsAmount += 1;
-        } else {
-            newCapsAmount -= 1;
-        }
-        if (newCapsAmount < 0) {
-            newCapsAmount = 0;
-        }
-    }
-
-    if (this.caps >= 70) {
-        WatchPlayer(this.id, "CAPS Mute Message", message, channel);
-        botAll(this.name + " was muted for 5 minutes for spamming caps!", channel);
-
-        var bantime = 60 * 5;
-        var thetime = +sys.time() + bantime;
-
-        DataHash.mutes[this.ip] = {
-            by: Bot.bot + "</i>",
-            why: "Spamming caps.",
-            "ip": this.ip,
-            time: thetime
-        };
-        cache.write("mutes", JSON.stringify(DataHash.mutes));
-
-        this.caps = 0;
-        this.muted = true;
-        return true;
-    }
-
-    return false;
-};
-
-function POChannel(id) {
-    this.name = sys.channel(id);
-    this.id = id;
-
-    this.chanAuth = {};
-    this.tourAuth = {};
-    this.creator = '';
-    this.topic = 'Welcome to ' + this.name + '!';
-    this.topicsetter = '';
-    this.toursEnabled = false;
-
-    if ((typeof DefaultChannels !== "undefined" && DefaultChannels.indexOf(id) !== -1) || typeof DefaultChannels === "undefined") {
-        this.perm = true;
-        this.tour = new Tours(this.id);
-        this.toursEnabled = true;
-    } else {
-        this.perm = false;
-    }
-
-    this.private = false;
-    this.defaultTopic = true;
-    this.silence = 0;
-
-    this.banlist = {};
-    this.mutelist = {};
-
-}
-
-POChannel.prototype.giveTourAuth = function (name) {
-    var toLower = name.toLowerCase();
-
-    if (this.tourAuth.has(toLower)) {
-        return;
-    }
-
-    this.tourAuth[toLower] = {
-        'name': name.name()
-    };
-
-    if (typeof cData === 'undefined') {
-        return;
-    }
-
-    cData.changeTourAuth(this.id, this.tourAuth);
-};
-
-POChannel.prototype.takeTourAuth = function (name) {
-    var toLower = name.toLowerCase();
-
-    if (!this.tourAuth.has(toLower)) {
-        return;
-    }
-
-    delete this.tourAuth[toLower];
-
-    if (typeof cData === 'undefined') {
-        return;
-    }
-
-    cData.changeTourAuth(this.id, this.tourAuth);
-};
-
-POChannel.prototype.changeTopic = function (src, topic, fullCommand) {
-    if (isEmpty(topic)) {
-        if (this.topic === '') {
-            botMessage(src, "There is no topic.", this.id);
-            return;
-        }
-
-        botEscapeMessage(src, "Topic: " + this.topic, this.id);
-
-        if (this.topicsetter !== '') {
-            botEscapeMessage(src, "Set by: " + this.topicsetter, this.id);
-        }
-
-        if (this.defaultTopic) {
-            botMessage(src, "This is a default topic.", this.id);
-        }
-
-        return;
-    }
-
-    if (!this.isChanMod(src)) {
-        noPermissionMessage(src, fullCommand, this.id);
-        return;
-    }
-
-    var me = sys.name(src),
-        mePlayer = player(me);
-
-    if (topic.toLowerCase() === "default") {
-        this.topic = "Welcome to " + this.name + "!";
-        this.defaultTopic = true;
-        this.topicsetter = '';
-    } else {
-        this.topic = topic;
-        this.topicsetter = me;
-        this.defaultTopic = false;
-    }
-
-    botAll("The topic was changed by " + mePlayer + " to: " + this.topic, this.id);
-    return;
-};
-
-POChannel.prototype.changeAuth = function (name, newauth) {
-    var nh;
-    if (typeof name === "number") {
-        nh = sys.name(name).toLowerCase();
-    } else {
-        nh = name.toLowerCase();
-    }
-
-    if (newauth === 0 && this.chanAuth.has(name)) {
-        delete this.chanAuth[nh];
-        return;
-    }
-
-    this.chanAuth[nh] = newauth;
-};
-
-POChannel.prototype.canIssue = function (src, tar) {
-    if (typeof hpAuth === 'undefined') {
-        return false;
-    }
-
-    var selfName = sys.name(src),
-        targetName = sys.name(tar),
-        srcID = src;
-
-    if (typeof src === 'string') {
-        selfName = src.toLowerCase();
-        srcID = sys.id(src);
-    } else {
-        selfName = selfName.toLowerCase();
-    }
-
-    if (typeof tar === 'string') {
-        targetName = tar.toLowerCase();
-    } else {
-        targetName = targetName.toLowerCase();
-    }
-
-    if (sys.dbIp(targetName) === undefined || sys.dbIp(selfName) === undefined) {
-        return false;
-    }
-
-    if (hpAuth(src) <= hpAuth(tar) || srcID === undefined || ((this.chanAuth[selfName] <= this.chanAuth[targetName]) && !this.isChanOwner(src))) {
-        return false;
-    }
-
-    return true;
-};
-
-POChannel.prototype.isBannedInChannel = function (ip) {
-    return this.banlist.has(ip);
-};
-
-POChannel.prototype.isMutedInChannel = function (ip) {
-    return this.mutelist.has(ip);
-};
-
-POChannel.prototype.isChanMod = function (src) {
-    var toLower = sys.name(src).toLowerCase();
-
-    return this.chanAuth[toLower] >= 1 || hpAuth(src) >= 1;
-};
-
-POChannel.prototype.isChanAdmin = function (src) {
-    var toLower = sys.name(src).toLowerCase();
-
-    return this.chanAuth[toLower] >= 2 || hpAuth(src) >= 2;
-};
-
-POChannel.prototype.isChanOwner = function (src) {
-    var toLower = sys.name(src).toLowerCase();
-
-    return this.chanAuth[toLower] >= 3 || hpAuth(src) >= 3;
-};
-
-function POGlobal(id) {
-    this.mafiaVersion = "";
-}
-
 function cut(array, entry, join) {
     if (!join) {
         join = "";
@@ -1751,20 +1466,6 @@ defineCoreProperty(String.prototype, "reverse", function () {
     return strThis.split("").reverse().join("");
 });
 
-defineCoreProperty(String.prototype, "isEmpty", function () {
-    var mess = this;
-    return mess === "" || mess.trim() === "";
-});
-
-defineCoreProperty(String.prototype, "contains", function (string) {
-    var str = this;
-    return str.indexOf(string) > -1;
-});
-
-defineCoreProperty(String.prototype, "has", function (string) {
-    return this.contains(string);
-});
-
 defineCoreProperty(String.prototype, "name", function () {
     var str = this;
     if (typeof DataHash.names === "undefined") {
@@ -1794,12 +1495,6 @@ defineCoreProperty(String.prototype, "format", function () {
     return str;
 });
 
-defineCoreProperty(String.prototype, "fontsize", function (size) {
-    var str = this;
-
-    return "<font size='" + size + "'>" + str + "</font>";
-});
-
 defineCoreProperty(String.prototype, "linkify", function () {
     var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
         pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
@@ -1816,38 +1511,6 @@ defineCoreProperty(String.prototype, "linkify", function () {
     });
 });
 
-defineCoreProperty(Boolean.prototype, "isEmpty", function () {
-    return this === false;
-});
-
-defineCoreProperty(Number.prototype, "isEmpty", function () {
-    return !isFinite(this) || this === 0;
-});
-
-defineCoreProperty(Number.prototype, "positive", function () {
-    return !this.isEmpty();
-});
-
-defineCoreProperty(Object.prototype, "isEmpty", function () {
-    return this.length() === 0;
-});
-
-defineCoreProperty(Object.prototype, "keys", function () {
-    return Object.keys(this);
-});
-
-defineCoreProperty(Object.prototype, "has", function (prop) {
-    return typeof this[prop] !== "undefined";
-});
-
-defineCoreProperty(Object.prototype, "contains", function (prop) {
-    return this.has(prop);
-});
-
-defineCoreProperty(Object.prototype, "insert", function (name, val) {
-    this[name] = val;
-});
-
 defineCoreProperty(Object.prototype, "extend", function (other) {
     var x;
 
@@ -1858,14 +1521,6 @@ defineCoreProperty(Object.prototype, "extend", function (other) {
     }
 
     return this;
-});
-
-defineCoreProperty(Object.prototype, "remove", function (name) {
-    if (!this.has(name)) {
-        return;
-    }
-
-    delete this[name];
 });
 
 defineCoreProperty(Object.prototype, "first", function () {
@@ -1880,29 +1535,6 @@ defineCoreProperty(Object.prototype, "first", function () {
     }
     
     return ret;
-});
-
-defineCoreProperty(Object.prototype, "length", function () {
-    return Object.keys(this).length;
-});
-
-defineCoreProperty(Array.prototype, "has", function (prop) {
-    var x;
-    for (x in this) {
-        if (this[x] === prop) {
-            return true;
-        }
-    }
-
-    return false;
-});
-
-defineCoreProperty(Array.prototype, "isEmpty", function () {
-    return this.length === 0;
-});
-
-defineCoreProperty(Array.prototype, "contains", function (prop) {
-    return this.has(prop);
 });
 
 
