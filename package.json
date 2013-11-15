@@ -23,9 +23,6 @@
     "url": "https://github.com/TheUnknownOne/PO-Server-Tools.git"
   },
   "license": "MIT",
-  "scripts": {
-    "test": "npm install -g grunt-cli && grunt test"
-  },
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-watch": "~0.5.3",

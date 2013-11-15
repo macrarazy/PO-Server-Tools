@@ -26,8 +26,11 @@
         "gc": false,
         "version": false,
         "global": true,
+
         "Script": true,
+        "JSESSION": true,
         "Bot": true,
-        "Util": true
+        "Util": true,
+        "Tours": true
     }
 }

@@ -6,19 +6,28 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     
     grunt.registerTask('build', ['concat', 'jshint']);
-    grunt.registerTask('test', ['concat', 'jshint']);
+    grunt.registerTask('fulltest', ['concat', 'jshint']);
+    grunt.registerTask('test', ['concat', 'jshint:scripts']);
     grunt.registerTask('dev', ['test', 'watch']);
-    grunt.registerTask('default', ['build']);
+    grunt.registerTask('default', ['concat', 'jshint:scripts']);
     
     var files = [
+        // Global definitions
         'defines',
+        // JSESSION & Factories
         'jsession',
-        'util',
-        'bot',
         'factory/user',
         'factory/channel',
         //'factory/global',
+        // Utilities
+        'util/util',
+        'util/player-util',
+        'util/mod-util',
+        // Bot & Messages
+        'bot',
+        // Tours
         'tours/defines',
+        // Events
         'scripts'
     ];
 
@@ -49,7 +58,8 @@ module.exports = function (grunt) {
         },
         jshint: {
             options: grunt.file.readJSON('.jshintrc'),
-            scripts: ['scripts.js']
+            scripts: ['scripts.js'],
+            src: ['src/**/*.js']
         }
     });
 };

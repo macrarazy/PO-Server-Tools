@@ -2,14 +2,13 @@
     // This object holds tournament manipulation functions and constants
     Tours = {};
     
-    /* !
     // Sends a tournament notification to a player
     // Also called by bots to notify a new tournament has started
     // info is an object and only used when called by a bot
     // Contains these properties:
     // name: Name of the bot.
     // color: Color of the bot.
-    Tours.tourNotification = function tourNotification(src, chan, info) {
+    /*Tours.tourNotification = function tourNotification(src, chan, info) {
         if (!JSESSION.hasChannel(chan)) {
             return;
         }
@@ -27,21 +26,16 @@
         
         // !No clean type
         if (src !== 0) {
-            startTime = Utils.timeToString((+sys.time()) - tour.startTime);
-    
-            white(src, chan);
-            border(src, chan);
+            startTime = Util.timeToString((+sys.time()) - tour.startTime);
     
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + PlayerUtils.formatName(tour.starter) + " " + startTime + " ago! </b></font>", chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + tour.entrants, chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + Tours.identify(tour), chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tier, chan);
     
-            if (!Utils.isEmpty(tour.prize)) {
+            if (!Util.isEmpty(tour.prize)) {
                 sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + tour.prize, chan);
             }
-    
-            border(src, chan);
     
             if (state === 1) {
                 sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
@@ -53,19 +47,22 @@
                 sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + tour.round + finalsStr + ". " + tour.remaining + " players remaining.", chan);
     
             }
-    
-            border(src, chan);
-            white(src, chan);
         } else {
             // these are broadcasted by the bot [global].
-            if (!Utils.isEmpty(tour.prize)) {
+            if (!Util.isEmpty(tour.prize)) {
                 prize = '<b style="color: brown;">Prize:</b> ' + tour.prize + '<br/>';
             }
             
             // !This is supposed to be an array
-            Tours.tourBox("A Tournament was started by <b style='color:" + info.color + "'>" + Utils.escapeHtml(info.starter) + "</b>! <br/> <b style='color:red'>Players:</b> " + tour.entrants + " <br/> <b style='color: blue'>Type:</b> " + Tours.identify(tour) + " <br/> <b style='color: orange'>Tier:</b> " + tour.tier + " <br/> " + prize + " Type <b style='color:green'>/join</b> to join it!", chan);
+            Tours.tourBox([
+                "A tournament was started by <b style='color:" + info.color + "'>" + Utils.escapeHtml(info.starter) + "</b> " + startedAgo + " ago!",
+                "<b style='color:red'>Players:</b> " + tour.entrants,
+                "<b style='color: blue'>Type:</b> " + Tours.identify(tour),
+                "<b style='color: orange'>Tier:</b> " + tour.tier,
+                prize + " Type <b style='color:green'>/join</b> to join it!"
+            ], chan);
         }
-    }*/
+    };*/
     
     // Tours channel config.
     // Is a constructor, so should be initialized with new
