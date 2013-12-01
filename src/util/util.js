@@ -127,4 +127,44 @@
             .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
             .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>');
     };
+    
+    Util.channelLink = function (channel) {
+        return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
+    };
+    
+    Util.channelNames = function () {
+        var channelIds = sys.channelIds(),
+            channelNames = [],
+            len, i;
+    
+        for (i = 0, len = channelIds.length; i < len; i += 1) {
+            channelNames.push(sys.channel(channelIds[i]));
+        }
+    
+        return channelNames;
+    };
+    
+    Util.addChannelLinks = function (str) {
+        // Don't do anything if there are no #'s in the message.
+        // Helps save on evaluation time, rarely messages will include a hash.
+        if (str.indexOf('#') === -1) {
+            return str;
+        }
+        
+        var channelNames = Util.channelNames(),
+            nameslength = channelNames.length,
+            name, len, i;
+    
+        for (i = 0; i < nameslength; i += 1) {
+            name = channelNames[i];
+            str = str.replace(new RegExp("#" + name, "gi"), "<a href='po:join/" + name + "'>" + name + "</a>");
+        }
+
+        return str;
+    };
+    
+    // Reverses a string/array.
+    Util.reverse = function (str) {
+        return str.reverse ? str.reverse() : str.split('').reverse().join('');
+    };
 }());

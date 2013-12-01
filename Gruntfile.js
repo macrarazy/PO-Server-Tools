@@ -27,6 +27,10 @@ module.exports = function (grunt) {
         'bot',
         // Tours
         'tours/defines',
+        // Command stuff
+        'commands/handle',
+        // Style
+        'style/template',
         // Events
         'scripts'
     ];

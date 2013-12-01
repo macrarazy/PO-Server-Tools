@@ -15,7 +15,10 @@ var Script,
     JSESSION,
     Util,
     Bot,
-    Tours;
+    Tours,
+    Commands,
+    Style,
+    Template;
 
 Script = {
     version: "2.7.0-dev",
@@ -629,6 +632,46 @@ POChannel.prototype.isChanOwner = function (src) {
             .replace(urlPattern, '<a target="_blank" href="$&">$&</a>')
             .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
             .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>');
+    };
+    
+    Util.channelLink = function (channel) {
+        return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
+    };
+    
+    Util.channelNames = function () {
+        var channelIds = sys.channelIds(),
+            channelNames = [],
+            len, i;
+    
+        for (i = 0, len = channelIds.length; i < len; i += 1) {
+            channelNames.push(sys.channel(channelIds[i]));
+        }
+    
+        return channelNames;
+    };
+    
+    Util.addChannelLinks = function (str) {
+        // Don't do anything if there are no #'s in the message.
+        // Helps save on evaluation time, rarely messages will include a hash.
+        if (str.indexOf('#') === -1) {
+            return str;
+        }
+        
+        var channelNames = Util.channelNames(),
+            nameslength = channelNames.length,
+            name, len, i;
+    
+        for (i = 0; i < nameslength; i += 1) {
+            name = channelNames[i];
+            str = str.replace(new RegExp("#" + name, "gi"), "<a href='po:join/" + name + "'>" + name + "</a>");
+        }
+
+        return str;
+    };
+    
+    // Reverses a string/array.
+    Util.reverse = function (str) {
+        return str.reverse ? str.reverse() : str.split('').reverse().join('');
     };
 }());
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/util/player-util.js */
@@ -1638,6 +1681,288 @@ Util.mod.tempBanTime = function (playerName) {
     
     // Unused
     //Tours.border = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
+}());
+/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/commands/handle.js */
+Commands = {commands: {}, pointers: {}};
+
+Commands.hasCommandStart = function (message) {
+    var first = message[0];
+    return (first === '/' || first === '!') && message.length > 1;
+};
+
+Commands.ignoreCommandStart = function (message) {
+    var second = message[1];
+    return !((/[a-z]/g).test(second));
+};
+
+Commands.register = function (name, handler, minAuth) {
+    handler.minAuth = minAuth || 0;
+    Commands.commands[name] = handler;
+    return Commands;
+};
+
+Commands.handle = function (src, message, chan) {
+    var commandInfo = {};
+    var pos, perm, cmd;
+
+    if (Commands.hasCommandStart(message) && !Commands.ignoreCommandStart(message)) {
+        sys.stopEvent();
+        
+        pos = message.indexOf(' ');
+        if (pos !== -1) {
+            commandInfo.fullCommand = message.substr(1, pos);
+            commandInfo.command     = commandInfo.fullCommand.toLowerCase();
+            
+            commandInfo.data        = message.substr(pos + 1);
+            commandInfo.args        = commandInfo.data.split(':');
+            commandInfo.dbIp        = sys.dbIp(commandInfo.args[0]);
+            commandInfo.dbAuth      = sys.dbAuth(commandInfo.args[0]);
+            commandInfo.target      = sys.id(commandInfo.args[0]);
+        } else {
+            commandInfo.fullCommand = message.substr(1);
+            commandInfo.command     = commandInfo.fullCommand.toLowerCase();
+            commandInfo.args        = [];
+            commandInfo.data =
+                commandInfo.dbIp =
+                commandInfo.dbAuth  = "";
+            commandInfo.target      = 0;
+        }
+
+        if (!Util.hasOwn(Commands.pointers, commandInfo.command)) {
+            commandInfo.command = Commands.pointers[commandInfo.command];
+        }
+
+        perm = sys.auth(src);
+        if (perm > 3) {
+            perm = 3;
+        } else if (perm < 0) {
+            perm = 0;
+        }
+
+        /*if (ch[sys.name(src)] !== undefined && ch[sys.name(src)][0] === sys.auth(src)) {
+            op = ch[sys.name(src)][1];
+        } // HighPermission
+
+        if (command === "eval" && DataHash.evalops.has(sys.name(src).toLowerCase())) {
+            op = 3;
+        }*/
+
+        if (!Util.hasOwn(Commands.commands, commandInfo.command)) {
+            Bot.invalidCommandMessage(src, commandInfo.fullCommand, chan);
+            return false;
+        }
+        
+        // cmd is a function with a 'minAuth' property, so it is callable.
+        cmd = Commands.commands[commandInfo.command];
+        if (cmd.minAuth > perm) {
+            Bot.noPermissionMessage(src, commandInfo.fullCommand, chan);
+            return false;
+        }
+        
+        cmd();
+        return true;
+    }
+    
+    return false;
+};
+/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/style/template.js */
+(function () {
+    var templates = {};
+    
+    //---------------------------------
+    // Default template
+    //---------------------------------
+    
+    function defaultTemplate() {
+        this.template = [];
+    }
+    
+    defaultTemplate.prototype.register = function (line) {
+        this.template.push(line);
+    };
+    
+    defaultTemplate.prototype.render = function (src, chan) {
+        sys.sendHtmlAll(src, this.template.join("<br/>"), chan);
+    };
+
+    //---------------------------------
+    // Basic template
+    //---------------------------------
+    
+    function basicTemplate(header) {
+        this.template = [
+            Style.style.header,
+            Style.style.span.replace(/\{\{Name\}\}/gi, header) + "<br/>"
+        ];
+    }
+    
+    basicTemplate.prototype.register = function (line) {
+        this.template.push(line);
+    };
+    
+    basicTemplate.prototype.span = function (name) {
+        this.template.push(Style.style.span.replace(/\{\{Name\}\}/gi, name) + "<br/>");
+    };
+    
+    basicTemplate.prototype.render = function (src, chan) {
+        this.register(Style.style.footer);
+        
+        sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
+    };
+    
+    //---------------------------------
+    // Command template
+    //---------------------------------
+    
+    function commandTemplate(header) {
+        this.template = [
+            Style.style.header,
+            Style.style.span.replace(/\{\{Name\}\}/gi, header) + "<br/>",
+            Style.style.help + "<br/>"
+        ];
+    }
+    
+    // TODO / NOTE: Types/syntax changed.
+    commandTemplate.prototype.format = function (str) {
+        return str
+            .replace(/\?(.*?)\?/g, "<i>$1</i>") // ?text? -> <i>text</i>
+            .replace(/\[onlinePlayer (.*?)\]/gi, '<b><font color="red">$1</font></b>')
+            .replace(/\[databasePlayer (.*?)\]/gi, '<b><font color="orangered">$1</font></b>')
+            .replace(/\[tournamentPlayer (.*?)\]/gi, '<b><font color="green">$1</font></b>')
+            .replace(/\[anything (.*?)\]/gi, '<b><font color="purple">$1</font></b>')
+            .replace(/\[choice (.*?)\]/gi, '<b><font color="blue">$1</font></b>')
+            .replace(/\[number (.*?)\]/gi, '<b><font color="orange">$1</font></b>')
+            .replace(/\[time (.*?)\]/gi, '<b><font color="blueviolet">$1</font></b>');
+    };
+    
+    commandTemplate.prototype.register = function (command, args, help) {
+        var aliases = this.aliases(command),
+            argsLength = arguments.length,
+            format = Style.style["command-style"],
+            commandIcon = Style.style["command-icon"],
+            commandColor = Style.style["command-color"],
+            preCommand = Style.style["pre-command"],
+            argsList = "",
+            len,
+            i;
+    
+        // One argument
+        // .register("commands")
+        if (argsLength === 1) {
+            this.template.push(command);
+            return;
+        }
+        
+        // Two arguments
+        // .register("commands", "Displays the command list.");
+        if (argsLength === 2) {
+            // args becomes help
+            this.template.push(
+                preCommand + format[0] + commandIcon + "<font color='" + commandColor + "'>" + command + "</font>" + format[1] + ": " + (this.format(args) + aliases)
+            );
+            return;
+        }
+    
+        // Three arguments
+        // .register("commands", ["[choice Choice]", "[number Repeat]"], "Displays the command list. Search for a term with the optional [choice Choice]. [number Repeat] can be used to repeat the list.");
+    
+        for (i = 0, len = args.length; i < len; i += 1) {
+            argsList += this.format(args[i]) + format[1] + ":" + format[0];
+        }
+        
+        // Remove the last format[0]
+        argsList = argsList.substring(0, (argsList.length - format[1].length));
+    
+        this.template.push(
+            preCommand + format[0] + commandIcon + "<font color='" + commandColor + "'>" + command + "</font> " + argsList + " " + (this.format(help) + aliases)
+        );
+    };
+    
+    commandTemplate.prototype.span = function (name) {
+        this.template.push("<br/>" + Style.style.span.replace(/\{\{Name\}\}/gi, name) + "<br/>");
+    };
+    
+    commandTemplate.prototype.formattedAliases = function (command) {
+        var pointerCommands = Commands.pointers.reverse,
+            aliases;
+        
+        // There are no pointer commands.
+        if (!Util.hasOwn(pointerCommands, command)) {
+            return "";
+        }
+    
+        aliases = Object.keys(pointerCommands[command]);
+        return "<i>(Aliases: " + aliases.join(", ") + ")</i>";
+    };
+    
+    commandTemplate.prototype.render = function (src, chan) {
+        this.template.push(Style.style.footer);
+        sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
+    };
+    
+    //---------------------------------
+    // Table template
+    //---------------------------------
+    
+    function tableTemplate(header, color, border) {
+        this.template = [
+            Style.style.header,
+            "<h2>" + header + "</h2><br/>",
+            "<table border='" + border + "' cellpadding='5'>"
+        ];
+        
+        this.color = color;
+    }
+    
+    tableTemplate.prototype.register = function (data, isBold) {
+        var table = ("<tr bgcolor='" + this.color + "'>"),
+            format = ["<td>", "</td>"],
+            len,
+            i;
+        
+        if (isBold) {
+            format = ["<th>", "</th>"];
+        }
+        
+        for (i = 0, len = data.length; i < len; i += 1) {
+            table += format[0] + data[i] + format[1];
+        }
+    
+        this.template.push(table + "</tr>");
+    };
+    
+    tableTemplate.prototype.render = function (src, chan) {
+        this.template.push("</table><br/>" + Style.style.footer);
+        sys.sendHtmlMessage(src, this.template.join(''), chan);
+    
+        // Fix chat gradient being reset after a table has been posted.
+        /* ChatGradient.refreshPlayer(src, chan); */
+    };
+    
+    // Register the templates.
+	
+    // QtScript doesn't like keywords as identifiers.
+    templates["default"] = defaultTemplate;
+    templates.basic = basicTemplate;
+    templates.command = commandTemplate;
+    templates.table = tableTemplate;
+    
+    // Creates a template.
+    function createTemplate(type, a, b, c, d, e, f) {
+        var template;
+        
+        if (!Util.hasOwn(templates, type)) {
+            throw new TypeError("Template '" + type + "' does not exist. Valid templates are: " + Object.keys(templates).join(", ") + ".");
+        }
+        
+        template = templates[type];
+        
+        return (new template(a, b, c, d, e, f));
+    }
+    
+    // Set Template as createTemplate (var template = Template('standard', args...))
+    Template = createTemplate;
+    Template.templates = templates;
 }());
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/scripts.js */
 JSESSION.identifyScriptAs("TheUnknownOne's Server Script v2.7.0-dev");

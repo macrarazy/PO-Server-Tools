@@ -2,7 +2,10 @@ var Script,
     JSESSION,
     Util,
     Bot,
-    Tours;
+    Tours,
+    Commands,
+    Style,
+    Template;
 
 Script = {
     version: "<%= pkg.script.version %>",

@@ -2,50 +2,12 @@
 /*global sys, SESSION, script: true, Qt, print, gc, version,
     Config: true*/
 
-function ChannelLink(channel) {
-    if (sys.channelId(channel) === undefined) {
-        return "";
-    }
-
-    return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
-}
-
-function ChannelNames() {
-    var channelIds = sys.channelIds(),
-        channelNames = [],
-        x;
-
-    for (x in channelIds) {
-        channelNames.push(sys.channel(channelIds[x]));
-    }
-
-    return channelNames;
-}
-
-function addChannelLinks(str) {
-    var channelNames = ChannelNames(),
-        exp,
-        i,
-        nameslength = channelNames.length;
-
-    for (i = 0; i < nameslength; i++) {
-        exp = new RegExp("#" + channelNames[i], "gi");
-        str = str.replace(exp, "<a href='po:join/" + channelNames[i] + "'>" + channelNames[i] + "</a>");
-    }
-
-    return str;
-}
-
 function capsMessage(mess) {
     return (/[QWERTYUIOPASDFGHJKLZXCVBNM]/).test(mess);
 }
 
 function normalLetter(l) {
     return (/[qwertyuiopasdfghjklzxcvbnm]/).test(l);
-}
-
-function fileLen(file) {
-    return sys.getFileContent(file).length;
 }
 
 function cut(array, entry, join) {
@@ -100,22 +62,6 @@ function Mail(sender, text, title) {
     this.sendAgo = +sys.time();
 }
 
-function defineCoreProperty(core, prop, func) {
-    Object.defineProperty(core, prop, {
-        "value": func,
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-}
-
-defineCoreProperty(String.prototype, "reverse", function () {
-    var strThis = this;
-    
-    return strThis.split("").reverse().join("");
-});
-
 defineCoreProperty(String.prototype, "name", function () {
     var str = this;
     if (typeof DataHash.names === "undefined") {
@@ -145,34 +91,6 @@ defineCoreProperty(String.prototype, "format", function () {
     return str;
 });
 
-defineCoreProperty(String.prototype, "linkify", function () {
-    var urlPattern = /\b(?:https?|ftps?|git):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim,
-        pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim,
-        emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim,
-        poPattern = /\bpo:[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-
-    return this.replace(urlPattern, '<a target="_blank" href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>').replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>').replace(poPattern, function ($) {
-        var type = $.substring($.indexOf(":", $.indexOf("/"))),
-            thing = $.substring($.indexOf("/"));
-
-        type = type[0].toUpperCase() + type.substring(1);
-
-        return "<a href='" + $ + "'>" + type + " " + thing + "</a>";
-    });
-});
-
-defineCoreProperty(Object.prototype, "extend", function (other) {
-    var x;
-
-    if (typeof other === "object" && !Array.isArray(other) && other !== null) {
-        for (x in other) {
-            this[x] = other[x];
-        }
-    }
-
-    return this;
-});
-
 defineCoreProperty(Object.prototype, "first", function () {
     // Prevent JSLint from complaining.
     var ret, x, sbreak = true;
@@ -193,21 +111,8 @@ defineCoreProperty(Object.prototype, "first", function () {
         startupTime = +sys.time();
         StartUp = true;
 
-        if (sys.getFileContent(".scriptsession") === "") {
-            Config.NoCrash = true;
-            sys.writeToFile("nocrash.txt", "Delete this file to turn NoCrash off (in case of a system crash or something similar).");
-        } else if (sys.getFileContent("nocrash.txt") !== undefined) {
-            Config.NoCrash = true;
-        }
-
         script.beforeNewMessage("Script Check: OK");
 
-        sys.updateDatabase();
-
-    },
-
-    serverShutDown: function () {
-        sys.deleteFile(".scriptsession");
     },
 
     loadAll: function () {
@@ -1097,39 +1002,8 @@ if(message == "Maximum Players Changed.") {
             namestr = '<font color=' + script.namecolor(src) + ' face="' + fnt + '"><timestamp/><b>' + rankicon + html_escape(srcname) + ':</font></b></i> <font face="' + fnt + '">' + msg;
         }
 
-        if (hasCommandStart(message) && message.length > 1 && !ignoreCommandStart(message)) {
-            sys.stopEvent();
-
-            var command,
-                commandData = "",
-                mcmd = [""],
-                tar,
-                cmdData = "",
-                dbIp = 0,
-                dbAuth = 0,
-                pos = message.indexOf(' '),
-                fullCommand = "";
-
-            if (pos !== -1) {
-                fullCommand = message.substring(1, pos);
-                command = fullCommand.toLowerCase();
-
-                commandData = message.substr(pos + 1);
-                cmdData = commandData.toLowerCase();
-                mcmd = commandData.split(':');
-                dbIp = sys.dbIp(mcmd[0]);
-                dbAuth = sys.dbAuth(mcmd[0]);
-                tar = sys.id(mcmd[0]);
-            } else {
-                fullCommand = message.substring(1);
-                command = fullCommand.toLowerCase();
-            }
-
-            if (typeof PointerCommands !== 'undefined') {
-                if (PointerCommands.hasOwnProperty(command)) {
-                    command = PointerCommands[command];
-                }
-            }
+        if (/* handle command - done */) {
+            /* done */
 
             if (command !== "sendmail") {
                 WatchPlayer(src, "Command", message, chan);
@@ -6636,89 +6510,6 @@ if(message == "Maximum Players Changed.") {
 
                 sys.changeDbAuth(commandData, 127);
             };
-
-            var getCommand = ({
-                '0': function (name) {
-                    if (tourCommands.hasOwnProperty(name) && poChan.toursEnabled) {
-                        return tourCommands[name];
-                    } else if (channelCommands.hasOwnProperty(name)) {
-                        return channelCommands[name];
-                    } else if (userCommands.hasOwnProperty(name)) {
-                        return userCommands[name];
-                    }
-                },
-                '1': function (name) {
-                    if (modCommands.hasOwnProperty(name)) {
-                        return modCommands[name];
-                    } else if (tourCommands.hasOwnProperty(name) && poChan.toursEnabled) {
-                        return tourCommands[name];
-                    } else if (channelCommands.hasOwnProperty(name)) {
-                        return channelCommands[name];
-                    } else if (userCommands.hasOwnProperty(name)) {
-                        return userCommands[name];
-                    }
-                },
-                '2': function (name) {
-                    if (adminCommands.hasOwnProperty(name)) {
-                        return adminCommands[name];
-                    } else if (modCommands.hasOwnProperty(name)) {
-                        return modCommands[name];
-                    } else if (tourCommands.hasOwnProperty(name) && poChan.toursEnabled) {
-                        return tourCommands[name];
-                    } else if (channelCommands.hasOwnProperty(name)) {
-                        return channelCommands[name];
-                    } else if (userCommands.hasOwnProperty(name)) {
-                        return userCommands[name];
-                    }
-                },
-                '3': function (name) {
-                    if (founderCommands.hasOwnProperty(name) && host) {
-                        return founderCommands[name];
-                    } else if (ownerCommands.hasOwnProperty(name)) {
-                        return ownerCommands[name];
-                    } else if (adminCommands.hasOwnProperty(name)) {
-                        return adminCommands[name];
-                    } else if (modCommands.hasOwnProperty(name)) {
-                        return modCommands[name];
-                    } else if (tourCommands.hasOwnProperty(name) && poChan.toursEnabled) {
-                        return tourCommands[name];
-                    } else if (channelCommands.hasOwnProperty(name)) {
-                        return channelCommands[name];
-                    } else if (userCommands.hasOwnProperty(name)) {
-                        return userCommands[name];
-                    }
-                }
-            });
-
-            var op = sys.auth(src),
-                ch = Config.HighPermission;
-
-            if (op > 3) {
-                op = 3;
-            }
-
-            if (op < 0) {
-                op = 0;
-            }
-
-            if (ch[sys.name(src)] !== undefined && ch[sys.name(src)][0] === sys.auth(src)) {
-                op = ch[sys.name(src)][1];
-            }
-
-            if (command === "eval" && DataHash.evalops.has(sys.name(src).toLowerCase())) {
-                op = 3;
-            }
-
-            var cmd = getCommand[op](command);
-            if (!cmd) {
-                if (!getCommand[3](command)) {
-                    invalidCommandMessage(src, fullCommand, chan);
-                } else {
-                    noPermissionMessage(src, fullCommand, chan);
-                }
-                return;
-            }
-            cmd();
             return;
         }
 
@@ -9802,167 +9593,6 @@ if(message == "Maximum Players Changed.") {
             ify.ifyName = old.ifyName;
             ify.inIfy = old.inIfy;
         }
-    },
-
-    loadTemplateUtility: function () {
-        Template = function () {
-            this.template = [];
-        };
-
-        Template.prototype.register = function (m) {
-            this.template.push(m);
-        };
-
-        Template.prototype.render = function (src, chan) {
-            sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
-        };
-
-        Command_Templater = function (template_name, nohelp) {
-            this.multiple = nohelp;
-
-            if (!nohelp) {
-                this.template = [
-                    style.header,
-                    style.span.replace(/\{\{Name\}\}/gi, template_name) + "<br/>",
-                    style.help + "<br/>"
-                ];
-            } else {
-                this.template = [
-                    style.header,
-                    style.span.replace(/\{\{Name\}\}/gi, template_name)
-                ];
-            }
-        };
-
-        Command_Templater.prototype.format = function (str) {
-            str = str.replace(/\{Player::Online (.*?)\}/gi, '<b><font color="red">$1</font></b>');
-            str = str.replace(/\{Player::Database (.*?)\}/gi, '<b><font color="orangered">$1</font></b>');
-            str = str.replace(/\{Player::Tournament (.*?)\}/gi, '<b><font color="green">$1</font></b>');
-            str = str.replace(/\{Text::Number (.*?)\}/gi, '<b><font color="orange">$1</font></b>');
-            str = str.replace(/\{Text::Any (.*?)\}/gi, '<b><font color="purple">$1</font></b>');
-            str = str.replace(/\{Text::Choice (.*?)\}/gi, '<b><font color="blue">$1</font></b>');
-            str = str.replace(/\{Text::Time (.*?)\}/gi, '<b><font color="blueviolet">$1</font></b>');
-
-            return str;
-        };
-
-        Command_Templater.prototype.register = function (name, args, desc) {
-            var aliases = this.formattedAliases(name);
-
-            if (arguments.length === 1) {
-                this.template.push(name);
-                return;
-            }
-
-            var form = style["command-style"],
-                pre_command = style["pre-command"];
-
-            if (arguments.length === 2) {
-                desc = this.format(args) + aliases; // desc->args in 2 arg length commands
-                this.template.push(pre_command + form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font>" + form[1] + ": " + desc);
-                return;
-            }
-
-            var args_joined = "",
-                formatted,
-                y;
-
-            for (y in args) {
-                formatted = this.format(args[y]);
-                args_joined += (formatted + form[1] + ":" + form[0]);
-            }
-
-            desc = this.format(desc) + aliases;
-            args_joined = args_joined.substring(0, args_joined.length - form[0].length);
-
-            this.template.push(pre_command + form[0] + style["command-icon"] + "<font color='" + style["command-color"] + "'>" + name + "</font> " + args_joined + " " + desc);
-        };
-
-        Command_Templater.prototype.span = function (name) {
-            this.template.push("<br/>" + style.span.replace(/\{\{Name\}\}/gi, name) + "<br/>");
-
-            if (this.multiple) {
-                this.template.push(style.help + "<br/>");
-            }
-        };
-
-        Command_Templater.prototype.render = function (id, chan) {
-            this.template.push(style.footer);
-
-            sys.sendHtmlMessage(id, this.template.join('<br/>'), chan);
-        };
-
-        Command_Templater.prototype.aliases = function (name) {
-            if (!PointerCommands["!!/Reverse/!!"].has(name)) {
-                return [];
-            }
-
-            var p = PointerCommands["!!/Reverse/!!"][name];
-            return p.keys();
-        };
-
-        Command_Templater.prototype.formattedAliases = function (cmd) {
-            var a = this.aliases(cmd);
-            if (a.length === 0) {
-                return "";
-            }
-
-            return " <i>(Aliases: " + a.join(", ") + ")</i>";
-        };
-
-        Templater = function (template_name) {
-            this.template = [
-                style.header,
-                style.span.replace(/\{\{Name\}\}/gi, template_name) + "<br/>"
-            ];
-        };
-
-        Templater.prototype.register = function (mess) {
-            this.template.push(mess);
-        };
-
-        Templater.prototype.span = function (name) {
-            this.template.push(style.span.replace(/\{\{Name\}\}/gi, name) + "<br/>");
-        };
-
-        Templater.prototype.render = function (id, chan) {
-            this.register(style.footer);
-            return sys.sendHtmlMessage(id, this.template.join('<br/>'), chan);
-        };
-
-        Table_Templater = function (template_name, color, border) {
-            this.template = [style.header, "<h2>" + template_name + "</h2><br/>", "<table border='" + border + "' cellpadding='5'>"];
-            this.color = color;
-        };
-
-        Table_Templater.prototype.register = function (arr, bold) {
-            var mess = "<tr bgcolor='" + this.color + "'>",
-                l = arr.length,
-                y,
-                bolds = ['<th>', '</th>'];
-            if (!bold) {
-                bolds = ['<td>', '</td>'];
-            }
-
-            for (y = 0; y < l; y++) {
-                mess += bolds[0] + arr[y] + bolds[1];
-            }
-
-            mess += "</tr>";
-            this.template.push(mess);
-        };
-
-        Table_Templater.prototype.render = function (id, chan) {
-            this.template.push("</table><br/>", style.footer);
-            sys.sendHtmlMessage(id, this.template.join(''), chan);
-
-            if (ChatColorRandomizers.has(chan)) { // Tables reset fix
-                var index = ChatColorRandomizers[chan],
-                    code = '<div style="background-color: qradialgradient(cx:0.8, cy:1, fx: 0.8, fy: 0.2, radius: 0.8,stop:0.1 ' + index.firstColor + ', stop:1 ' + index.secondColor + ');">';
-
-                sys.sendHtmlMessage(id, code, chan);
-            }
-        };
     },
 
     loadStyles: function () {
