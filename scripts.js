@@ -1,5 +1,5 @@
 /*      
-    TheUnknownOne's Server Script (https://github.com/TheUnknownOne/PO-Server-Tools) @ v2.7.0-dev
+    TheUnknownOne's Server Script (https://github.com/TheUnknownOne/PO-Server-Tools) @ v2.7.0-dev:#11
     
     By TheUnknownOne (https://github.com/TheUnknownOne/)
     License: MIT
@@ -7,7 +7,7 @@
     Special Thanks to Lutra, Intel_iX, Lamperi, coyotte508 & Mystra
     Default styles & rank icons partially by Lutra, Intel_iX & person6445
 
-    Tested on PO v2.3.0
+    Tested on PO v2.1.0
 */
 
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/defines.js */
@@ -1701,6 +1701,11 @@ Commands.register = function (name, handler, minAuth) {
     return Commands;
 };
 
+Commands.ptr = function (name, to) {
+    Commands.pointers[name] = to;
+    return Commands;
+};
+
 Commands.handle = function (src, message, chan) {
     var commandInfo = {};
     var pos, perm, cmd;
@@ -1709,6 +1714,11 @@ Commands.handle = function (src, message, chan) {
         sys.stopEvent();
         
         pos = message.indexOf(' ');
+        
+        commandInfo.src     = commandInfo.source = src;
+        commandInfo.chan    = commandInfo.channel = chan;
+        commandInfo.message = message;
+        
         if (pos !== -1) {
             commandInfo.fullCommand = message.substr(1, pos);
             commandInfo.command     = commandInfo.fullCommand.toLowerCase();
@@ -1728,7 +1738,7 @@ Commands.handle = function (src, message, chan) {
             commandInfo.target      = 0;
         }
 
-        if (!Util.hasOwn(Commands.pointers, commandInfo.command)) {
+        if (Util.hasOwn(Commands.pointers, commandInfo.command)) {
             commandInfo.command = Commands.pointers[commandInfo.command];
         }
 
@@ -1749,22 +1759,54 @@ Commands.handle = function (src, message, chan) {
 
         if (!Util.hasOwn(Commands.commands, commandInfo.command)) {
             Bot.invalidCommandMessage(src, commandInfo.fullCommand, chan);
-            return false;
+            return true;
         }
         
         // cmd is a function with a 'minAuth' property, so it is callable.
         cmd = Commands.commands[commandInfo.command];
         if (cmd.minAuth > perm) {
             Bot.noPermissionMessage(src, commandInfo.fullCommand, chan);
-            return false;
+            return true;
         }
         
-        cmd();
+        cmd(commandInfo);
         return true;
     }
     
     return false;
 };
+/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/style/style.js */
+(function () {
+    var styles = [{
+        "name": "default",
+        "author": "Lutra",
+        "header": "<font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
+        "footer": "<br/><timestamp/><br/><font color=cornflowerblue><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>",
+        "pre-command": "",
+        "command-icon": "\u2022 ",
+        "command-style": ["<b>", "</b>"],
+        "command-color": "green",
+        "help": "<b><font color='orangered'>The following commands need to be entered into a channel's main chat:</font></b>",
+        "span": "<br><font size=5><B>{{Name}}</b></font>"
+    }];
+    var style, len, i;
+    
+    Style = {
+        styles: {},
+        style: null
+    };
+    
+    Style.loadAll = function () {
+        for (i = 0, len = styles.length; i < len; i += 1) {
+            style = styles[i];
+            Style.styles[style.name] = style;
+        }
+    };
+    
+    Style.loadAll();
+    Style.style = Style.styles["default"];
+}());
+
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/style/template.js */
 (function () {
     var templates = {};
@@ -1848,8 +1890,15 @@ Commands.handle = function (src, message, chan) {
     
         // One argument
         // .register("commands")
+        // .register([["commands", "Displays the command list."]])
         if (argsLength === 1) {
-            this.template.push(command);
+            if (Array.isArray(command)) {
+                for (i = 0, len = command.length; i < len; i += 1) {
+                    this.register.apply(this, command[i]);
+                }
+            } else {
+                this.template.push(command);
+            }
             return;
         }
         
@@ -1882,11 +1931,11 @@ Commands.handle = function (src, message, chan) {
         this.template.push("<br/>" + Style.style.span.replace(/\{\{Name\}\}/gi, name) + "<br/>");
     };
     
-    commandTemplate.prototype.formattedAliases = function (command) {
+    commandTemplate.prototype.aliases = function (command) {
         var pointerCommands = Commands.pointers.reverse,
             aliases;
         
-        // There are no pointer commands.
+        // There are no pointer commands for this command, so don't do anything.
         if (!Util.hasOwn(pointerCommands, command)) {
             return "";
         }
@@ -1964,11 +2013,31 @@ Commands.handle = function (src, message, chan) {
     Template = createTemplate;
     Template.templates = templates;
 }());
+/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/commands/user/help.js */
+Commands.register('commands', function (info) {
+    var template = Template('command', 'Commands');
+    template.register([
+        ['help', 'Displays a list of helpful topics.'],
+        ['usercommands', 'Displays a list of commands for users.'],
+        // messagecommands, stylecommands, iconcommands
+        ['channelcommands', 'Displays a list of commands for channels.'],
+        ['tourcommands', 'Displays a list of commands for tournaments.']
+    ]);
+    
+    // modcommands, admincommands, ownercommands
+    template.render(info.src, info.chan);
+});
+
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/scripts.js */
-JSESSION.identifyScriptAs("TheUnknownOne's Server Script v2.7.0-dev");
+JSESSION.identifyScriptAs("TheUnknownOne's Server Script v2.7.0-dev:#11");
 JSESSION.registerUserFactory(JSESSION.factory.User);
 JSESSION.registerChannelFactory(JSESSION.factory.Channel);
 //JSESSION.registerGlobalFactory(JSESSION.factory.Global);
 
 Script.poScript = ({
+    beforeChatMessage: function (src, message, chan) {
+        if (Commands.handle(src, message, chan)) {
+            return;
+        }
+    }
 });

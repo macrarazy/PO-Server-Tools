@@ -4,19 +4,20 @@
   "version": "2.7.0-dev",
   "author": "TheUnknownOne",
   "script": {
-      "name": "TheUnknownOne's Server Script",
-      "version": "2.7.0-dev",
-      "author": "TheUnknownOne",
-      "authorpage": "https://github.com/TheUnknownOne/",
-      "project": "https://github.com/TheUnknownOne/PO-Server-Tools",
-      "sourceurl": "https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/",
-      "url": "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js",
-      "default": {
-          "bot": {
-              "name": "~Server~",
-              "color": "blue"
-          }
+    "name": "TheUnknownOne's Server Script",
+    "version": "2.7.0-dev",
+    "build": 11,
+    "author": "TheUnknownOne",
+    "authorpage": "https://github.com/TheUnknownOne/",
+    "project": "https://github.com/TheUnknownOne/PO-Server-Tools",
+    "sourceurl": "https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/",
+    "url": "https://raw.github.com/TheUnknownOne/PO-Server-Tools/master/scripts.js",
+    "default": {
+      "bot": {
+        "name": "~Server~",
+        "color": "blue"
       }
+    }
   },
   "repository": {
     "type": "git",
@@ -28,5 +29,8 @@
     "grunt-contrib-watch": "~0.5.3",
     "grunt-contrib-jshint": "~0.7.1",
     "grunt-contrib-concat": "~0.3.0"
+  },
+  "scripts": {
+    "test-win": "grunt test && cd server/ && start Server.exe"
   }
 }

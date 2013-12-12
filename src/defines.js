@@ -8,11 +8,11 @@ var Script,
     Template;
 
 Script = {
-    version: "<%= pkg.script.version %>",
-    url: "<%= pkg.script.url %>",
+    version: "<%= script.version %>",
+    url: "<%= script.url %>",
     bot: {
-        name: "<%= pkg.script.default.bot.name %>",
-        color: "<%= pkg.script.default.bot.color %>"
+        name: "<%= script.default.bot.name %>",
+        color: "<%= script.default.bot.color %>"
     },
     poScript: (typeof Script !== 'undefined' ? Script.poScript : {})
 };

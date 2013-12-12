@@ -80,8 +80,15 @@
     
         // One argument
         // .register("commands")
+        // .register([["commands", "Displays the command list."]])
         if (argsLength === 1) {
-            this.template.push(command);
+            if (Array.isArray(command)) {
+                for (i = 0, len = command.length; i < len; i += 1) {
+                    this.register.apply(this, command[i]);
+                }
+            } else {
+                this.template.push(command);
+            }
             return;
         }
         
@@ -114,11 +121,11 @@
         this.template.push("<br/>" + Style.style.span.replace(/\{\{Name\}\}/gi, name) + "<br/>");
     };
     
-    commandTemplate.prototype.formattedAliases = function (command) {
+    commandTemplate.prototype.aliases = function (command) {
         var pointerCommands = Commands.pointers.reverse,
             aliases;
         
-        // There are no pointer commands.
+        // There are no pointer commands for this command, so don't do anything.
         if (!Util.hasOwn(pointerCommands, command)) {
             return "";
         }

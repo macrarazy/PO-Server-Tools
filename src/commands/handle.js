@@ -16,6 +16,11 @@ Commands.register = function (name, handler, minAuth) {
     return Commands;
 };
 
+Commands.ptr = function (name, to) {
+    Commands.pointers[name] = to;
+    return Commands;
+};
+
 Commands.handle = function (src, message, chan) {
     var commandInfo = {};
     var pos, perm, cmd;
@@ -24,6 +29,11 @@ Commands.handle = function (src, message, chan) {
         sys.stopEvent();
         
         pos = message.indexOf(' ');
+        
+        commandInfo.src     = commandInfo.source = src;
+        commandInfo.chan    = commandInfo.channel = chan;
+        commandInfo.message = message;
+        
         if (pos !== -1) {
             commandInfo.fullCommand = message.substr(1, pos);
             commandInfo.command     = commandInfo.fullCommand.toLowerCase();
@@ -43,7 +53,7 @@ Commands.handle = function (src, message, chan) {
             commandInfo.target      = 0;
         }
 
-        if (!Util.hasOwn(Commands.pointers, commandInfo.command)) {
+        if (Util.hasOwn(Commands.pointers, commandInfo.command)) {
             commandInfo.command = Commands.pointers[commandInfo.command];
         }
 
@@ -64,17 +74,17 @@ Commands.handle = function (src, message, chan) {
 
         if (!Util.hasOwn(Commands.commands, commandInfo.command)) {
             Bot.invalidCommandMessage(src, commandInfo.fullCommand, chan);
-            return false;
+            return true;
         }
         
         // cmd is a function with a 'minAuth' property, so it is callable.
         cmd = Commands.commands[commandInfo.command];
         if (cmd.minAuth > perm) {
             Bot.noPermissionMessage(src, commandInfo.fullCommand, chan);
-            return false;
+            return true;
         }
         
-        cmd();
+        cmd(commandInfo);
         return true;
     }
     
