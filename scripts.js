@@ -1,5 +1,5 @@
 /*      
-    TheUnknownOne's Server Script (https://github.com/TheUnknownOne/PO-Server-Tools) @ v2.7.0-dev:#11
+    TheUnknownOne's Server Script (https://github.com/TheUnknownOne/PO-Server-Tools) @ v2.7.0-dev:#20
     
     By TheUnknownOne (https://github.com/TheUnknownOne/)
     License: MIT
@@ -672,6 +672,13 @@ POChannel.prototype.isChanOwner = function (src) {
     // Reverses a string/array.
     Util.reverse = function (str) {
         return str.reverse ? str.reverse() : str.split('').reverse().join('');
+    };
+    
+    Util.icons = {
+        owner: "<img src='Themes/Classic/client/oAvailable.png'>",
+        admin: "<img src='Themes/Classic/client/aAvailable.png'>",
+        mod:   "<img src='Themes/Classic/client/mAvailable.png'>",
+        user:  "<img src='Themes/Classic/client/uAvailable.png'>"
     };
 }());
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/util/player-util.js */
@@ -1715,12 +1722,12 @@ Commands.handle = function (src, message, chan) {
         
         pos = message.indexOf(' ');
         
-        commandInfo.src     = commandInfo.source = src;
+        commandInfo.src     = commandInfo.source  = src;
         commandInfo.chan    = commandInfo.channel = chan;
         commandInfo.message = message;
         
         if (pos !== -1) {
-            commandInfo.fullCommand = message.substr(1, pos);
+            commandInfo.fullCommand = message.substring(1, pos);
             commandInfo.command     = commandInfo.fullCommand.toLowerCase();
             
             commandInfo.data        = message.substr(pos + 1);
@@ -1729,7 +1736,7 @@ Commands.handle = function (src, message, chan) {
             commandInfo.dbAuth      = sys.dbAuth(commandInfo.args[0]);
             commandInfo.target      = sys.id(commandInfo.args[0]);
         } else {
-            commandInfo.fullCommand = message.substr(1);
+            commandInfo.fullCommand = message.substring(1);
             commandInfo.command     = commandInfo.fullCommand.toLowerCase();
             commandInfo.args        = [];
             commandInfo.data =
@@ -1748,6 +1755,8 @@ Commands.handle = function (src, message, chan) {
         } else if (perm < 0) {
             perm = 0;
         }
+        
+        commandInfo.perm = commandInfo.auth = perm;
 
         /*if (ch[sys.name(src)] !== undefined && ch[sys.name(src)][0] === sys.auth(src)) {
             op = ch[sys.name(src)][1];
@@ -2014,22 +2023,92 @@ Commands.handle = function (src, message, chan) {
     Template.templates = templates;
 }());
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/commands/user/help.js */
-Commands.register('commands', function (info) {
-    var template = Template('command', 'Commands');
-    template.register([
-        ['help', 'Displays a list of helpful topics.'],
-        ['usercommands', 'Displays a list of commands for users.'],
-        // messagecommands, stylecommands, iconcommands
-        ['channelcommands', 'Displays a list of commands for channels.'],
-        ['tourcommands', 'Displays a list of commands for tournaments.']
-    ]);
+(function () {
+    Commands.register('commands', function (info) {
+        var template = Template('command', 'Commands');
+        template.register([
+            ['help', 'Displays a list of helpful topics.'],
+            ['usercommands', 'Displays a list of commands for users.'],
+            // messagecommands,
+            ['channelcommands', 'Displays a list of commands for channels.'],
+            ['tourcommands', 'Displays a list of commands for tournaments.']
+        ]);
+        
+        if (info.perm >= 1) {
+            template.register("modcommands",   "Displays a list of commands for moderators.");
+        }
+        if (info.perm >= 2) {
+            template.register("admincommands", "Displays a list of commands for administrators.");
+        }
+        if (info.perm >= 3) {
+            template.register("ownercommands", "Displays a list of commands for owners.");
+        }
     
-    // modcommands, admincommands, ownercommands
-    template.render(info.src, info.chan);
-});
+        template.render(info.src, info.chan);
+    });
+    
+    var helpEntries = {
+        "default": {
+            title: "",
+            message: [
+                "<b>The following help topics are available</b>: <small>(/help [topic])</small> <br/>",
+                // red, green, blue pattern
+                "• <font color='red'><b>arguments</b></font>: Help with command arguments.",
+                "• <font color='green'><b>register</b></font>: Help with registering."
+            ]
+        },
+        "arguments": {
+            title: "Arguments",
+            message: [
+                "Arguments are used in almost <i>every</i> command list and command.",
+                "Here are their descriptions: <br/>",
+                
+                // [onlinePlayer Player]
+                "• For <font color='red'><b>Red</b></font> colored arguments, give the name of an online player.",
+                // [databasePlayer Player]
+                "• For <font color='orangered'><b>Orangered</b></font> colored arguments, give the name of a player who has once entered the server.",
+                // [tournamentPlayer Player]
+                "• For <font color='green'><b>Green</b></font> colored arguments, give the name of a player who's in the channel's tournament.",
+                // [anything Text]
+                "• For <font color='purple'><b>Purple</b></font> colored arguments, you may give anything (the command may inpose some limitations).",
+                // [choice A/B/C]
+                "• For <font color='blue'><b>Blue</b></font> colored arguments, give one of the choices (usually in the command's description).",
+                // [number Num]
+                "• For <font color='orange'><b>Orange</b></font> colored arguments, give a decimal number.",
+                // [time Unit]
+                "• For <font color='blueviolet'><b>Blueviolet</b></font> colored arguments, give a time unit (s, m, h, d, w, mo, y, de). Usually the default is in minutes."
+            ]
+        },
+        "register": {
+            title: "Registering",
+            message: [
+                "To register <small>(on the desktop client)</small>, click on the <b>Register</b> button below the chat.",
+                "Registration is free and does not require an email or even a name. All it does is lock your current user name with a password so other people cannot go on it (assuming they don't know the password).",
+                "<b>If you ever forget your password, you can ask one of the Owners " + Util.icons.owner + " to reset it for you.</b>"
+            ]
+        }
+    };
+                        
+    Commands.register('help', function (info) {
+        var type = info.data.toLowerCase().trim();
+        var entry = helpEntries[type] || helpEntries["default"];
+        var title = "Help", template, len, i;
+        
+        if (entry.title) {
+            title += " - " + entry.title;
+        }
+        
+        template = Template("basic", title);
+        for (i = 0, len = entry.message.length; i < len; i += 1) {
+            template.register(entry.message[i]);
+        }
+        
+        template.render(info.src, info.chan);
+    });
+}());
 
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/scripts.js */
-JSESSION.identifyScriptAs("TheUnknownOne's Server Script v2.7.0-dev:#11");
+JSESSION.identifyScriptAs("TheUnknownOne's Server Script v2.7.0-dev:#20");
 JSESSION.registerUserFactory(JSESSION.factory.User);
 JSESSION.registerChannelFactory(JSESSION.factory.Channel);
 //JSESSION.registerGlobalFactory(JSESSION.factory.Global);
@@ -2039,5 +2118,78 @@ Script.poScript = ({
         if (Commands.handle(src, message, chan)) {
             return;
         }
+    },
+    afterLogIn: function (src, chan /* default channel */) {
+        chan = sys.channelId(chan);
+        
+        var self = JSESSION.users(src),
+            srcToLower = sys.name(src).toLowerCase(),
+            myAuth = sys.auth(src);//,
+            //sendWelcomeMessage = Config.WelcomeMessages && (myAuth < 1 || myAuth > 3),
+            //temp = "",
+            //pNum = sys.numPlayers();
+
+        /*
+        WatchEvent(src, "Log In on IP " + sys.ip(src));
+        
+        
+        if (sendWelcomeMessage) {
+            botAllExcept(src, me + " joined the server!", 0);
+        }*/
+
+        Bot.sendMessage(src, "Welcome, " + Util.player.formatName(src) + "!", chan);
+        Bot.sendMessage(src, "Type in <b><font color=green>/commands</font></b> to see the commands and <b><font color=green>/rules</font></b> to see the rules.", chan);
+        
+        /*
+        if (typeof startupTime === 'number' && !isNaN(startupTime)) {
+            botMessage(src, "The server has been up for " + startUpTime() + "</b>.", 0);
+        }
+
+        if (pNum > maxPlayersOnline) {
+            maxPlayersOnline = pNum;
+        }
+
+        if (maxPlayersOnline > cache.get("MaxPlayersOnline")) {
+            cache.write("MaxPlayersOnline", maxPlayersOnline);
+        }
+
+        Bot.sendMessage(src, "Current amount of players online is <b>" + pNum + "</b>. Record is <b>" + maxPlayersOnline + "</b>.", chan);
+        */
+        
+        if (!sys.dbRegistered(srcToLower)) {
+            Bot.sendMessage(src, "You are not registered. Click on the 'Register' button if you wish to protect your alias. Registration only requires a password.", chan);
+        }
+
+        /*
+        TourNotification(src, 0);
+        sys.sendMessage(src, "", 0);
+        
+        if (Config.AutoChannelJoin) {
+            var ChanIds = [mafiachan];
+
+            if (sys.auth(src) > 0 || JSESSION.channels(watch).isChanMod(src)) {
+                ChanIds.push(watch);
+            }
+
+            if (self.megauser || sys.auth(src) > 0 || JSESSION.channels(staffchannel).isChanMod(src)) {
+                ChanIds.push(staffchannel);
+            }
+
+            if (sys.auth(src) > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
+                ChanIds.push(scriptchannel);
+            }
+
+            putInMultipleChannels(src, ChanIds);
+        }
+
+        if (DataHash.idles.has(srcToLower)) {
+            if (DataHash.idles[srcToLower].entry !== "") {
+                botAll(format("lvl2", DataHash.idles[srcToLower].entry), 0);
+            }
+            sys.changeAway(src, true);
+        }
+
+        ify.afterLogIn(src);
+        script.afterChangeTeam(src, true);*/
     }
 });

@@ -167,4 +167,11 @@
     Util.reverse = function (str) {
         return str.reverse ? str.reverse() : str.split('').reverse().join('');
     };
+    
+    Util.icons = {
+        owner: "<img src='Themes/Classic/client/oAvailable.png'>",
+        admin: "<img src='Themes/Classic/client/aAvailable.png'>",
+        mod:   "<img src='Themes/Classic/client/mAvailable.png'>",
+        user:  "<img src='Themes/Classic/client/uAvailable.png'>"
+    };
 }());

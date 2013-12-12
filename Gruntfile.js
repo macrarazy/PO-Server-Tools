@@ -8,10 +8,10 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     
-    grunt.registerTask('copyscripts', function () {
+    grunt.registerTask('copyscripts', 'Copies the built scripts.js file to server/scripts.js for testing.', function () {
         grunt.file.copy('scripts.js', 'server/scripts.js');
     });
-    grunt.registerTask('bump-build', function () {
+    grunt.registerTask('bump-build', 'Bumps the build number.', function () {
         var pkg = grunt.file.readJSON('package.json');
         if (!pkg.script.build) {
             pkg.script.build = 0;

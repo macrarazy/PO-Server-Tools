@@ -30,12 +30,12 @@ Commands.handle = function (src, message, chan) {
         
         pos = message.indexOf(' ');
         
-        commandInfo.src     = commandInfo.source = src;
+        commandInfo.src     = commandInfo.source  = src;
         commandInfo.chan    = commandInfo.channel = chan;
         commandInfo.message = message;
         
         if (pos !== -1) {
-            commandInfo.fullCommand = message.substr(1, pos);
+            commandInfo.fullCommand = message.substring(1, pos);
             commandInfo.command     = commandInfo.fullCommand.toLowerCase();
             
             commandInfo.data        = message.substr(pos + 1);
@@ -44,7 +44,7 @@ Commands.handle = function (src, message, chan) {
             commandInfo.dbAuth      = sys.dbAuth(commandInfo.args[0]);
             commandInfo.target      = sys.id(commandInfo.args[0]);
         } else {
-            commandInfo.fullCommand = message.substr(1);
+            commandInfo.fullCommand = message.substring(1);
             commandInfo.command     = commandInfo.fullCommand.toLowerCase();
             commandInfo.args        = [];
             commandInfo.data =
@@ -63,6 +63,8 @@ Commands.handle = function (src, message, chan) {
         } else if (perm < 0) {
             perm = 0;
         }
+        
+        commandInfo.perm = commandInfo.auth = perm;
 
         /*if (ch[sys.name(src)] !== undefined && ch[sys.name(src)][0] === sys.auth(src)) {
             op = ch[sys.name(src)][1];
