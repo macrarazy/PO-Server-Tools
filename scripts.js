@@ -1,5 +1,5 @@
 /*      
-    TheUnknownOne's Server Script (https://github.com/TheUnknownOne/PO-Server-Tools) @ v2.7.0-dev:#20
+    TheUnknownOne's Server Script (https://github.com/TheUnknownOne/PO-Server-Tools) @ v2.7.0-dev:#23
     
     By TheUnknownOne (https://github.com/TheUnknownOne/)
     License: MIT
@@ -12,7 +12,7 @@
 
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/defines.js */
 var Script,
-    JSESSION,
+    Factory,
     Util,
     Bot,
     Tours,
@@ -52,177 +52,9 @@ var Config = {
 };
 
 var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1";*/
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/jsession.js */
-(function setupJSESSION() {
-    if (typeof JSESSION !== 'undefined') {
-        return;
-    }
-    
-    function noop(){}
 
-    JSESSION = {
-        userData: {},
-        channelData: {},
-        globalData: {},
-
-        userFactory: noop,
-        channelFactory: noop,
-        globalFactory: noop,
-
-        usesUser: false,
-        usesChannel: false,
-        usesGlobal: false,
-
-        scriptId: null,
-        factory: {} // Used by User, Channel, and Global constructors.
-    };
-    
-    // Note: Refill is automatically called by identifyAsScript
-    JSESSION.refill = function refill() {
-        var players,
-            player,
-            channels,
-            channel,
-            len,
-            i;
-        
-        if (JSESSION.usesUser) {
-            players = sys.playerIds();
-            for (i = 0, len = players.length; i < len; i += 1) {
-                player = players[i];
-                if (!JSESSION.hasUser(player)) {
-                    JSESSION.createUser(player);
-                }
-            }
-        }
-        if (JSESSION.usesChannel) {
-            channels = sys.channelIds();
-            for (i = 0, len = channels.length; i < len; i += 1) {
-                channel = channels[i];
-                if (!JSESSION.hasChannel(channel)) {
-                    JSESSION.createChannel(channel);
-                }
-            }
-        }
-        if (JSESSION.usesGlobal) {
-            if (!JSESSION.hasGlobal()) {
-                JSESSION.globalData = new (JSESSION.globalFactory)();
-            }
-        }
-    };
-    
-    JSESSION.users = JSESSION.user = function user(id) {
-        if (!JSESSION.usesUser) {
-            return;
-        }
-        
-        return JSESSION.userData[id];
-    };
-    
-    JSESSION.channels = JSESSION.channel = function channel(id) {
-        if (!JSESSION.usesChannel) {
-            return;
-        }
-        
-        return JSESSION.channelData[id];
-    };
-    
-    JSESSION.global = function global() {
-        if (!JSESSION.usesGlobal) {
-            return;
-        }
-        
-        return JSESSION.globalData;
-    };
-    
-    JSESSION.identifyScriptAs = function (id) {
-        if (JSESSION.scriptId !== id) {
-            JSESSION.clearAll();
-        }
-        
-        JSESSION.scriptId = id;
-        JSESSION.refill();
-    };
-    
-    // These must all be constructors.
-    JSESSION.registerUserFactory = function (Factory) {
-        JSESSION.userFactory = Factory;
-        JSESSION.usesUser = true;
-    };
-    
-    JSESSION.registerChannelFactory = function (Factory) {
-        JSESSION.channelFactory = Factory;
-        JSESSION.usesChannel = true;
-    };
-    
-    JSESSION.registerGlobalFactory = function (Factory) {
-        JSESSION.globalFactory = Factory;
-        JSESSION.usesGlobal = true;
-        JSESSION.globalData = new Factory();
-    };
-    
-    JSESSION.createUser = function (id) {
-        if (!JSESSION.usesUser || typeof JSESSION.userData[id] !== 'undefined') {
-            return false;
-        }
-        
-        JSESSION.userData[id] = new (JSESSION.userFactory)(id);
-        return true;
-    };
-    JSESSION.destroyUser = function (id) {
-        if (!JSESSION.usesUser || typeof JSESSION.userData[id] === 'undefined') {
-            return false;
-        }
-        
-        delete JSESSION.userData[id];
-        return true;
-    };
-    JSESSION.hasUser = function (id) {
-        return JSESSION.userData.hasOwnProperty(id);
-    };
-    
-    JSESSION.createChannel = function (id) {
-        if (!JSESSION.usesChannel || typeof JSESSION.channelData[id] !== 'undefined') {
-            return false;
-        }
-        
-        JSESSION.channelData[id] = new (JSESSION.channelFactory)(id);
-        return true;
-    };
-    JSESSION.destroyChannel = function (id) {
-        if (!JSESSION.usesChannel || typeof JSESSION.channelData[id] === 'undefined') {
-            return false;
-        }
-        
-        delete JSESSION.channelData[id];
-        return true;
-    };
-    JSESSION.hasChannel = function (id) {
-        return JSESSION.channelData.hasOwnProperty(id);
-    };
-
-    JSESSION.hasGlobal = function () {
-        return Object.keys(JSESSION.globalData).length === 0;
-    };
-    
-    JSESSION.clearAll = function () {
-        JSESSION.userData = {};
-        JSESSION.channelData = {};
-        JSESSION.globalData = {};
-        
-        JSESSION.userFactory = noop;
-        JSESSION.channelFactory = noop;
-        JSESSION.globalFactory = noop;
-        
-        JSESSION.usesUser = false;
-        JSESSION.usesChannel = false;
-        JSESSION.usesGlobal = false;
-        
-        JSESSION.scriptId = null;
-    };
-}());
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/factory/user.js */
-JSESSION.factory.User = function (id) {
+Factory.User = function (id) {
     var name = sys.name(id),
         nameLower = name.toLowerCase();
 
@@ -272,7 +104,7 @@ JSESSION.factory.User = function (id) {
 POUser.prototype.addFlood = function () {
     if (typeof hpAuth === 'undefined' || hpAuth(this.id) < 1) {
         this.floodCount++;
-        sys.callLater('JSESSION.users(' + this.id + ').floodCount--', 6);
+        sys.callLater('SESSION.users(' + this.id + ').floodCount--', 6);
     }
 };
 
@@ -320,8 +152,9 @@ POUser.prototype.capsMute = function (message, channel) {
 
     return false;
 };*/
+
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/factory/channel.js */
-JSESSION.factory.Channel = function (id) {
+Factory.Channel = function (id) {
     this.name = sys.channel(id);
     this.id = id;
 
@@ -331,7 +164,7 @@ JSESSION.factory.Channel = function (id) {
     this.topic = 'Welcome to ' + this.name + '!';
     this.topicsetter = '';
     this.toursEnabled = false;
-    
+
     /* !Overhaul
     if ((typeof DefaultChannels !== "undefined" && DefaultChannels.indexOf(id) !== -1) || typeof DefaultChannels === "undefined") {
         this.perm = true;
@@ -503,6 +336,7 @@ POChannel.prototype.isChanOwner = function (src) {
 
     return this.chanAuth[toLower] >= 3 || hpAuth(src) >= 3;
 };*/
+
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/util/util.js */
 (function setupUtil() {
     var capitalLetter = /[QWERTYUIOPASDFGHJKLZXCVBNM]/,
@@ -531,47 +365,47 @@ POChannel.prototype.isChanOwner = function (src) {
     Util.escapeRegex = function (str) {
         return ('' + str).replace(/([\.\\\+\*\?\[\^\]\$\(\)])/g, '\\$1');
     };
-    
+
     Util.removeSpaces = function (str) {
         return str.split(' ').join('');
     };
-    
+
     // Shortcut to Object.prototype.hasOwnProperty.call
     // Allows us to use hasOwnProperty even if it has been overwritten.
     Util.hasOwn = function (obj, property) {
         return Object.prototype.hasOwnProperty.call(obj, property);
     };
-    
+
     Util.formatError = function (error, msg) {
         var lineNumber;
-        
+
         if (typeof msg !== 'string') {
             msg = '';
         }
-        
+
         if (!(error instanceof Error)) {
             return msg + " Custom Error: " + error;
         }
-        
+
         lineNumber = error.lineNumber ? ' on line ' + error.lineNumber : '';
         return msg + " " + error.name + lineNumber + ": " + error.message;
     };
-    
+
     // Capitalizes a string.
     Util.capitalize = function (str) {
         return str.charAt(0).toUpperCase() + str.substr(1);
     };
-    
+
     // If the given letter is capitalized.
     Util.isCapitalLetter = function (letter) {
         return capitalLetter.test(letter);
     };
-    
+
     // If the given letter isn't capitalized
     Util.isNormalLetter = function (letter) {
         return lowerLetter.test(letter);
     };
-    
+
     // Turns [time] into a string (for example, 60 becomes "1 Minute")
     Util.timeToString = function (timeToFormat) {
         var ret = [],
@@ -583,28 +417,28 @@ POChannel.prototype.isChanOwner = function (src) {
         if (timeToFormat < 0) {
             return "0 seconds";
         }
-        
+
         for (i = 0; i < len; i += 1) {
             time = timeForName[i];
             currentTime = parseInt(timeToFormat / time[0], 10);
-            
+
             if (currentTime > 0) {
                 ret.push(currentTime + " " + time[1] + (currentTime > 1 ? "s" : ""));
                 timeToFormat -= currentTime * time[0];
-                
+
                 if (timeToFormat <= 0) {
                     break;
                 }
             }
         }
-        
+
         if (ret.length === 0) {
             return "1 second";
         }
 
         return Util.fancyJoin(ret);
     };
-    
+
     // A more fancy looking version than the default .join
     Util.fancyJoin = function (array) {
         var retstr = "",
@@ -613,7 +447,7 @@ POChannel.prototype.isChanOwner = function (src) {
         if (arrlen + 1 < 2) {
             return array.join("");
         }
-        
+
         array.forEach(function (value, index) {
             if (index === arrlen) {
                 retstr = retstr.substr(0, retstr.lastIndexOf(",")) + " and " + array[index];
@@ -625,7 +459,7 @@ POChannel.prototype.isChanOwner = function (src) {
 
         return retstr;
     };
-    
+
     // Adds clickable links to a message for urls, pseudo urls, and email addresses.
     Util.linkify = function (message) {
         return message
@@ -633,47 +467,73 @@ POChannel.prototype.isChanOwner = function (src) {
             .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
             .replace(emailAddressPattern, '<a target="_blank" href="mailto:$1">$1</a>');
     };
-    
+
     Util.channelLink = function (channel) {
         return "<a href='po:join/" + channel + "'>#" + channel + "</a>";
     };
-    
-    Util.channelNames = function () {
+
+    Util.channelNames = function (lowercase) {
         var channelIds = sys.channelIds(),
             channelNames = [],
-            len, i;
-    
+            chan, len, i;
+
         for (i = 0, len = channelIds.length; i < len; i += 1) {
-            channelNames.push(sys.channel(channelIds[i]));
+            chan = sys.channel(channelIds[i]);
+            if (lowercase) {
+                chan = chan.toLowerCase();
+            }
+
+            channelNames.push(chan);
         }
-    
+
         return channelNames;
     };
-    
-    Util.addChannelLinks = function (str) {
-        // Don't do anything if there are no #'s in the message.
-        // Helps save on evaluation time, rarely messages will include a hash.
-        if (str.indexOf('#') === -1) {
-            return str;
+
+    Util.addChannelLinks = function (line) {
+        var index = line.indexOf('#');
+        if (index === -1) {
+            return line;
         }
-        
-        var channelNames = Util.channelNames(),
-            nameslength = channelNames.length,
-            name, len, i;
-    
-        for (i = 0; i < nameslength; i += 1) {
-            name = channelNames[i];
-            str = str.replace(new RegExp("#" + name, "gi"), "<a href='po:join/" + name + "'>" + name + "</a>");
+
+        var str = '', fullChanName, chanName, chr, lastIndex = 0, pos, i;
+        var channelNames = Util.channelNames(true); // lower case names
+
+        while (index !== -1) {
+            str += line.substring(lastIndex, index);
+            lastIndex = index + 1; // Skip over the '#'
+
+            fullChanName = '';
+            chanName = '';
+
+            for (i = 0, pos = lastIndex; i < 20 && (chr = line[pos]); i += 1, pos += 1) {
+                fullChanName += chr;
+                if (channelNames.indexOf(fullChanName.toLowerCase()) !== -1) {
+                    chanName = fullChanName;
+                }
+            }
+
+            if (chanName) {
+                str += "<a href='po:join/" + chanName + "'>#" + chanName + "</a>";
+                lastIndex += chanName.length;
+            } else {
+                str += '#';
+            }
+
+            index = line.indexOf('#', lastIndex);
+        }
+
+        if (lastIndex < line.length) {
+            str += line.substr(lastIndex);
         }
 
         return str;
     };
-    
+
     // Reverses a string/array.
     Util.reverse = function (str) {
         return str.reverse ? str.reverse() : str.split('').reverse().join('');
     };
-    
+
     Util.icons = {
         owner: "<img src='Themes/Classic/client/oAvailable.png'>",
         admin: "<img src='Themes/Classic/client/aAvailable.png'>",
@@ -681,6 +541,7 @@ POChannel.prototype.isChanOwner = function (src) {
         user:  "<img src='Themes/Classic/client/uAvailable.png'>"
     };
 }());
+
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/util/player-util.js */
 (function () {
     // list of default colors, used when a player doesn't have one (by the client)
@@ -1282,7 +1143,7 @@ Util.mod.kick = function (id) {
     if (!sys.loggedIn(id)) {
         return;
     }
-    
+
     // Silently kick them.
     sys.kick(id);
 };
@@ -1291,7 +1152,7 @@ Util.mod.kick = function (id) {
 Util.mod.kickAll = function (playerIp) {
     // Get the IP. This allows us to accept ids, names, and regular ips as well.
     var trueIp = Util.player.ip(playerIp);
-    
+
     // Get all their alts.
     Util.player.ipIds(trueIp).forEach(function (id) {
         Util.mod.kick(id);
@@ -1304,7 +1165,7 @@ Util.mod.disconnect = function (id) {
     if (!sys.loggedIn(id)) {
         return;
     }
-    
+
     // Silently disconnect them.
     sys.disconnect(id);
 };
@@ -1313,7 +1174,7 @@ Util.mod.disconnect = function (id) {
 Util.mod.disconnectAll = function (playerIp) {
     // Get the IP. This allows us to accept ids, names, and regular ips as well.
     var trueIp = Util.player.ip(playerIp);
-    
+
     // Get all their alts.
     Util.player.ipIds(trueIp).forEach(function (id) {
         Util.mod.disconnect(id);
@@ -1330,21 +1191,21 @@ Util.mod.mute = function (opts) {
     if (!opts.ip || !opts.ip || typeof opts.time !== 'number') {
         return false;
     }
-    
+
     // add the current time since epoch to the mute, as that is what we use to check if the mute has expired.
     opts.time += +(sys.time());
-    
+
     if (!opts.reason) {
         opts.reason = "";
     }
-    
+
     // ?
     //DataHash.mutes[opts.ip] = opts;
-    
+
     // mute all of [opts.ip]'s names that are currently online.
     // note that we only have to set .muted (this prevents them from talking, until their mute has expired). This value is set after the log back in (because we mute their ip) automatically (if they're still muted), so we don't have to do any mumbo jumbo.
     Util.mod.ipIds(opts.ip).forEach(function (id) {
-        JSESSION.users(id).muted = true;
+        SESSION.users(id).muted = true;
     });
     return true;
 };
@@ -1364,7 +1225,7 @@ Util.mod.tempBan = function (name, time) {
     // Since there is basically nothing to customise atm (kick is done automatically), this is simply a small wrapper (though it does kick players under the same alt.)
     // Ensure time is an integer.
     time = Math.round(time);
-    
+
     sys.tempBan(name, time);
     Util.mod.kickAll(sys.ip(name));
 };
@@ -1374,7 +1235,7 @@ Util.mod.isBanned = function (playerName) {
     // Return their name. This allows us to accept ids as well.
     var trueName = Util.player.name(playerName).toLowerCase(),
         bans = sys.banList();
-    
+
     return bans.indexOf(trueName) !== -1;
 };
 
@@ -1384,15 +1245,16 @@ Util.mod.isBanned = function (playerName) {
 Util.mod.tempBanTime = function (playerName) {
     // Return their name. This allows us to accept ids as well.
     var trueName = Util.player.name(playerName).toLowerCase();
-    
+
     // If they aren't banned, return 0.
     if (!Util.mod.isBanned(trueName)) {
         return 0;
     }
-    
+
     // Otherwise, return for how long they are banned.
     return sys.dbTempBanTime(trueName);
 };
+
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/bot.js */
 (function setupBot() {
     var NoSender = -1,
@@ -1454,7 +1316,7 @@ Util.mod.tempBanTime = function (playerName) {
 (function () {
     // This object holds tournament manipulation functions and constants
     Tours = {};
-    
+
     // Sends a tournament notification to a player
     // Also called by bots to notify a new tournament has started
     // info is an object and only used when called by a bot
@@ -1462,50 +1324,50 @@ Util.mod.tempBanTime = function (playerName) {
     // name: Name of the bot.
     // color: Color of the bot.
     /*Tours.tourNotification = function tourNotification(src, chan, info) {
-        if (!JSESSION.hasChannel(chan)) {
+        if (!SESSION.hasChannel(chan)) {
             return;
         }
-        
-        var tour = JSESSION.channels(chan).tour,
+
+        var tour = SESSION.channels(chan).tour,
             state = tour.state,
             prize = '',
             finalsStr = '',
             startTime;
-    
+
         // No tournament is running, don't send them anything.
         if (state === 0) {
             return;
         }
-        
+
         // !No clean type
         if (src !== 0) {
             startTime = Util.timeToString((+sys.time()) - tour.startTime);
-    
+
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + PlayerUtils.formatName(tour.starter) + " " + startTime + " ago! </b></font>", chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + tour.entrants, chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + Tours.identify(tour), chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tier, chan);
-    
+
             if (!Util.isEmpty(tour.prize)) {
                 sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + tour.prize, chan);
             }
-    
+
             if (state === 1) {
                 sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
             } else if (state === 2) {
                 if (tour.finals) {
                     finalsStr = " (<B>Finals</B>)";
                 }
-    
+
                 sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + tour.round + finalsStr + ". " + tour.remaining + " players remaining.", chan);
-    
+
             }
         } else {
             // these are broadcasted by the bot [global].
             if (!Util.isEmpty(tour.prize)) {
                 prize = '<b style="color: brown;">Prize:</b> ' + tour.prize + '<br/>';
             }
-            
+
             // !This is supposed to be an array
             Tours.tourBox([
                 "A tournament was started by <b style='color:" + info.color + "'>" + Utils.escapeHtml(info.starter) + "</b> " + startedAgo + " ago!",
@@ -1516,14 +1378,14 @@ Util.mod.tempBanTime = function (playerName) {
             ], chan);
         }
     };*/
-    
+
     // Tours channel config.
     // Is a constructor, so should be initialized with new
     Tours.ToursChannelConfig = function ToursChannelConfig(id) {
         if (!(this instanceof ToursChannelConfig)) {
             return new ToursChannelConfig(id);
         }
-        
+
         // id of the channel
         this.id = id;
         // state the tournament is in
@@ -1556,7 +1418,7 @@ Util.mod.tempBanTime = function (playerName) {
         // 5: Tag Team Double Elimination
         // 6: Tag Team Triple Elimination
         this.type = 0;
-    
+
         // status of the current round
         // contains:
         // - battles that have not begun (idleBattles)
@@ -1567,7 +1429,7 @@ Util.mod.tempBanTime = function (playerName) {
             ongoingBattles: {},
             winLose: {}
         };
-    
+
         // couples objects (the pairs that have to battle)
         this.couples = {};
         // player objects
@@ -1586,8 +1448,8 @@ Util.mod.tempBanTime = function (playerName) {
         // time since epoch when tour started (signups)
         this.startTime = 0;
     };
-    
-    
+
+
     // Resets all tournament variables for a TCC.
     Tours.clearVariables = function clearVariables(tcc) {
         tcc.state = 0;
@@ -1605,14 +1467,14 @@ Util.mod.tempBanTime = function (playerName) {
             ongoingBattles: {},
             winLose: {}
         };
-    
+
         tcc.couples = {};
         tcc.players = {};
 
         tcc.roundPlayers = 0;
         tcc.startTime = 0;
     };
-    
+
     // Resets round tournament variables for a TCC.
     Tours.cleanRoundVariables = function cleanRoundVariables(tcc) {
         tcc.roundStatus = {
@@ -1620,45 +1482,45 @@ Util.mod.tempBanTime = function (playerName) {
             ongoingBattles: {},
             winLose: {}
         };
-    
+
         tcc.couples = {};
         tcc.roundPlayers = 0;
     };
-    
+
     // Table for tour messages.
     Tours.tourBox = function tourBox(message, chan) {
         if (!Array.isArray(message)) {
             message = [message];
         }
-        
+
         message = message.join('<br/>');
         sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
     };
-    
+
     // Sends a tourBox to a player
     Tours.tourBoxPlayer = function tourBoxPlayer(src, message, chan) {
         if (!Array.isArray(message)) {
             message = [message];
         }
-        
+
         message = message.join('<br/>');
         sys.sendHtmlMessage(src, "<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
     };
-    
+
     /* !check */
     // Checks if a player has tour auth in the specified channel.
     Tours.hasTourAuth = function (id, channel) {
-        var poUser = JSESSION.users(id),
-            poChannel = JSESSION.channels(channel);
-    
+        var poUser = SESSION.users(id),
+            poChannel = SESSION.channels(channel);
+
         return poChannel.tourAuth.hasOwnProperty(poUser.name.toLowerCase()) || poUser.megauser || poChannel.isChanMod(id);
     };
-    
+
     // Identifies a tour's type.
     Tours.identify = function identify(type) {
         return Tours.modes[type] || "Unknown";
     };
-    
+
     // Returns the amount of battles required before a player goes on to the next round.
     Tours.battlesRequired = function battlesRequired(mode) {
         return {
@@ -1670,7 +1532,7 @@ Util.mod.tempBanTime = function (playerName) {
             6: 3
         }[mode];
     };
-    
+
     Tours.modes = {
         0: "No tournament is running.",
         1: "Single Elimination",
@@ -1680,15 +1542,16 @@ Util.mod.tempBanTime = function (playerName) {
         5: "Tag Team Double Elimination",
         6: "Tag Team Triple Elimination"
     };
-    
+
     // Constants
     // Teams
     Tours.blue = 0;
     Tours.red = 1;
-    
+
     // Unused
     //Tours.border = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
 }());
+
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/commands/handle.js */
 Commands = {commands: {}, pointers: {}};
 
@@ -2108,10 +1971,10 @@ Commands.handle = function (src, message, chan) {
 }());
 
 /*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/scripts.js */
-JSESSION.identifyScriptAs("TheUnknownOne's Server Script v2.7.0-dev:#20");
-JSESSION.registerUserFactory(JSESSION.factory.User);
-JSESSION.registerChannelFactory(JSESSION.factory.Channel);
-//JSESSION.registerGlobalFactory(JSESSION.factory.Global);
+SESSION.identifyScriptAs("TheUnknownOne's Server Script v2.7.0-dev:#23");
+SESSION.registerUserFactory(Factory.User);
+SESSION.registerChannelFactory(Factory.Channel);
+//SESSION.registerGlobalFactory(Factory.Global);
 
 Script.poScript = ({
     beforeChatMessage: function (src, message, chan) {
@@ -2121,8 +1984,8 @@ Script.poScript = ({
     },
     afterLogIn: function (src, chan /* default channel */) {
         chan = sys.channelId(chan);
-        
-        var self = JSESSION.users(src),
+
+        var self = SESSION.users(src),
             srcToLower = sys.name(src).toLowerCase(),
             myAuth = sys.auth(src);//,
             //sendWelcomeMessage = Config.WelcomeMessages && (myAuth < 1 || myAuth > 3),
@@ -2131,15 +1994,15 @@ Script.poScript = ({
 
         /*
         WatchEvent(src, "Log In on IP " + sys.ip(src));
-        
-        
+
+
         if (sendWelcomeMessage) {
             botAllExcept(src, me + " joined the server!", 0);
         }*/
 
         Bot.sendMessage(src, "Welcome, " + Util.player.formatName(src) + "!", chan);
         Bot.sendMessage(src, "Type in <b><font color=green>/commands</font></b> to see the commands and <b><font color=green>/rules</font></b> to see the rules.", chan);
-        
+
         /*
         if (typeof startupTime === 'number' && !isNaN(startupTime)) {
             botMessage(src, "The server has been up for " + startUpTime() + "</b>.", 0);
@@ -2155,7 +2018,7 @@ Script.poScript = ({
 
         Bot.sendMessage(src, "Current amount of players online is <b>" + pNum + "</b>. Record is <b>" + maxPlayersOnline + "</b>.", chan);
         */
-        
+
         if (!sys.dbRegistered(srcToLower)) {
             Bot.sendMessage(src, "You are not registered. Click on the 'Register' button if you wish to protect your alias. Registration only requires a password.", chan);
         }
@@ -2163,19 +2026,19 @@ Script.poScript = ({
         /*
         TourNotification(src, 0);
         sys.sendMessage(src, "", 0);
-        
+
         if (Config.AutoChannelJoin) {
             var ChanIds = [mafiachan];
 
-            if (sys.auth(src) > 0 || JSESSION.channels(watch).isChanMod(src)) {
+            if (sys.auth(src) > 0 || SESSION.channels(watch).isChanMod(src)) {
                 ChanIds.push(watch);
             }
 
-            if (self.megauser || sys.auth(src) > 0 || JSESSION.channels(staffchannel).isChanMod(src)) {
+            if (self.megauser || sys.auth(src) > 0 || SESSION.channels(staffchannel).isChanMod(src)) {
                 ChanIds.push(staffchannel);
             }
 
-            if (sys.auth(src) > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
+            if (sys.auth(src) > 1 || SESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
                 ChanIds.push(scriptchannel);
             }
 

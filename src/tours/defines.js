@@ -1,7 +1,7 @@
 (function () {
     // This object holds tournament manipulation functions and constants
     Tours = {};
-    
+
     // Sends a tournament notification to a player
     // Also called by bots to notify a new tournament has started
     // info is an object and only used when called by a bot
@@ -9,50 +9,50 @@
     // name: Name of the bot.
     // color: Color of the bot.
     /*Tours.tourNotification = function tourNotification(src, chan, info) {
-        if (!JSESSION.hasChannel(chan)) {
+        if (!SESSION.hasChannel(chan)) {
             return;
         }
-        
-        var tour = JSESSION.channels(chan).tour,
+
+        var tour = SESSION.channels(chan).tour,
             state = tour.state,
             prize = '',
             finalsStr = '',
             startTime;
-    
+
         // No tournament is running, don't send them anything.
         if (state === 0) {
             return;
         }
-        
+
         // !No clean type
         if (src !== 0) {
             startTime = Util.timeToString((+sys.time()) - tour.startTime);
-    
+
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=green>A Tournament was started by " + PlayerUtils.formatName(tour.starter) + " " + startTime + " ago! </b></font>", chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=red>Players:</font></b> " + tour.entrants, chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=blue>Type:</b></font> " + Tours.identify(tour), chan);
             sys.sendHtmlMessage(src, "<timestamp/><b><font color=orange>Tier:</b></font> " + tour.tier, chan);
-    
+
             if (!Util.isEmpty(tour.prize)) {
                 sys.sendHtmlMessage(src, "<timestamp/><b><font color=brown>Prize:</b></font> " + tour.prize, chan);
             }
-    
+
             if (state === 1) {
                 sys.sendHtmlMessage(src, "<timestamp/>Type <font color=green><b>/Join</b></font> to enter the tournament!</b></font>", chan);
             } else if (state === 2) {
                 if (tour.finals) {
                     finalsStr = " (<B>Finals</B>)";
                 }
-    
+
                 sys.sendHtmlMessage(src, "<timestamp/>Currently in round " + tour.round + finalsStr + ". " + tour.remaining + " players remaining.", chan);
-    
+
             }
         } else {
             // these are broadcasted by the bot [global].
             if (!Util.isEmpty(tour.prize)) {
                 prize = '<b style="color: brown;">Prize:</b> ' + tour.prize + '<br/>';
             }
-            
+
             // !This is supposed to be an array
             Tours.tourBox([
                 "A tournament was started by <b style='color:" + info.color + "'>" + Utils.escapeHtml(info.starter) + "</b> " + startedAgo + " ago!",
@@ -63,14 +63,14 @@
             ], chan);
         }
     };*/
-    
+
     // Tours channel config.
     // Is a constructor, so should be initialized with new
     Tours.ToursChannelConfig = function ToursChannelConfig(id) {
         if (!(this instanceof ToursChannelConfig)) {
             return new ToursChannelConfig(id);
         }
-        
+
         // id of the channel
         this.id = id;
         // state the tournament is in
@@ -103,7 +103,7 @@
         // 5: Tag Team Double Elimination
         // 6: Tag Team Triple Elimination
         this.type = 0;
-    
+
         // status of the current round
         // contains:
         // - battles that have not begun (idleBattles)
@@ -114,7 +114,7 @@
             ongoingBattles: {},
             winLose: {}
         };
-    
+
         // couples objects (the pairs that have to battle)
         this.couples = {};
         // player objects
@@ -133,8 +133,8 @@
         // time since epoch when tour started (signups)
         this.startTime = 0;
     };
-    
-    
+
+
     // Resets all tournament variables for a TCC.
     Tours.clearVariables = function clearVariables(tcc) {
         tcc.state = 0;
@@ -152,14 +152,14 @@
             ongoingBattles: {},
             winLose: {}
         };
-    
+
         tcc.couples = {};
         tcc.players = {};
 
         tcc.roundPlayers = 0;
         tcc.startTime = 0;
     };
-    
+
     // Resets round tournament variables for a TCC.
     Tours.cleanRoundVariables = function cleanRoundVariables(tcc) {
         tcc.roundStatus = {
@@ -167,45 +167,45 @@
             ongoingBattles: {},
             winLose: {}
         };
-    
+
         tcc.couples = {};
         tcc.roundPlayers = 0;
     };
-    
+
     // Table for tour messages.
     Tours.tourBox = function tourBox(message, chan) {
         if (!Array.isArray(message)) {
             message = [message];
         }
-        
+
         message = message.join('<br/>');
         sys.sendHtmlAll("<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
     };
-    
+
     // Sends a tourBox to a player
     Tours.tourBoxPlayer = function tourBoxPlayer(src, message, chan) {
         if (!Array.isArray(message)) {
             message = [message];
         }
-        
+
         message = message.join('<br/>');
         sys.sendHtmlMessage(src, "<table><tr><td><center><hr width='300'>" + message + "<hr width='300'></center></td></tr></table>", chan);
     };
-    
+
     /* !check */
     // Checks if a player has tour auth in the specified channel.
     Tours.hasTourAuth = function (id, channel) {
-        var poUser = JSESSION.users(id),
-            poChannel = JSESSION.channels(channel);
-    
+        var poUser = SESSION.users(id),
+            poChannel = SESSION.channels(channel);
+
         return poChannel.tourAuth.hasOwnProperty(poUser.name.toLowerCase()) || poUser.megauser || poChannel.isChanMod(id);
     };
-    
+
     // Identifies a tour's type.
     Tours.identify = function identify(type) {
         return Tours.modes[type] || "Unknown";
     };
-    
+
     // Returns the amount of battles required before a player goes on to the next round.
     Tours.battlesRequired = function battlesRequired(mode) {
         return {
@@ -217,7 +217,7 @@
             6: 3
         }[mode];
     };
-    
+
     Tours.modes = {
         0: "No tournament is running.",
         1: "Single Elimination",
@@ -227,12 +227,12 @@
         5: "Tag Team Double Elimination",
         6: "Tag Team Triple Elimination"
     };
-    
+
     // Constants
     // Teams
     Tours.blue = 0;
     Tours.red = 1;
-    
+
     // Unused
     //Tours.border = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
 }());

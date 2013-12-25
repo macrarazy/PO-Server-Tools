@@ -1,4 +1,4 @@
-JSESSION.factory.Channel = function (id) {
+Factory.Channel = function (id) {
     this.name = sys.channel(id);
     this.id = id;
 
@@ -8,7 +8,7 @@ JSESSION.factory.Channel = function (id) {
     this.topic = 'Welcome to ' + this.name + '!';
     this.topicsetter = '';
     this.toursEnabled = false;
-    
+
     /* !Overhaul
     if ((typeof DefaultChannels !== "undefined" && DefaultChannels.indexOf(id) !== -1) || typeof DefaultChannels === "undefined") {
         this.perm = true;

@@ -1,4 +1,4 @@
-JSESSION.factory.User = function (id) {
+Factory.User = function (id) {
     var name = sys.name(id),
         nameLower = name.toLowerCase();
 
@@ -48,7 +48,7 @@ JSESSION.factory.User = function (id) {
 POUser.prototype.addFlood = function () {
     if (typeof hpAuth === 'undefined' || hpAuth(this.id) < 1) {
         this.floodCount++;
-        sys.callLater('JSESSION.users(' + this.id + ').floodCount--', 6);
+        sys.callLater('SESSION.users(' + this.id + ').floodCount--', 6);
     }
 };
 

@@ -7,7 +7,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    
+
     grunt.registerTask('copyscripts', 'Copies the built scripts.js file to server/scripts.js for testing.', function () {
         grunt.file.copy('scripts.js', 'server/scripts.js');
     });
@@ -17,23 +17,22 @@ module.exports = function (grunt) {
             pkg.script.build = 0;
         }
         pkg.script.build += 1;
-        
+
         grunt.config.set('pkg', pkg);
         grunt.config.set('script', pkg.script);
         grunt.file.write('package.json', JSON.stringify(pkg, null, 2));
     });
-    
+
     grunt.registerTask('build', ['bump-build', 'concat']);
     grunt.registerTask('fulltest', ['build', 'jshint']);
     grunt.registerTask('test', ['build', 'copyscripts']);
     grunt.registerTask('dev', ['test', 'watch']);
     grunt.registerTask('default', ['build', 'jshint:scripts']);
-    
+
     var files = [
         // Global definitions
         'defines',
-        // JSESSION & Factories
-        'jsession',
+        // Factories
         'factory/user',
         'factory/channel',
         //'factory/global',
@@ -60,7 +59,7 @@ module.exports = function (grunt) {
     files = files.map(function (file) {
         return srcDir + file + '.js';
     });
-    
+
     var pkg = grunt.file.readJSON('package.json');
     grunt.initConfig({
         pkg: pkg,

@@ -28,7 +28,7 @@
         "global": true,
 
         "Script": true,
-        "JSESSION": true,
+        "Factory": true,
         "Bot": true,
         "Util": true,
         "Tours": true

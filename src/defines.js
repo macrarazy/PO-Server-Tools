@@ -1,5 +1,5 @@
 var Script,
-    JSESSION,
+    Factory,
     Util,
     Bot,
     Tours,

@@ -1,7 +1,7 @@
-JSESSION.identifyScriptAs("<%= script.name %> v<%= script.version %>:#<%= script.build %>");
-JSESSION.registerUserFactory(JSESSION.factory.User);
-JSESSION.registerChannelFactory(JSESSION.factory.Channel);
-//JSESSION.registerGlobalFactory(JSESSION.factory.Global);
+SESSION.identifyScriptAs("<%= script.name %> v<%= script.version %>:#<%= script.build %>");
+SESSION.registerUserFactory(Factory.User);
+SESSION.registerChannelFactory(Factory.Channel);
+//SESSION.registerGlobalFactory(Factory.Global);
 
 Script.poScript = ({
     beforeChatMessage: function (src, message, chan) {
@@ -11,8 +11,8 @@ Script.poScript = ({
     },
     afterLogIn: function (src, chan /* default channel */) {
         chan = sys.channelId(chan);
-        
-        var self = JSESSION.users(src),
+
+        var self = SESSION.users(src),
             srcToLower = sys.name(src).toLowerCase(),
             myAuth = sys.auth(src);//,
             //sendWelcomeMessage = Config.WelcomeMessages && (myAuth < 1 || myAuth > 3),
@@ -21,15 +21,15 @@ Script.poScript = ({
 
         /*
         WatchEvent(src, "Log In on IP " + sys.ip(src));
-        
-        
+
+
         if (sendWelcomeMessage) {
             botAllExcept(src, me + " joined the server!", 0);
         }*/
 
         Bot.sendMessage(src, "Welcome, " + Util.player.formatName(src) + "!", chan);
         Bot.sendMessage(src, "Type in <b><font color=green>/commands</font></b> to see the commands and <b><font color=green>/rules</font></b> to see the rules.", chan);
-        
+
         /*
         if (typeof startupTime === 'number' && !isNaN(startupTime)) {
             botMessage(src, "The server has been up for " + startUpTime() + "</b>.", 0);
@@ -45,7 +45,7 @@ Script.poScript = ({
 
         Bot.sendMessage(src, "Current amount of players online is <b>" + pNum + "</b>. Record is <b>" + maxPlayersOnline + "</b>.", chan);
         */
-        
+
         if (!sys.dbRegistered(srcToLower)) {
             Bot.sendMessage(src, "You are not registered. Click on the 'Register' button if you wish to protect your alias. Registration only requires a password.", chan);
         }
@@ -53,19 +53,19 @@ Script.poScript = ({
         /*
         TourNotification(src, 0);
         sys.sendMessage(src, "", 0);
-        
+
         if (Config.AutoChannelJoin) {
             var ChanIds = [mafiachan];
 
-            if (sys.auth(src) > 0 || JSESSION.channels(watch).isChanMod(src)) {
+            if (sys.auth(src) > 0 || SESSION.channels(watch).isChanMod(src)) {
                 ChanIds.push(watch);
             }
 
-            if (self.megauser || sys.auth(src) > 0 || JSESSION.channels(staffchannel).isChanMod(src)) {
+            if (self.megauser || sys.auth(src) > 0 || SESSION.channels(staffchannel).isChanMod(src)) {
                 ChanIds.push(staffchannel);
             }
 
-            if (sys.auth(src) > 1 || JSESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
+            if (sys.auth(src) > 1 || SESSION.channels(scriptchannel).isChanMod(src) || DataHash.evalops.has(srcToLower)) {
                 ChanIds.push(scriptchannel);
             }
 
