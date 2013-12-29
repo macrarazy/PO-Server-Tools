@@ -68,7 +68,7 @@ module.exports = function (grunt) {
             options: {
                 banner: grunt.file.read(srcDir + 'banner.jst'),
                 process: function(src, filepath) {
-                    return grunt.template.process('/*! Source: <%= script.sourceurl %>' + filepath + ' */\n' + src);
+                    return grunt.template.process(src);
                 },
                 stripBanners: true
             },

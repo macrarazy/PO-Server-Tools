@@ -1,17 +1,17 @@
-/*      
-    TheUnknownOne's Server Script (https://github.com/TheUnknownOne/PO-Server-Tools) @ v2.7.0-dev:#23
-    
+/*
+    TheUnknownOne's Server Script (https://github.com/TheUnknownOne/PO-Server-Tools) @ v2.7.0-dev:27
+
     By TheUnknownOne (https://github.com/TheUnknownOne/)
     License: MIT
-    
+
     Special Thanks to Lutra, Intel_iX, Lamperi, coyotte508 & Mystra
     Default styles & rank icons partially by Lutra, Intel_iX & person6445
 
     Tested on PO v2.1.0
 */
 
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/defines.js */
 var Script,
+    Config,
     Factory,
     Util,
     Bot,
@@ -29,6 +29,12 @@ Script = {
     },
     poScript: (typeof Script !== 'undefined' ? Script.poScript : {})
 };
+
+Config = {
+    serverName: ''
+};
+
+Factory = {};
 
 /*
 var Config = {
@@ -53,7 +59,6 @@ var Config = {
 
 var IP_Resolve_URL = "http://ip2country.sourceforge.net/ip2c.php?ip=%1";*/
 
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/factory/user.js */
 Factory.User = function (id) {
     var name = sys.name(id),
         nameLower = name.toLowerCase();
@@ -153,7 +158,6 @@ POUser.prototype.capsMute = function (message, channel) {
     return false;
 };*/
 
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/factory/channel.js */
 Factory.Channel = function (id) {
     this.name = sys.channel(id);
     this.id = id;
@@ -337,7 +341,6 @@ POChannel.prototype.isChanOwner = function (src) {
     return this.chanAuth[toLower] >= 3 || hpAuth(src) >= 3;
 };*/
 
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/util/util.js */
 (function setupUtil() {
     var capitalLetter = /[QWERTYUIOPASDFGHJKLZXCVBNM]/,
         lowerLetter = /[qwertyuiopasdfghjklzxcvbnm]/,
@@ -542,7 +545,6 @@ POChannel.prototype.isChanOwner = function (src) {
     };
 }());
 
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/util/player-util.js */
 (function () {
     // list of default colors, used when a player doesn't have one (by the client)
     var defaultColorList = ['#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f', '#1b1390', '#028678', '#0324b1'];
@@ -1134,7 +1136,6 @@ POChannel.prototype.isChanOwner = function (src) {
         }
     };
 }());
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/util/mod-util.js */
 Util.mod = {};
 
 // Kicks a player.
@@ -1255,7 +1256,6 @@ Util.mod.tempBanTime = function (playerName) {
     return sys.dbTempBanTime(trueName);
 };
 
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/bot.js */
 (function setupBot() {
     var NoSender = -1,
         NoTarget = -1,
@@ -1312,7 +1312,6 @@ Util.mod.tempBanTime = function (playerName) {
         Bot.broadcast("Using " + command + " is not something for you!", channel, src);
     };
 }());
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/tours/defines.js */
 (function () {
     // This object holds tournament manipulation functions and constants
     Tours = {};
@@ -1552,7 +1551,6 @@ Util.mod.tempBanTime = function (playerName) {
     //Tours.border = "<font color=blue><timestamp/><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB\xAB</b></font>";
 }());
 
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/commands/handle.js */
 Commands = {commands: {}, pointers: {}};
 
 Commands.hasCommandStart = function (message) {
@@ -1647,7 +1645,6 @@ Commands.handle = function (src, message, chan) {
     
     return false;
 };
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/style/style.js */
 (function () {
     var styles = [{
         "name": "default",
@@ -1679,22 +1676,21 @@ Commands.handle = function (src, message, chan) {
     Style.style = Style.styles["default"];
 }());
 
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/style/template.js */
 (function () {
     var templates = {};
-    
+
     //---------------------------------
     // Default template
     //---------------------------------
-    
+
     function defaultTemplate() {
         this.template = [];
     }
-    
+
     defaultTemplate.prototype.register = function (line) {
         this.template.push(line);
     };
-    
+
     defaultTemplate.prototype.render = function (src, chan) {
         sys.sendHtmlAll(src, this.template.join("<br/>"), chan);
     };
@@ -1702,32 +1698,40 @@ Commands.handle = function (src, message, chan) {
     //---------------------------------
     // Basic template
     //---------------------------------
-    
+
     function basicTemplate(header) {
         this.template = [
             Style.style.header,
             Style.style.span.replace(/\{\{Name\}\}/gi, header) + "<br/>"
         ];
     }
-    
+
     basicTemplate.prototype.register = function (line) {
-        this.template.push(line);
+        var len, i;
+
+        if (Array.isArray(line)) {
+            for (i = 0, len = line.length; i < len; i += 1) {
+                this.register(line[i]);
+            }
+        } else {
+            this.template.push(line);
+        }
     };
-    
+
     basicTemplate.prototype.span = function (name) {
         this.template.push(Style.style.span.replace(/\{\{Name\}\}/gi, name) + "<br/>");
     };
-    
+
     basicTemplate.prototype.render = function (src, chan) {
         this.register(Style.style.footer);
-        
+
         sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
     };
-    
+
     //---------------------------------
     // Command template
     //---------------------------------
-    
+
     function commandTemplate(header) {
         this.template = [
             Style.style.header,
@@ -1735,7 +1739,7 @@ Commands.handle = function (src, message, chan) {
             Style.style.help + "<br/>"
         ];
     }
-    
+
     // TODO / NOTE: Types/syntax changed.
     commandTemplate.prototype.format = function (str) {
         return str
@@ -1748,7 +1752,7 @@ Commands.handle = function (src, message, chan) {
             .replace(/\[number (.*?)\]/gi, '<b><font color="orange">$1</font></b>')
             .replace(/\[time (.*?)\]/gi, '<b><font color="blueviolet">$1</font></b>');
     };
-    
+
     commandTemplate.prototype.register = function (command, args, help) {
         var aliases = this.aliases(command),
             argsLength = arguments.length,
@@ -1759,7 +1763,7 @@ Commands.handle = function (src, message, chan) {
             argsList = "",
             len,
             i;
-    
+
         // One argument
         // .register("commands")
         // .register([["commands", "Displays the command list."]])
@@ -1773,7 +1777,7 @@ Commands.handle = function (src, message, chan) {
             }
             return;
         }
-        
+
         // Two arguments
         // .register("commands", "Displays the command list.");
         if (argsLength === 2) {
@@ -1783,109 +1787,109 @@ Commands.handle = function (src, message, chan) {
             );
             return;
         }
-    
+
         // Three arguments
         // .register("commands", ["[choice Choice]", "[number Repeat]"], "Displays the command list. Search for a term with the optional [choice Choice]. [number Repeat] can be used to repeat the list.");
-    
+
         for (i = 0, len = args.length; i < len; i += 1) {
             argsList += this.format(args[i]) + format[1] + ":" + format[0];
         }
-        
+
         // Remove the last format[0]
         argsList = argsList.substring(0, (argsList.length - format[1].length));
-    
+
         this.template.push(
             preCommand + format[0] + commandIcon + "<font color='" + commandColor + "'>" + command + "</font> " + argsList + " " + (this.format(help) + aliases)
         );
     };
-    
+
     commandTemplate.prototype.span = function (name) {
         this.template.push("<br/>" + Style.style.span.replace(/\{\{Name\}\}/gi, name) + "<br/>");
     };
-    
+
     commandTemplate.prototype.aliases = function (command) {
         var pointerCommands = Commands.pointers.reverse,
             aliases;
-        
+
         // There are no pointer commands for this command, so don't do anything.
         if (!Util.hasOwn(pointerCommands, command)) {
             return "";
         }
-    
+
         aliases = Object.keys(pointerCommands[command]);
         return "<i>(Aliases: " + aliases.join(", ") + ")</i>";
     };
-    
+
     commandTemplate.prototype.render = function (src, chan) {
         this.template.push(Style.style.footer);
         sys.sendHtmlMessage(src, this.template.join('<br/>'), chan);
     };
-    
+
     //---------------------------------
     // Table template
     //---------------------------------
-    
+
     function tableTemplate(header, color, border) {
         this.template = [
             Style.style.header,
             "<h2>" + header + "</h2><br/>",
             "<table border='" + border + "' cellpadding='5'>"
         ];
-        
+
         this.color = color;
     }
-    
+
     tableTemplate.prototype.register = function (data, isBold) {
         var table = ("<tr bgcolor='" + this.color + "'>"),
             format = ["<td>", "</td>"],
             len,
             i;
-        
+
         if (isBold) {
             format = ["<th>", "</th>"];
         }
-        
+
         for (i = 0, len = data.length; i < len; i += 1) {
             table += format[0] + data[i] + format[1];
         }
-    
+
         this.template.push(table + "</tr>");
     };
-    
+
     tableTemplate.prototype.render = function (src, chan) {
         this.template.push("</table><br/>" + Style.style.footer);
         sys.sendHtmlMessage(src, this.template.join(''), chan);
-    
+
         // Fix chat gradient being reset after a table has been posted.
         /* ChatGradient.refreshPlayer(src, chan); */
     };
-    
+
     // Register the templates.
-	
+
     // QtScript doesn't like keywords as identifiers.
     templates["default"] = defaultTemplate;
     templates.basic = basicTemplate;
     templates.command = commandTemplate;
     templates.table = tableTemplate;
-    
+
     // Creates a template.
     function createTemplate(type, a, b, c, d, e, f) {
         var template;
-        
+
         if (!Util.hasOwn(templates, type)) {
             throw new TypeError("Template '" + type + "' does not exist. Valid templates are: " + Object.keys(templates).join(", ") + ".");
         }
-        
+
         template = templates[type];
-        
+
         return (new template(a, b, c, d, e, f));
     }
-    
+
     // Set Template as createTemplate (var template = Template('standard', args...))
     Template = createTemplate;
     Template.templates = templates;
 }());
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/commands/user/help.js */
+
 (function () {
     Commands.register('commands', function (info) {
         var template = Template('command', 'Commands');
@@ -1970,8 +1974,41 @@ Commands.handle = function (src, message, chan) {
     });
 }());
 
-/*! Source: https://github.com/TheUnknownOne/PO-Server-Tools/blob/master/src/scripts.js */
-SESSION.identifyScriptAs("TheUnknownOne's Server Script v2.7.0-dev:#23");
+(function () {
+    Commands.register("me", function (info) {
+        var src = info.src, chan = info.chan;
+        if (!info.data) {
+            return Bot.sendMessage(src, "You have to enter a message!", chan);
+        }
+
+        sys.sendHtmlAll("<font color='" + Util.player.trueColor(src) + "'><timestamp/><i><b>*** " + sys.name(src) + "</b> " + Util.escapeHtml(info.data) + "</i></font>", chan);
+    });
+}());
+
+Commands.register('rules', function (info) {
+    var template = Template('basic', 'Rules');
+    template.register([
+        "<b>1</b>) Do not spam or overuse CAPS. The bots can mute you for it.",
+        "<b>2</b>) Do not flood or spam the chat. The bots can kick you for it.",
+        "<b>3</b>) Do not complain about hax. It's part of the game.",
+        "<b>4</b>) Do not time stall in a battle. 'Time Stalling' means you wait until your opponent forfeits by not making moves. If you are absent for a couple of minutes, say so.",
+        "<b>5</b>) Do not troll. This is very, very annoying. Doing this will get you kicked, muted, or banned, on sight.",
+        "<b>6</b>) Do not flame or insult. People don't like this.",
+        "<b>7</b>) Sexism, racism, or anything similar is not allowed.",
+        "<b>8</b>) Do not advertise. Links like pictures and videos are ok when they don't break the other rules.",
+        "<b>9</b>) No obscene, pornographic, or illegal content. This will be an instant ban in most cases.",
+        "<b>10</b>) Do not ask to be auth. Doing this will usually ruin your chances to ever be one.",
+        "<b>11</b>) Do not mini-moderate. Mini-Moderating means you act like a moderator, while you're not. Contact an authority instead.",
+        "<b>12</b>) Do not ban evade. Doing so will result in an instant (range)ban.",
+        "<b>13</b>) Do not blackmail. This will result in an instant mute/ban/rangeban.",
+        "<br/><b>If the server authority think it is necessary to punish someone, they are allowed to do so. Report them to higher powers if you think you have been abused.</b>",
+        "The server authority <u>do not</u> have to apply these rules."
+    ]);
+
+    template.render(info.src, info.chan);
+});
+
+SESSION.identifyScriptAs("TheUnknownOne's Server Script v2.7.0-dev:27");
 SESSION.registerUserFactory(Factory.User);
 SESSION.registerChannelFactory(Factory.Channel);
 //SESSION.registerGlobalFactory(Factory.Global);

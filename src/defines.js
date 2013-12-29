@@ -1,4 +1,5 @@
 var Script,
+    Config,
     Factory,
     Util,
     Bot,
@@ -16,6 +17,12 @@ Script = {
     },
     poScript: (typeof Script !== 'undefined' ? Script.poScript : {})
 };
+
+Config = {
+    serverName: ''
+};
+
+Factory = {};
 
 /*
 var Config = {

@@ -1,4 +1,4 @@
-SESSION.identifyScriptAs("<%= script.name %> v<%= script.version %>:#<%= script.build %>");
+SESSION.identifyScriptAs("<%= script.name %> v<%= script.version %>:<%= script.build %>");
 SESSION.registerUserFactory(Factory.User);
 SESSION.registerChannelFactory(Factory.Channel);
 //SESSION.registerGlobalFactory(Factory.Global);

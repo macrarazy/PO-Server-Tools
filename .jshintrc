@@ -28,9 +28,13 @@
         "global": true,
 
         "Script": true,
+        "Config": true,
         "Factory": true,
-        "Bot": true,
         "Util": true,
-        "Tours": true
+        "Bot": true,
+        "Tours": true,
+        "Style": true,
+        "Template": true,
+        "Commands": true
     }
 }
